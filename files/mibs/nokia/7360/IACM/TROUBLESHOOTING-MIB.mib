@@ -1,0 +1,874 @@
+TROUBLESHOOTING-MIB DEFINITIONS ::= BEGIN
+
+-- =============================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied,
+--  with respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel-Lucent expressly advises that any use of
+--  for any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel-Lucent shall not be liable for any damage or
+--  injury incurred by any person arising out of the sufficiency, accuracy,
+--  or utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products
+--  and to withdraw any or all of them at any future time.
+--  Copyright (C) 2007, Alcatel-Lucent. All Rights Reserved.
+-- =============================================================================
+
+--  MODULE-IDENTITY
+--
+--  LAST-UPDATED  Jul 18, 2016
+--  ORGANIZATION  "Alcatel-Lucent"
+--  CONTACT-INFO  "Huang jianfeng"
+--
+--  DESCRIPTION:  ALU02093360 - add  QoS color aware troubleshooting counters.
+--
+-- Added following tables:
+--
+-- troubleShootingColorObservationTable
+-- troubleShootingColorControlTable
+--
+--
+--  LAST-UPDATED   Feb 24, 2015
+--  ORGANIZATION   "Alcatel-Lucent"
+--  CONTACT-INFO	"John Boyle"
+--          Email:  asam.mibsupport@Alcatel-Lucent.be"
+--
+--  DESCRIPTION:  ALU01862953 - NGPON2 TWDM LT first 4-port version (FWLT-A)
+--
+-- Added following descriptions to intro sections of following tables:
+--
+-- As of ISAM5.2, troubleShootingObservationTable and troubleShootingControlTable
+-- are SUPPORTED for NG-PON2 channel pairs.
+-- When so used for channel pair monitoring, the associated counters are obtained
+-- from gponOltsidePonPortTroubleshootCounterTable in the GPON-MIB.
+--
+-- As of ISAM5.2, troubleShootingPonPortCountersObservationTable and 
+-- troubleShootingPonPortCountersControlTable are NOT SUPPORTED for NG-PON2 channel pairs.
+--
+--
+--
+--  LAST-UPDATED   May 20, 2014
+--  ORGANIZATION   "Alcatel-Lucent"
+--  CONTACT-INFO	"John Boyle"
+--          Email:  asam.mibsupport@Alcatel-Lucent.be"
+--
+--  DESCRIPTION:    ALU01876500 Upstream summary and extensive troubleshooting counters per TC:
+--			Changed policy so that a monitoring point (i.e. ifIndex) 
+--			can only be set as an ONT UNI (includes physical and virtual).
+--
+--  LAST-UPDATED   Jan 22, 2014
+--  ORGANIZATION   "Alcatel-Lucent"
+--  CONTACT-INFO	"John Boyle"
+--          Email:  asam.mibsupport@Alcatel-Lucent.be"
+--
+--  DESCRIPTION:    ALU01876500 Upstream summary and extensive troubleshooting counters per TC
+--			Changed policy so that a monitoring point (i.e. ifIndex) can only be set as a bridgeport.
+--
+--
+--
+--  LAST-UPDATED   "201310240000Z"
+--  ORGANIZATION   "Alcatel-Lucent"
+--  CONTACT-INFO	"John Boyle"
+--          Email:  asam.mibsupport@Alcatel-Lucent.be"
+--
+--  DESCRIPTION    "In following tables, REMOVED all notions that PON trouble shoot counters are limited 
+--		    to 8 per PON:
+--			troubleShootingPonPortCountersObservationTable
+--			troubleShootingPonPortCountersControlTable "
+--
+--
+--  LAST-UPDATED   "201310110000Z"
+--  ORGANIZATION   "Alcatel-Lucent"
+--  CONTACT-INFO	"John Boyle and Jim Holder"
+--          Email:  asam.mibsupport@Alcatel-Lucent.be"
+--
+--  DESCRIPTION    "In Proposal 1 (below), removed all reference to following mib readiness RCR 
+--			(which was originally targeted for ISAM5.0, but was then eliminated by PLM):
+--			ALU01884005 � which was a MIB Readiness RCR for:
+--	 		ALU01876500 Upstream summary and extensive troubleshooting counters per TC
+--			 (which is actually targeted for ISAM5.0.01)."
+--
+--
+--
+--
+--  LAST-UPDATED   "201209170000Z"
+--  ORGANIZATION   "Alcatel-Lucent"
+--  CONTACT-INFO	"John Boyle and Jim Holder"
+--          Email:  asam.mibsupport@Alcatel-Lucent.be"
+--  DESCRIPTION of CHANGES: : ALU01876500 Upstream summary and extensive troubleshooting counters per TC
+--		The following tables were  first introduced for MIB-readiness in ISAM5.0.
+-- 		The tables are NOT SUPPORTED until ISAM5.0.01.
+--			Added following OID:
+--				 troubleShootingPbitCounters    OBJECT IDENTIFIER ::= { troubleShootingMIB 5 }
+--			Added following tables to that OID:
+--				troubleShootingPbitObservationTable
+--				troubleShootingPbitControlTable	
+--
+--
+--
+--  DESCRIPTION
+--        "Troubleshooting observation and control tables are added for
+--         PON port level counters which are defined in GPON_MIB."
+--  LAST-UPDATED   "201209170000Z"
+--  ORGANIZATION   "Alcatel-Lucent"
+--  CONTACT-INFO
+--          Email:  asam.mibsupport@Alcatel-Lucent.be"
+--
+--  DESCRIPTION
+--        "Troubleshooting observation and control tables are added for
+--         PON port level counters which are defined in GPON_MIB."
+--
+--  LAST-UPDATED   "201002080000Z"
+--  ORGANIZATION   "Alcatel-Lucent"
+--  CONTACT-INFO
+--
+--          Email:  asam.mibsupport@Alcatel-Lucent.be"
+--
+--  DESCRIPTION
+--        "This MIB module defines objects for troubleshooting purposes."
+--
+--  REVISION "201209170000Z"
+--  DESCRIPTION
+--        "Version:  3FE28654EAAA_FDT1220.V4.2.0.3.2
+--         Editor:   G. Sathish Kumar
+--         Changes:  Added Protocol Tracing Support for GPON LT 
+--                   
+--
+--  REVISION "201002080000Z"
+--  DESCRIPTION
+--        "Version:  3FE28654EAAA_V4.2.0.0.0
+--         Editor:   Li Jing 
+--         Changes:  Added a new type, dhcpv6(4), to the 
+--                   protocolTracingProtocl object"
+--
+--  REVISION "200708220000Z"
+--  DESCRIPTION
+--        "Version:  3FE28654EAAA_V3.6.0.0.0
+--         Editor:   MA LiYa
+--         Changes:  troubleshooting observation and control tables added :
+--                    * troubleShootingObservationTable
+--                    * troubleShootingControlTable"
+--
+--
+--  REVISION "200703050000Z"
+--  DESCRIPTION
+--        "Version:  3FE28654EAAA_V3.4.0.0.0
+--         Editor:   Marc Van Vlimmeren
+--         Changes:  errorTracing section added with following objects:
+--                    * errorTracingLogNmbrOfRecords
+--                    * errorTracingLogTable"
+
+--  REVISION "200612180000Z"
+--  DESCRIPTION
+--        "Version:  3FE28654EAAA_V3.3.0.0.0
+--         Editor:   Madhuri Kulkarni
+--         Changes:  Initial version"
+
+-- ============================================================================
+
+IMPORTS
+
+     Gauge
+         FROM RFC1155-SMI
+     ifIndex, InterfaceIndex
+         FROM ITF-MIB
+     OBJECT-TYPE
+         FROM RFC-1212
+     RowStatus, DisplayString
+         FROM SNMPv2-TC
+     asam
+         FROM SYSTEM-MIB;
+
+troubleShootingMIB            OBJECT IDENTIFIER ::= {asam 67}
+
+-- ============================================================================
+-- The Protocol Tracing Group
+-- ============================================================================
+
+protocolTracing    OBJECT IDENTIFIER ::= { troubleShootingMIB 1 }
+ 
+-- ============================================================================
+-- Protocol tracing configuration table
+-- ============================================================================
+protocolTracingConfigTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ProtocolTracingConfigEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+         "A table containing configuration information for
+         Protocol Tracing.
+    ALCATEL NOTE:
+            TABLESIZE:     0..3600 "
+::= { protocolTracing 1 }
+
+
+protocolTracingConfigEntry OBJECT-TYPE
+    SYNTAX  ProtocolTracingConfigEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the protocolTracingConfigTable.
+        IfIndex identifies PVC for ADSL line and PHY line for ADSL as well as VDSL line.
+        For all GPON LT Cards the IfIndex identifies the GPON UNI Port.
+        ALCATEL NOTE:
+            SUPPORT:     YES "
+    INDEX  { ifIndex, protocolTracingProtocol }
+::= { protocolTracingConfigTable 1 }
+
+
+ProtocolTracingConfigEntry ::=
+    SEQUENCE {
+        protocolTracingProtocol    INTEGER,
+        protocolTracingRowStatus   RowStatus,
+        protocolTracingLevel       INTEGER,
+--        protocolTracingFilterType  INTEGER,
+--        protocolTracingFilterValue INTEGER,
+        protocolTracingSessionID   INTEGER,
+        protocolTracingMessageType INTEGER
+        }
+
+
+protocolTracingProtocol OBJECT-TYPE
+    SYNTAX  INTEGER {
+                    igmp(1),
+                    dhcp (2),
+                    arp(3),
+                    dhcpv6(4)
+               }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The protocol type to be traced.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:      'dhcp' here is actually dhcpv4"
+::= { protocolTracingConfigEntry 1 }
+
+ 
+protocolTracingRowStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    ACCESS   read-write
+    STATUS   mandatory
+    DESCRIPTION
+        "A Protocol Tracing config entry can be created or deleted by
+        using this variable.
+        IfIndex, protocolTracingProtocol, protocolTracingLevel and
+        protocolTracingMessageType are mandatory objects for row creation.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NA           INSRVMOD:    NO
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+     ::= { protocolTracingConfigEntry 2 }
+
+ 
+protocolTracingLevel OBJECT-TYPE
+    SYNTAX   INTEGER
+    ACCESS   read-write
+    STATUS   mandatory
+    DESCRIPTION
+        "This object indicates level of detail for tracing
+        1- Events,
+        2- PacketSummary,
+        3- both Events & Packet-summary.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     YES           INSRVMOD:    YES
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { protocolTracingConfigEntry 3 }
+
+ 
+--      protocolTracingFilterType OBJECT-TYPE
+--            SYNTAX  INTEGER
+--            ACCESS  read-write
+--            STATUS  mandatory
+--            DESCRIPTION
+--                       "For future use
+--               ALCATEL NOTE:
+--                        ACCESS           RW
+--                       USAGE:        MAND  
+--                       INSRVMOD:       NA
+--                       RANGE:          NA
+--                       PERSIST:        YES
+--                       DEFVALUE:       NA
+--                       UNITS:          NA
+--                        SPARSE:          NA"
+--               ::= { protocolTracingConfigEntry 4 }
+ 
+    
+--        protocolTracingFilterValue OBJECT-TYPE
+--               SYNTAX  INTEGER 
+--               ACCESS  read-write
+--               STATUS  mandatory
+--               DESCRIPTION
+--                       "For future use
+--               ALCATEL NOTE:
+--                        ACCESS           RW
+--                       USAGE:        MAND  
+--                       INSRVMOD:       NA
+--                       RANGE:          NA
+--                       PERSIST:        YES
+--                       DEFVALUE:       NA
+--                       UNITS:          NA
+--                        SPARSE:          NA"
+--              ::= { protocolTracingConfigEntry 5 }
+
+
+protocolTracingSessionID OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        " An id that is used internally in the system to uniquely indicate
+        a protocol tracing session
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       1..20        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { protocolTracingConfigEntry 6 }
+
+ 
+protocolTracingMessageType OBJECT-TYPE
+    SYNTAX  INTEGER {
+            tracing1(1),
+            tracing2(2),
+            tracing3(3)
+    }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This mib object holds the Message Type that Protocol
+        Tracing is using to log messages to Syslog.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { protocolTracingConfigEntry 7 }
+
+-- ============================================================================
+-- The Software Error Tracing Group
+-- ============================================================================
+
+errorTracing    OBJECT IDENTIFIER ::= { troubleShootingMIB 2 }
+
+errorTracingLogNmbrOfRecords OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object gives the number of records in the errorTracingLogTable
+         that contain SW error data.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..64        DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { errorTracing 1 }
+
+errorTracingLogTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ErrorTracingLogEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+         "A table containing up to 64 error log strings.
+          This table is cleared at system initialisation.
+          Records are added with data related to error conditions when
+          detected by the system.
+          Data related to more than 1 error can be logged.
+          Logging starts at record 1 and stops when the table is full.
+          Logging entries are always consecutive, but each record can apply
+          to a different error condition.
+         ALCATEL NOTE:
+            TABLESIZE:     0..64"
+::= { errorTracing 2 }
+
+
+errorTracingLogEntry OBJECT-TYPE
+    SYNTAX  ErrorTracingLogEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the errorTracingLogTable.
+          Row creation : An entry is created by the system.
+          Row deletion : not applicable.
+          Index usage : the index is the errorTracingLogIndex.
+          Note that entries will be presented to the SNMP manager in full
+          lexicographical order."
+    INDEX  { errorTracingLogIndex}
+::= { errorTracingLogTable 1 }
+
+
+ErrorTracingLogEntry ::=
+    SEQUENCE {
+        errorTracingLogIndex    INTEGER,
+        errorTracingLogString   DisplayString
+        }
+
+
+errorTracingLogIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1 .. 2147483647)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The index.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NO           INSRVMOD:    NO
+            RANGE:       1..64        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { errorTracingLogEntry 1 }
+
+errorTracingLogString OBJECT-TYPE
+    SYNTAX  DisplayString
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        " A string of up to 80 octets containing error log data.
+          Each octet contains an NVT ASCII character as defined in pages 4,
+          10-11 of RFC 854.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NO
+            RANGE:       0..80        DEFVALUE:    ''
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { errorTracingLogEntry 2 }
+
+-- ============================================================================
+-- Supervise the dataplane troubleshooting counters at userside 
+--
+-- As of ISAM5.2, troubleShootingObservationTable and troubleShootingControlTable
+-- are SUPPORTED for NG-PON2 channel pairs.
+-- When so used for channel pair monitoring, the associated counters are obtained
+-- from gponOltsidePonPortTroubleshootCounterTable in the GPON-MIB.
+-- ============================================================================
+
+troubleShootingCountersOnUserSide    OBJECT IDENTIFIER ::= { troubleShootingMIB 3 }
+
+troubleShootingObservationTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF TroubleShootingObservationEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+         "A table containing the physical lines which dataplane troubleshooting extensive counters are started.Only one line per LSM board can be observed. 
+          This table should be recovered at system reset. So ifIndex should be persistent data.
+         ALCATEL NOTE:
+            TABLESIZE:  DEP [depending on the value of max lim numbers of the system]"
+::= { troubleShootingCountersOnUserSide 1 }
+
+
+troubleShootingObservationEntry OBJECT-TYPE
+    SYNTAX  TroubleShootingObservationEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the troubleShootingObservationTable.
+The ifIndex indicates a line."
+INDEX  { ifIndex}
+
+::= { troubleShootingObservationTable 1 }
+
+
+TroubleShootingObservationEntry::=
+    SEQUENCE {
+         troubleShootingRowStatus   RowStatus
+        }
+
+troubleShootingRowStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    ACCESS   read-write
+    STATUS   mandatory
+    DESCRIPTION
+        "A troubleshooting observed line entry can be created or deleted by
+        using this variable.
+        IfIndex is mandatory objects for row creation.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NA           INSRVMOD:    NO
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+     ::= { troubleShootingObservationEntry 1 }
+
+troubleShootingControlTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF TroubleShootingControlEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+         "A table to reset the dataplane troubleshooting counters on a line, including the summary counters and detail counters if the detail counters have been started.
+         ALCATEL NOTE:
+            TABLESIZE:    DEP [depending on the value of max physical lines of the system] "
+::= { troubleShootingCountersOnUserSide 2 }
+
+
+troubleShootingControlEntry OBJECT-TYPE
+    SYNTAX  TroubleShootingControlEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the troubleShootingControlTable.
+The ifIndex indicates a line."
+INDEX  { ifIndex}
+::= { troubleShootingControlTable 1 }
+
+
+TroubleShootingControlEntry::=
+    SEQUENCE {
+         troubleShootingReset   INTEGER
+        }
+
+troubleShootingReset   OBJECT-TYPE
+    SYNTAX   INTEGER { 
+                      reset(1) 
+                     }
+    ACCESS   write-only
+    STATUS   mandatory
+    DESCRIPTION
+        "The troubleshooting counters can be reset by using this variable. 1 means to reset the counters.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NA           INSRVMOD:    NO
+            RANGE:       1            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+     ::= { troubleShootingControlEntry 1 }
+
+-- ============================================================================
+-- Supervise the dataplane PON portlevel troubleshooting counters at userside
+--
+-- As of ISAM5.2, troubleShootingPonPortCountersObservationTable and 
+-- troubleShootingPonPortCountersControlTable are NOT SUPPORTED for NG-PON2 channel pairs.
+--
+-- ============================================================================
+
+troubleShootingPonCountersOnUserSide  OBJECT IDENTIFIER ::= { troubleShootingMIB 4 }
+
+troubleShootingPonPortCountersObservationTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF TroubleShootingPonPortCountersObservationEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+  	"A table containing the PON port level troubleshooting counters. 
+	 This table should be recovered at system reset. So ifIndex should be persistent data.
+         ALCATEL NOTE:
+         TABLESIZE:  DEP [dependent on max PONs per LT type per shelf]"
+::= { troubleShootingPonCountersOnUserSide 1 }
+
+troubleShootingPonPortCountersObservationEntry OBJECT-TYPE
+    SYNTAX  TroubleShootingPonPortCountersObservationEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the troubleShootingPonPortCountersObservationTable.
+  	The ifIndex indicates a line."
+	INDEX  { ifIndex}
+::= { troubleShootingPonPortCountersObservationTable 1 }
+
+TroubleShootingPonPortCountersObservationEntry::=
+    SEQUENCE {
+         	troubleShootingPonPortCountersRowStatus   RowStatus
+    }
+
+troubleShootingPonPortCountersRowStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    ACCESS   read-write
+    STATUS   mandatory
+    DESCRIPTION
+        "A troubleshooting observed PON port entry can be created or deleted by
+        using this variable. IfIndex is mandatory objects for row creation.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NA           INSRVMOD:    NO
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { troubleShootingPonPortCountersObservationEntry 1 }
+
+troubleShootingPonPortCountersControlTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF TroubleShootingPonPortCountersControlEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+	"A table to reset the dataplane troubleshooting counters on a PON port.
+        ALCATEL NOTE:
+        TABLESIZE:  DEP [dependent on max PONs per LT type per shelf]."  
+::= { troubleShootingPonCountersOnUserSide 2 }
+
+troubleShootingPonPortCountersControlEntry  OBJECT-TYPE
+    SYNTAX  TroubleShootingPonPortCountersControlEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the troubleShootingPonPortCountersControlTable.
+	The ifIndex indicates a PON port."
+	INDEX  { ifIndex}
+::= { troubleShootingPonPortCountersControlTable 1 }
+
+TroubleShootingPonPortCountersControlEntry::=
+    SEQUENCE {
+        troubleShootingPonPortCountersReset   INTEGER
+        }
+
+troubleShootingPonPortCountersReset   OBJECT-TYPE
+    SYNTAX   INTEGER {
+                      reset(1)
+                     }
+    ACCESS   write-only
+    STATUS   mandatory
+    DESCRIPTION
+        "The troubleshooting counters can be reset by using this variable. 
+	1 means to reset the counters.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NA           INSRVMOD:    NO
+            RANGE:       1            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { troubleShootingPonPortCountersControlEntry 1 }
+
+-- ============================================================================
+-- The following table was first introduced for MIB-readiness in ISAM5.0.
+-- The table is SUPPORTED as of ISAM5.0.01.
+-- The purpose of the table is to create/delete a set of PBit troubleshooting counters.
+-- As of ISAM5.0.01, a row monitoring point can be set as an ONT UNI (physical or virtual,
+-- excluding indvidual POTs UNIs).
+--
+-- The actual counter attributes associated with create/delete action are located in 
+-- the extendPortVlanPbitTroubleshootTable within the PLIM-MIB. 
+--
+-- Row are created/deleted by the manager.
+--
+-- ============================================================================
+
+troubleShootingPbitCounters    OBJECT IDENTIFIER ::= { troubleShootingMIB 5 }
+
+troubleShootingPbitObservationTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF TroubleShootingPbitObservationEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+         "A table containing control of per pbit troubleshooting counters on an ONT UNI. 
+          This table should be recovered at system reset. So ifIndex should be persistent data.
+         ALCATEL NOTE:
+            TABLESIZE:  DEP [depending on the value of max lim numbers of the system]"
+::= { troubleShootingPbitCounters 1 }
+
+
+troubleShootingPbitObservationEntry OBJECT-TYPE
+    SYNTAX  TroubleShootingPbitObservationEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the troubleShootingPbitObservationTable.
+As of ISAM5.0.01, the ifIndex represents an ONT UNI."
+INDEX  { ifIndex}
+
+::= { troubleShootingPbitObservationTable 1 }
+
+
+TroubleShootingPbitObservationEntry::=
+    SEQUENCE {
+         troubleShootingPbitRowStatus   RowStatus
+        }
+
+troubleShootingPbitRowStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    ACCESS   read-write
+    STATUS   mandatory
+    DESCRIPTION
+        "A troubleshooting pbit row entry can be created or deleted by
+        operator using this variable.
+        ifIndex is mandatory object for row creation/deletion.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NA           INSRVMOD:    NO
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+     ::= { troubleShootingPbitObservationEntry 1 }
+
+-- ============================================================================
+-- The following table was first introduced for MIB-readiness in ISAM5.0.
+-- The table is SUPPORTED as of ISAM5.0.01.
+-- The purpose of the table is to reset a set of PBit troubleshooting counters.
+--
+-- Rows are auto-created/deleted in association with same ifIndex used in above
+-- troubleShootingPbitObservationTable. 
+-- 
+-- ============================================================================
+
+
+troubleShootingPbitControlTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF TroubleShootingPbitControlEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+         "A table used to reset the pbit troubleshooting counters associated with an ONT UNI.
+         ALCATEL NOTE: Table rows are auto-created/deleted in context with associated row in
+		 troubleShootingPbitObservationTable.
+         ALCATEL NOTE:
+            TABLESIZE:    DEP [same as troubleShootingPbitObservationTable] "
+::= { troubleShootingPbitCounters 2 }
+
+
+troubleShootingPbitControlEntry OBJECT-TYPE
+    SYNTAX  TroubleShootingPbitControlEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the troubleShootingPbitControlTable.
+As of ISAM5.0.01, the ifIndex represents an ONT UNI."
+INDEX  { ifIndex}
+::= { troubleShootingPbitControlTable 1 }
+
+
+TroubleShootingPbitControlEntry::=
+    SEQUENCE {
+         troubleShootingPbitReset   INTEGER
+        }
+
+troubleShootingPbitReset   OBJECT-TYPE
+    SYNTAX   INTEGER { 
+                      reset(1) 
+                     }
+    ACCESS   write-only
+    STATUS   mandatory
+    DESCRIPTION
+        "The troubleshooting counters can be reset by using this variable. 
+	 1 means to reset the counters.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NA           INSRVMOD:    NO
+            RANGE:       1            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+     ::= { troubleShootingPbitControlEntry 1 }
+
+-- ============================================================================
+-- The following table was first introduced for MIB-readiness in ISAM5.6.
+-- The purpose of the table is to create/delete a set of QoS color troubleshooting counters.
+--
+-- The actual counter attributes associated with create/delete action are located in 
+-- the qosVlanPortColorTroubleshootTable within the QOS-MIB.mib. 
+-- ============================================================================
+troubleShootingColorCounters    OBJECT IDENTIFIER ::= { troubleShootingMIB 6 }
+
+troubleShootingColorObservationTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF TroubleShootingColorObservationEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+         "A table containing control of per QoS Color troubleshooting counters on an VLAN port. 
+          This table should be recovered at system reset. So ifIndex should be persistent data.
+         ALCATEL NOTE:
+            TABLESIZE:  DEP [depending on the value of max lim numbers of the system]"
+::= { troubleShootingColorCounters 1 }
+
+
+troubleShootingColorObservationEntry OBJECT-TYPE
+    SYNTAX  TroubleShootingColorObservationEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the troubleShootingColorObservationTable."
+INDEX  { ifIndex}
+
+::= { troubleShootingColorObservationTable 1 }
+
+
+TroubleShootingColorObservationEntry::=
+    SEQUENCE {
+         troubleShootingColorRowStatus   RowStatus
+        }
+
+troubleShootingColorRowStatus OBJECT-TYPE
+    SYNTAX   RowStatus
+    ACCESS   read-write
+    STATUS   mandatory
+    DESCRIPTION
+        "A troubleshooting QoS Color row entry can be created or deleted by
+        operator using this variable.
+        ifIndex is mandatory object for row creation/deletion.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NA           INSRVMOD:    NO
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+     ::= { troubleShootingColorObservationEntry 1 }
+
+
+troubleShootingColorControlTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF TroubleShootingColorControlEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+         "A table used to reset the QoS Color troubleshooting counters associated with an VLAN port.
+         ALCATEL NOTE: Table rows are auto-created/deleted in context with associated row in
+		 troubleShootingColorObservationTable.
+         ALCATEL NOTE:
+            TABLESIZE:    DEP [same as troubleShootingColorObservationTable] "
+::= { troubleShootingColorCounters 2 }
+
+
+troubleShootingColorControlEntry OBJECT-TYPE
+    SYNTAX  TroubleShootingColorControlEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the troubleShootingColorControlTable."
+INDEX  { ifIndex}
+::= { troubleShootingColorControlTable 1 }
+
+
+TroubleShootingColorControlEntry::=
+    SEQUENCE {
+         troubleShootingColorReset   INTEGER
+        }
+
+troubleShootingColorReset   OBJECT-TYPE
+    SYNTAX   INTEGER { 
+                      reset(1) 
+                     }
+    ACCESS   write-only
+    STATUS   mandatory
+    DESCRIPTION
+        "The troubleshooting counters can be reset by using this variable. 
+	 1 means to reset the counters.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NA           INSRVMOD:    NO
+            RANGE:       1            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+     ::= { troubleShootingColorControlEntry 1 }
+END

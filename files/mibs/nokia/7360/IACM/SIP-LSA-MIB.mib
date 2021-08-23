@@ -1,0 +1,1335 @@
+--===================================================================
+-- This specification is published by Nokia under Non-Disclosure
+-- Agreement(s) (NDA) with specific parties and has to be considered as
+-- Confidential Information as defined in such NDA.
+-- Nokia reserves the right to revise this document for any reason,
+-- including but not limited to conformity with standards promulgated by
+-- various agencies, utilization of advances in the state of the technical
+-- areas, or the reflection of changes in the design of any equipment,
+-- techniques, or procedures described or referred to herein.
+-- The product specifications and other technical or performance
+-- information contained herein are subject to change without notice.
+-- Updates of this document will be issued under the above NDA's.
+-- Nokia makes no representation or warranty, expressed or implied, with
+-- respect to the sufficiency, accuracy, or utility of any information or
+-- opinion contained herein. Nokia expressly advises that any use of for
+-- any purpose or reliance upon this technical reference is at the risk of
+-- the user and that Nokia shall not be liable for any damage or injury
+-- incurred by any person arising out of the sufficiency, accuracy, or
+-- utility of any information or opinion contained herein.
+-- This document is not to be construed as a suggestion to any manufacturer
+-- to modify or change any of its products, nor does this document
+-- represent any commitment by Nokia to sell or purchase any product.
+-- Nothing contained herein shall be construed as conferring by implication,
+-- estoppel, or otherwise any license or right under any patent, whether or
+-- not the use of any information herein necessarily employs an invention
+-- of any existing or later issued patent.
+-- Nokia reserves the right not to offer any or all of these products and
+-- to withdraw any or all of them at any future time.
+-- 
+-- Copyright (C) 2015, Nokia. All Rights Reserved.
+
+-- =============================================================================
+-- 
+-- CONTACT-INFO "Wang Wendy C"  <Email#:Wendy.C.Wang@alcatel-lucent.com>
+-- MODULE-IDENTITY
+-- LAST-UPDATED "2016-02-22"
+-- ORGANIZATION "Nokia"
+-- ORIGINATOR "Wang Wendy C"
+-- 
+-- Postal:
+-- SongLing Road No.169
+-- QingDao 
+-- China
+--
+-- ====================================================================
+-- HISTORY:
+-- REVISION "201610210000Z"
+-- DESCRIPTION
+--    Version: based on changeset
+--    Editor: Sally Duan (sally.duan@alcatel-lucent.com)
+--    Changes:
+--    For RCR ALU02192142 : ISAM-V/7363 Standalone SIP Emergency Call support
+--       Add new table sipLSAEmergServiceTable and sipLSAEmergServiceMappingTable
+-- ===================================================================
+-- November 2015: Created by Wang Wendy C(Email#Wendy.C.Wang@alcatel-lucent.com)
+-- 
+-- Date: Nov., 2015 - Realease1 PROPOSAL 01
+-- Editor: Wang Wendy C 
+--
+-- ============================================================================
+SIP-LSA-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+                InetAddressType, InetAddress, InetAddressPrefixLength,InetPortNumber    
+                        FROM INET-ADDRESS-MIB            
+                EqptSlotIndex
+                        FROM ASAM-EQUIP-MIB
+                OBJECT-TYPE            
+                        FROM RFC-1212
+                RowStatus
+                        FROM SNMPv2-TC            
+                asam            
+                        FROM SYSTEM-MIB;
+
+-- ****************************************************************************
+--  
+-- .iso.org.dod.internet.private.enterprises.alcatel.asd.asam.asamsipLSAServerMIB
+-- (.1.3.6.1.4.1.637.61.1.65)
+-- 
+-- =============================================================================
+asamSipLSAServerMIB OBJECT IDENTIFIER ::= { asam 65 }
+
+-- =============================================================================
+-- NEXT FREE SIP LSA SERVER INSTANCE ID 
+-- =============================================================================
+sipLSAServerInstanceIdNext OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The next free LSA SIP Server instance index 
+                Should a next free SIP server instance index be requested while no free sip server instance index is
+                available anymore, the system will return a genErr response.
+                ALCATEL-LUCENT NOTE:
+                ACCESS:    read-only
+                USAGE:    NA
+                PERSIST:    NO 
+                INSRVMOD: NA
+                RANGE: (1..8)    
+                DEFVALUE:    NA
+                UNITS:    NA
+                SPARSE:     NO
+                "
+        ::=  { asamSipLSAServerMIB 1 }
+
+-- =============================================================================
+-- NEXT FREE SIP LSA SERVER SYSTEM ID 
+-- =============================================================================
+sipLSAServerSystemIdNext OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The next free SIP LSA server system identifier.
+                Should an a next free SIP LSA server system index be requested while no free sip LSA server system index is
+                found, the system will return a genErr response.
+                
+                7302/7330 ISAM FTTN : Supported
+                7363 MX : Supported
+                7367 SX : Not supported
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:	READ-ONLY
+                USAGE:   NA
+                PERSIST: NO
+                INSRVMOD: NA
+                RANGE:    1
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:      NO
+                "
+        ::= { asamSipLSAServerMIB 2 }
+
+-- =============================================================================
+-- SIP LSA SERVER SYSTEM  MAPPING TABLE.
+-- =============================================================================
+
+sipLSAServerSystemMappingTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF SipLSAServerSystemMappingEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The operator friendly LSA server system name to unique internal identifier mapping table.
+
+            7302/7330 ISAM FTTN : Supported
+            7363 MX : Supported
+            7367 SX: Not Supported
+
+            ALCATEL NOTE:
+            TABLESIZE: 1
+            DESCR:NA."
+        ::= { asamSipLSAServerMIB 3 }
+		
+sipLSAServerSystemMappingEntry OBJECT-TYPE
+        SYNTAX SipLSAServerSystemMappingEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "An entry in the sipLSAServerSystemMappingTable.
+                 An entry is auto-created upon the creation of an entry in the sipLSAServerTable.
+                 An entry is auto-deleted upon the deletion of an entry in the sipLSAServerTable.
+			"
+        INDEX { sipLSAServerSystemMappingName }
+        ::= { sipLSAServerSystemMappingTable 1 }
+
+SipLSAServerSystemMappingEntry ::=
+        SEQUENCE {
+                sipLSAServerSystemMappingName              OCTET STRING,
+                sipLSAServerSystemMappingId                INTEGER	
+        }	
+
+sipLSAServerSystemMappingName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..32))
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                " The operator friendly name for this LSA server System.
+
+                 ALCATEL-LUCENT NOTE:
+                 ACCESS:		READ-ONLY
+                 USAGE:		MANDATORY
+                 PERSIST:		NO	
+                 INSRVMOD:	NO 
+                 RANGE:		SIZE (0..32)
+                 DEFVALUE:	NA
+                 UNITS:		NA	
+                 SPARSE:		NO			
+			"
+        ::= { sipLSAServerSystemMappingEntry 1 }
+
+sipLSAServerSystemMappingId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION
+                "The unique internal identifier of this LSA server system.
+
+                 ALCATEL-LUCENT NOTE:
+                 ACCESS:		READ-ONLY
+                 USAGE:		MANDATORY
+                 PERSIST:		NO 
+                 INSRVMOD:	NO
+                 RANGE:		1
+                 DEFVALUE: 	NA
+                 UNITS:          NA
+                 SPARSE:         NO
+                 "
+         ::= { sipLSAServerSystemMappingEntry 2 }
+
+
+-- =============================================================================
+-- SIP LSA SERVER SYSTEM  TABLE.
+-- =============================================================================
+
+sipLSAServerSystemTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF SipLSAServerSystemEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The MIB allows to activate/de-activate the LSA server feature at the 7302/7330 NVPS-C / 7363 MX NT. 
+                In addition, this CLI command also allows to configure the country Code and area Code.
+                Both codes are a mandatory input as the LSA server uses these codes to complete the DN
+                present in an incoming SIP INVITE request, as to be able to compare the incoming DN with
+                the DNs of the local subscribers stored in its local register table (as a result of the local
+                subscriber registrations.)
+
+                7302/7330 ISAM FTTN : Supported
+                7363 MX : Supported
+                7367 SX : Not supported
+
+                ALCATEL NOTE:
+                    SUPPORT: YES   TABLESIZE: 1"
+
+        ::=  { asamSipLSAServerMIB 4 }
+
+sipLSAServerSystemEntry OBJECT-TYPE
+        SYNTAX SipLSAServerSystemEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "An entry in the sipLSAServerSystemTable.
+
+                ALCATEL NOTE:
+                SUPPORT: YES
+                "
+        INDEX {sipLSAServerSystemId}
+        ::=  { sipLSAServerSystemTable 1 }
+
+
+        SipLSAServerSystemEntry::= SEQUENCE {
+                sipLSAServerSystemId                  INTEGER,	
+                sipLSAServerSystemName                OCTET STRING,	
+                sipLSAServerSystemSlotId              EqptSlotIndex,
+                sipLSAServerSystemCountryCode         OCTET STRING,
+                sipLSAServerSystemAreaCode            OCTET STRING,
+                sipLSAServerSystemAdminStatus         INTEGER,
+                sipLSAServerSystemOperStatus          INTEGER,
+                sipLSAServerSystemRowStatus           RowStatus
+          }
+
+sipLSAServerSystemId OBJECT-TYPE    
+        SYNTAX INTEGER 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The unique internal identifier of a LSA server system
+
+            ALCATEL-LUCENT NOTE:
+            ACCESS:             READ-ONLY
+            USAGE: 		MANDATORY
+            PERSIST: 		YES
+            INSRVMOD:           NO
+            RANGE:              1
+            DEFVALUE:           NA
+            UNITS:              NA
+            SPARSE:             NO
+        "
+        ::= { sipLSAServerSystemEntry 1 }
+
+sipLSAServerSystemName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..32))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The unique name of a LSA server system
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:		READ-WRITE
+                USAGE: 		MANDATORY
+                PERSIST:		YES
+                INSRVMOD:	NO
+                RANGE:		SIZE (1..32)
+                DEFVALUE:	NA
+                UNITS:		NA
+                SPARSE:         NO
+                "
+        ::= { sipLSAServerSystemEntry 2 }
+
+
+sipLSAServerSystemSlotId OBJECT-TYPE
+        SYNTAX EqptSlotIndex
+        ACCESS read-write 
+        STATUS mandatory
+        DESCRIPTION
+                "A unique value identifing the slot position of the board at which the LSA server is hosted.
+                7302/7330 : slot id of the NVPS-C board.
+                7363 : slot id of the NT board.     
+
+                ALCATEL NOTE:
+                ACCESS :     read-write
+                USAGE:       mandatory
+                PERSIST:     YES
+                INSRVMOD:    NO
+                RANGE:       NA
+                DEFVALUE:    NA 
+                UNITS:       NA
+                SPARSE:      NO
+               "
+        ::= { sipLSAServerSystemEntry 3 }
+
+sipLSAServerSystemCountryCode OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..32))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                " The country Code is the E.164 country calling code that will be used by the LSA server to
+                complete the DN received in an incoming SIP INVITE request. 
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:         read-write 
+                USAGE:          mandatory 
+                PERSIST:        YES
+                INSRVMOD:       NO
+                RANGE:          SIZE (1..32)
+                DEFVALUE:       NA 
+                UNITS:          NA
+                SPARSE:         NO
+                "
+       ::= { sipLSAServerSystemEntry 4 }
+
+sipLSAServerSystemAreaCode OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..32))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The area code i.e. the numeric routing code, that will be used by the LSA server to
+                complete the DN received in an incoming SIP INVITE request.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:         read-write 
+                USAGE:          mandatory 
+                PERSIST:        YES
+                INSRVMOD:       NO
+                RANGE:          SIZE (1..32)
+                DEFVALUE:       NA 
+                UNITS:          NA
+                SPARSE:         NO
+                "
+       ::= { sipLSAServerSystemEntry 5 }
+
+sipLSAServerSystemAdminStatus OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+                up(1),
+                down(2)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The administrative status of the LSA server feature. It allows to activate/de-activate the 
+                LSA server feature.
+
+                Also when the admin-status is set to :
+                UP (1) : the attributes of this entry that are defined with INSRVMOD=YES can be modified.
+                DOWN (2): the attributes of this entry that are defined with INSRVMOD=YES and the
+                attributes that are defined with INSRVMOD = NO can be modified. 
+                Note that the attributes of the same entry that are defined with INSRVMOD=NA cannot be
+                modified after creation.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS: read-write
+                USAGE:  OPT
+                PERSIST:        YES
+                INSRVMOD:       YES
+                RANGE:  1 | 2
+                DEFVALUE:       down
+                UNITS:  NA
+                SPARSE: NO
+                "
+        ::= { sipLSAServerSystemEntry 6 }
+
+sipLSAServerSystemOperStatus OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+                up(1),
+                down(2)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The operational status of the LSA server.
+                The operational state shall be 'down' when the LSA server feature is disabled(sipLSAServerSystemAdminStatus = down).    
+                The operational state shall be 'up' when the LSA server feature is enabled (sipLSAServerSystemAdminStatus = up).
+        
+                ALCATEL-LUCENT NOTE:
+                ACCESS: read-only
+                USAGE: NA 
+                PERSIST:       NO 
+                INSRVMOD:      NA
+                RANGE:  1 | 2
+                DEFVALUE: NA
+                UNITS:  NA
+                SPARSE: NO
+                "
+         ::= { sipLSAServerSystemEntry 7 }
+
+sipLSAServerSystemRowStatus OBJECT-TYPE
+         SYNTAX RowStatus
+         ACCESS read-write
+         STATUS mandatory
+         DESCRIPTION
+            "The status of this conceptual row.
+             The RowStatus TC requires that this DESCRIPTION clause states under which circumstances
+             other objects in this row can be modified.  The value of this object has no effect on
+             whether other objects in this conceptual row can be modified.
+             A conceptual row can always be made active.
+
+               ALCATEL-LUCENT NOTE:
+               ACCESS: 	    read-write	
+               USAGE:  		MANDATORY
+               PERSIST:       YES
+               INSRVMOD:    YES
+               RANGE:  		1 | 4 | 6       -- active (1), createAndGo (4), destroy (6)
+               DEFVALUE:     NA
+               UNITS:  		NA
+               SPARSE: 		NO
+             "
+         ::= { sipLSAServerSystemEntry 8 }
+
+-- =============================================================================
+-- Sip LSA Server Mapping  Table.
+-- =============================================================================
+
+sipLSAServerMappingTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF SipLSAServerMappingEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The operator friendly LSA server name to unique internal identifier mapping table.
+
+                7302/7330 ISAM FTTN : Supported
+                7363 MX : Supported
+                7367 SX: Not Supported
+
+                ALCATEL NOTE: 
+                TABLESIZE: 8
+                DESCR:NA."
+        ::= { asamSipLSAServerMIB 5 }
+        
+sipLSAServerMappingEntry OBJECT-TYPE
+        SYNTAX SipLSAServerMappingEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "An entry in the sipLSAServerMappingTable.
+                 An entry is auto-created upon the creation of an entry in the sipLSAServerInstanceTable.
+                 An entry is auto-deleted upon the deletion of an entry in the sipLSAServerInstanceTable.
+                 "
+        INDEX { sipLSAServerInstanceMappingName }
+        ::= { sipLSAServerMappingTable 1 }
+
+        SipLSAServerMappingEntry ::=
+        SEQUENCE { 
+                sipLSAServerInstanceMappingName        OCTET STRING,
+                sipLSAServerInstanceMappingId          INTEGER    
+        }    
+
+sipLSAServerInstanceMappingName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..32))
+        ACCESS not-accessible 
+        STATUS mandatory 
+        DESCRIPTION
+                " The operator friendly name for this LSA server instance
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:   read-only    
+                USAGE:    NA 
+                PERSIST:  NO    
+                INSRVMOD: NO 
+                RANGE:    SIZE (0..32)
+                DEFVALUE: NA
+                UNITS:    NA    
+                SPARSE:   NO            
+                "
+        ::= { sipLSAServerMappingEntry 1 }
+
+sipLSAServerInstanceMappingId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The unique internal identifier of this LSA server.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS: read-only    
+                USAGE:  NA 
+                PERSIST:NO
+                INSRVMOD:NO
+                RANGE:    (1..8)
+                DEFVALUE:     NA
+                UNITS:    NA
+                SPARSE: NO
+                "
+        ::= { sipLSAServerMappingEntry 2 }
+
+
+-- =============================================================================
+-- Sip LSA Server Instance Table.
+-- =============================================================================
+sipLSAServerInstanceTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF SipLSAServerInstanceEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "This table allows to configure the LSA server instance attributes.
+                Maximum 8 entries can be created in this table. (Although max 16 SERVICE GATEWAYs can be supported)
+                For Service Gateways that share the same signaling VLAN, a single LSA server instance entry 
+                must be created. Or in other words, Service Gateways that share the same signaling VLAN share 
+                the same LSA server instance and the same LSA server signaling IP address / LSA server signaling UDP port.
+
+                7302/7330 ISAM FTTN: Supported
+                7363 MX: Supported
+                7367 SX: Not Supported
+
+                ALCATEL NOTE:
+                TABLESIZE: 8
+                DESCR: NA.
+                "
+         ::= { asamSipLSAServerMIB 6 }
+
+sipLSAServerInstanceEntry OBJECT-TYPE
+         SYNTAX SipLSAServerInstanceEntry
+         ACCESS not-accessible
+         STATUS mandatory
+         DESCRIPTION
+                 "An entry in the sipLSAServerInstanceTable."
+         INDEX { sipLSAServerInstanceId }
+         ::= { sipLSAServerInstanceTable 1 }
+
+        SipLSAServerInstanceEntry ::=
+        SEQUENCE { 
+                sipLSAServerInstanceId            INTEGER,
+                sipLSAServerInstanceName          OCTET STRING,
+                sipLSAServerInstanceSlotId        INTEGER,
+                sipLSAServerInstanceAddrType      InetAddressType,
+                sipLSAServerInstanceSignAddr      InetAddress,
+                sipLSAServerInstancePrefixLength  InetAddressPrefixLength,
+                sipLSAServerInstanceSignPort      InetPortNumber,
+                sipLSAServerInstanceAdminStatus   INTEGER,
+                sipLSAServerInstanceRowStatus     RowStatus,
+                sipLSAServerInstanceSignVlan      INTEGER,
+                sipLSAServerInstanceSignGateway   InetAddress,
+                sipLSAServerInstanceSgDomName     OCTET STRING,
+                sipLSAServerInstanceMD5Realm      OCTET STRING,
+                sipLSAServerInstanceMD5Password   OCTET STRING,
+		        sipLSAServerInstanceOperStatus    INTEGER
+        }
+
+sipLSAServerInstanceId OBJECT-TYPE
+         SYNTAX INTEGER
+         ACCESS read-only
+         STATUS mandatory
+         DESCRIPTION
+                  "The unique internal identifier of a LSA server instance
+
+                  ALCATEL-LUCENT NOTE:
+                  ACCESS: read-write
+                  USAGE:  mandatory
+                  PERSIST:        YES
+                  INSRVMOD: NO
+                  RANGE:  (1..8)
+                  DEFVALUE:       NA
+                  UNITS:  NA
+                  SPARSE: NO
+                 "
+        ::= { sipLSAServerInstanceEntry 1 }
+
+sipLSAServerInstanceName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..32))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The operator friendly name of the LSA server instance
+                This name must be unique across all entries of the sipLSAServerInstanceTable.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:        read-write 
+                USAGE:         mandatory
+                PERSIST:       YES
+                INSRVMOD:      NO 
+                RANGE:         SIZE (1..32)
+                DEFVALUE:      NA
+                UNITS:         NA
+                SPARSE:        NO
+               "
+         ::= { sipLSAServerInstanceEntry 2 }
+
+sipLSAServerInstanceSlotId OBJECT-TYPE
+        SYNTAX INTEGER (1..65535) 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "7302/7330 ISAM FTTN :
+                The slot position of the NVPS-C at which the LSA server instance is hosted. 
+                7363 MX :
+                The slot id of the NT board
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:   read-write 
+                USAGE:    mandatory
+                PERSIST:  YES
+                INSRVMOD: NO
+                RANGE:    NA
+                DEFVALUE: NA
+                UNITS:    NA      
+                SPARSE:   NO      
+               "
+        ::= { sipLSAServerInstanceEntry 3 }
+
+sipLSAServerInstanceAddrType OBJECT-TYPE
+        SYNTAX InetAddressType
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The IP Address type of the sipLSAServerInstanceAddr and sipLSAServerInstanceDefaultGw objects.
+                Only the 'IPV4' IP address type is supported. 
+                Ipv4(1) : An Ipv4 address as defined by the InetAddressIPv4 textual convention.
+                                                     
+                 ALCATEL-LUCENT NOTE:
+                     ACCESS:      read-write 
+                     USAGE:       OPT                             
+                     PERSIST:     YES
+                     INSRVMOD:    NO
+                     RANGE:       1 =======only ipv4(1) 
+                     DEFVALUE:    1
+                     UNITS:       NA
+                     SPARSE:      NO
+                  "
+        ::= { sipLSAServerInstanceEntry 4 }
+
+sipLSAServerInstanceSignAddr OBJECT-TYPE
+        SYNTAX InetAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                " The signaling IP Address of the LSA server instance.
+
+               ALCATEL-LUCENT NOTE:
+               ACCESS: read-write 
+               USAGE:  mandatory
+               PERSIST:        YES
+               INSRVMOD:       NO
+               RANGE:  NA
+               DEFVALUE:       NA
+               UNITS:  NA
+               SPARSE: NO
+                "
+        ::= { sipLSAServerInstanceEntry 5 }
+
+sipLSAServerInstancePrefixLength OBJECT-TYPE
+        SYNTAX InetAddressPrefixLength
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                " The subnet mask of the signaling IP Address of the LSA server instance.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS: read-write 
+                USAGE:  mandatory
+                PERSIST:        YES 
+                INSRVMOD:       NO  
+                RANGE:  NA  
+                DEFVALUE:       NA  
+                UNITS:  NA  
+                SPARSE: NO
+                "   
+        ::= { sipLSAServerInstanceEntry 6 }
+
+sipLSAServerInstanceSignPort OBJECT-TYPE
+        SYNTAX InetPortNumber
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                " The listen and source port of the LSA server instance.
+                The listen port (incoming SIP requests) and source port (outgoing SIP requests) have always the same port ID.
+                Service Gateways that share the same signaling VLAN, also share the same LSA server signaling UDP port
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:  read-write
+                USAGE:   OPT             
+                PERSIST: YES
+                INSRVMOD:NO
+                RANGE:   NA
+                DEFVALUE:5060
+                UNITS:   NA
+                SPARSE:  NO              
+                "
+        ::= { sipLSAServerInstanceEntry 7 }
+
+sipLSAServerInstanceAdminStatus OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+                up(1),
+                down(2)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The administrative status of this LSA server instance.
+                When the LSA server instance admin status is changed to 'disabled' the following actions
+                are taken :
+                - The LSA server service for this LSA server instance is immediately stopped.
+                - All calls and call attempts ongoing for this LSA server instance are aborted.
+                - All terminations registered to this LSA server instance are de-registered.
+
+                Also when the LSA server instance admin status is set to : 
+                UP (1) : The LSA server instance becomes accessible by the Voice LT board SIP UA.
+                The attributes of this entry that are defined as INSRVMOD=YES can be modified.
+                DOWN (2) : The LSA server instance can no longer be accessed by the voice LT board SIP UA.
+                The attributes of this entry that are defined as INSRVMOD=YES and the attributes that
+                defined as INSRVMOD=NO can be modified.
+                Note that the attributes that are indicated INSRVMOD=NA cannot be modified
+                after creation.
+
+
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS: read-write 
+                USAGE:  OPT             
+                PERSIST:        YES
+                INSRVMOD:       YES
+                RANGE:  1 | 2
+                DEFVALUE:       down(2)
+                UNITS:  NA      
+                SPARSE: NO
+                "
+         ::= { sipLSAServerInstanceEntry 8 }
+
+sipLSAServerInstanceRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The status of this conceptual row.
+                The RowStatus TC requires that this DESCRIPTION clause states under which circumstances
+                other objects in this row can be modified.  The value of this object has no effect on
+                whether other objects in this conceptual row can be modified.
+                A conceptual row can always be made active.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS: read-write 
+                USAGE:  mandatory
+                PERSIST:        NO
+                INSRVMOD:       YES
+                RANGE:  1 | 4 | 6       -- active (1), createAndGo (4), destroy (6)
+                DEFVALUE:       NA
+                UNITS:  NA
+                SPARSE: NO
+                "
+        ::= { sipLSAServerInstanceEntry 9 }
+
+sipLSAServerInstanceSignVlan OBJECT-TYPE
+        SYNTAX INTEGER (1..4093) 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                " The VLAN ID of the signaling VLAN used by this LSA server instance.
+                The VLAN ID must be the same as the signaling VLAN ID configured for the SIP UA(s) that
+                address this server instance as their LSA server.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS: read-write
+                USAGE:  mandatory                    
+                PERSIST:        YES
+                INSRVMOD:       NO
+                RANGE:  NA
+                DEFVALUE:       NA
+                UNITS:  NA      
+                SPARSE: NO                      
+              "
+        ::= { sipLSAServerInstanceEntry 10 }
+
+sipLSAServerInstanceSignGateway OBJECT-TYPE
+     SYNTAX InetAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "The IP address of the LSA server instance default signaling gateway.
+         This object is irrelevant in case the LSA server instance serves the local node only or 
+         in case the LSA server instance serves a clustered node topology whereby all nodes
+         are connected via a L2 Network. 
+
+         ALCATEL-LUCENT NOTE:
+             ACCESS: read-write
+             USAGE:  MAND            
+             PERSIST:        YES
+             INSRVMOD:       NO
+             RANGE:  NA
+             DEFVALUE:  0.0.0.0
+             UNITS:  NA              
+             SPARSE: NO                                              
+          "
+  ::= { sipLSAServerInstanceEntry 11 }
+
+sipLSAServerInstanceSgDomName OBJECT-TYPE
+        SYNTAX OCTET STRING
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The name of the SERVICE GATEWAY  or SERVICE GATEWAYS (in case
+                multiple Service Gateways share the same LSA server instance) associated with
+                this LSA server instance. This field is considered as pure informative for the
+                operator. 
+
+                 ALCATEL-LUCENT NOTE:
+                 ACCESS: read-write
+                 USAGE: mandatory 
+                 PERSIST:        YES
+                 INSRVMOD:       NO
+                 RANGE:  SIZE(0..32)
+                 DEFVALUE: vsp1 
+                 UNITS:  NA              
+                 SPARSE: NO                                              
+                 "
+        ::= { sipLSAServerInstanceEntry 12 }
+
+sipLSAServerInstanceMD5Realm OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..64))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The MD5 realm that allows a SIP termination to register to this LSA server instance.
+                The same MD5 realm must be configured at the access node/SIP User Agent that is
+                associated with this LSA server instance and that is responsible to initiate the registration
+                request for the SIP terminations to which this LSA server instance ha sbeen assigned.
+                The LSA server instance uses the configured MD5 password together with a hard-coded string and
+                the parameters [MD5 realm, Authentication scheme, Algorithm, QOP, Opaque Value and a Nonce Value
+                generated by the LSA server instance) to generate the authentication key that is then compared with
+                the Digest Authentication response in the SIP REGISTER request.
+                In case the result is negative, the registration request is rejected with a 403 response.
+                When the MD5 parameters are configured for the LSA server instance then the incoming register
+                requests will be challenged. In order for the incoming register request to be successful,
+                the MD5 parameters must also been correctly configured at the access node side.
+                When the MD5 parameters are not configured for the LSA server instance then no challenge
+                will be done for incoming register requests and this regardless of the MD5 parameters being
+                configured at the access node side or not.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:         NA
+                USAGE:          OPT
+                PERSIST:        YES
+                INSRVMOD: 	NO
+                RANGE:          SIZE (0..64)
+                DEFVALUE:       null
+                UNITS:          NA
+                SPARSE:         NO
+               "
+      ::= { sipLSAServerInstanceEntry 13 }
+
+    sipLSAServerInstanceMD5Password OBJECT-TYPE
+       SYNTAX OCTET STRING (SIZE (0..64))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+       	        "The MD5 password that allows a SIP termination to register to this LSA server instance.
+        	    The MD5 password cannot be displayed via a CLI show command; Upon configuration it is
+                encrypted based on the DES-CBC algorithm.
+                As authentication intends to avoid DOS attacks as well as a SIP termination to register to the
+                wrong LSA server instance i.e the LSA server instance that wasn¡¯t assigned to that SIP termination,
+                it is preferred to configure a different MD5 Password for each LSA server instance.
+                The same MD5 password must be configured at the access node/SIP User Agent that is
+                associated with this LSA server instance and that is responsible to initiate the registration
+                request for the SIP terminations to which this LSA server instance has been assigned.
+                The LSA server instance uses the configured MD5 password together with a hard-coded string and
+                the parameters [MD5 realm, Authentication scheme, Algorithm, QOP, Opaque Value and a Nonce Value
+                generated by the LSA server instance) to generate the authentication key that is then compared with
+                the Digest Authentication response in the SIP REGISTER request.
+                In case the result is negative, the registration request is rejected with a 403 response.
+                When the MD5 parameters are configured for the LSA server instance then the incoming register
+                requests will be challenged. In order for the incoming register request to be successful,
+                the MD5 parameters must also been correctly configured at the access node side.
+                When the MD5 parameters are not configured for the LSA server instance then no challenge
+                will be done for incoming register requests and this regardless of the MD5 parameters being
+                configured at the access node side or not.
+
+                        ALCATEL-LUCENT NOTE:
+                        ACCESS:     read-write		
+                        USAGE: 		OPT
+                        PERSIST:		YES
+                        INSRVMOD: 	NO
+                        RANGE:  	SIZE (0..64)
+                        DEFVALUE:   null
+                        UNITS:  		NA
+                        SPARSE: 		NO
+         "
+        ::= { sipLSAServerInstanceEntry 14 }
+
+sipLSAServerInstanceOperStatus OBJECT-TYPE
+   	 	SYNTAX INTEGER
+   	 		{
+      	 		up(1),
+      	 		down(2)
+   	 	}
+   	 	ACCESS read-only
+   	 	STATUS mandatory
+   	 	DESCRIPTION
+   		"The operational status of the LSA server instance.
+
+                +=====================+=====================+=====================+=====================+
+                |    LSA Server       |  LSA Server         | LSA Server Instance | LSA Server Instance |
+                |   admin-status      |  oper-status        |     admin-status    |     oper-status     |
+                +=====================+=====================+=====================+=====================+
+                |                     |                     |        UP           |         UP          |
+                |        UP           |        UP           +=====================+=====================+
+                |                     |                     |       DOWN          |        DOWN         |
+                +=====================+=====================+=====================+=====================+ 
+                |                     |                     |        UP           |        DOWN         |
+                |       DOWN          |       DOWN          +=====================+=====================+
+                |                     |                     |       DOWN          |        DOWN         |
+                +=====================+=====================+=====================+=====================+
+    
+    		ALCATEL-LUCENT NOTE:
+    		ACCESS: 			READ-ONLY
+    		USAGE:  			NA
+    		PERSIST:        	NO
+    		INSRVMOD: 		NA
+    		RANGE:  			1 | 2
+    		DEFVALUE: 		down(2)
+    		UNITS:  			NA
+    		SPARSE: 			NO
+    		"
+   		::= { sipLSAServerInstanceEntry 15 }
+
+-- =============================================================================
+-- NEXT FREE SIP LSA EMRGENCY SERVICE ID
+-- =============================================================================
+sipLSAEmergServiceIdNext OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The next free SIP emergency service index
+                Should a free emergency service index be requested while no free emergency service index is
+                available anymore, the system will return a genErr response.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:      read-only
+                USAGE:       NA
+                PERSIST:     NO
+                INSRVMOD:    NA
+                RANGE:       (1..128)
+                DEFVALUE:    NA
+                UNITS:       NA
+                SPARSE:      NO
+                "
+        ::=  { asamSipLSAServerMIB 7 }
+
+-- =============================================================================
+-- SIP LSA EMERGENCY SERVICE  MAPPING TABLE.
+-- =============================================================================
+
+sipLSAEmergServiceMappingTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF SipLSAEmergServiceMappingEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The emergency service directory number & emergency center gateway directory number
+            to unique internal identifier mapping table.
+            The emergency center gateway directory number i.e. the DN of the emergency center to which the
+            emergency call received by the LSA server is to be addressed.
+            The configured emergency center DN only includes the subscriber number
+            This means that it is not allowed to include the
+                    -international call prefix 00
+                    -the '+' sign
+                    -the country code
+                    -the area code.
+            in the configured emergency center DN. 
+            7302/7330 ISAM FTTN : Supported
+            7363 MX : Supported
+            7367 SX: Not Supported
+
+            ALCATEL NOTE: 
+            TABLESIZE: 128 (16 VSG x 8 emergency service entries)
+            DESCR:NA."
+        ::= { asamSipLSAServerMIB 8 }
+		
+sipLSAEmergServiceMappingEntry OBJECT-TYPE
+        SYNTAX SipLSAEmergServiceMappingEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "An emergency service DN with an emergency center gateway DN to unique internal index mapping table.
+            An entry is auto-created upon the creation of an entry in the sipLSAEmergServiceTable.
+            An entry is auto-deleted upon the deletion of an entry in the sipLSAEmergServiceTable.
+			"
+        INDEX { sipLSAEmergServiceMappingDN,sipLSAEmergServiceMappingGatewayDN}
+        ::= { sipLSAEmergServiceMappingTable 1 }
+
+SipLSAEmergServiceMappingEntry ::=
+        SEQUENCE { 
+                sipLSAEmergServiceMappingDN                OCTET STRING,
+                sipLSAEmergServiceMappingGatewayDN         OCTET STRING,
+                sipLSAEmergServiceMappingId                INTEGER	
+        }	
+
+sipLSAEmergServiceMappingDN OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..8))
+        ACCESS not-accessible 
+        STATUS mandatory 
+        DESCRIPTION
+                " The emergency service directory number
+
+                 ALCATEL-LUCENT NOTE:
+                 ACCESS:      READ-ONLY
+                 USAGE:       MANDATORY
+                 PERSIST:     NO 
+                 INSRVMOD:    NO
+                 RANGE:       SIZE (1..8)
+                 DEFVALUE:    NA
+                 UNITS:       NA	
+                 SPARSE:      NO			
+			"
+        ::= { sipLSAEmergServiceMappingEntry 1 }
+
+sipLSAEmergServiceMappingGatewayDN OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..32))
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The directory number of the emergency service center to which the emergency call received by the 
+            LSA server is to be addressed.
+            The configured emergency center DN only includes the subscriber number
+            This means that it is not allowed to include the
+                    -international call prefix 00
+                    -the '+' sign
+                    -the country code
+                    -the area code.
+            in the configured emergency center DN. 
+
+            ALCATEL-LUCENT NOTE:
+            ACCESS:      READ-ONLY
+            USAGE:       MANDATORY
+            PERSIST:     NO 
+            INSRVMOD:    NO
+            RANGE:       SIZE (1..32)
+            DEFVALUE:    NA
+            UNITS:       NA
+            SPARSE:      NO
+            "
+        ::= { sipLSAEmergServiceMappingEntry 2 }
+
+sipLSAEmergServiceMappingId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The unique internal identifier of this emergency service mapping entry.
+
+                 ALCATEL-LUCENT NOTE:
+                 ACCESS:      READ-ONLY
+                 USAGE:       MANDATORY
+                 PERSIST:     NO 
+                 INSRVMOD:    NO
+                 RANGE:       (1..128)
+                 DEFVALUE:    NA
+                 UNITS:       NA
+                 SPARSE:      NO
+                 "
+        ::= { sipLSAEmergServiceMappingEntry 3 }
+
+-- =============================================================================
+-- SIP LSA EMERGENCY SERVICETABLE.
+-- =============================================================================
+
+sipLSAEmergServiceTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF SipLSAEmergServiceEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "This table allows to configure the LSA Emergency Services.
+            Maximum 128 entries can be created in this table. Each entry can map one emergency directory
+            number to one emergency service center (gateway directory number).
+            The configured emergency center DN only includes the subscriber number
+            This means that it is not allowed to include the
+                    -international call prefix 00
+                    -the '+' sign
+                    -the country code
+                    -the area code.
+            in the configured emergency center DN. 
+                7302/7330 ISAM FTTN : Supported
+                7363 MX : Supported
+                7367 SX : Not supported
+
+            ALCATEL NOTE:
+            TABLESIZE: 128 (16 VSG x 8 emergency service entries)
+            DESCR: NA.
+            "
+        ::=  { asamSipLSAServerMIB 9 }
+
+sipLSAEmergServiceEntry OBJECT-TYPE
+        SYNTAX SipLSAEmergServiceEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "An entry in the sipLSAEmergServiceTable.
+
+                ALCATEL NOTE:
+                SUPPORT: YES
+                "
+        INDEX {sipLSAEmergServiceId}
+        ::=  { sipLSAEmergServiceTable 1 }
+
+
+        SipLSAEmergServiceEntry::= SEQUENCE {
+                sipLSAEmergServiceId                  INTEGER,	
+                sipLSAEmergServiceName                OCTET STRING,
+                sipLSAEmergServiceDN                  OCTET STRING,
+                sipLSAEmergServiceServerSlotId        INTEGER,
+                sipLSAEmergServiceGtwyDN              OCTET STRING,
+                sipLSAEmergServiceRowStatus           RowStatus,
+                sipLSAEmergServiceVsgName             OCTET STRING,
+                sipLSAEmergServiceStatus              INTEGER
+          }
+
+sipLSAEmergServiceId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The unique internal identifier of a LSA Emergency Service
+
+            ALCATEL-LUCENT NOTE:
+            ACCESS:      READ-ONLY
+            USAGE:       MANDATORY
+            PERSIST:     YES
+            INSRVMOD:    NO
+            RANGE:       (1..128)
+            DEFVALUE:    NA
+            UNITS:       NA
+            SPARSE:      NO
+            "
+        ::= { sipLSAEmergServiceEntry 1 }
+
+sipLSAEmergServiceName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..32))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The operator friendly name of the LSA emergency service
+                It should be unique amongst different emergency services.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:      READ-WRITE
+                USAGE:       OPT	
+                PERSIST:     YES
+                INSRVMOD:    NO
+                RANGE:       SIZE (0..32)
+                DEFVALUE:    NULL
+                UNITS:       NA
+                SPARSE:      NO
+                "
+        ::= { sipLSAEmergServiceEntry 2 }
+
+sipLSAEmergServiceDN OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..8))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The emergency directory number of this LSA emergency service.
+                 Each emergency directory number can be mapped to multiple gateway directory number
+                 registered at the same LSA server.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:      read-write
+                USAGE:       mandatory
+                PERSIST:     YES
+                INSRVMOD:    NO
+                RANGE:       SIZE (1..8)
+                DEFVALUE:    NA
+                UNITS:       NA
+                SPARSE:      NO
+                "
+        ::= { sipLSAEmergServiceEntry 3 }
+
+sipLSAEmergServiceServerSlotId OBJECT-TYPE
+        SYNTAX INTEGER (1..65535)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "7302/7330 ISAM FTTN :
+                The slot position of the NVPS-C at which the LSA server is hosted.
+                7363 MX:
+                The slot id of the NT board
+
+                ALCATEL NOTE:
+                ACCESS:      read-write
+                USAGE:       mandatory
+                PERSIST:     YES
+                INSRVMOD:    NO
+                RANGE:       NA
+                DEFVALUE:    NA
+                UNITS:       NA
+                SPARSE:      NO
+               "
+        ::= { sipLSAEmergServiceEntry 4 }
+
+sipLSAEmergServiceGtwyDN OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (1..32))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The directory number of the emergency service center to which the emergency call received by the 
+            LSA server is to be addressed.
+            The configured emergency center DN only includes the subscriber number
+            This means that it is not allowed to include the
+                    -international call prefix 00
+                    -the '+' sign
+                    -the country code
+                    -the area code.
+            in the configured emergency center DN. 
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:      read-write
+                USAGE:       mandatory
+                PERSIST:     YES
+                INSRVMOD:    NO
+                RANGE:       SIZE (1..32)
+                DEFVALUE:    NA
+                UNITS:       NA
+                SPARSE:      NO
+                "
+        ::= { sipLSAEmergServiceEntry 5 }
+
+sipLSAEmergServiceRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The status of this conceptual row.
+                The RowStatus TC requires that this DESCRIPTION clause states under which circumstances
+                other objects in this row can be modified.  The value of this object has no effect on
+                whether other objects in this conceptual row can be modified.
+                A conceptual row can always be made active.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:      read-write	
+                USAGE:       MANDATORY
+                PERSIST:     YES
+                INSRVMOD:    YES
+                RANGE:       1 | 4 | 6       -- active (1), createAndGo (4), destroy (6)
+                DEFVALUE:    NA
+                UNITS:       NA
+                SPARSE:      NO
+                "
+        ::= { sipLSAEmergServiceEntry 6 }
+
+sipLSAEmergServiceVsgName OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE (0..32))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The name of the Voice SERVICE GATEWAY associated with this LSA emergency service.
+                This field is considered as pure informative for the operator.
+
+                ALCATEL-LUCENT NOTE:
+                ACCESS:      read-write
+                USAGE:       OPT
+                PERSIST:     YES
+                INSRVMOD:    NO
+                RANGE:       SIZE (0..32)
+                DEFVALUE:    vsp1
+                UNITS:       NA
+                SPARSE:      NO
+                "
+        ::= { sipLSAEmergServiceEntry 7 }
+
+sipLSAEmergServiceStatus OBJECT-TYPE
+        SYNTAX INTEGER
+        {
+            not-registered(1),
+            available(2),
+            busy(3),
+            detected-busy(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The operational status of the emergency center for this LSA emergency service. 
+            The meaning of the status is list as following:
+            not-registered (1): the emergency service center addressed by the emergency service DN 
+                                is not registered to the LSA server.
+            available(2):       the emergency service center addressed by the emergency service DN is registered 
+                                to the LSA server. No emergency/non-emergency call is actually routed to this 
+                                emergency center by the LSA server.
+            busy(3):            the emergency service center addressed by the emergency service DN is registered 
+                                to the LSA server. The emergency service center is actually occupied due to one of 
+                                the following reasons:  
+                                -   an emergency call is actually being successfully forwarded by the LSA server to
+                                    the emergency service center.
+                                -   an non-emergency call is actually being successfully forwarded by the LSA server to
+                                    the emergency service center.
+                                -   an non-emergency call is received by the LSA server from the emergency service 
+                                    center.
+                                -   an emergency call is received by the LSA server from the emergency service 
+                                    center.
+            detected-busy(4):   the emergency service center addressed by the emergency service DN is registered 
+                                to the LSA server. The emergency service center is temporarily unavailable because 
+                                no response or an error response was received by the LSA server when trying to forward 
+                                an emergency/non-emergency call to the emergency center. 
+
+            ALCATEL-LUCENT NOTE:
+            ACCESS:      READ-ONLY
+            USAGE:       NA
+            PERSIST:     NO
+            INSRVMOD:    NA
+            RANGE:       1|2|3|4
+            DEFVALUE:    NA
+            UNITS:       NA
+            SPARSE:      NO
+            "
+        ::= { sipLSAEmergServiceEntry 8 }
+
+
+
+END

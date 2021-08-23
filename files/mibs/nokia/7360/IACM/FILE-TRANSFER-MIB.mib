@@ -1,0 +1,215 @@
+FILE-TRANSFER-MIB DEFINITIONS ::= BEGIN
+
+-- ===========================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2006, Alcatel. All Rights Reserved.
+-- ===========================================================================
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED "201501220000Z"
+--  ORGANIZATION "Alcatel"
+--  CONTACT-INFO "email: asam.mibsupport@alcatel.be"
+--  DESCRIPTION
+--     "The ASAM File Transfer MIB is a vendor-specific MIB that is
+--      used to manage the file transfer channel of the ASAM subsystem in the ESAM.
+--
+-- ===========================================================================
+-- REVISION     "201501220000Z"
+--  DESCRIPTION
+--     "Version: 3EC36485AAAA_E5.2.0.0
+--     Editor:  Dharmaraj Gurusamy
+--     Changes for ALU01620964 : Extended SFTP client authentication"
+--	  * at fileTransferServerEntry
+--		add fileTransferServerAuthType
+--		range of fileTransferServerPassword is increased to 1024
+--
+--  REVISION "200610241200Z"
+--  DESCRIPTION
+--     "Version: 3EC36485AAAA_E5.0.0.0
+--      Editor: Xu Yue
+--      Changes: creation of new File Transfer MIB for ISAM R3.3."
+--
+-- =============================================================================
+
+   IMPORTS OBJECT-TYPE		    FROM RFC-1212
+           IpAddress                FROM RFC1155-SMI
+           DisplayString, RowStatus,
+           TruthValue               FROM SNMPv2-TC
+           asam                     FROM SYSTEM-MIB
+           AsamNextProfileIndex,
+           AsamProfileRefCount,
+           AsamProfilePointer,
+           AsamProfileIndex,
+           AsamProfileName          FROM ASAM-TC-MIB ;
+           
+   fileTransferMIB OBJECT IDENTIFIER ::= { asam 74 }
+   
+   fileTransferProtocolSelect OBJECT-TYPE
+        SYNTAX INTEGER {
+           tftp(1),         -- TFTP, Trivial File Transfer Protocol 
+           ftp(2),          -- FTP, File Transfer Protocol 
+           sftp(3)          -- SFTP, Secure File Transfer Protocol 
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The file transfer protocol through which file transfer is
+                performed.
+                
+                ALCATEL NOTE:
+                   SUPPORT: YES  INSRVMOD: YES       RANGE: 1..3
+                   PERSIST: YES  DEFVALUE: TFTP(1)   UNITS: -"
+        DEFVAL { 1 }
+        ::={fileTransferMIB 1}
+
+   -- =======================================================================
+   -- |              START FILE TRANSFER SERVER TABLE                       |
+   -- =======================================================================
+
+   fileTransferServerTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF FileTransferServerEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "File Transfer Server Table, representing the file transfer server.
+          Each row in the table contains file server ID and account information.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   TABLESIZE: 8"
+      ::= { fileTransferMIB 2 }
+   
+   fileTransferServerEntry OBJECT-TYPE
+      SYNTAX FileTransferServerEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry of the File Transfer Server Table.
+
+          ALCATEL NOTE:
+             SUPPORT: YES"
+      INDEX { fileTransferServerID  }
+      ::= { fileTransferServerTable 1 }
+   
+   FileTransferServerEntry ::= SEQUENCE {
+      fileTransferServerID                     IpAddress,
+      fileTransferServerUsername               OCTET STRING (SIZE (0..32)),
+      fileTransferServerPassword               OCTET STRING (SIZE (1..1024)),
+      fileTransferServerRowStatus              RowStatus,
+      fileTransferServerAuthType               INTEGER (1..2)
+   }
+   
+   fileTransferServerID OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the ID (IP address) of the file transfer
+          server.
+   
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: NA   RANGE: See above
+             PERSIST: YES          DEFVALUE: NA   UNITS: -"
+      ::= { fileTransferServerEntry 1 }
+   
+   fileTransferServerUsername OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (0..32))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "A string representing the username used to access the file server.
+
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: YES   RANGE: See above
+             PERSIST: YES          DEFVALUE: NA    UNITS: -"
+      ::= { fileTransferServerEntry 2 }
+
+   fileTransferServerPassword OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (1..1024))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "A string representing either the password or public key used to access 
+	 the file server.  The value (password or public key) shall be configured 
+	 according to the authentication type, set via fileTransferServerAuthType 
+	 for successful authentication.
+
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: YES   RANGE: See above
+             PERSIST: YES          DEFVALUE: NA    UNITS: -"
+      ::= { fileTransferServerEntry 3 }
+
+   fileTransferServerRowStatus OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "This object is used to create and delete rows in the
+         fileTransferServerTable.
+
+         ALCATEL NOTE:
+            SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+            PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { fileTransferServerEntry 4 }
+
+   fileTransferServerAuthType OBJECT-TYPE
+        SYNTAX INTEGER {
+           password(1),         -- password based authentication
+           publicKey(2)         -- public key based authentication
+        }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "This object is used to represent the authentication type for the
+	server. Public key based authentication is applicable for SFTP only.
+	The password or public key shall be configured via
+	fileTransferServerPassword according to this object for successful 
+	authentication.
+
+         ALCATEL NOTE:
+            SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+            PERSIST: YES   DEFVALUE: 1    UNITS: -"
+      DEFVAL { 1 }
+      ::= { fileTransferServerEntry 5 }
+
+   fileTransferRolloverSelect OBJECT-TYPE
+        SYNTAX INTEGER (0..1)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "This flag specified whether the TFTP Block number rollover should happen
+                from 0 or 1.
+                
+                ALCATEL NOTE:
+                   SUPPORT: YES  INSRVMOD: YES       RANGE: 0...1 
+                   PERSIST: YES  DEFVALUE: 0         UNITS: -"
+        DEFVAL { 0 }
+        ::={fileTransferMIB 3}
+
+
+END

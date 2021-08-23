@@ -1,0 +1,834 @@
+-- ===========================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2004, Alcatel. All Rights Reserved.
+-- ===========================================================================
+
+
+IEEE8021-PAE-EXT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS  
+OBJECT-TYPE             FROM RFC-1212
+enterprises, TimeTicks, Counter
+     FROM RFC1155-SMI
+TruthValue, MacAddress
+     FROM SNMPv2-TC
+InterfaceIndex
+     FROM ITF-MIB
+asam 
+     FROM SYSTEM-MIB
+dot1xPaePortNumber, PaeControlledDirections, SnmpAdminString
+     FROM IEEE8021-PAE-MIB;
+
+ieee8021paeMIBext OBJECT IDENTIFIER
+-- MODULE-IDENTITY
+--    LAST-UPDATED "200312210000Z"
+--    ORGANIZATION "Alcatel-Bell"
+--    CONTACT-INFO
+--        " "
+--    DESCRIPTION
+--        " "
+::=  { asam 43 } 
+
+-- Textual Conventions 
+-- 
+PaeControlledMacStatus ::=
+-- TEXTUAL-CONVENTION
+--    STATUS mandatory
+--    DESCRIPTION
+--        "The status values of the Authenticator PAE controlled 
+--             mac."
+--    SYNTAX
+INTEGER {
+              authorized          (1),
+              unauthorized          (2)
+           }
+
+VSAInfo ::= OCTET STRING (SIZE(1..32))
+-- End of type define
+
+-- The port Auth Config Ext Table
+extdot1xPaePortAuthConfigTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Extdot1xPaePortAuthConfigEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+    " A table that contains the configuration objects 
+      for the Authenticator PAE associated with each port. 
+      An entry appears in this table for each port that 
+      may authenticate access to itself.
+      The configuration objects defined in this table 
+      are specific to CCSA standard requirements for the  
+      behavior of the authenticator"
+    ::=  { ieee8021paeMIBext 1 }
+
+extdot1xPaePortAuthConfigEntry OBJECT-TYPE
+    SYNTAX Extdot1xPaePortAuthConfigEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        " Each Entry in this Table corresponds to an entry present in the
+          dot1xPortAuthConfigExtTable of ESAM-802.1x-Mib"
+    INDEX {dot1xPaePortNumber}
+    ::=  { extdot1xPaePortAuthConfigTable 1 }
+
+Extdot1xPaePortAuthConfigEntry ::= SEQUENCE {
+    extdot1xPaePortAuthState           INTEGER,
+    extdot1xPaePortInitiateAuthReq     INTEGER,
+    extdot1xPaePortHandShakeMode       INTEGER,
+    extdot1xPaePortHandShakePeriod     INTEGER,
+    extdot1xPaePortClearStatistics     TruthValue,
+    extdot1xPaePortMacBasedEnabled     INTEGER,
+    extdot1xPaePortMABEnabled          INTEGER, 
+    extdot1xPaePortDynVlanAssign       INTEGER
+}
+
+extdot1xPaePortAuthState OBJECT-TYPE
+    SYNTAX INTEGER {
+                     enabled (1),
+                     disabled (2)
+                   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " Used to specify whether 802.1x Authentication is required for
+          this particular Port or not."
+    DEFVAL {2}
+    ::=  { extdot1xPaePortAuthConfigEntry 1 }
+
+extdot1xPaePortInitiateAuthReq OBJECT-TYPE
+    SYNTAX INTEGER {
+                    enabled (1),
+                    disabled (2)
+                   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " Used to specify whether the authenticator should initiate the
+          Authentication Request towards the supplicant or not.  This needs
+          to be disabled if CCSA specific clients needs to be authenticated
+          on this port"
+    DEFVAL {enabled}
+    ::=  { extdot1xPaePortAuthConfigEntry 2 }
+
+extdot1xPaePortHandShakeMode       OBJECT-TYPE 
+    SYNTAX INTEGER {
+                    enabled (1),
+                    disabled (2)
+                   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " Used to specify whether HandShake is required for this Particular
+          Port. This needs to be enabled for CCSA clients when keepalive 
+          check needs to be performed. CCSA handshake may not be enabled for
+          this port if dot1xRuthReAuthEnabled."
+    DEFVAL {disabled}
+    ::=  { extdot1xPaePortAuthConfigEntry 3 }
+
+extdot1xPaePortHandShakePeriod       OBJECT-TYPE 
+    SYNTAX INTEGER (5..90)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " Used to specify the Handshake Time Interval, if 
+          HandShake is enabled for this Port."
+    DEFVAL {15}
+    ::=  { extdot1xPaePortAuthConfigEntry 4 }
+
+
+extdot1xPaePortClearStatistics  OBJECT-TYPE 
+    SYNTAX TruthValue
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Setting this attribute to TRUE causes the protocol to clear
+          objects of dot1xAuthStatsTable and dot1xAuthDiagTable.
+          This attribute always returns FALSE when it is read."
+    DEFVAL {false}
+    ::=  { extdot1xPaePortAuthConfigEntry 5 }
+
+extdot1xPaePortMacBasedEnabled OBJECT-TYPE
+    SYNTAX INTEGER {
+                    enabled (1),
+                    disabled (2)
+                   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " Used to specify whether 802.1x MAC based Authentication is
+		  enabled or not, if disabled(default) authentication is
+		  Port based Authentication."
+    DEFVAL {disabled}
+    ::=  { extdot1xPaePortAuthConfigEntry 6 }    
+
+extdot1xPaePortMABEnabled OBJECT-TYPE
+    SYNTAX INTEGER {
+                    enabled (1),
+                    disabled (2)
+                   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " Used to specify whether 802.1x MAC Authentication Bypass is
+		  enabled or not."
+    DEFVAL {disabled}
+    ::=  { extdot1xPaePortAuthConfigEntry 7 }
+
+extdot1xPaePortDynVlanAssign OBJECT-TYPE
+    SYNTAX INTEGER {
+                    enabled (1),
+                    disabled (2)
+                   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " Used to specify whether Dynamic Vlan Assignment is enabled
+          or not, if enabled vlan will assign dynamically."
+    DEFVAL {disabled}
+    ::=  { extdot1xPaePortAuthConfigEntry 8 }
+-- End of the port Auth Config Ext Table
+
+
+-- The Mac Auth Stats Ext Table
+extdot1xPaeMacAuthStatsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Extdot1xPaeMacAuthStatsEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        " A table that contains the mac based authentication related
+	      session statistics objects, forward user VLAN, network VLAN 
+	      and QoS profile names for the mac-based-enabled Authenticator 
+	      associated with each Mac.  
+	      An entry appears in this table for each mac that may 
+	      authenticate access to itself."
+    ::=  { ieee8021paeMIBext 2 }
+
+extdot1xPaeMacAuthStatsEntry OBJECT-TYPE
+    SYNTAX Extdot1xPaeMacAuthStatsEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        " Each Entry in this Table corresponds to an entry present in the
+          extdot1xPaeMacAuthStatsTable of ESAM-802.1x-Mib"
+    INDEX { extdot1xMacAuthPortNumber, extdot1xMacAuthMacAddress }
+    ::=  { extdot1xPaeMacAuthStatsTable 1 }
+
+Extdot1xPaeMacAuthStatsEntry ::= SEQUENCE {
+    extdot1xMacAuthPortNumber		InterfaceIndex,
+    extdot1xMacAuthMacAddress		MacAddress,
+    extdot1xMacAuthPaeState		INTEGER,
+    extdot1xMacAuthBackendAuthState	INTEGER,
+    extdot1xMacAuthAdminControlledDirections    PaeControlledDirections,
+    extdot1xMacAuthOperControlledDirections	PaeControlledDirections,
+    extdot1xMacAuthAuthControlledMacStatus	PaeControlledMacStatus,
+    extdot1xMacAuthKeyTxEnabled		TruthValue,
+    extdot1xMacAuthSessionOctetsRx	Counter,
+    extdot1xMacAuthSessionOctetsTx	Counter,
+    extdot1xMacAuthSessionFramesRx	Counter,
+    extdot1xMacAuthSessionFramesTx	Counter,
+    extdot1xMacAuthSessionId		SnmpAdminString,
+    extdot1xMacAuthSessionAuthenticMethod    	INTEGER,
+    extdot1xMacAuthSessionTime    		TimeTicks,
+    extdot1xMacAuthSessionTerminateCause    	INTEGER,
+    extdot1xMacAuthSessionUserName    	SnmpAdminString,
+    extdot1xMacAuthVSAUserVlanId   	VSAInfo,
+    extdot1xMacAuthDynFwdVlanId		VSAInfo,
+    extdot1xMacAuthVSAFwdType		VSAInfo,
+    extdot1xMacAuthVSAQoSProfileName	VSAInfo,
+    extdot1xMacAuthClearStatistics	TruthValue
+}
+extdot1xMacAuthMacAddress OBJECT-TYPE
+    SYNTAX MacAddress
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The source MAC address carried in the MAC
+          based Authentication."
+    REFERENCE
+        " mac-based-enabled Authenticated Mac Address."
+    ::=  { extdot1xPaeMacAuthStatsEntry 1 }
+	
+extdot1xMacAuthPortNumber OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        " The Port number associated with this mac-address."
+    ::=  { extdot1xPaeMacAuthStatsEntry 2 }
+
+extdot1xMacAuthPaeState OBJECT-TYPE
+    SYNTAX INTEGER {
+              initialize          (1),
+              disconnected          (2),
+              connecting          (3),
+              authenticating          (4),
+              authenticated          (5),
+              aborting          (6),
+              held          (7),
+              forceAuth          (8),
+              forceUnauth          (9)
+           }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The current value of the mac-based-enabled Authenticator 
+          PAE state machine."
+    REFERENCE
+        " mac-based-enabled Authenticator PAE stat."
+    ::=  { extdot1xPaeMacAuthStatsEntry 3 }
+
+extdot1xMacAuthBackendAuthState OBJECT-TYPE
+    SYNTAX INTEGER {
+              request          (1),
+              response          (2),
+              success          (3),
+              fail          (4),
+              timeout          (5),
+              idle          (6),
+              initialize          (7)
+           }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The current state of the mac-based-enabled Backend 
+          Authentication state machine."
+    REFERENCE
+        " mac-based-enabled Backend Authentication stat."
+    ::=  { extdot1xPaeMacAuthStatsEntry 4 }
+
+extdot1xMacAuthAdminControlledDirections OBJECT-TYPE
+    SYNTAX PaeControlledDirections
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The current value of the administrative controlled 
+          directions parameter for the mac.  The only value
+          allowed for this attribute is BOTH"
+    REFERENCE
+        " mac-based-enabled Admin Control Mod."
+    ::=  { extdot1xPaeMacAuthStatsEntry 5 }
+
+extdot1xMacAuthOperControlledDirections OBJECT-TYPE
+    SYNTAX PaeControlledDirections
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The current value of the operational controlled 
+               directions parameter for the mac."
+    REFERENCE
+        " mac-based-enabled Oper Control Mod."
+    ::=  { extdot1xPaeMacAuthStatsEntry 6 }
+
+extdot1xMacAuthAuthControlledMacStatus OBJECT-TYPE
+    SYNTAX PaeControlledMacStatus
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The current value of the controlled mac-based-enabled 
+               status parameter for this mac."
+    REFERENCE
+        " mac-based-enabled, AuthControlled Mac Status."
+    ::=  { extdot1xPaeMacAuthStatsEntry 7 }
+
+extdot1xMacAuthKeyTxEnabled OBJECT-TYPE
+    SYNTAX TruthValue
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The value of the mac-based-enabled keyTransmissionEnabled 
+          constant currently in use by the Authenticator PAE state
+          machine.  The only value allowed for this attribute 
+          is FALSE."
+    REFERENCE
+        " mac-based-enabled, keyTransmissionEnable."
+    ::=  { extdot1xPaeMacAuthStatsEntry 8 }
+	
+extdot1xMacAuthSessionOctetsRx OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The number of octets received in user data frames
+          on this mac during the session."
+    REFERENCE
+        " mac-based-enabled Session Octets Receive."
+    ::=  { extdot1xPaeMacAuthStatsEntry 9 }
+
+extdot1xMacAuthSessionOctetsTx OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The number of octets transmitted in user data frames
+          on this mac-address during the session."
+    REFERENCE
+        " mac-based-enabled Session Octets Transmitted."
+    ::=  { extdot1xPaeMacAuthStatsEntry 10 }
+
+extdot1xMacAuthSessionFramesRx OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The number of user data frames received on
+          this mac-address during the session."
+    REFERENCE
+        " mac-based-enabled Session Frames Receive."
+    ::=  { extdot1xPaeMacAuthStatsEntry 11 }
+
+extdot1xMacAuthSessionFramesTx OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The number of user data frames transmitted on 
+          this mac-address during the session."
+    REFERENCE
+        " mac-based-enabled Session Frames Transmitted."
+    ::=  { extdot1xPaeMacAuthStatsEntry 12 }
+
+extdot1xMacAuthSessionId OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " A unique identifier for the session, in the form of
+          a printable ASCII string of at least three
+          characters."
+    REFERENCE
+        " mac-based-enabled Session Identifie."
+    ::=  { extdot1xPaeMacAuthStatsEntry 13 }
+
+extdot1xMacAuthSessionAuthenticMethod OBJECT-TYPE
+    SYNTAX INTEGER {
+              remoteAuthServer          (1),
+              localAuthServer          (2)
+           }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The authentication method used to establish the 
+          session."
+    REFERENCE
+        " mac-based-enabled Session Authentication Method."
+    ::=  { extdot1xPaeMacAuthStatsEntry 14 }
+
+extdot1xMacAuthSessionTime OBJECT-TYPE
+    SYNTAX TimeTicks
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The duration of the session in seconds."
+    REFERENCE
+        " mac-based-enabled Session Tim."
+    ::=  { extdot1xPaeMacAuthStatsEntry 15 }
+
+extdot1xMacAuthSessionTerminateCause OBJECT-TYPE
+    SYNTAX INTEGER {
+              supplicantLogoff          (1),
+              portFailure               (2),
+              supplicantRestart         (3),
+              reauthFailed              (4),
+              authControlForceUnauth    (5),
+              portReInit                (6),
+              portAdminDisabled         (7),
+			  authControlForceauth      (995),	
+			  authServerTerminated      (996),
+			  timeLimitCut              (997),
+			  idleCut                   (998),
+              notTerminatedYet          (999)
+           }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The reason for the session termination."
+    REFERENCE
+        " mac-based-enabled Session Terminate Cause."
+    ::=  { extdot1xPaeMacAuthStatsEntry 16 }
+
+extdot1xMacAuthSessionUserName OBJECT-TYPE
+    SYNTAX SnmpAdminString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The User-Name representing the identity of the 
+          Supplicant PAE."
+    REFERENCE
+        " mac-based-enabled Session User Name."
+    ::=  { extdot1xPaeMacAuthStatsEntry 17 }
+
+extdot1xMacAuthVSAUserVlanId OBJECT-TYPE
+    SYNTAX VSAInfo
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The User pvid or vlan id distributed from Radius Server
+          in VSA, which is attempted use to connect forward 
+          in this session of the mac.
+          This VSA User Vlan Id may be 0 if Radius Server does
+          not configure or auththenticate failed."
+		DEFVAL {0}
+    ::=  { extdot1xPaeMacAuthStatsEntry 18 }
+
+extdot1xMacAuthDynFwdVlanId OBJECT-TYPE
+    SYNTAX VSAInfo
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The network forward vlan id returned from Radius Server
+          of this mac on this port in VSA.
+          This forward Vlan Id may be 0 if Radius Server does
+          not configure."
+		DEFVAL {0}
+    ::=  { extdot1xPaeMacAuthStatsEntry 19 }
+
+extdot1xMacAuthVSAFwdType OBJECT-TYPE
+    SYNTAX VSAInfo
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The VSA forward type is returned from Radius Server of this
+          mac on this port in VSA.
+          If extdot1xMacAuthDynFwdVlanId is 0, VSA Forward Type
+          will be un-meaningful"
+		DEFVAL {0}
+    ::=  { extdot1xPaeMacAuthStatsEntry 20 }
+	
+extdot1xMacAuthVSAQoSProfileName OBJECT-TYPE
+    SYNTAX VSAInfo
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " The Qos profile name returned from Radius Server of this
+          mac on this port in VSA.
+          This VSA QoS Profile Name may be 0 if Radius Server
+          does not configure."
+		DEFVAL {0}
+    ::=  { extdot1xPaeMacAuthStatsEntry 21 }
+
+extdot1xMacAuthClearStatistics  OBJECT-TYPE 
+    SYNTAX TruthValue
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+		" Setting this attribute to TRUE causes the protocol to clear
+          objects of extdot1xMacAuthDiagTable.
+          This attribute always returns FALSE when it is read."
+        DEFVAL {false}
+    ::=  { extdot1xPaeMacAuthStatsEntry 22 }
+-- End of the Mac Auth Stats Ext Table
+
+-- The Mac Auth Diagnostics Ext Table
+extdot1xMacAuthDiagTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Extdot1xMacAuthDiagEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        " A table that contains the mac based authentication 
+          diagnostics objects for the mac-based-enabled 
+          Authenticator associated with each Mac.  
+          An entry appears in this table for each mac that may 
+          authenticate access to itself."
+    REFERENCE
+        " mac-based-enabled Authenticator Diagnostic."
+    ::=  { ieee8021paeMIBext 3 }
+
+extdot1xMacAuthDiagEntry OBJECT-TYPE
+    SYNTAX Extdot1xMacAuthDiagEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        " The diagnostics information for an Authenticator PAE
+          on each Mac and each Port."
+    INDEX { extdot1xMacAuthPortNumber, extdot1xMacAuthMacAddress }
+    ::=  { extdot1xMacAuthDiagTable 1 }
+
+Extdot1xMacAuthDiagEntry ::= SEQUENCE {
+    extdot1xMacAuthEntersConnecting    Counter,
+    extdot1xMacAuthEapLogoffsWhileConnecting    Counter,
+    extdot1xMacAuthEntersAuthenticating    Counter,
+    extdot1xMacAuthAuthSuccessWhileAuthenticating    Counter,
+    extdot1xMacAuthAuthTimeoutsWhileAuthenticating    Counter,
+    extdot1xMacAuthAuthFailWhileAuthenticating    Counter,
+    extdot1xMacAuthAuthReauthsWhileAuthenticating    Counter,
+    extdot1xMacAuthAuthEapStartsWhileAuthenticating    Counter,
+    extdot1xMacAuthAuthEapLogoffWhileAuthenticating    Counter,
+    extdot1xMacAuthAuthReauthsWhileAuthenticated    Counter,
+    extdot1xMacAuthAuthEapStartsWhileAuthenticated    Counter,
+    extdot1xMacAuthAuthEapLogoffWhileAuthenticated    Counter,
+    extdot1xMacAuthBackendResponses    Counter,
+    extdot1xMacAuthBackendAccessChallenges    Counter,
+    extdot1xMacAuthBackendOtherRequestsToSupplicant    Counter,
+    extdot1xMacAuthBackendNonNakResponsesFromSupplicant    Counter,
+    extdot1xMacAuthBackendAuthSuccesses    Counter,
+    extdot1xMacAuthBackendAuthFails    Counter
+    }
+
+extdot1xMacAuthEntersConnecting OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state 
+          machine transitions to the CONNECTING state from any 
+          other state."
+    ::=  { extdot1xMacAuthDiagEntry 1 }
+
+extdot1xMacAuthEapLogoffsWhileConnecting OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state 
+          machine transitions from CONNECTING to DISCONNECTED as a
+          result of receiving an EAPOL-Logoff message."
+    ::=  { extdot1xMacAuthDiagEntry 2 }
+
+extdot1xMacAuthEntersAuthenticating OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state
+          machine transitions from CONNECTING to AUTHENTICATING,
+          as a result of an EAP-Response/Identity message being 
+          received from the Supplicant."
+    ::=  { extdot1xMacAuthDiagEntry 3 }
+
+extdot1xMacAuthAuthSuccessWhileAuthenticating OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state
+          machine transitions from AUTHENTICATING to AUTHENTICATED,
+          as a result of the mac-based-enabled Backend Authentication
+          state machine indicating successful authentication of the
+          Supplicant (authSuccess = TRUE)."
+    ::=  { extdot1xMacAuthDiagEntry 4 }
+
+extdot1xMacAuthAuthTimeoutsWhileAuthenticating OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state
+          machine transitions from AUTHENTICATING to ABORTING, as a
+          result of the mac-based-enabled Backend Authentication state
+          machine indicating authentication timeout
+		  (authTimeout = TRUE)."
+    ::=  { extdot1xMacAuthDiagEntry 5 }
+
+extdot1xMacAuthAuthFailWhileAuthenticating OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state
+          machine transitions from AUTHENTICATING to HELD, as a
+          result of the mac-based-enabled Backend Authentication state
+          machine indicating authentication failure
+		  (authFail = TRUE)."
+    ::=  { extdot1xMacAuthDiagEntry 6 }
+
+extdot1xMacAuthAuthReauthsWhileAuthenticating OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-auth state machine 
+          transitions from AUTHENTICATING to ABORTING, as a result 
+          of a reauthentication request (reAuthenticate = TRUE)."
+    ::=  { extdot1xMacAuthDiagEntry 7 }
+
+extdot1xMacAuthAuthEapStartsWhileAuthenticating OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state
+          machine transitions from AUTHENTICATING to ABORTING, as
+          a result of an EAPOL-Start message being received 
+          from the Supplicant."
+    ::=  { extdot1xMacAuthDiagEntry 8 }
+
+extdot1xMacAuthAuthEapLogoffWhileAuthenticating OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state
+          machine transitions from AUTHENTICATING to ABORTING, as
+          a result of an EAPOL-Logoff message being received 
+          from the Supplicant."
+    ::=  { extdot1xMacAuthDiagEntry 9 }
+
+extdot1xMacAuthAuthReauthsWhileAuthenticated OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state
+          machine transitions from AUTHENTICATED to CONNECTING,
+          as a result of a reauthentication request 
+          (reAuthenticate = TRUE)."
+    ::=  { extdot1xMacAuthDiagEntry 10 }
+
+extdot1xMacAuthAuthEapStartsWhileAuthenticated OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state
+          machine transitions from AUTHENTICATED to CONNECTING, as
+          a result of an EAPOL-Start message being received from
+          the Supplicant."
+    ::=  { extdot1xMacAuthDiagEntry 11 }
+
+extdot1xMacAuthAuthEapLogoffWhileAuthenticated OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state
+          machine transitions from AUTHENTICATED to DISCONNECTED,
+          as a result of an EAPOL-Logoff message being received
+          from the Supplicant."
+    ::=  { extdot1xMacAuthDiagEntry 12 }
+
+extdot1xMacAuthBackendResponses OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state
+          machine sends an initial Access-Request packet to the
+          Authentication server (i.e., executes sendRespToServer on
+          entry to the RESPONSE state). Indicates that the Authenticator
+          attempted communication with the Authentication Server."
+    ::=  { extdot1xMacAuthDiagEntry 13 }
+
+extdot1xMacAuthBackendAccessChallenges OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state 
+          machine receives an initial Access-Challenge packet from
+          the Authentication server (i.e., aReq becomes TRUE, causing
+          exit from the RESPONSE state). Indicates that the
+          Authentication Server has communication with the Authentication."
+    ::=  { extdot1xMacAuthDiagEntry 14 }
+
+extdot1xMacAuthBackendOtherRequestsToSupplicant OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state 
+          machine sends an EAP-Request packet (other than an Identity,
+          Notification, Failure or Success message) to the Supplicant
+          (i.e., executes txReq on entry to the REQUEST state). 
+		  Indicates that the Authenticator chose an EAP-method."
+    ::=  { extdot1xMacAuthDiagEntry 15 }
+
+extdot1xMacAuthBackendNonNakResponsesFromSupplicant OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state 
+          machine receives a response from the Supplicant to an
+          initial EAP-Request, and the response is something other
+          than EAP-NAK (i.e., rxResp becomes TRUE, causing the state
+          machine to transition from REQUEST to RESPONSE, and the 
+		  response is not an EAP-NAK). 
+          Indicates that the Supplicant can respond to the 
+		  Authenticator's hosen EAP-method."
+    ::=  { extdot1xMacAuthDiagEntry 16 }
+
+extdot1xMacAuthBackendAuthSuccesses OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state 
+          machine receives an EAP-Success message from the 
+          Authentication Server (i.e., aSuccess becomes TRUE, causing
+		  a transition from RESPONSE to SUCCESS). 
+          Indicates that the Supplicant has successfully authenticated
+		  to the Authentication Server."
+    ::=  { extdot1xMacAuthDiagEntry 17 }
+
+extdot1xMacAuthBackendAuthFails OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        " Counts the number of times that the mac-based-enabled state 
+          machine receives an EAP-Failure message from the 
+		  Authentication Server (i.e., aFail becomes TRUE, causing a 
+		  transition from RESPONSE to FAIL). 
+          Indicates that the Supplicant has not authenticated to the
+		  Authentication Server."
+    ::=  { extdot1xMacAuthDiagEntry 18 }
+-- End of the Mac Auth Diagnostics Ext Table
+
+-- The System Unauthorized Forwarding
+extdot1xSystemUnauthorizedFwd OBJECT-TYPE
+    SYNTAX INTEGER {
+              enabled          (1),
+              disabled          (2)
+           }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " The administrative enable/disable switch for attaching an
+          unauthorized forwarding if authentication failed in 
+		  a System. Default value is disabled"
+    REFERENCE
+        " Switch for System Unauthorized Forwarding"
+    ::=  { ieee8021paeMIBext 4 }
+
+-- The System Source Mac Check
+extdot1xSystemSrcMacCheck OBJECT-TYPE
+    SYNTAX INTEGER {
+              enabled          (1),
+              disabled          (2)
+           }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " The administrative switch to enable/disable dropping packets
+          from itself through source mac check for downstream 
+          in a System. Default value is disabled"
+    REFERENCE
+        "Switch for System Source Mac Check"
+    ::=  { ieee8021paeMIBext 5 }
+END

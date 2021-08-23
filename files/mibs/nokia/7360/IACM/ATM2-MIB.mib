@@ -1,0 +1,889 @@
+ATM2-MIB DEFINITIONS ::= BEGIN
+
+
+-- ====================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 1997, Alcatel. All Rights Reserved.
+-- ====================================================
+
+
+-- ============================================================
+--  MODULE-IDENTITY
+--  LAST-UPDATED 200402111858Z
+--  ORGANIZATION "Alcatel"
+--  CONTACT-INFO
+--
+--          Email:  asam.mibsupport@alcatel.be
+--
+--  DESCRIPTION 
+-- 
+-- This MIB module is a subset of the IETF Draft ATM2-MIB 
+-- (as specified in draft-ietf-atommib-atm2-12.txt) .
+-- The following definitions were extracted and adapted to reflect 
+-- Alcatel's implementation.
+-- Alcatel specific behavior is indicated by comments
+-- labeled 'ALCATEL NOTE'
+
+--  REVISION 201107171858Z
+--  DESCRIPTION
+--        "Version: 3EC16472AAAA_V4.2.0.0.0 
+--         Editor: Sun Baoping
+--         Changes: introduce atmVclStatTable of ATM2-MIB for RCR request ALU01300397"
+
+
+--  REVISION 200402111858Z
+--  DESCRIPTION
+--        "Version: 3EC16472AAAA_V4.6.0.0.1 
+--         Editor: Luc Gyselinck
+--         Changes: Based on R4.5.10 ATM2-MIB. Usage of PB-template"
+--                  3EB 00140 0001 PTAA."
+
+-- ============================================================
+
+
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+    RowStatus
+        FROM SNMPv2-TC
+    Counter
+        FROM RFC1155-SMI
+    ifIndex
+        FROM ITF-MIB
+    atmMIBObjects, 
+--atmVplVpi, 
+    atmVclVpi, atmVclVci
+        FROM ATM-MIB
+    AtmAddr
+        FROM ATM-TC-MIB;
+
+
+--            atm2MIB MODULE-IDENTITY
+--                LAST-UPDATED "9909161200Z"
+--                ORGANIZATION "IETF AToMMIB Working Group"
+--                CONTACT-INFO
+--                  "          Faye Ly
+--                    Postal:  Copper Mountain Networks
+--                             2470 Embarcadero Way
+--                             Palo Alto, CA 94303
+--                             USA
+--                    Tel:     +1 650 858 8500 ext.240
+--                    E-Mail:  faye@coppermountain.com
+--
+--                             Michael Noto
+--                    Postal:  Cisco Systems
+--                             170 W. Tasman Drive
+--                             San Jose, CA 95134-1706
+--                             USA
+--                    E-mail:  mnoto@cisco.com
+--
+--                            Andrew Smith
+--                    Postal:  Extreme Networks
+--                             10460 Bandley Drive
+--                             Cupertino, CA 95014
+--                             USA
+--                    Tel:     +1 408 863 2821
+--                    Fax:     +1 408 342 0990
+--                    E-Mail:  ansmith@extremenetworks.com
+--
+--                             Ethan Mickey Spiegel
+--                    Postal:  Cisco Systems
+--                             170 W. Tasman Drive
+--                             San Jose, CA 95134-1706
+--                             USA
+--                    Tel:     +1 408 526 6408
+--                    Fax:     +1 408 526 6488
+--                    E-Mail:  mspiegel@cisco.com
+--
+--                             Kaj Tesink
+--                    Postal:  Telcordia Technologies
+--                            331 Newman Springs Road
+--                             Red Bank, NJ 07701
+--                             USA
+--                    Tel:     +1 732 758 5254
+--                    Fax:     +1 732 758 2269
+--                    E-mail:  kaj@research.telcordia.com"
+--                DESCRIPTION
+--                  "This MIB Module is a supplement to the ATM-MIB
+--                  defined in RFC 2515."
+--                REVISION "9909161200Z"
+--                DESCRIPTION
+--                  "The RFC xxxx version of this MIB module."
+--                  ::= { atmMIBObjects 14 }
+
+-- ====================================================
+--  HISTORY:
+--
+--  date: 18/12/98  -  version: 3EC16472AAAA_R1.0.1
+--  editor: Rajesh Abbi, Betsy Hofelt
+--  comment:
+--        Derived from draft-ietf-atommib-atm2-12.txt
+--  date: 11/07/00  -  version: 3EC16472AAAA_R4.2.0
+--  editor: Chandrashekhar Menkudle, Murthy N N
+--  comment:
+--        Derived from draft-ietf-atommib-atm2-13.txt (9909161200Z)
+-- ====================================================
+
+-- ALCATEL NOTE: Following OID is assigned as per recommendations
+--               in <draft-ietf-atommib-atm2-13.txt>.  Note that
+--               This MIB has not been officially registered by
+--               IETF.
+atm2MIB              OBJECT IDENTIFIER ::= {atmMIBObjects 14}
+
+atm2MIBObjects       OBJECT IDENTIFIER ::= {atm2MIB 1}
+
+-- ====================================================
+-- 4. ATM Interface Signalling Support Table
+--
+-- This table provides information to support
+-- the signalling process which is used to establish
+-- ATM Switched Virtual Connections (SVCs).
+-- ====================================================
+
+-- atmSigSupportTable       OBJECT-TYPE
+--     SYNTAX       SEQUENCE OF AtmSigSupportEntry
+--     ACCESS       not-accessible
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This table contains ATM local interface configuration
+--        parameters, one entry per ATM signalling interface."
+--     ::= { atm2MIBObjects 4 }
+-- 
+-- atmSigSupportEntry         OBJECT-TYPE
+--     SYNTAX       AtmSigSupportEntry
+--     ACCESS       not-accessible
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This list contains signalling configuration parameters
+--        and state variables."
+--     INDEX { ifIndex }
+--     ::= { atmSigSupportTable  1}
+-- 
+-- AtmSigSupportEntry    ::= SEQUENCE  {
+--         atmSigSupportClgPtyNumDel       INTEGER,
+--         atmSigSupportClgPtySubAddr      INTEGER,
+--         atmSigSupportCldPtySubAddr      INTEGER,
+--         atmSigSupportHiLyrInfo          INTEGER,
+--         atmSigSupportLoLyrInfo          INTEGER,
+--         atmSigSupportBlliRepeatInd      INTEGER,
+--         atmSigSupportAALInfo            INTEGER
+--         atmSigSupportAALInfo            INTEGER,
+--         atmSigSupportPrefCarrier        OCTET STRING
+--     }
+--
+-- atmSigSupportClgPtyNumDel     OBJECT-TYPE
+--     SYNTAX       INTEGER  { 
+--                     enabled(1), 
+--                     disabled(2) 
+--                  }
+--     ACCESS       read-write
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This object indicates whether the Calling Party Number
+--        Information Element is transferred to the called party
+--        address.  The value of this object can be:
+--          - enabled(1)  This Information Element is transferred
+--                        to the called party
+-- 
+--          - disabled(2) This Information Element is NOT
+--                        transferred to the called party.
+-- 
+--        ALCATEL NOTE: The default value of this parameter is 
+--        'disabled'.  It must be 'enabled' to support CLIP
+--        (Calling Line Information Presentation) feature."
+--     DEFVAL { disabled }
+--     ::= { atmSigSupportEntry 1 }
+-- 
+-- atmSigSupportClgPtySubAddr   OBJECT-TYPE
+--     SYNTAX       INTEGER  {
+--                     enabled(1), 
+--                     disabled(2) 
+--                  }
+--     ACCESS       read-write
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This object indicates whether to accept and transfer
+--        the Calling Party Subaddress Information Element from
+--        the calling party to the called party.  Calling party
+--        subaddress information shall only be transferred to the
+--        called party if calling party number delivery is
+--        enabled (i.e., atmSigSupportClgPtyNumDel =
+--        'enabled(1)'.  The value of this object can be:
+--          - enabled(1)  This Information Element is transferred
+--                        to the called party
+-- 
+--          - disabled(2) This Information Element is NOT
+--                        transferred to the called party.
+-- 
+--        ALCATEL NOTE: The default value of this parameter is 
+--        'disabled'."
+--     DEFVAL { disabled }
+--     ::= { atmSigSupportEntry 2 }
+-- 
+-- atmSigSupportCldPtySubAddr    OBJECT-TYPE
+--     SYNTAX       INTEGER {
+--                     enabled(1), 
+--                     disabled(2) 
+--                  }
+--     ACCESS       read-write
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This object indicates whether to accept, transfer, and
+--        deliver the Called Party Subaddress Information Element
+--        from the calling party to the called party.  The value
+--        of this object can be:
+--          - enabled(1)  This Information Element is transferred
+--                        to the called party
+-- 
+--          - disabled(2) This Information Element is NOT
+--                        transferred to the called party.
+-- 
+--        ALCATEL NOTE: The default value of this parameter is 
+--        'disabled'."
+--     DEFVAL { disabled }
+--     ::= { atmSigSupportEntry 3 }
+-- 
+-- atmSigSupportHiLyrInfo     OBJECT-TYPE
+--     SYNTAX       INTEGER {
+--                     enabled(1), 
+--                     disabled(2) 
+--                  }
+--     ACCESS       read-write
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This object indicates whether to accept, transfer, and
+--        deliver the Broadband High Layer Information Element
+--        from the calling party to the called party.  The value
+--        of this object can be:
+--          - enabled(1)  This Information Element is transferred
+--                        to the called party
+-- 
+--          - disabled(2) This Information Element is NOT
+--                        transferred to the called party.
+-- 
+--        ALCATEL NOTE: The default value of this parameter is 
+--        'disabled'.  This must be enabled to support IP over
+--        ATM service."
+--     DEFVAL { disabled }
+--     ::= { atmSigSupportEntry 4 }
+-- 
+-- atmSigSupportLoLyrInfo     OBJECT-TYPE
+--     SYNTAX       INTEGER {
+--                     enabled(1), 
+--                     disabled(2) 
+--                  }
+--     ACCESS       read-write
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This object indicates whether to accept, transfer, and
+--        deliver the Broadband Low Layer Information Element
+--        from the calling party to the called party.  The value
+--        of this object can be:
+--          - enabled(1)  This Information Element is transferred
+--                        to the called party
+-- 
+--          - disabled(2) This Information Element is NOT
+--                        transferred to the called party.
+-- 
+--        ALCATEL NOTE: The default value of this parameter is 
+--        'disabled'.  This must be enabled to support IP over
+--        ATM service."
+--     DEFVAL { disabled }
+--     ::= { atmSigSupportEntry 5 }
+-- 
+-- atmSigSupportBlliRepeatInd      OBJECT-TYPE
+--     SYNTAX       INTEGER {
+--                     enabled(1), 
+--                     disabled(2) 
+--                  }
+--     ACCESS       read-write
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This object indicates whether to accept, transfer, and
+--        deliver the Broadband Repeat Indicator with two or
+--        three instances of the Broadband Low Layer Information
+--        Element for low layer information selection from the
+--        calling party to the called party.  This object shall
+--        only be transferred if atmSigSupportLoLyrInfo =
+--        'enabled(1)'.  The value of this object can be:
+--          - enabled(1)  This Information Element is transferred
+--                        to the called party
+--          - disabled(2) This Information Element is NOT
+--                        transferred to the called party.
+-- 
+--        ALCATEL NOTE: The default value of this parameter is 
+--        'disabled'.  This must be enabled to support IP over
+--        ATM service."
+--     DEFVAL { disabled }
+--     ::= { atmSigSupportEntry 6 }
+-- 
+-- atmSigSupportAALInfo     OBJECT-TYPE
+--     SYNTAX       INTEGER {
+--                     enabled(1), 
+--                     disabled(2) 
+--                  }
+--     ACCESS       read-write
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This object indicates whether to accept, transfer, and
+--        deliver the ATM Adaptation Layer Parameters Information
+--        Element from the calling party to the called party.
+--        The value of this object can be:
+--          - enabled(1)  This Information Element is transferred
+--                        to the called party
+-- 
+--          - disabled(2) This Information Element is NOT
+--                        transferred to the called party.
+-- 
+--        ALCATEL NOTE: The default value of this parameter is 
+--        'disabled'.  This must be enabled to support IP over
+--        ATM service."
+--     DEFVAL { disabled }
+--     ::= { atmSigSupportEntry 7 }
+-- 
+-- atmSigSupportPrefCarrier     OBJECT-TYPE
+--     SYNTAX       OCTET STRING
+--     ACCESS       read-write
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This parameter identifies the carrier to which
+--        intercarrier calls originated from this interface are
+--        routed when transit network selection information is
+--        not provided by the calling party.  If a Carrier
+--        Identification Code (CIC) is used the parameter shall
+--       contain the CIC.  For three-digit CICs, the first octet
+--       shall be '0' and the CIC is contained in the three
+--       following octets.  If the preferred carrier feature is
+--       not supported the value is a zero-length string.
+-- 
+--       ALCATEL NOTE: This object is not supported.  This function
+--       is performed by the asamAddrCarrierIdentCode object in the
+--       ASAM_SVC_MIB."
+--    ::= { atmSigSupportEntry 8 }
+
+-- ====================================================
+
+--
+-- 6. ATM Interface Registered Address Table
+--
+-- ====================================================
+
+-- atmIfRegisteredAddrTable    OBJECT-TYPE
+--     SYNTAX       SEQUENCE OF AtmIfRegisteredAddrEntry
+--     ACCESS       not-accessible
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This table contains a list of ATM addresses that can
+--        be used for calls to and from a given interface by a
+--        switch or service.  The ATM addresses are either
+--        registered by the endsystem via ILMI or statically
+--        configured.  This table does not expose PNNI
+--        reachability information.  ILMI registered addresses
+--        cannot be deleted using this table.  This table only
+--        applies to switches and network services.
+-- 
+--        ALCATEL NOTE: ILMI registered addresses are not supported
+--        in R3.2."
+--     ::= { atm2MIBObjects 6 }
+-- 
+-- atmIfRegisteredAddrEntry    OBJECT-TYPE
+--     SYNTAX       AtmIfRegisteredAddrEntry
+--     ACCESS       not-accessible
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "An entry in the ATM Interface Registered Address
+--        table."
+--     INDEX { ifIndex, atmIfRegAddrAddress }
+--     ::= { atmIfRegisteredAddrTable  1}
+-- 
+-- AtmIfRegisteredAddrEntry    ::= SEQUENCE  {
+--         atmIfRegAddrAddress             AtmAddr,
+--         atmIfRegAddrAddressSource       INTEGER,
+--         atmIfRegAddrOrgScope            INTEGER,
+--         atmIfRegAddrRowStatus           RowStatus
+--     }
+-- 
+-- atmIfRegAddrAddress   OBJECT-TYPE
+--     SYNTAX       AtmAddr
+--     ACCESS       not-accessible
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "An address registered for a given switch or service
+--        interface.
+-- 
+--        ALCATEL NOTE: 
+--           o Only following Address formats as specified by the
+--             ATM Forum are supported:
+--             - Native E.164 (Public Networks)
+--             - AESA DCC (Data Country Code)
+--             - AESA ICD (International Code Designator)
+--             - AESA E.164 (imbedded E.164)
+--           o Sub-addresses are not supported."
+--     ::= { atmIfRegisteredAddrEntry 1}
+-- 
+-- atmIfRegAddrAddressSource  OBJECT-TYPE
+--     SYNTAX       INTEGER  {
+--                      other(1),
+--                      static(2),
+--                      dynamic(3)
+--                  }
+--     ACCESS       read-only
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "The type of address source for a given ATM Address.
+--        The value dynamic(3) is indicated when ILMI is used.
+-- 
+--        ALCATEL NOTE: Only 'static' addresses are supported in R3.2"
+--     ::= { atmIfRegisteredAddrEntry 2}
+-- 
+-- 
+-- atmIfRegAddrOrgScope  OBJECT-TYPE
+--     SYNTAX       INTEGER {
+--         localNetwork(1),
+--         localNetworkPlusOne(2),
+--         localNetworkPlusTwo(3),
+--         siteMinusOne(4),
+--         intraSite(5),
+--         sitePlusOne(6),
+--         organizationMinusOne(7),
+--         intraOrganization(8),
+--         organizationPlusOne(9),
+--         communityMinusOne(10),
+--         intraCommunity(11),
+--         communityPlusOne(12),
+--         regional(13),
+--         interRegional(14),
+--         global(15)
+--     }
+--     ACCESS       read-write
+--     STATUS       mandatory
+--     DESCRIPTION
+--         "This object indicates the organizational scope for
+--         the referenced address.  The information of the
+--         referenced address shall not be distributed outside
+--         the indicated scope.   Refer to Annex 5.3 of ATM
+--         Forum UNI Signalling 4.0 for guidelines regarding
+--         the use of organizational scopes.
+-- 
+--         This value cannot be configured for ILMI-registered
+--         addresses.
+-- 
+--         The default values for organizational scope are
+--         localNetwork(1) for ATM group addresses, and
+--         global(15) for individual addresses.
+-- 
+--         ALCATEL NOTE: This object is not supported in R3.2"
+--     ::= { atmIfRegisteredAddrEntry 3}
+-- 
+-- atmIfRegAddrRowStatus OBJECT-TYPE
+--     SYNTAX       RowStatus
+--     ACCESS       read-write
+--     STATUS       mandatory
+--     DESCRIPTION
+--        "This object is used to create and delete rows in the
+--        atmIfRegisteredAddrTable.  Rows created dynamically
+--        (e.g., ILMI-registered addresses) cannot be deleted
+--        using this object.
+-- 
+--         ALCATEL NOTE: 
+--            o Only 'createAndGo' option of row creation is supported.
+--            o All read-write objects in an 'active' row may be modified 
+--              unless otherwise stated."
+--     ::= { atmIfRegisteredAddrEntry 4}
+-- 
+-- ================================================
+-- Below lines are new additions for R4.2
+-- ================================================
+-- 
+-- ====================================================
+-- 
+-- 9. ATM VPL Statistics Table
+-- ====================================================
+-- 
+-- atmVplStatTable   OBJECT-TYPE
+--     SYNTAX  SEQUENCE OF AtmVplStatEntry
+--     ACCESS  not-accessible
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "This table contains all statistics counters per
+--         VPL.  It is used to monitor the usage of the VPL
+--         in terms of incoming cells and outgoing cells. 
+--               SUPPORT :       YES
+--               TABLESIZE :     10368"
+-- ::= { atm2MIBObjects 9 }
+-- 
+-- atmVplStatEntry    OBJECT-TYPE
+--     SYNTAX  AtmVplStatEntry
+--     ACCESS  not-accessible
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "Each entry in this table represents a VPL.
+-- 
+--         ALCATEL NOTE:
+--         For the connections terminated at NT, both Traffic and Police
+--         monitoring counters are not supported.
+--         For LT, monitoring is supported for cross-connected VPL only and also,
+--         ASAM has imposed limitation on number of simultaneous connection
+--         monitorings based on board type. Precisely, ASAM allows 4, 12 and 24
+--         monitorings per SD, HD and UD LT card respectively. Because of this
+--         limitation, entries will not be created in this table for all VPLs,
+--         instead they will be created on a need basis. Hence, whenever
+--         Manager wants to START monitoring on a specific VPL, he has to create
+--         an entry in asamAtmVplStatTable, as a result of which Agent creates
+--         corresponding entry in this standard table also.
+--         Also for the connections employing SD LT cards, traffic monitoring
+--         counters are not supported.
+-- 
+--         Similarly, in order to STOP a specific monitoring, Manager has to delete
+--         corresponding entry in asamAtmVplStatTable, as a result of which Agent
+--         deletes corresponding entry in this standard table also. 
+--             Row creation/deletion : see above .
+--             Index usage : the index is the ifIndex and 
+--             the atmVplVpi.
+--             ALCATEL NOTE:
+--               SUPPORT :       YES "
+-- INDEX { ifIndex, atmVplVpi }
+-- ::= { atmVplStatTable 1 }
+-- 
+-- AtmVplStatEntry ::=
+-- SEQUENCE {
+--     atmVplStatTotalCellIns      Counter,
+--     atmVplStatClp0CellIns       Counter,
+--     atmVplStatTotalDiscards     Counter,
+--     atmVplStatClp0Discards      Counter,
+--     atmVplStatTotalCellOuts     Counter,
+--     atmVplStatClp0CellOuts      Counter,
+--     atmVplStatTaggedOuts        Counter
+-- }
+-- 
+-- atmVplStatTotalCellIns OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The total number of valid ATM cells received by
+--         this VPL including both CLP=0 and CLP=1 cells.
+--         The cells are counted prior to the application of
+--         the traffic policing. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVplStatEntry 1 }
+-- 
+-- atmVplStatClp0CellIns OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The number of valid ATM cells received by this
+--         VPL with CLP=0.  The cells are counted prior to
+--         the application of the traffic policing. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVplStatEntry 2 }
+-- 
+-- atmVplStatTotalDiscards OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The total number of valid ATM cells discarded by
+--         the traffic policing entity.  This includes cells
+--         originally received with CLP=0 and CLP=1. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVplStatEntry 3 }
+-- 
+-- atmVplStatClp0Discards OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The total number of valid ATM cells received with
+--         CLP=0 and discarded by the traffic policing
+--         entity. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVplStatEntry 4 }
+-- 
+-- atmVplStatTotalCellOuts OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The total number of valid ATM cells transmitted
+--         by this VPL.  This includes both CLP=0 and CLP=1
+--         cells. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVplStatEntry 5 }
+-- 
+-- atmVplStatClp0CellOuts OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The total number of valid ATM cells transmitted
+--         with CLP=0 by this VPL. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVplStatEntry 6 }
+-- 
+-- atmVplStatTaggedOuts OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The total number of valid ATM cells tagged by the
+--         traffic policing entity from CLP=0 to CLP=1 and
+--         transmitted by this VPL.
+--        ALCATEL NOTE: The meaning for this object refers to received cells
+--                      that are tagged by the traffic policing entity. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVplStatEntry 7 }
+-- 
+-- ====================================================
+-- 
+-- 11. ATM VCL Statistics Table
+-- ====================================================
+ 
+ atmVclStatTable   OBJECT-TYPE
+     SYNTAX  SEQUENCE OF AtmVclStatEntry
+     ACCESS  not-accessible
+     STATUS  mandatory
+     DESCRIPTION
+         "This table contains all statistics counters per
+         VCL.  It is used to monitor the usage of the VCL
+         in terms of incoming cells and outgoing cells. 
+            "
+ ::= { atm2MIBObjects 11 }
+ 
+ atmVclStatEntry    OBJECT-TYPE
+     SYNTAX  AtmVclStatEntry
+     ACCESS  not-accessible
+     STATUS  mandatory
+     DESCRIPTION
+         "Each entry in this table represents a VCL.
+ 
+         ALCATEL NOTE:
+         For the connections terminated at NT, both Traffic and Police
+         monitoring counters are not supported.
+         For LT, monitoring is supported for cross-connected VCL only and also,
+         ASAM imposes limitation on number of simultaneous connection
+         monitorings based on board type. Precisely, ASAM allows 4, 12 and 24
+         monitorings per SD, HD and UD LT card respectively. Because of this
+         limitation, entries will not be created in this table for all VCLs,
+         instead they will be created on a need basis. Hence, whenever
+         Manager wants to START monitoring on a specific VCL, he has to create
+         an entry in asamAtmVclStatTable, as a result of which Agent creates
+         corresponding entry in this standard table also.
+         Also for the connections employing SD LT cards, traffic monitoring
+         counters are not supported.
+ 
+         Similarly, in order to STOP a specific monitoring, Manager has to delete
+         corresponding entry in asamAtmVclStatTable, as a result of which Agent
+         deletes corresponding entry in this standard table also.
+             Row creation/deletion : see above .
+             Index usage : the index is the ifIndex, atmVclVpi, and
+             atmVclVci .
+             ALCATEL NOTE:
+               SUPPORT :       YES "
+ INDEX { ifIndex, atmVclVpi, atmVclVci }
+ ::= { atmVclStatTable 1 }
+ 
+ AtmVclStatEntry ::=
+ SEQUENCE {
+       atmVclStatTotalCellIns      Counter,
+--     atmVclStatClp0CellIns       Counter,
+--     atmVclStatTotalDiscards     Counter,
+--     atmVclStatClp0Discards      Counter,
+       atmVclStatTotalCellOuts     Counter
+--     atmVclStatClp0CellOuts      Counter,
+--     atmVclStatTaggedOuts        Counter
+ }
+-- 
+ atmVclStatTotalCellIns OBJECT-TYPE
+     SYNTAX  Counter
+     ACCESS  read-only
+     STATUS  mandatory
+     DESCRIPTION
+         "The total number of valid ATM cells received by
+         this VCL including both CLP=0 and CLP=1 cells.
+         The cells are counted prior to the application of
+         the traffic policing. 
+             ALCATEL NOTE:
+               SUPPORT :       YES
+               PERSIST :       NO
+               INSRVMOD:       NA
+               RANGE:          0..4294967295
+               DEFVALUE:	      NA
+               UNITS:          NA "
+ ::= { atmVclStatEntry 1 }
+ 
+-- atmVclStatClp0CellIns OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The number of valid ATM cells received by this
+--         VCL with CLP=0.  The cells are counted prior to
+--         the application of the traffic policing. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVclStatEntry 2 }
+ 
+-- atmVclStatTotalDiscards OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The total number of valid ATM cells discarded by
+--         the traffic policing entity.  This includes cells
+--         originally received with CLP=0 and CLP=1. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVclStatEntry 3 }
+ 
+-- atmVclStatClp0Discards OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The total number of valid ATM cells received with
+--         CLP=0 and discarded by the traffic policing
+--         entity. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVclStatEntry 4 }
+ 
+ atmVclStatTotalCellOuts OBJECT-TYPE
+     SYNTAX  Counter
+     ACCESS  read-only
+     STATUS  mandatory
+     DESCRIPTION
+         "The total number of valid ATM cells transmitted
+         by this VCL.  This includes both CLP=0 and CLP=1
+         cells. 
+             ALCATEL NOTE:
+               SUPPORT :       YES
+               PERSIST :       NO
+               INSRVMOD:       NA
+               RANGE:          0..4294967295
+               DEFVALUE:	      NA
+               UNITS:          NA "
+ ::= { atmVclStatEntry 5 }
+ 
+-- atmVclStatClp0CellOuts OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The total number of valid ATM cells transmitted
+--         with CLP=0 by this VCL. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVclStatEntry 6 }
+ 
+-- atmVclStatTaggedOuts OBJECT-TYPE
+--     SYNTAX  Counter
+--     ACCESS  read-only
+--     STATUS  mandatory
+--     DESCRIPTION
+--         "The total number of valid ATM cells tagged by the
+--         traffic policing entity from CLP=0 to CLP=1 and
+--         transmitted by this VCL.
+--        ALCATEL NOTE: The meaning for this object refers to received cells
+--                      that are tagged by the traffic policing entity. 
+--             ALCATEL NOTE:
+--               SUPPORT :       YES
+--               PERSIST :       NO
+--               INSRVMOD:       NA
+--               RANGE:          0..4294967295
+--               DEFVALUE:	      NA
+--               UNITS:          NA "
+-- ::= { atmVclStatEntry 7 }
+ 
+END
+

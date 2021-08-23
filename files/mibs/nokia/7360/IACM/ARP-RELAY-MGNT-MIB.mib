@@ -1,0 +1,721 @@
+-- ARP_RELAY_MGNT-MIB
+-- =============================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2007, Alcatel. All Rights Reserved.
+-- =============================================================================
+ 
+ARP-RELAY-MGNT-MIB DEFINITIONS ::= BEGIN
+ 
+-- MODULE IDENTITY
+-- LAST-UPDATED "200701051348Z"
+-- ORGANIZATION "Alcatel"
+-- CONTACT-INFO "email:asam.mibsupport@alcatel.be"
+-- DESCRIPTION "ARP Relay Management MIB"
+
+--  REVISION "200701051348Z"
+--  DESCRIPTION
+--        "Version: 3FE27966EAAA_E1.0.0.0
+
+--         Editor:  Srinivas Chinnam
+--         Changes: Changes after review."
+--  REVISION "200705221348Z"
+--  DESCRIPTION
+--        "Version:  3FE27966EAAA_E2.0.0.0
+--         Editor:   Jia Junjie
+--         Changes: Modify the description of arpRelayStatsSummaryTable, update its TABLESIZE "DEP [for Intel LIM,768
+--         entries per LT,  entries per LT for BCM LIM,not supported]" to "DEP [for Intel LIM and NALT-E the entries
+--         size equal to the number of vlan.port, for BCM LIM,not supported]"
+-- ========================================================================
+
+ 
+IMPORTS
+      ifIndex
+        FROM ITF-MIB
+      TruthValue                      
+FROM SNMPv2-TC
+      OBJECT-TYPE
+        FROM RFC-1212
+      RowStatus
+        FROM SNMPv2-TC
+      IpAddress
+        FROM RFC1155-SMI
+  Counter
+    FROM RFC1155-SMI
+
+      asam
+        FROM SYSTEM-MIB;
+
+
+arpRelayMgntMIB            OBJECT IDENTIFIER ::= {asam 77}
+
+
+-- ========================================================================
+-- ARP Relay Management statistics tables
+--======================================================================
+
+-- ========================================================================
+-- ARP RELAY SUMMARY STATISTICS TABLE
+-- ======================================================================
+
+arpRelayStatsSummaryTable OBJECT-TYPE
+SYNTAX SEQUENCE OF ArpRelayStatsSummaryEntry
+ACCESS not-accessible
+STATUS mandatory
+DESCRIPTION
+"A table containing the ARP Relay error summary counter for each 
+vlan port associated with a L2 forwarder.
+            ALCATEL NOTE:
+                    TABLESIZE:  DEP [for Intel LIM and NALT-E the entries size equal to the number of vlan.port, 
+for BCM LIM,not supported]
+DESCR: NA"
+
+::= { arpRelayMgntMIB 1 }
+
+arpRelayStatsSummaryEntry OBJECT-TYPE
+SYNTAX ArpRelayStatsSummaryEntry
+ACCESS not-accessible
+STATUS mandatory
+DESCRIPTION
+"An entry in the ARP Relay statistics summary table. All entries in the 
+table are auto-instantiated or auto-deleted.
+
+* Row Creation. A row in the table is created whenever a vlan-port
+interface is associated with the L2 forwarder of type C-VLAN/SC-VLAN/ RBR.
+
+* Row Deletion. A row in the table is deleted when,
+  - the association between Vlan-port and L2 forwarder is removed (OR)
+               - the associated user interface gets deleted (OR)
+               - the associated L2 forwarder is deleted (OR)
+
+
+* Index Usage. The entry is indexed by an external table index,
+ifIndex (from IfTable). The ifIndex points to the vlan-port interface"
+
+INDEX { ifIndex }
+::= { arpRelayStatsSummaryTable 1 }
+
+ArpRelayStatsSummaryEntry ::=
+SEQUENCE {
+arpRelayStatsErrorSummaryCounter Counter,
+arpRelayStatsCounterReset TruthValue,
+arpRelaySummaryUpAntiSpoofDiscardCounter Counter
+}
+
+arpRelayStatsErrorSummaryCounter OBJECT-TYPE
+SYNTAX Counter
+ACCESS read-only
+STATUS mandatory
+DESCRIPTION
+"A count of all ARP packets that are dropped because of errors. The counter value represents the number of packets dropped since the last user reset or counter rollover
+ALCATEL NOTE:
+    
+            ACCESS:      RO
+    	       	   USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO"
+::= { arpRelayStatsSummaryEntry 1 }
+
+arpRelayStatsCounterReset OBJECT-TYPE
+SYNTAX  TruthValue
+ACCESS read-write
+STATUS mandatory
+DESCRIPTION
+"This object is a button-like object to reset the summary counters for
+ a given arpRelayStatsSummaryEntry. 
+When it is set to true(1) value, the corresponding 
+ArpRelayStatsErrorSummaryCounter is cleared.  Additionally, if the
+detailed statistics have been enabled for the associated user
+interface, all the detailed counters that exist in the 
+ArpRelayStatsTable for this user interface are also cleared.
+
+             A value set to false(2) is ignored.
+
+            ALCATEL NOTE:
+            ACCESS:      RW            
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   YES
+                RANGE:      NA
+                DEFVALUE:   false(2)
+                UNITS:      NA
+                SPARSE:     NO"
+
+::= { arpRelayStatsSummaryEntry 2 }
+
+arpRelaySummaryUpAntiSpoofDiscardCounter OBJECT-TYPE
+SYNTAX Counter
+ACCESS read-only
+STATUS mandatory
+DESCRIPTION
+"A count of upstream ARP packets discarded. For dynamic user (DHCPv4), this counter covers [IP,MAC] binding anti-spoofing checking failure cases; for static user, this counter covers IP@ checking failure cases.
+ALCATEL NOTE:
+    
+            ACCESS:      RO
+    	       	   USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO"
+::= { arpRelayStatsSummaryEntry 3 }
+
+-- ========================================================================
+-- ARP RELAY DETAILED STATISTICS TABLE
+-- ======================================================================
+
+arpRelayStatsTable OBJECT-TYPE
+SYNTAX SEQUENCE OF ArpRelayStatsEntry
+ACCESS not-accessible
+STATUS mandatory
+DESCRIPTION
+            "The table used for storing the ARP detailed statistics per
+             vlan-port interface. The table defines both fine grained error
+             counters and statistics counters.
+
+             In the event of an ARP packet having multiple errors, only
+             one of the error counters will be incremented and the packet
+             dropped at the first point of failure. 
+
+            ALCATEL NOTE:
+                TABLESIZE: DEP [for Intel LIM, 4 entries per LT 
+for BCM LIM, not supported]
+The table size depends on the number of vlan-port 
+interfaces for which detailed counters have been explicitly 
+enabled by the operator. 
+Maximum number of interfaces for which detailed counters can 
+be enabled is fixed at 4 per LT (2 static and 2 dynamic vlan- port interfaces)."
+
+::= { arpRelayMgntMIB 2 }
+
+arpRelayStatsEntry OBJECT-TYPE
+SYNTAX ArpRelayStatsEntry
+ACCESS not-accessible
+STATUS mandatory
+DESCRIPTION
+            "An entry in the ARP detailed statistics table. All entries in
+             the table are dynamically created by the manager whenever detailed
+             statistics need to be enabled for a particular vlan port interface.
+             Conversely whenever detailed statistics are to be disabled for a
+             particular vlan-port interface the corresponding table entries are
+             dynamically deleted by the manager.
+
+                * Row Creation. An entry is created by a set-request with the
+                  ArpRelayStatsRowStatus set to createAndGo(4). The set-request
+                  would be successful if:
+                    - the specified vlan port(user)interface exists.
+                    - the detailed counters have not already been enabled for
+                      the specified interface.
+                    - the specified vlan port is associated with a L2 forwarder and
+                      secure forwarding is enabled on the L2 forwarder.
+                    - the number of user interfaces for which detailed counters
+                      have already been enabled has not yet reached the maximum
+                      limit. At a given time, only 4 (2 static and 2 dynamic)
+                      interfaces per LT can be enabled for detailed counters. 
+
+                * Row Deletion. A table entry is deleted by a set-request with
+                  the arpRelayStatsRowStatus set to destroy(6). A table entry can
+                  also be auto-deleted. The auto-deletion can happen when,
+- secure forwarding is disabled on the L2 forwarder.
+- the association between Vlan-port and L2 forwarder is removed (OR)
+- the associated user interface gets deleted (OR)
+- the associated L2 forwarder is deleted (OR)
+
+                * Index Usage. The entry is indexed by an external table index,
+                  ifIndex (from IfTable)."
+
+INDEX { ifIndex }
+::= { arpRelayStatsTable 1 }
+
+ArpRelayStatsEntry ::=
+SEQUENCE {
+arpRelayStatsRowStatus
+RowStatus,
+
+			--  Error Counters
+arpRelayUnsupportedHWTypeCounter  
+Counter,
+arpRelayUnsupportedL3ProtoCounter  
+Counter,
+arpRelayUnsupportedAddrLenCounter  
+Counter,			
+arpRelayInvalidPacketLengthCounter
+Counter,
+arpRelayInvalidOpCodeCounter  
+Counter,
+arpRelayReqInvalidSrcMacCounter  
+Counter,
+arpRelayReplyInvalidSrcMacCounter  
+Counter,
+arpRelayReqInvalidTargetIpCounter  
+Counter,
+arpRelayReplyInvalidTargetIpCounter  
+Counter,
+arpRelayReqInvalidSrcIpCounter  
+Counter,
+arpRelayReplyInvalidSrcIpCounter  
+Counter,
+arpRelayUnsupportedProbePacketsCounter  
+Counter,
+arpRelayReqUpSrcTargetOnSameUserItfCounter
+Counter,
+arpRelayReplyUpSrcTargetOnSameUserItfCounter
+Counter,
+arpRelayReqUpAntiSpoofDiscardCounter
+Counter,
+arpRelayReplyUpAntiSpoofDiscardCounter
+Counter,
+
+			--  Packet Statistics
+arpRelayReqUpPacketsCounter
+Counter,
+arpRelayReplyUpPacketsCounter
+Counter,
+arpRelayDnRequestsCounter
+Counter
+}
+
+arpRelayStatsRowStatus OBJECT-TYPE
+        SYNTAX    RowStatus
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The status of this conceptual row. 
+
+The value of this object has no effect on whether other objects in
+this conceptual row can be modified. A conceptual row in this table
+can always be made active.
+             
+            ALCATEL NOTE:
+                ACCESS:      RW            
+                USAGE:      MAND
+   PERSIST:    YES -- persistency is only for static VLAN ports, not  
+                   -- for dynamic VLAN ports
+                INSRVMOD:   YES
+                RANGE:      1|4|6
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 1 }
+
+
+arpRelayUnsupportedHWTypeCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the received ARP packet
+             header specifies a HW type other than Ethernet.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 2 }
+
+arpRelayUnsupportedL3ProtoCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the received ARP packet
+             specifies a L3 protocol type other than IP.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 3 }
+
+
+arpRelayUnsupportedAddrLenCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the address lengths specified
+             in the packet are not supported. The addresses under consideration can
+             be L2 or L3.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 4 }
+
+arpRelayInvalidPacketLengthCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because of invalid packet length.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 5 }
+
+arpRelayInvalidOpCodeCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because of invalid opcode being
+specified. This also includes valid but non-supported Op codes. 
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 6 }
+
+arpRelayReqInvalidSrcMacCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP Request packets dropped because the specified source MAC
+             address in the received ARP packet is invalid. The source MAC address
+             cannot be a multicast or broadcast or all zeros.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 7 }
+
+
+arpRelayReplyInvalidSrcMacCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP Reply packets dropped because the specified source MAC
+             address in the received ARP packet is invalid. The source MAC address
+             cannot be a multicast or broadcast or all zeros.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 8 }
+
+arpRelayReqInvalidTargetIpCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP Request packets dropped because the Target IP specified
+             in the received arp packet is invalid. The Target IP cannot be
+             a class D, class E or a loopback IP address. It also cannot be
+             a Directed Broadcast or a Limited Broadcast address.
+
+             Definitions Used:
+             A Limited Broadcast address is an IP address of all zeros or all
+             ones. A Directed Broadcast address is an IP address where only the
+             host part of the IP address is all zeros or all ones.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 9 }
+
+arpRelayReplyInvalidTargetIpCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP reply packets dropped because the Target IP specified
+             in the received arp packet is invalid. The Target IP cannot be
+             a class D, class E or a loopback IP address. It also cannot be
+             a Directed Broadcast or a Limited Broadcast address.
+
+             Definitions Used:
+             A Limited Broadcast address is an IP address of all zeros or all
+             ones. A Directed Broadcast address is an IP address where only the
+             host part of the IP address is all zeros or all ones.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 10 }
+
+
+arpRelayReqInvalidSrcIpCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP request packets dropped because the Sender IP specified
+             in the received arp packet is invalid. The Sender IP cannot be
+             a class D, class E or a loopback IP address. It also cannot be
+             a Directed Broadcast address. A Limited Broadcast address of all
+             ones (255.255.255.255) is also not allowed.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 11 }
+
+arpRelayReplyInvalidSrcIpCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP reply packets dropped because the Sender IP specified
+             in the received arp packet is invalid. The Sender IP cannot be
+             a class D, class E or a loopback IP address. It also cannot be
+             a Directed Broadcast address. A Limited Broadcast address of all
+             ones (255.255.255.255) is also not allowed.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 12 }
+
+
+arpRelayUnsupportedProbePacketsCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP Probe packets received and dropped. The received
+             packet is classified as an ARP probe packet if the Sender IP
+             in the packet has been specified as all zeros. This is a valid
+             ARP packet but is currently not supported in ISAM and is treated
+             as an error.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { arpRelayStatsEntry 13 }
+
+arpRelayReqUpSrcTargetOnSameUserItfCounter OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream ARP request packets dropped because of both sender
+and target IP address having been learnt on the same interface.
+
+            ALCATEL NOTE:
+                ACCESS:     RO            
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO"
+    ::= { arpRelayStatsEntry 14 }
+
+arpRelayReplyUpSrcTargetOnSameUserItfCounter OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream ARP reply packets dropped because of both sender
+and target IP address having been learnt on the same interface.
+
+            ALCATEL NOTE:
+                ACCESS:     RO            
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO"
+    ::= { arpRelayStatsEntry 15 }
+
+arpRelayReqUpAntiSpoofDiscardCounter OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+"Number of upstream ARP request packets discarded because of IP and/or MAC anti-spoofing check failure. It is same as number of ARP packets dropped as source IP is not learnt on the interface where the packet is received.
+
+            ALCATEL NOTE:
+                ACCESS:     RO            
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO"
+    ::= { arpRelayStatsEntry 16 }
+
+arpRelayReplyUpAntiSpoofDiscardCounter OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+"Number of upstream ARP reply packets discarded because of IP anti-spoofing check failure it is same as number of ARP packets dropped as source IP is not learnt on the interface where the packet is received.
+
+            ALCATEL NOTE:
+                ACCESS:     RO            
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO"
+    ::= { arpRelayStatsEntry 17 }
+
+arpRelayReqUpPacketsCounter OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+"Number of upstream ARP request packets relayed on this user interface. 
+
+            ALCATEL NOTE:
+                ACCESS:     RO            
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO"
+    ::= { arpRelayStatsEntry 18 }
+
+
+arpRelayReplyUpPacketsCounter OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+"Number of upstream ARP reply packets relayed on this user interface. 
+
+            ALCATEL NOTE:
+                ACCESS:     RO            
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO"
+    ::= { arpRelayStatsEntry 19 }
+
+arpRelayDnRequestsCounter OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+"Number of downstream broadcast ARP request packets sent out on this user interface. 
+
+            ALCATEL NOTE:
+                ACCESS:     RO            
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO"
+    ::= { arpRelayStatsEntry 20 }
+
+
+END
+

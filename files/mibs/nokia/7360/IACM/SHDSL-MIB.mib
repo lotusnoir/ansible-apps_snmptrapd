@@ -1,0 +1,3803 @@
+SHDSL-MIB DEFINITIONS ::= BEGIN
+
+-- =============================================================================
+-- This specification is published by Alcatel under Non-Disclosure
+-- Agreement(s) (NDA) with specific parties and has to be considered as
+-- Confidential Information as defined in such NDA.
+-- Alcatel reserves the right to revise this document for any reason,
+-- including but not limited to conformity with standards promulgated by
+-- various agencies, utilisation of advances in the state of the technical
+-- areas, or the reflection of changes in the design of any equipment,
+-- techniques, or procedures described or referred to herein.
+-- The product specifications and other technical or performance information
+-- contained herein are subject to change without notice.
+-- Updates of this document will be issued under the above NDA's.
+-- Alcatel makes no representation or warranty, expressed or implied, with
+-- respect to the sufficiency, accuracy, or utility of any information or
+-- opinion contained herein. Alcatel expressly advises that any use of for
+-- any purpose or reliance upon this technical reference is at the risk of
+-- the user and that Alcatel shall not be liable for any damage or injury
+-- incurred by any person arising out of the sufficiency, accuracy, or
+-- utility of any information or opinion contained herein.
+-- This document is not to be construed as a suggestion to any manufacturer
+-- to modify or change any of its products, nor does this document represent
+-- any commitment by Alcatel to sell or purchase any product.
+-- Nothing contained herein shall be construed as conferring by implication,
+-- estoppel, or otherwise any license or right under any patent, whether or
+-- not the use of any information herein necessarily employs an invention of
+-- any existing or later issued patent.
+-- Alcatel reserves the right not to offer any or all of these products and
+-- to withdraw any or all of them at any future time.
+-- Copyright (C) 2007, Alcatel. All Rights Reserved.
+-- ============================================================================
+--
+-- MODULE-IDENTITY
+-- LAST-UPDATED "200907291000Z"  -* July 29, 2009
+-- ORGANIZATION "Alcatel-Lucent"
+-- ORIGINATOR "Shilang Yan"
+-- CONTACT-INFO
+--
+--         Email:  asam.mibsupport@alcatel-lucent.be
+--
+-- DESCRIPTION
+--          "This MIB module defines MIB objects for managing SHDSL
+--           facilities in ASAM/ISAM.
+--           The MIB object definitions contained herein are based
+--           on the following SHDSL Standard:
+--           
+--           [SHDSL std.] - ITU-T G.991.2 - "
+--
+--  ==========================================================================
+--
+-- HISTORY:
+--
+--REVISION   "201404251000Z"   -* Apr 25, 2014
+-- DESCRIPTION
+--   "Version: 3EC17695EAAA_V5.0.0.0.0
+--   Editor: Sundaresan S
+-- 	 Changes:
+--   Modified the mib description of shdslSpanRowStatus
+--
+--REVISION   "201402271000Z"   -* Feb 27, 2014
+-- DESCRIPTION
+--   "Version: 3EC17695EAAA_V5.0.0.0.0
+--   Editor: Kirubashankari S
+-- 	 Changes:
+--   Modified the mib object shdsl15MinIntervalReinit as shdsl15MinIntervalReInit in the shdsl15MinIntervalTable
+--
+--REVISION   "201312051000Z"   -* Dec 05, 2013
+--DESCRIPTION
+--   "Version: 3EC17695EAAA_V5.0.0.0.0
+--    Editor:Sundaresan S
+-- 	  Changes:
+--     RCR ALU01751891 Restart a single SHDSL line in a PTM bonding group.
+--     Rename shdslLinkAdminState to shdsSpanAdminState in shdslSpanConfTable
+--
+--REVISION   "201308161000Z"   -* Aug 16, 2013
+--DESCRIPTION
+--   "Version: 3EC17695EAAA_V5.0.0.0.0
+--    Editor:Kirubashankari S
+-- 	  Changes:
+--     RCR ALU01751891 Restart a single SHDSL line in a PTM bonding group.
+--     Add shdslLinkAdminState in shdslSpanConfTable
+--   Add shdslSegmentTerminationCurr15MinReInit in shdslSegmentTerminationCurrTable 
+--   Add shdslSegmentTerminationCurr1DayReInit in shdslSegmentTerminationCurrTable
+--   Add shdsl15MinIntervalReInit  in the shdsl15MinIntervalTable
+--   Add  shdsl1DayIntervalReInit in the shdsl1DayIntervalTable."
+--
+--REVISION   "201303131000Z"   -* Mar 13, 2013
+-- DESCRIPTION
+--       "Version: 3EC17695EAAA_V4.6.0.0.0
+--        Editor: Lakshmi Eswaran 
+--        Changes: RCR ALU01848330: PM counter intervals with timestamp
+--           Add shdsl15MinIntervalTimeStamp in shdsl15MinIntervalTable 
+--           Add shdslPM15MinIntervalTimeStamp in shdslPM15MinIntervalTable
+--           Add shdsl1DayIntervalTimeStamp in shdsl1DayIntervalTable
+--           Add shdslPM1DayIntervalTimeStamp in shdslPM1DayIntervalTable
+--
+--REVISION   "200907291000Z"   -* Oct 10, 2009
+-- DESCRIPTION 
+--       "Version: 3EC17695EAAA_V4.1.0.0.2
+--        Editor: Dongxing Zhou
+--        Changes:
+--           1. shdslSegmentTerminationPowerBackoff can only be configured on ==           ==              stu-c and applies to all span.
+
+--
+--REVISION   "200907291000Z"   -* July 29, 2009
+-- DESCRIPTION 
+--       "Version: 3EC17695EAAA_V4.1.0.0.1
+--        Editor: Dongxing Zhou
+--        Changes:
+--           1.updated definition of ShdslActivationState,  "data" ==> 'active"
+--           2.updated SYNTAX of shdslSegmentTerminationCurrentDataRate,
+--             ==> INTEGER (0..65536)
+--           3.updated SYNTAX of shdslSegmentTerminationActivationFailure,
+--             ==> INTEGER (0..4294967295)
+
+-- REVISION   "200906091000Z"   -* June 9, 2009
+-- DESCRIPTION 
+--       "Version: 3EC17695EAAA_V4.1.0.0.0
+--        Editor: Dongxing Zhou
+--        Changes:
+--           1.add "testing" and "firmwareDownloading" state for ShdslSpanState 
+--           2.add bit position 12 for ShdslStatusBitmap
+--           3.add "disabled" for ShdslPowerBackoffMode
+--           4.ShdslSpanEFMHandshakeSelection, ShdslSpanEFMHsMode, 
+--             ShdslSpanCTCEnable, ShdslActivationState added.
+--           5.shdslSpanEFMHandshakeSelection, shdslSpanCTCEnable added for
+--             ShdslSpanConfEntry.
+--           6.Updated RANGE for shdslSpanConfNumRepeaters.
+--           7.Updated DESCR for shdslSpanLineProbeEnable.
+--           8.Updated RANGE and DESCR for shdslSegmentTerminationPowerBackoff.
+--           9.shdslSpanEFMHandshakeMode added for ShdslSpanStatusEntry.
+--           10.Updated DESCRIPTION for shdslSegmentTerminationStatusTable.
+--           11.shdslSegmentTerminationCurrentDataRate, 
+--              shdslSegmentTerminationActivationState, 
+--              shdslSegmentTerminationActivationFailure added for 
+--              ShdslSegmentTerminationStatusEntry.
+--           12.Updated RANGE and DESCR for shdslSegmentTerminationPBOStatus.
+--           13.updated TABLESIZE related with unit/segment table."
+
+-- REVISION   "200708102000Z"   -* August 10, 2007
+-- DESCRIPTION 
+--       "Version: 3EC17695EAAA_V3.4.0.0.0
+--        Editor: Shilang Yan
+--        Changes:
+--           1. Updated M-pair description for EFM.
+--           2. Updated TABLESIZE with DEP values."
+--
+-- REVISION   "200606281000Z"  -* June 28, 2006
+-- DESCRIPTION 
+--       "Version: 3EC17695EAAA_V3.2.0.0.0
+--        Editor: Shilang Yan
+--        Changes:
+--           1. SMIv1: comment out MODULE-IDENTITY and REVISION.
+--           2. SMIv1: use OBJECT IDENTIFIER definition.
+--           3. SMIv1: remove MIB usage notes:
+--                  Standard definition: use MODULE-IDENTITY,
+--                  Alcatel SW compiler: use OBJECT IDENTIFIER."
+--
+-- REVISION   "200606270000Z"  -* July 27, 2006
+-- DESCRIPTION 
+--       "Version: 3EC17695EAAA_V2.5.0.0.1
+--        Editor: Shilang Yan"
+--
+-- =============================================================================
+
+
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+    RowStatus, TruthValue, DisplayString
+        FROM SNMPv2-TC
+    Counter, enterprises, TimeTicks
+        FROM RFC1155-SMI
+    ifIndex
+        FROM ITF-MIB
+    asam
+        FROM SYSTEM-MIB
+    NetworkTimeInSeconds
+        FROM ASAM-TC-MIB;
+
+
+shdslMIB OBJECT IDENTIFIER ::= { asam 22 }
+
+
+-- Groups in shdslMIB
+
+shdslConfiguration OBJECT IDENTIFIER ::= { shdslMIB 1 }
+shdslInventory        OBJECT IDENTIFIER ::= { shdslMIB 2 }
+shdslStatus              OBJECT IDENTIFIER ::= { shdslMIB 3 }
+shdslPerformance   OBJECT IDENTIFIER ::= { shdslMIB 4 }
+
+-- Textual conventions
+
+ShdslUnitId ::= INTEGER {
+        stuC(1),
+        stuR(2),
+        sru1(3),
+        sru2(4),
+        sru3(5),
+        sru4(6),
+        sru5(7),
+        sru6(8),
+        sru7(9),
+        sru8(10)
+}
+
+ShdslUnitBitmap ::= INTEGER (0..1023)
+        -- Bitmap with each bit representing a unit in an SHDSL span
+        -- as follows:
+        -- Bit     Unit
+        -- ***     ******
+        --   0     STU-C
+        --   1     STU-R
+        --   2     SRU-1
+        --   3     SRU-2
+        --   4     SRU-3
+        --   5     SRU-4
+        --   6     SRU-5
+        --   7     SRU-6
+        --   8     SRU-7
+        --   9     SRU-8
+    --
+    -- The meaning of the bit state (0/1) is defined by individual objects.
+
+ShdslSegmentSide ::= INTEGER {
+        networkSide(1),
+        customerSide(2)
+}
+
+ShdslLoopbackMode ::= INTEGER {
+        noLoopback(1),
+        normalLoopback(2),
+        specialLoopback(3)
+}
+
+ShdslSpanOperationalMode ::= INTEGER {
+        native(1),
+        ima(2),
+        efm(3),
+	tdm(4)
+}
+
+ShdslSpanSpectralProfile ::= INTEGER {
+        symmetricProfile(1),
+        assymmetricProfile(2)
+}
+
+ShdslSpanWireMode ::= INTEGER {
+        twoWire(1),
+        fourWire(2),
+        sixWire(3),
+        eightWire(4)
+}
+
+ShdslWirePair ::= INTEGER {
+        firstPair(1),
+        secondPair(2),
+        thirdPair(3),
+        fourthPair(4)
+}
+
+ShdslWirePairAssignment ::= INTEGER {
+        lowerNumberFirst(1),
+        higherNumberFirst(2),
+        unknown (3),
+        notApplicable (4)
+}
+
+ShdslWirePairAssignmentExt ::= INTEGER (0..228)
+        -- 8-bit bitmap with each 2-bit combination representing a particular
+        -- meaning as follows (max 11100100b = 228), 
+        -- set to 0 for 2-wire mode:
+        -- Bit     Meaning
+        -- ***     ********
+        -- 1,0     wirePair of the 4*i-3 numbered port for 6/8-wire,
+        --          2*i-1 numbered port for 4-wire
+        -- 3,2     wirePair of the 4*i-2 numbered port for 6/8-wire, 
+        --          2*i numbered port for 4-wire
+        -- 5,4     wirePair of the 4*i-1 numbered port for 6/8-wire, 
+        --          set to 0 for 4-wire
+        -- 7,6     wirePair of the 4*i numbered port for 8-wire, 
+        --          set to 0 for 4/6-wire
+        -- 
+        -- wirePair   value
+        -- *******    ******
+        -- 1stPair	00
+        -- 2ndPair	01
+        -- 3rdPair	10
+        -- 4thPair	11
+ 
+
+ShdslSpanMgmtBySTUR ::= INTEGER {
+        disabled(1),
+        enabled (2)
+}
+
+ShdslSpanState ::= INTEGER {
+    unknown(1),
+    unequipped(2),
+    faulty(3),
+    idle(4),
+    startup(5),
+active(6),
+testing(7),
+firmwareDownloading(8)
+}
+
+
+ShdslStatusBitmap ::= INTEGER (0.. 8191)
+        -- Bitmap with each bit representing a particular condition
+        -- as follows:
+        -- Bit     Condition
+        -- ***     **********
+        --   0     No Error
+        --   1     LOSW Failure
+        --   2     Loop Attenuation Alarm
+        --   3     SNR Margin Alarm
+        --   4     DC Continuity Fault
+        --   5     Device Fault
+        --   6     Configuration Error
+        --   7     Loopback(s) Active
+        --   8     Non Conform to STU-C Enable/Disable of STU-R Initiated
+                 --Management Flow
+        --   9     ATM LCD (Loss of Cell Delineation)
+        --  10     Loss of Power (based on reception of Dying Gasp indication)
+        --  11     ATM NCD (No Cell Delineation) 
+        --  12     Segment Termination Activation Failure
+
+ShdslPowerBackoffMode ::= INTEGER {
+    default(1),
+    selected(2),
+    disabled(3)
+}
+
+ShdslTipRingReversalMode ::= INTEGER {
+    normal(1),
+    reversed(2)
+}
+
+ShdslRegionalSetting ::= INTEGER (0..3)
+--Bitmap with each bit a representing supported regional setting
+-- per ITU-T G.992.1 Annexes, as follows:
+        -- Bit     Setting
+        -- ***     ******
+        --   0     G.991.2 Annex A/F, Region 1
+        --   1     G.991.2 Annex B/G, Region 2
+
+ShdslSpanEFMHandshakeSelection ::= INTEGER { 
+auto(1), -- auto select Ieee/itu according to CPE 
+ieee(2), -- IEEE 2Base-TL 
+itu(3), -- ITU-T G.991.2 PTM 64/65-octet-based 
+notApplicable(4) -- not applicable,for ATM/IMA mode 
+} 
+
+ShdslSpanEFMHsMode ::= INTEGER {
+    unknown(1),
+    ieee(2),-- IEEE 2Base-T
+    itu(3), -- ITU-T G.991.2 PTM 64/65oTC
+    notApplicable(4)  -- not applicable,for ATM/IMA mode
+}
+
+ShdslSpanCTCEnable ::= INTEGER {
+        disabled(1),
+        enabled (2)
+}
+ 
+--added by dongxinz 04/06/2009
+ShdslActivationState ::= INTEGER {
+    active(1), -- segment termination is in data state as per G.991.2.
+    idle(2), -- segment termination is in idle state when the line is disabled,
+             -- or when the line is enabled but has not yet detected G.hs tones
+             -- (R-TONES-REQ) from peer during each auto activation.
+    unknown(3), -- segment termination status unknown
+initialization(4), -- segment termination is in initializing, including first
+                       -- and second G.hs, optional line probing, and core 
+                       -- activation as per G.991.2
+    exception(5), -- segment termination is in exception state as per G.991.2
+testing(6), -- segment termination is in test state
+firmwareDownloading(7) -- segment termination not started due to
+                      -- chipset firmware download is still ongoing. 
+} 
+ 
+--added by tbliu 10/17/2010
+ShdslSpanBondingRateCtlMode::= INTEGER  {
+	span(1),
+        link(2)
+}               
+
+-- SHDSL Configuration Group
+-- =========================
+
+-- SHDSL Span Configuration Table
+-- ==============================
+shdslSpanConfTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ShdslSpanConfEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This table supports overall configuration of the SHDSL span.
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines]
+            DESCR:       "
+ ::= { shdslConfiguration 1 }
+
+
+shdslSpanConfEntry OBJECT-TYPE
+    SYNTAX  ShdslSpanConfEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in this table represents a single SHDSL span.
+         The SHDSL span includes the STU-C, STU-R, and any
+         intermediate SRU units.  
+
+         STU-C -- { SRU-1 } ... {SRU-8} == STU-R
+
+         The SHDSL span is associated with a single SHDSL interface
+         in the ifTable.  The entry is indexed by the ifIndex of the
+         corresponding SHDSL interface.
+
+         Configuration of individual units in the span is
+         done via the shdslUnitConfTable.
+
+         Configuration of individual segment terminations in the span is
+         done via the shdslSegmentTerminationConfTable.
+
+         ALCATEL NOTE: Interfaces in ISAM are manually provisioned.
+         Entries exist in this table for all available
+         interfaces in the system, however entries are
+         only 'provisioned' based on the RowStatus of this
+         entry."
+    INDEX   { ifIndex }
+::= { shdslSpanConfTable 1 }
+
+ShdslSpanConfEntry ::=
+        SEQUENCE {
+        shdslSpanRowStatus                   RowStatus,
+        shdslSpanConfNumRepeaters     INTEGER,
+        shdslSpanOperationalMode        ShdslSpanOperationalMode,
+        shdslSpanSpectralProfile            ShdslSpanSpectralProfile,
+        shdslSpanWireMode                   ShdslSpanWireMode,
+--        shdslSpanConfiguredDataRate    INTEGER,
+        shdslSpanMgmtBySTUR           ShdslSpanMgmtBySTUR,
+        shdslSpanRegionalSetting          ShdslRegionalSetting,
+        shdslSpanMinRequestedDataRate  INTEGER,
+        shdslSpanMaxRequestedDataRate  INTEGER,
+        shdslSpanTargetRMDownWC     INTEGER,
+        shdslSpanTargetRMDownCC     INTEGER,
+        shdslSpanTargetRMUpWC     INTEGER,
+        shdslSpanTargetRMUpCC     INTEGER,
+        shdslSpanLineProbeEnable    INTEGER,
+        shdslSpanTCPAMSelection     INTEGER, 
+        shdslSpanEFMHandshakeSelection   ShdslSpanEFMHandshakeSelection,
+        shdslSpanCTCEnable          ShdslSpanCTCEnable,
+        shdslSpanBondingRateControlMode    ShdslSpanBondingRateCtlMode,
+        shdslSpanMinRequestedDataRateLink1     INTEGER,
+        shdslSpanMaxRequestedDataRateLink1     INTEGER,
+	shdslSpanMinRequestedDataRateLink2     INTEGER,
+	shdslSpanMaxRequestedDataRateLink2     INTEGER,
+	shdslSpanMinRequestedDataRateLink3     INTEGER,
+	shdslSpanMaxRequestedDataRateLink3     INTEGER,
+	shdslSpanMinRequestedDataRateLink4     INTEGER,
+	shdslSpanMaxRequestedDataRateLink4     INTEGER,
+	shdslSpanTCPAMSelectionLink1        INTEGER,
+	shdslSpanTCPAMSelectionLink2        INTEGER,
+	shdslSpanTCPAMSelectionLink3        INTEGER,
+	shdslSpanTCPAMSelectionLink4        INTEGER,
+	shdslSpanAdminState		    INTEGER	
+}
+
+shdslSpanRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object controls the configuration of the associated entry
+         in this table, and thereby the associated SHDSL interface.
+         See description of RowStatus for syntax & behavior.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       notInService | active
+            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+DESCR:       In the ISAM system, entries in this table
+         may NOT be created/deleted by a manager.  The agent automatically
+         creates entries associated with all available shdsl interfaces
+         in the system.
+
+         Only supported values for this object are:
+            'notInService' - This interface is not to be used.
+                             (unprovisioned)
+            'active'       - This interface is provisioned to be used.
+                             (provisioned)
+
+         By default interfaces are marked 'notInService'.  In this
+         state, the manager may configure various parameters associated
+         with this entry, but these changes are not stored persistently
+         (ie: re-initialization of the agent would lose any changes).
+         Also, no fault/performance monitoring is available in this state.
+         To provision the interface for use and to store its configuration
+         persistently, the manager shall set this object to 'active'.
+         If the configuration associated with this entry is not accepted by
+         the agent, the set will be denied.
+
+         To remove an interface (unprovision), the manager shall set this
+         object to 'notInService'.  Doing this also resets all configuration
+         parameters associated with this entry to their default values.
+         An interface in the 'native' mode ( see shdslSpanOperationalMode )
+         may not be unprovisioned as long as VPL/VCL entries exist on the
+         associated ATM interface.  Interfaces in 'ima' mode may not be
+         unprovisioned if they are in use as an IMA link. 
+
+         The individual links associated with this span will be made 'up' when 
+         the span set to 'active'. Similarly links associated with this span 
+         will be made 'down' when the span set to 'notInService'"
+
+::= { shdslSpanConfEntry 1 }
+
+shdslSpanConfNumRepeaters OBJECT-TYPE
+    SYNTAX  INTEGER  (0..8)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This parameter configures the number of SRU (repeater) units to
+         be configured for this SHDSL span.  It controls the number of
+         SRU (repeater) entries in the shdslUnitConfTable. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       0..8         DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+
+    DEFVAL  { 0 }
+    ::= { shdslSpanConfEntry 2 }
+
+shdslSpanOperationalMode OBJECT-TYPE
+    SYNTAX      ShdslSpanOperationalMode
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object specifies the mode in which this SHDSL span
+         is to be configured.  Two options are supported:
+            native : SHDSL span used to directly transport ATM traffic.
+            ima    : SHDSL span used as a link in an IMA group.
+            efm    : SHDSL span used to transport  EFM traffic.
+	    tdm    : SHDSL span used to transport  TDM traffic.
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       native | ima | efm | tdm
+            DEFVALUE:    native
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       The value of this object can only be set prior to 
+                         activating the associated entry 
+                         (see 'shdslSpanRowStatus').
+                         Only Interfaces which are provisioned in 'ima'
+                         mode may be associated with an IMA Group using the
+                         imaLinkTable in the IMA-MIB."
+
+    DEFVAL {native}
+    ::= { shdslSpanConfEntry 3 }
+
+
+shdslSpanSpectralProfile OBJECT-TYPE
+    SYNTAX      ShdslSpanSpectralProfile
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object specifies the spectral mode in which this SHDSL span
+         is to be configured  with.  Two options are supported:
+
+            symmetricProfile 
+            assymmetricProfile. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       symmetricProfile
+            DEFVALUE:    symmetricProfile
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       asymmericProfile is not supported. 
+"
+
+     DEFVAL {symmetricProfile}      
+ ::= { shdslSpanConfEntry 4 }
+
+shdslSpanWireMode OBJECT-TYPE
+    SYNTAX      ShdslSpanWireMode
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object specifies whether multi-pair operation is in place.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       twoWire | fourWire | sixWire | eightWire
+            DEFVALUE:    twoWire
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       The value of this object can only be set
+         prior to activating the associated entry (see shdslSpanRowStatus).
+        
+         Only the lines corresponding to odd numbered port
+         (starting form 1)can be provisioned in 4-Wire mode due to a 
+         legacy phy-assignment restriction.
+
+         Only the lines corresponding to 4*I-3 numbered port
+         (starting form 1)can be provisioned in 6-Wire/8-Wire mode to 
+          simplify M-pair provision conditions.
+          
+          If the shdslSpanBondingRateControlMode is link and 
+             shdslSpanWireMode is fourWire mode, only shdslSpanMinRequestedDataRateLink1/2 and shdslSpanMaxRequestedDataRateLink1/2  take effect.
+          If the shdslSpanBondingRateControlMode is link 
+             and shdslSpanWireMode is sixWire mode, only shdslSpanMinRequestedDataRateLink1/2/3 and shdslSpanMaxRequestedDataRateLink1/2/3 take effect.
+          If the shdslSpanBondingRateControlMode is link and 
+             shdslSpanWireMode is eightWire mode, only shdslSpanMinRequestedDataRateLink1/2/3/4 and shdslSpanMaxRequestedDataRateLink1/2/3/4 take effect.
+             
+          If shdslSpanWireMode is twoWire, only shdslSpanTCPAMSelectionLink1 take effect.        
+          If shdslSpanWireMode is fourWire, only shdslSpanTCPAMSelectionLink1/2 shall effect.
+          If shdslSpanWireMode is sixWire, only shdslSpanTCPAMSelectionLink1/2/3 shall effect.
+          IfshdslSpanWireMode is eightWire, only shdslSpanTCPAMSelectionLink1/2/3/4 shall effect. "
+
+     DEFVAL {twoWire}
+ ::= { shdslSpanConfEntry 5 }
+
+
+-- shdslSpanConfiguredDataRate OBJECT-TYPE
+--    SYNTAX      INTEGER
+--    ACCESS      read-write
+--    STATUS      mandatory
+--    DESCRIPTION
+--        "This object specifies the configured SHDSL data rate which can range
+--          from 192 to 2312 kb/s in 8 kb/s increments for 2-Wire operation and
+--          from 384 to 4624 kb/s in 16 kb/s increments for 4-Wire operation.
+--
+--          ALCATEL NOTE: The object is deprecated."
+--     
+-- ::= { shdslSpanConfEntry 6 }
+
+
+shdslSpanMgmtBySTUR OBJECT-TYPE
+    SYNTAX     ShdslSpanMgmtBySTUR 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object indicates whether the STU-R initiated management flow is
+         enabled / disabled by the STU-C. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       disabled | enabled
+            DEFVALUE:    disabled
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+
+    DEFVAL {disabled}
+ ::= { shdslSpanConfEntry 7 }
+
+
+shdslSpanRegionalSetting OBJECT-TYPE
+    SYNTAX     ShdslRegionalSetting 
+    ACCESS     read-write
+    STATUS     mandatory
+    DESCRIPTION
+        "This object specifies the regional setting for the SHDSL line 
+         per the ITU-T G.992.1 Annexes (Annex A/F and Annex B/G). 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       1..3
+            DEFVALUE:    2 (Annex B/G)
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       In Asymmetric Profile Mode the regional setting 
+                         cannot be modified."
+
+    DEFVAL {2}
+::= { shdslSpanConfEntry 8 }
+
+shdslSpanMinRequestedDataRate OBJECT-TYPE
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object specifies the minimum requested data rate which can range
+          from 192 to 5696kb/s for 2-Wire operation and from M*192 to M*5696 kb/s  
+          for multi-pair(pair number: M) operation.
+
+          16-TCPAM range: M*192 kb/s to M*3840 kb/s;
+          32-TCPAM range: M*768 kb/s to M*5696 kb/s.
+
+          For ATM/EFM mapping mode line rates are restricted to multiples of
+          64 kb/s in 2-Wire operation and to multiples of M*64kb/s in 
+          multi-pair(pair number: M) operation.
+
+          The SHDSL line is probed for levels between this rate and the maximum 
+          requested data rate. The line will not be activated at a lower rate.
+
+          It only take effect when shdslSpanBondingRateControlMode is span.
+          If it don't take effect, no range check on this object.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       DEP          DEFVALUE:    192
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       M*[autoSelect TCPAM: 192 kb/s to 5696 kb/s;
+                         tcPAM16 is selected: 192 kb/s to 3840 kb/s;
+                         tcPAM32 is selected: 768 kb/s to 5696 kb/s].
+
+          Only the ATM/EFM Mapping is supported, 
+          this limits the resulting data rates to multiples of 64k  (192..5696)
+          in TwoWire mode, plus the rate of 2312; and to multiples of 
+          M*64k (M*192 .. M*5696) in multi-pair mode.
+
+          Working in IMA Mode this rate should be set equal to 
+          Maximum Requested Data Rate.
+
+          Rate adaptive line probing in multi-pair operation 
+          is supported  by Infineon."
+     
+    DEFVAL {192}
+ ::= { shdslSpanConfEntry 9}
+
+
+shdslSpanMaxRequestedDataRate OBJECT-TYPE
+    SYNTAX      INTEGER
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object specifies the maximum requested data rate which can range
+          from 192 to 5696kb/s for 2-Wire operation and from M*192 to M*5696 kb/s  
+          for multi-pair(pair number: M) operation.
+
+          16-TCPAM range: M*192 kb/s to M*3840 kb/s;
+          32-TCPAM range: M*768 kb/s to M*5696 kb/s.
+
+          For ATM/EFM mapping mode line rates are restricted to multiples of 
+          64 kb/s in 2-Wire operation and to multiples of M*64kb/s in 
+          multi-pair(pair number: M) operation.
+
+          The SHDSL line is probed for levels between the minimum 
+          requested data rate and this rate. The line will not be activated 
+          at a higher rate.
+
+          It only take effect when shdslSpanBondingRateControlMode is span.
+          If it don't take effect, no range check on this object.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       DEP          DEFVALUE:    5696
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       M*[autoSelect TCPAM: 192 kb/s to 5696 kb/s;
+                         tcPAM16 is selected: 192 kb/s to 3840 kb/s;
+                         tcPAM32 is selected: 768 kb/s to 5696 kb/s].
+
+          Only the ATM/EFM Mapping is supported, so for Annex A / B,
+          this limits the resulting data rates to multiples of 64k (192..5696)
+          in TwoWire mode, plus the rate of 2312; and to multiples of 
+          M*64k (M*192 .. M*5696) in multi-pair(pair number: M) mode.
+
+          Working in IMA Mode this rate should be set equal to 
+          Minimum Requested Data Rate.
+
+          Rate adaptive line probing in multi-pair operation 
+          is supported."
+     
+    DEFVAL {5696}
+ ::= { shdslSpanConfEntry 10}
+
+
+shdslSpanTargetRMDownWC OBJECT-TYPE
+    SYNTAX      INTEGER (-11..21)
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object specifies the Target Relative Margin in Downstream
+          direction, for reference Worst Case noise, to be used during handshake 
+          and line-probe procedure in gauging a BER better than 1E-7.
+
+          In multi-pair operation same Downstream Target Relative Margin 
+          is used on all pairs.
+
+          A value of  -11 indicates not to use Worst Case method in Downstream.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       -11..10      DEFVALUE:    -11
+            UNITS:       dB           SPARSE:      NA
+            DESCR:       Supported set of integers is (-11..10)"
+     
+    DEFVAL {-11}
+ ::= { shdslSpanConfEntry 11}
+
+
+shdslSpanTargetRMDownCC OBJECT-TYPE
+    SYNTAX      INTEGER (-11..21)
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object specifies the Target Relative Margin in Downstream
+          direction, for Current  noise Conditions, to be used during handshake 
+          and line-probe procedure in gauging a BER better than 1E-7.
+
+          In multi-pair operation same Downstream Target Relative Margin 
+          is used on all pairs.
+
+          A value of  -11 indicates not to use Current Conditions method in
+          Downstream..
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       -11,0..10    DEFVALUE:    5
+            UNITS:       dB           SPARSE:      NA
+            DESCR:       Supported set of integers is (-11, 0..10)"
+     
+    DEFVAL {5}
+ ::= { shdslSpanConfEntry 12}
+
+
+shdslSpanTargetRMUpWC OBJECT-TYPE
+    SYNTAX      INTEGER (-11..21)
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object specifies the Target Relative Margin in Upstream
+          direction, for reference Worst Case noise, to be used during handshake 
+          and line-probe procedure in gauging a BER better than 1E-7.
+
+          In multi-pair operation same Upstream Target Relative Margin 
+          is used on all pairs.
+
+          A value of  -11 indicates not to use Worst Case method in Upstream.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       -11..10      DEFVALUE:    -11
+            UNITS:       dB           SPARSE:      NA
+            DESCR:       Supported set of integers is (-11..10)"
+     
+    DEFVAL {-11}
+ ::= { shdslSpanConfEntry 13}
+
+shdslSpanTargetRMUpCC OBJECT-TYPE
+    SYNTAX      INTEGER (-11..21)
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object specifies the Target Relative Margin in Upstream
+          direction, for Current  noise Conditions, to be used during handshake 
+          and line-probe procedure in gauging a BER better than 1E-7.
+
+          In multi-pair operation same Upstream Target Relative Margin 
+          is used on all pairs.
+
+          A value of  -11 indicates not to use Current Conditions method in
+          Upstream.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       -11,0..10    DEFVALUE:    5
+            UNITS:       dB           SPARSE:      NA
+            DESCR:       Supported set of integers is (-11, 0..10)"
+     
+    DEFVAL {5}
+ ::= { shdslSpanConfEntry 14}
+
+
+shdslSpanLineProbeEnable OBJECT-TYPE
+    SYNTAX      INTEGER {            
+                    disable(1),             
+                    enable(2)      
+                }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object enables/disables support for Line Probe
+           of the units in a SHDSL line. When Line Probe is enabled, 
+           the system performs Line Probing to find the best possible rate. 
+           If Line probe is disabled, the rate adaptation phase 
+           is skipped to shorten set up time.
+
+           ALCATEL NOTE:
+              ACCESS:      NA           USAGE:       OPT
+              PERSIST:     YES          INSRVMOD:    NA
+              RANGE:       disable | enable
+              DEFVALUE:    enable
+              UNITS:       NA           SPARSE:      NA
+              DESCR:       When the 4 Target Margins are all set to -11,
+                           this value can only be configured to Disable.
+                           When this value is set to Disable, all WC and
+                           CC Target Magins which are not equal to -11
+                           shall be ignored.
+                           More detailed limitation refer to DESCR of
+                           shdslSpanCTCEnable "
+    DEFVAL {enable}
+::= { shdslSpanConfEntry 15}
+
+
+shdslSpanTCPAMSelection OBJECT-TYPE
+    SYNTAX      INTEGER {
+                   autoSelect(1),
+                   tcPam32(2),
+                   tcPam16(3) 
+                }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the TC-PAM modulation selection
+            for the span. 
+
+            ALCATEL NOTE:
+              ACCESS:      NA           USAGE:       OPT
+              PERSIST:     YES          INSRVMOD:    NA
+              RANGE:       autoSelect | tcPAM32 | tcPAM16
+              DEFVALUE:    autoSelect
+              UNITS:       NA           SPARSE:      NA
+              DESCR:       In current implementation this configuration 
+                           only apply to the first segment from STU-C."
+
+    DEFVAL {autoSelect}
+::= { shdslSpanConfEntry 16}
+
+shdslSpanEFMHandshakeSelection OBJECT-TYPE 
+    SYNTAX      ShdslSpanEFMHandshakeSelection
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the handshake mode selection for the span. 
+
+            ALCATEL NOTE:
+              ACCESS:      NA           USAGE:       OPT
+              PERSIST:     YES          INSRVMOD:    NA
+              RANGE:       auto | ieee | itu | notApplicable
+              DEFVALUE:    notApplicable
+              UNITS:       NA           SPARSE:      NA
+              DESCR:       NA"
+    DEFVAL { notApplicable }
+::= { shdslSpanConfEntry 17 }
+
+shdslSpanCTCEnable OBJECT-TYPE
+    SYNTAX     ShdslSpanCTCEnable 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object indicates whether Cross-Talk Cancellation is
+         enabled / disabled on the span. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       disabled | enabled
+            DEFVALUE:    disabled
+            UNITS:       NA           SPARSE:      NA
+            DESCR: CTC shall be disabled in 2-wire mode.
+                   CTC is not supported by old version of LT chipset hardware;
+                   enable CTC on old version of hardware will be rejected.
+                   Due to LT SHDSL chipset limitation, CTC and Line probing (PMMS)
+                   shall not be enabled simultaneously on the ports belong to the
+                   same chipset, i.e. 4i+1, 4i+2, 4i+3, 4i+4, where i>=0. In case
+                  of line probing is enabled on any port of the chipset, enabling
+                   CTC on ports in the same chipset will be rejected. By default,
+                   a firmware supporting line probing is loaded into each SHDSL
+                   chipset of the LT when started up. New firmware supporting CTC
+                   will be downloaded when enabling CTC on a chipset running with
+                   firmware supporting line probing, to do this, all ports of the
+                   chipset shall be unprovisioned before enabling CTC. The same
+                   prodedure also applies when enabing line probing on ports of a
+                   chipset with CTC enabled and running with CTC firmware."
+    DEFVAL {disabled}
+ ::= { shdslSpanConfEntry 18}
+
+shdslSpanBondingRateControlMode OBJECT-TYPE
+    SYNTAX      ShdslSpanBondingRateCtlMode 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object indicates the bonding rate control mode on the span.
+
+            ALCATEL NOTE:
+              ACCESS:      NA           USAGE:       OPT
+              PERSIST:     YES          INSRVMOD:    NA
+              RANGE:       span | link        
+              DEFVALUE:    spanLevel
+              UNITS:       NA           SPARSE:      NA
+              DESCR:      The value of this object can only be set
+                                prior to activating the associated entry (see shdslSpanRowStatus).
+
+                                spanlevel mean shdslSpanMinRequestedDataRate and shdslSpanMaxRequestedDataRate shall take effect.
+                                Linklevel mean the link level rate control and TC-PAM selection data shall take effect..
+                                If the shdslSpanWireMode is twoWire or shdslSpanOperationalMode is not EFM, shdslSpanBondingRateControlMode shall not be link."
+
+    DEFVAL {span}
+::= { shdslSpanConfEntry 19}
+
+shdslSpanMinRequestedDataRateLink1 OBJECT-TYPE
+    SYNTAX      INTEGER 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the minimum requested data rate of link 1. 
+          It only take effect when shdslSpanBondingRateControlMode is link. 
+          If it don't take effect, no following range check on this object.
+
+          The SHDSL line is probed for levels between this rate and the maximum 
+          requested data rate. The line will not be activated at a lower rate.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       DEP          DEFVALUE:    192
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       [autoSelect TCPAM: 192 kb/s to 5696 kb/s;
+                         tcPAM16 is selected: 192 kb/s to 3840 kb/s;
+                         tcPAM32 is selected: 768 kb/s to 5696 kb/s].
+
+          Only the EFM Mapping is supported, 
+          this limits the resulting data rates to multiples of 64k  (192..5696)."
+
+    DEFVAL {192}
+::= { shdslSpanConfEntry 20}
+
+shdslSpanMaxRequestedDataRateLink1  OBJECT-TYPE
+    SYNTAX      INTEGER 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the maximum requested data rate of link 1.
+            It only take effect when shdslSpanBondingRateControlMode is link. 
+            If it don't take effect, no following range check on this object.
+
+          The SHDSL line is probed for levels between the minimum 
+          requested data rate and this rate. The line will not be activated 
+          at a higher rate.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       DEP          DEFVALUE:    5696
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       [autoSelect TCPAM: 192 kb/s to 5696 kb/s;
+                         tcPAM16 is selected: 192 kb/s to 3840 kb/s;
+                         tcPAM32 is selected: 768 kb/s to 5696 kb/s].
+
+          Only the EFM Mapping is supported, so for Annex A / B,
+          this limits the resulting data rates to multiples of 64k (192..5696)."
+
+    DEFVAL {5696}
+::= { shdslSpanConfEntry 21}
+
+shdslSpanMinRequestedDataRateLink2 OBJECT-TYPE
+    SYNTAX      INTEGER 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the minimum requested data rate of link 2.
+            It only take effect when shdslSpanBondingRateControlMode is link. 
+            If it don't take effect, no following range check on this object.
+
+          The SHDSL line is probed for levels between this rate and the maximum 
+          requested data rate. The line will not be activated at a lower rate.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       DEP          DEFVALUE:    192
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       [autoSelect TCPAM: 192 kb/s to 5696 kb/s;
+                         tcPAM16 is selected: 192 kb/s to 3840 kb/s;
+                         tcPAM32 is selected: 768 kb/s to 5696 kb/s].
+
+          Only the EFM Mapping is supported, 
+          this limits the resulting data rates to multiples of 64k  (192..5696)."
+
+    DEFVAL {192}
+::= { shdslSpanConfEntry 22}
+
+shdslSpanMaxRequestedDataRateLink2  OBJECT-TYPE
+    SYNTAX      INTEGER 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the maximum requested data rate of link 2.
+            It only take effect when shdslSpanBondingRateControlMode is link. 
+            If it don't take effect, no following range check on this object.
+
+          The SHDSL line is probed for levels between the minimum 
+          requested data rate and this rate. The line will not be activated 
+          at a higher rate.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       DEP          DEFVALUE:    5696
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       [autoSelect TCPAM: 192 kb/s to 5696 kb/s;
+                         tcPAM16 is selected: 192 kb/s to 3840 kb/s;
+                         tcPAM32 is selected: 768 kb/s to 5696 kb/s].
+
+          Only the EFM Mapping is supported, so for Annex A / B,
+          this limits the resulting data rates to multiples of 64k (192..5696)."
+
+    DEFVAL {5696}
+::= { shdslSpanConfEntry 23}
+
+shdslSpanMinRequestedDataRateLink3 OBJECT-TYPE
+    SYNTAX      INTEGER 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the minimum requested data rate of link 3. 
+            It only take effect when shdslSpanBondingRateControlMode is link and shdslSpanWireMode is sixWire or eightWire. 
+            If it don't take effect, no following range check on this object.
+
+          The SHDSL line is probed for levels between this rate and the maximum 
+          requested data rate. The line will not be activated at a lower rate.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       DEP          DEFVALUE:    192
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       [autoSelect TCPAM: 192 kb/s to 5696 kb/s;
+                         tcPAM16 is selected: 192 kb/s to 3840 kb/s;
+                         tcPAM32 is selected: 768 kb/s to 5696 kb/s].
+
+          Only the EFM Mapping is supported, 
+          this limits the resulting data rates to multiples of 64k  (192..5696)."
+
+    DEFVAL {192}
+::= { shdslSpanConfEntry 24}
+
+shdslSpanMaxRequestedDataRateLink3  OBJECT-TYPE
+    SYNTAX      INTEGER 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the maximum requested data rate of link 3.
+            It only take effect when shdslSpanBondingRateControlMode is link and shdslSpanWireMode is sixWire or eightWire. 
+            If it don't take effect, no following range check on this object.
+
+          The SHDSL line is probed for levels between the minimum 
+          requested data rate and this rate. The line will not be activated 
+          at a higher rate.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       DEP          DEFVALUE:    5696
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       [autoSelect TCPAM: 192 kb/s to 5696 kb/s;
+                         tcPAM16 is selected: 192 kb/s to 3840 kb/s;
+                         tcPAM32 is selected: 768 kb/s to 5696 kb/s].
+
+          Only the EFM Mapping is supported, so for Annex A / B,
+          this limits the resulting data rates to multiples of 64k (192..5696)."
+
+    DEFVAL {5696}
+::= { shdslSpanConfEntry 25}
+
+shdslSpanMinRequestedDataRateLink4 OBJECT-TYPE
+    SYNTAX      INTEGER 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the minimum requested data rate of link 4. 
+            It only take effect when shdslSpanBondingRateControlMode is link and shdslSpanWireMode is eightWire. 
+            If it don't take effect, no following range check on this object.
+
+          The SHDSL line is probed for levels between this rate and the maximum 
+          requested data rate. The line will not be activated at a lower rate.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       DEP          DEFVALUE:    192
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       [autoSelect TCPAM: 192 kb/s to 5696 kb/s;
+                         tcPAM16 is selected: 192 kb/s to 3840 kb/s;
+                         tcPAM32 is selected: 768 kb/s to 5696 kb/s].
+
+          Only the EFM Mapping is supported, 
+          this limits the resulting data rates to multiples of 64k  (192..5696)."
+
+    DEFVAL {192}
+::= { shdslSpanConfEntry 26}
+
+shdslSpanMaxRequestedDataRateLink4  OBJECT-TYPE
+    SYNTAX      INTEGER 
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the maximum requested data rate of link 4.
+            It only take effect when shdslSpanBondingRateControlMode is link and shdslSpanWireMode is eightWire. 
+            If it don't take effect, no following range check on this object.
+
+          The SHDSL line is probed for levels between the minimum 
+          requested data rate and this rate. The line will not be activated 
+          at a higher rate.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       DEP          DEFVALUE:    5696
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       [autoSelect TCPAM: 192 kb/s to 5696 kb/s;
+                         tcPAM16 is selected: 192 kb/s to 3840 kb/s;
+                         tcPAM32 is selected: 768 kb/s to 5696 kb/s].
+
+          Only the EFM Mapping is supported, so for Annex A / B,
+          this limits the resulting data rates to multiples of 64k (192..5696)."
+
+    DEFVAL {5696}
+::= { shdslSpanConfEntry 27}
+
+shdslSpanTCPAMSelectionLink1  OBJECT-TYPE
+    SYNTAX      INTEGER {
+                   autoSelect(1),
+                   tcPam32(2),
+                   tcPam16(3) 
+                }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the TC-PAM modulation selection for the link 1. 
+            If shdslSpanBondingRateControlMode is span, it shall not take effect.
+            
+            ALCATEL NOTE:
+              ACCESS:      NA           USAGE:       OPT
+              PERSIST:     YES          INSRVMOD:    NA
+              RANGE:        autoSelect | tcPam32 | tcPam16
+              DEFVALUE:    autoSelect 
+              UNITS:       NA           SPARSE:      NA
+              DESCR: In current implementation this configuration only apply to the first segment from STU-C."
+
+    DEFVAL {autoSelect}
+::= { shdslSpanConfEntry 28}
+
+shdslSpanTCPAMSelectionLink2  OBJECT-TYPE
+    SYNTAX      INTEGER {
+                   autoSelect(1),
+                   tcPam32(2),
+                   tcPam16(3) 
+                }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the TC-PAM modulation selection for the link 2. 
+            If shdslSpanBondingRateControlMode is span, it shall not take effect.
+            
+            ALCATEL NOTE:
+              ACCESS:      NA           USAGE:       OPT
+              PERSIST:     YES          INSRVMOD:    NA
+              RANGE:       autoSelect | tcPam32 | tcPam16
+              DEFVALUE:   autoSelect
+              UNITS:       NA           SPARSE:      NA
+              DESCR: In current implementation this configuration only apply to the first segment from STU-C."
+
+    DEFVAL {autoSelect}
+::= { shdslSpanConfEntry 29}
+
+shdslSpanTCPAMSelectionLink3  OBJECT-TYPE
+    SYNTAX      INTEGER {
+                   autoSelect(1),
+                   tcPam32(2),
+                   tcPam16(3) 
+                }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the TC-PAM modulation selection for the link 3. 
+            If shdslSpanBondingRateControlMode is span, it shall not take effect.
+            
+            ALCATEL NOTE:
+              ACCESS:      NA           USAGE:       OPT
+              PERSIST:     YES          INSRVMOD:    NA
+              RANGE:       autoSelect | tcPam32 | tcPam16
+              DEFVALUE:    autoSelect
+              UNITS:       NA           SPARSE:      NA
+              DESCR: In current implementation this configuration only apply to the first segment from STU-C."
+
+    DEFVAL {autoSelect}
+::= { shdslSpanConfEntry 30}
+
+shdslSpanTCPAMSelectionLink4  OBJECT-TYPE
+    SYNTAX      INTEGER {
+                   autoSelect(1),
+                   tcPam32(2),
+                   tcPam16(3) 
+                }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the TC-PAM modulation selection for the link 4. 
+            If shdslSpanBondingRateControlMode is span, it shall not take effect.
+            
+            ALCATEL NOTE:
+              ACCESS:      NA           USAGE:       OPT
+              PERSIST:     YES          INSRVMOD:    NA
+              RANGE:       autoSelect | tcPam32 | tcPam16
+              DEFVALUE:    autoSelect
+              UNITS:       NA           SPARSE:      NA
+              DESCR: In current implementation this configuration only apply to the first segment from STU-C."
+
+    DEFVAL {autoSelect}
+::= { shdslSpanConfEntry 31}
+
+ shdslSpanAdminState  OBJECT-TYPE
+    SYNTAX      INTEGER{
+		 up(1),
+                 down(2)
+		}
+   ACCESS      read-write
+   STATUS      mandatory
+   DESCRIPTION
+         "This object specifies the admin state of a bonding group.
+
+        ALCATEL NOTE:
+        ACCESS:      NA          USAGE:       OPT
+        PERSIST:     YES         INSRVMOD:    NA
+        RANGE:       up|down
+        DEFVALUE:    down
+        UNITS:       NA          SPARSE:      NA
+        DESCR:       NA"
+    DEFVAL {down}
+ ::= { shdslSpanConfEntry 32 }
+
+
+-- SHDSL Unit Configuration Table
+-- ==============================
+
+shdslUnitConfTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ShdslUnitConfEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+         "This table supports configuration of the SHDSL units in a
+         SHDSL span including STU-C, STU-R, and intermediate SRU
+         (repeater) units. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines * maximum number of units per line (10)]
+            DESCR:       STU-C, STU-R and 8 repeaters"
+
+::= { shdslConfiguration 2 }
+
+shdslUnitConfEntry OBJECT-TYPE
+    SYNTAX  ShdslUnitConfEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in this table represents a single SHDSL unit in
+         an SHDSL span - STU-C, STU-R, or an intermediate SRU.
+         The entry is indexed by the ifIndex of the SHDSL span, and
+         the shdslUnitId.
+         Entries always exist for STU-C and STU-R for all available
+         interfaces.
+         The 'shdslSpanConfNumRepeaters' object controls the number
+         of SRU (repeater) entries for each available interface.
+         Note: Reduction in 'shdslSpanConfNumRepeaters' value will cause
+         the associated SRU entries to be removed, while an increase will
+         create additional entries with default values.
+
+         ALCATEL NOTE: Data in this entry is only saved persistently for
+         spans that have been provisioned (see shdslSpanRowStatus).
+         Unprovisioning a span will cause all entries to revert to their
+         default values."
+        
+        INDEX   { ifIndex, shdslUnitId }
+        ::= { shdslUnitConfTable 1 }
+
+ShdslUnitConfEntry ::=
+        SEQUENCE {
+        shdslUnitId                                  ShdslUnitId,
+        shdslUnitLoopAttenThreshold     INTEGER,
+        shdslUnitSnrMarginThreshold     INTEGER,
+        shdslUnitLoopbackTimeout         INTEGER
+    }
+
+shdslUnitId OBJECT-TYPE
+    SYNTAX  ShdslUnitId
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This object identifies a specific unit in an SHDSL span,
+                 as per the ShdslUnitId textual-convention. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitConfEntry 1 }
+
+shdslUnitLoopAttenThreshold OBJECT-TYPE
+    SYNTAX  INTEGER  (0..127)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This object configures the Loop Attenuation Threshold value
+         in dB, for generating Loop Attenuation alarms for the associated
+         SHDSL unit.  A value of 0 disables alarm generation. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       0..127       DEFVALUE:    0
+            UNITS:       dB           SPARSE:      NA
+            DESCR:       NA"
+    DEFVAL  { 0 }
+    ::= { shdslUnitConfEntry 2 }
+
+shdslUnitSnrMarginThreshold OBJECT-TYPE
+    SYNTAX  INTEGER  (0..15)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This object configures the SNR Margin Threshold value
+         in dB, for generating SNR Margin alarms for the associated
+         SHDSL unit.  A value of 0 disables alarm generation. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       0..15        DEFVALUE:    0
+            UNITS:       dB           SPARSE:      NA
+            DESCR:       NA "
+    DEFVAL  { 0 }
+    ::= { shdslUnitConfEntry 3 }
+
+shdslUnitLoopbackTimeout OBJECT-TYPE
+    SYNTAX  INTEGER  (0..4095)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This object configures the Loopback Timeout duration in minutes
+         for any loopbacks activated for the associated SHDSL unit.  
+         A value of 0 disables timeout.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       0..4095      DEFVALUE:    NA
+            UNITS:       minutes      SPARSE:      NA
+            DESCR:       Timeout duration can only be changed when
+                         all segment terminations of the unit are
+                         in NoLoopback mode. "
+    DEFVAL  { 0 }
+    ::= { shdslUnitConfEntry 4 }
+
+
+
+-- SHDSL Segment Termination Configuration Table
+-- =================================
+
+shdslSegmentTerminationConfTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ShdslSegmentTerminationConfEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+            "This table supports configuration of the SHDSL segment end points on
+either
+         sides of an SHDSL unit. 
+
+         ALCATEL NOTE:
+            TABLESIZE: DEP [number of SHDSL lines * maximum number of segment terminations per line (18)]
+            DESCR: STU-C, STU-R and up to 8 repeaters. customer side of STU-C, network side of STU-R. customer and network sides of repeaters"
+
+         
+ ::= { shdslConfiguration 3 }
+
+shdslSegmentTerminationConfEntry OBJECT-TYPE
+    SYNTAX  ShdslSegmentTerminationConfEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in this table represents an SHDSL segment termination
+         on a particular side of an SHDSL unit.
+         The entry is indexed by the ifIndex of the SHDSL span, the 
+         shdslUnitId, and the shdslSegmentSide. Configuration for segment 
+         terminations shall be identical for each segment side of a unit
+         in a multi-pair span.
+
+         ALCATEL NOTE: Data in this entry is only saved persistently for
+         spans that have been provisioned (see shdslSpanRowStatus).
+         Unprovisioning a span will cause all entries to revert to their
+         default values."
+        
+        INDEX   { ifIndex, shdslUnitId, shdslSegmentSide}
+        ::= { shdslSegmentTerminationConfTable 1 }
+
+ShdslSegmentTerminationConfEntry ::=
+        SEQUENCE {
+        shdslSegmentSide                           ShdslSegmentSide,
+        shdslSegmentTerminationLoopbackConfig      ShdslLoopbackMode,
+        shdslSegmentTerminationPowerBackoff        ShdslPowerBackoffMode,
+        shdslSegmentTerminationSoftRestart               INTEGER
+    }
+
+shdslSegmentSide OBJECT-TYPE
+    SYNTAX  ShdslSegmentSide
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This object identifies the particular side of an SHDSL unit
+         in an SHDSL segment, based on the ShdslSegmentSide textual-
+         convention. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       networkSide | customerSide
+            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+DESCR:       NA"
+    ::= { shdslSegmentTerminationConfEntry 1 }
+
+shdslSegmentTerminationLoopbackConfig OBJECT-TYPE
+    SYNTAX  ShdslLoopbackMode
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This object configures loopbacks for the associated side of an
+         SHDSL segment.  Following options are supported, as per the
+                 ShdslLoopbackMode textual-convention:
+            o noLoopback
+            o normalLoopback
+            o specialLoopback (Only supported for STU-R)
+                 All loopbacks loop segment data back towards the segment.
+         Loopbacks are subject to timeout or expiry based on the
+         timeout/expiry time provisioned for the associated unit in the
+         'shdslUnitConfTable'.  Note that timeout/expiration does not
+                 change the value of this object.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       noLoopback | normalLoopback | specialLoopback
+            DEFVALUE:    noLoopback
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       Only network-side loopbacks are supported
+                         for SRU and STU-R units. Only customer-side 
+                         loopbacks are supported for STU-C.
+                          'specialLoopback' is not supported.
+                         Notice also that in the multi-pair mode the
+                         loopbacks cannot be applied to individual pair
+                         seperately. I.e. all pairs looped-back and
+                         released at the same time."
+    DEFVAL  { noLoopback }
+    ::= { shdslSegmentTerminationConfEntry 2 }
+
+
+shdslSegmentTerminationPowerBackoff OBJECT-TYPE
+    SYNTAX  ShdslPowerBackoffMode
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the Power Backoff rule at this SHDSL
+          segment termination, as per the 'ShdslPowerBackoffMode' textual
+         convention.
+  
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       default | selected | disabled
+            DEFVALUE:    default
+            UNITS:       NA           SPARSE:      NA
+            DESCR: selected mode is not supported at STU-C.
+                   This object can only be configured on STU-C 
+                   and applies to the whole span"
+
+      DEFVAL  {default}    ::= { shdslSegmentTerminationConfEntry 3 }
+
+
+shdslSegmentTerminationSoftRestart OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This object is used to initiate a Soft Restart message towards the relevant
+          segment termination. When the value of this object is set from 0 to 1, a
+          Soft Restart 
+          EOC message is initiated. After 5 minutes (an arbitrary length of time)
+          the value of 
+          the object is automatically set back to 0 by the Agent. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0 | 1        DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    DEFVAL {0}
+    ::= { shdslSegmentTerminationConfEntry 4 }
+
+
+
+ 
+-- SHDSL Unit Inventory Table
+-- ==========================
+
+shdslUnitInventoryTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ShdslUnitInventoryEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+         "This table supports retrieval of inventory information 
+         associated with SHDSL units. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines * maximum number of units per line (10)]
+            DESCR:       STU-C, STU-R and 8 SRUs"
+
+ ::= { shdslInventory 1 }
+
+shdslUnitInventoryEntry OBJECT-TYPE
+    SYNTAX  ShdslUnitInventoryEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in this table represents the inventory information
+         associated with a single SHDSL unit in a SHDSL span.
+         The entry is indexed by the ifIndex of the SHDSL span, the 
+         shdslUnitId.
+
+         ALCATEL NOTE: An entry is only available after the bit for
+         the associated unit is set in the 'shdslSpanInventoriedUnits'
+         bitmap in the 'shdslSpanStatusTable'.  Note that this
+         information is retrieved directly from the device, and not 
+         stored persistently."
+        
+        INDEX   { ifIndex, shdslUnitId }
+        ::= { shdslUnitInventoryTable 1 }
+
+ShdslUnitInventoryEntry ::=
+        SEQUENCE {
+        shdslUnitShdslStdVersion           INTEGER,
+        shdslUnitVendorListNumber       DisplayString,
+        shdslUnitVendorIssueNumber     DisplayString,
+        shdslUnitVendorSwVersion        DisplayString,
+        shdslUnitCleiCode                       DisplayString,
+        shdslUnitVendorID                     OCTET STRING,
+        shdslUnitVendorModelNumber  DisplayString,
+        shdslUnitVendorSerialNumber    DisplayString,
+        shdslUnitVendorOtherInfo           OCTET STRING,
+        shdslUnitRegionalCapability        ShdslRegionalSetting
+    }
+
+shdslUnitShdslStdVersion OBJECT-TYPE
+    SYNTAX  INTEGER (0..255)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object represents the SHDSL Standard Version# as per
+         [SHDSL std.] supported by this unit. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..255       DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitInventoryEntry 1 }
+
+shdslUnitVendorListNumber OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..3))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This string represents the Vendor List # as per [SHDSL std.]
+         associated with the vendor of this unit. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitInventoryEntry 2 }
+
+shdslUnitVendorIssueNumber OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..2))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This string represents the Vendor Issue # as per [SHDSL std.]
+         associated with the vendor of this unit. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitInventoryEntry 3 }
+
+shdslUnitVendorSwVersion OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..32))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This string represents the Vendor SW version # as per [SHDSL std.]
+         associated with this unit. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitInventoryEntry 4 }
+
+shdslUnitCleiCode OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..10))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This string represents the CLEI (Common Language Equipment
+         Identifier) code associated with this unit. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitInventoryEntry 5 }
+
+shdslUnitVendorID OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE(0..9))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This string represents the Vendor ID as per [SHDSL std.]
+         associated with this unit. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitInventoryEntry 6 }
+
+shdslUnitVendorModelNumber OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..12))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This string represents the Vendor Model # as per [SHDSL std.]
+         associated with this unit. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitInventoryEntry 7 }
+
+shdslUnitVendorSerialNumber OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE(0..12))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This string represents the Vendor Serial # as per [SHDSL std.]
+         associated with this unit."
+    ::= { shdslUnitInventoryEntry 8 }
+
+shdslUnitVendorOtherInfo OBJECT-TYPE
+    SYNTAX  OCTET STRING (SIZE(0..12))
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This string represents additional vendor specific information 
+         as per 'Other vendor information' field in [SHDSL std.]
+         associated with this unit. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitInventoryEntry 9 }
+
+shdslUnitRegionalCapability OBJECT-TYPE
+    SYNTAX  ShdslRegionalSetting
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This string represents the regional capabilities, per ITU-T G.992.1
+Annexes,
+          that can be supported by this unit. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitInventoryEntry 10 }
+
+
+-- SHDSL Status Group
+-- ==================
+
+-- SHDSL Span Status Table
+-- =======================
+shdslSpanStatusTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ShdslSpanStatusEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This table provides overall status of the SHDSL span. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP[number of SHDSL lines]
+            DESCR:       "
+ ::= { shdslStatus 1 }
+
+
+shdslSpanStatusEntry OBJECT-TYPE
+    SYNTAX  ShdslSpanStatusEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in this table represents a single SHDSL span.
+         The SHDSL span includes the STU-C, STU-R, and any
+         intermediate SRU units.  
+         STU-C --- { SRU-1 } ... {SRU-8} == STU-R
+         The SHDSL span is associated with a single SHDSL interface 
+         in the ifTable.  The entry is indexed by the ifIndex of the
+         corresponding SHDSL interface.
+
+         ALCATEL NOTE: Entries only exist for those spans that have been
+         provisioned in the 'shdslSpanConfTable'."
+
+        INDEX   { ifIndex }
+        ::= { shdslSpanStatusTable 1 }
+
+ShdslSpanStatusEntry ::=
+        SEQUENCE {
+        shdslSpanState                         ShdslSpanState,
+        shdslSpanDetectedUnits          ShdslUnitBitmap,
+        shdslSpanInventoriedUnits      ShdslUnitBitmap,
+        shdslSpanConfiguredUnits      ShdslUnitBitmap,
+        shdslSpanStatus                       ShdslStatusBitmap,
+--        shdslSpanAttainableDataRate      INTEGER,
+--        shdslSpanWirePairAssignment   ShdslWirePairAssignment,
+        shdslSpanCurrentDataRate      INTEGER,
+        shdslSpanWirePairAssignmentExt   ShdslWirePairAssignmentExt,
+        shdslSpanTCPAMModulation      INTEGER,
+        shdslSpanEFMHandshakeMode     ShdslSpanEFMHsMode	
+}
+
+shdslSpanState OBJECT-TYPE
+    SYNTAX  ShdslSpanState
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the overall state of this SHDSL span,
+         as per the 'ShdslSpanState' textual-convention. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSpanStatusEntry 1 }
+
+shdslSpanDetectedUnits OBJECT-TYPE
+    SYNTAX  ShdslUnitBitmap
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the units that have been detected on this
+         SHDSL span, as per the 'ShdslUnitBitmap' textual-convention.
+         Bits are set(1) for detected units. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSpanStatusEntry 2 }
+
+shdslSpanInventoriedUnits OBJECT-TYPE
+    SYNTAX  ShdslUnitBitmap
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the units in the SHDSL span whose 
+         inventory information is available, as per the 'ShdslUnitBitmap' 
+         textual-convention.
+         Bits are set(1) for units whose inventory is available. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSpanStatusEntry 3 }
+
+shdslSpanConfiguredUnits OBJECT-TYPE
+    SYNTAX  ShdslUnitBitmap
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the units in the SHDSL span which have
+         been successfully configured, as per the 'ShdslUnitBitmap' 
+         textual-convention.
+         Bits are set(1) for units whose inventory is available. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSpanStatusEntry 4 }
+
+shdslSpanStatus OBJECT-TYPE
+    SYNTAX  ShdslStatusBitmap
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the overall status of the SHDSL span,
+         as per the 'ShdslStatusBitmap' textual-convention.  Note that 
+         status conditions are associated with individual SHDSL
+         segment end points.  This object represents collective span status by
+         logically-ORing individual segment termination status bits. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSpanStatusEntry 5 }
+
+-- shdslSpanAttainableDataRate OBJECT-TYPE
+--    SYNTAX      INTEGER
+--    ACCESS      read-only
+--    STATUS      mandatory
+--    DESCRIPTION
+--        "This object specifies the data rate at which the SHDSL can operate 
+--          according to the results of  line probe and capabilities exchange 
+--          procedure performed along the span.
+--
+--         The line probe and capabilities exchange procedure is performed
+--         each time the shdslSpanConfEntry row status is set to active or 
+--         the value of the spectralProfile is changed. 
+--
+--         ALCATEL NOTE: This object is deprecated."
+--     
+-- ::= { shdslSpanStatusEntry 6 }
+
+-- shdslSpanWirePairAssignment OBJECT-TYPE
+--    SYNTAX  ShdslWirePairAssignment
+--    ACCESS  read-only
+--    STATUS  mandatory
+--    DESCRIPTION
+--        "This object is used to correlate the actual ports and their dynamic
+--          assignment as
+--          firstPair & secondPair.
+-- 
+--          In the 4-wire mode, firstPair & secondPair are determined during the
+--          preactivation 
+--          sequence.  firstPair is defined as the pair on which the final G.994.1
+--          transaction 
+--          is conducted.
+--
+--          The object indicates whether the lower-number or the higher-number port
+--          is designated as firstPair. 
+--
+--          The value of 'notApplicable' is used in the case of 2-wire operation.
+--
+--          ALCATEL NOTE: This object is deprecated."
+--::= { shdslSpanStatusEntry 7 }
+
+shdslSpanCurrentDataRate OBJECT-TYPE
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        " This object specifies the current SHDSL data rate which can range
+          from 192 to 5696 kb/s in 64 kb/s increments for 2-Wire operation and
+          from M*192 to M*5696 kb/s in M*64 kb/s increments for 
+          multi-pair(pair number: M) operation.
+
+          The rates are restricted to multiples of 64 kb/s for ATM/EFM 
+          mapping mode.
+
+          The current data rate is set automatically, based on the 
+          Minimum & Maximum Requested Data Rates and the discovered capability of
+          the line.
+          I.e. this object reflects the best achievable rate within the limits
+          imposed by the manager.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       192..5696    DEFVALUE:    NA
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       Only the ATM mapping mode is supported.
+                         Therefore the data rate will be a multiple of 64 kb/s.
+                         In addition the special rate of 2312 is supported
+                         in 2-wire mode While the SHDSL line is not activated,
+                         the value of this object is 0."
+     
+ ::= { shdslSpanStatusEntry 8 }
+
+shdslSpanWirePairAssignmentExt OBJECT-TYPE
+    SYNTAX  ShdslWirePairAssignmentExt
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object is used to correlate the actual ports and their dynamic
+          assignment as firstPair & secondPair & thirdPair & fourthPair.
+ 
+          In the M-pair mode, firstPair & other assignment are determined
+          during the preactivation sequence.  firstPair is defined as the
+          pair on which the final G.994.1 transaction is conducted.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR: 
+
+          For 2-wire mode: 
+          - 00000000b 
+
+          For 4-wire mode: 
+          - 00000100b: if the first port is the first pair
+                          the second port is the second pair
+          - 00000001b: if the second port is the first pair
+
+          6-wire mode examples: 
+          - 00100100b: if the first port is the first pair, 
+                              second port is the second pair,
+                              third port is the third pair
+          - 00010010b: if the second port is the first pair, 
+                               third port is the second pair
+          - 00001001b: if the third port is the first pair, 
+                              first port is the second pair
+
+          8-wire mode examples: 
+          - 11100100b: if the first port is the first pair, 
+                             second port is the first pair, 
+                              third port is the third pair, 
+                             fourth port is the fourth pair
+          - 10010011b: if the second port is the first pair
+          - 01001110b: if the third port is the first pair
+          - 00111001b: if the fourth port is the first pair"
+
+    ::= { shdslSpanStatusEntry 9 }
+
+ shdslSpanTCPAMModulation OBJECT-TYPE
+    SYNTAX      INTEGER {
+                tcPam32(1),
+                tcPam16(2),
+                unknown(3)
+            }
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        " This object specifies Current TC-PAM modulation of the span.
+          NOTE: In current implementation this object only indicates
+          the status of the first segment from STU-C. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       tcPam32 | tcPam16 | unknown
+            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+
+::= { shdslSpanStatusEntry 10 }
+
+shdslSpanEFMHandshakeMode OBJECT-TYPE
+    SYNTAX      ShdslSpanEFMHsMode
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+           "This object specifies the actual handshake mode for the span.
+
+            ALCATEL NOTE:
+              ACCESS:      NA          USAGE:       NA
+              PERSIST:     NO          INSRVMOD:    NA
+              RANGE:       unknown | ieee | itu | notApplicable
+              DEFVALUE:    NA
+              UNITS:       NA          SPARSE:      NA
+              DESCR:       Before a actual value can be determined, unknown shall be returned. "              
+::= { shdslSpanStatusEntry 11 }
+
+
+
+
+-- SHDSL Unit Status Table
+-- =======================
+shdslUnitStatusTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ShdslUnitStatusEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This table provides status of individual units in an SHDSL span. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines * maximum number of units per line (10)]
+            DESCR:       STU-C, STU-R and 8 SRUs"
+ ::= { shdslStatus 2 }
+
+
+shdslUnitStatusEntry OBJECT-TYPE
+    SYNTAX  ShdslUnitStatusEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in this table represents a single SHDSL unit in
+         an SHDSL span - STU-C, STU-R, or an intermediate SRU.
+         The entry is indexed by the ifIndex of the SHDSL span, and
+         the shdslUnitId.
+
+         ALCATEL NOTE: Entries only exist for those units in the span that
+         show up as configured as per the 'shdslSpanConfiguredUnits', and
+         which support Maintenance Status messages as per [SHDSL std.]."
+
+        INDEX   { ifIndex, shdslUnitId }
+        ::= { shdslUnitStatusTable 1 }
+
+ShdslUnitStatusEntry ::=
+        SEQUENCE {
+        shdslUnitDCPowering             INTEGER
+    }
+
+shdslUnitDCPowering OBJECT-TYPE
+    SYNTAX  INTEGER {
+                localPowered(1),
+                spanPowered(2)
+            }
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates whether this unit is powered locally, or
+         derives power from the SHDSL span. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       localPowered | spanPowered
+            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslUnitStatusEntry 1 }
+
+-- SHDSL Segment Termination Status Table
+-- ======================================
+
+shdslSegmentTerminationStatusTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ShdslSegmentTerminationStatusEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This table provides the status of individual segment end points in an 
+         SHDSL span. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines * maximum number of segment terminations per line (18)]
+            DESCR:       STU-C, STU-R and 8 SRUs. customer side of STU-C, network side of STU-R, customer and network side of SRU"
+ ::= { shdslStatus 3 }
+
+shdslSegmentTerminationStatusEntry OBJECT-TYPE
+    SYNTAX  ShdslSegmentTerminationStatusEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in this table represents an SHDSL segment termination
+         on a particular side of an SHDSL unit.
+         The entry is indexed by the ifIndex of the SHDSL span, the 
+         shdslUnitId,  shdslSegmentSide, and shdslSegmentTerminationWirePair.
+
+         ALCATEL NOTE: Entries only exist for those units that are configured
+         as indicated by the 'shdslSpanConfiguredUnits' object, and
+         which support Performance Status messages as per [SHDSL std.]."
+        
+        INDEX   { ifIndex, shdslUnitId, shdslSegmentSide,
+shdslSegmentTerminationWirePair }
+        ::= { shdslSegmentTerminationStatusTable 1 }
+
+ShdslSegmentTerminationStatusEntry ::=
+        SEQUENCE {
+        shdslSegmentTerminationWirePair                 ShdslWirePair,
+        shdslSegmentTerminationStatus                      ShdslStatusBitmap,
+        shdslSegmentTerminationLoopbackState        ShdslLoopbackMode,
+        shdslSegmentTerminationSnrMargin               INTEGER,
+        shdslSegmentTerminationLoopAttenuation     INTEGER,
+        shdslSegmentTerminationPowerBackoffLvl    INTEGER,
+        shdslSegmentTerminationTipRingReversal     ShdslTipRingReversalMode,
+        shdslSegmentTerminationPBOStatus               ShdslPowerBackoffMode,
+        shdslSegmentTerminationCurrentDataRate      INTEGER,
+        shdslSegmentTerminationActivationState      ShdslActivationState,
+        shdslSegmentTerminationActivationFailure    INTEGER,
+        shdslSegmentTerminationTCPAMModulation      INTEGER
+    }
+
+shdslSegmentTerminationWirePair OBJECT-TYPE
+    SYNTAX  ShdslWirePair
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the applicable SHDSL Wire Pair, as per the 
+          'ShdslWirePair' textual convention. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       firstPair | secondPair | thirdPair | fourthPair
+            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationStatusEntry 1 }
+
+shdslSegmentTerminationStatus OBJECT-TYPE
+    SYNTAX  ShdslStatusBitmap
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates any exception conditions active at this SHDSL
+          segment termination, as per the 'ShdslStatusBitmap' textual
+         convention. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationStatusEntry 2 }
+
+shdslSegmentTerminationLoopbackState OBJECT-TYPE
+    SYNTAX  ShdslLoopbackMode
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates any loopbacks that may be active at this SHDSL
+          segment termination, as per the 'ShdslLoopbackMode' textual
+         convention. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationStatusEntry 3 }
+
+shdslSegmentTerminationSnrMargin OBJECT-TYPE
+    SYNTAX  INTEGER (-128..127)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the currently measured SNR Margin in dB at 
+         this SHDSL segment termination.  A value of 127 indicates that this
+         information is unavailable. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       -128..127    DEFVALUE:    NA
+            UNITS:       dB           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationStatusEntry 4 }
+
+shdslSegmentTerminationLoopAttenuation OBJECT-TYPE
+    SYNTAX  INTEGER (-128..127)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the currently measured Loop Attenuation in dB
+         at this SHDSL segment termination.  A value of -128 indicates that 
+         this information is unavailable. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       -128..127    DEFVALUE:    NA
+            UNITS:       dB           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationStatusEntry 5 }
+
+shdslSegmentTerminationPowerBackoffLvl OBJECT-TYPE
+    SYNTAX  INTEGER (0..255)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the current Power Backoff value in dB at this
+         SHDSL segment termination. A value of 255 indicates that information
+	 is unavailable.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..31,255    DEFVALUE:    NA
+            UNITS:       dB           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationStatusEntry 6 }
+
+shdslSegmentTerminationTipRingReversal OBJECT-TYPE
+    SYNTAX  ShdslTipRingReversalMode
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the current state of the Tip/Ring pair at this
+         SHDSL segment termination, as per the 'ShdslTipRingReversalMode' 
+         textual convention. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationStatusEntry 7 }
+
+shdslSegmentTerminationPBOStatus OBJECT-TYPE
+    SYNTAX ShdslPowerBackoffMode
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+          "This object indicates the Power Backoff status at this SHDSL
+          segment termination, as per the 'ShdslPowerBackoffMode' textual
+          convention. This value indicates the mode that will be selected at 
+          at the next reset.
+         
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       default | selected | disabled          
+DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       selected mode is not supported at STU-C"
+
+::= { shdslSegmentTerminationStatusEntry 8 }
+
+shdslSegmentTerminationCurrentDataRate OBJECT-TYPE
+    SYNTAX      INTEGER (0..65536)
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        " This object specifies the current SHDSL data rate which can range
+          from 192 to 5696 kb/s in 64 kb/s increments.
+
+          The rates are restricted to multiples of 64 kb/s for ATM/EFM 
+          mapping mode.
+
+          The current data rate is set automatically, based on the 
+          Minimum & Maximum Requested Data Rates and the discovered capability of
+          the line.
+          i.e. this object reflects the best achievable rate within the limits
+          imposed by the manager.
+
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0|192..5696    DEFVALUE:    NA
+            UNITS:       kb/s         SPARSE:      NA
+            DESCR:       Only the ATM mapping mode is supported.
+                         Therefore the data rate will be a multiple of 64 kb/s.
+                         In addition the special rate of 2312 is supported,
+                         While the SHDSL line is not activated,
+                         the value of this object is 0."     
+ ::= { shdslSegmentTerminationStatusEntry 9 }
+
+shdslSegmentTerminationActivationState OBJECT-TYPE
+    SYNTAX  ShdslActivationState
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object indicates the  state of this segment termination,
+         as per the 'ShdslActivationState' textual-convention. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR: "   
+ ::= { shdslSegmentTerminationStatusEntry 10 }
+
+shdslSegmentTerminationActivationFailure OBJECT-TYPE
+    SYNTAX      INTEGER (0..4294967295)
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        " this object indicates the coded reason of activation failure.
+          Activation failure code shall be an unsigned integer value 
+          comprised of 4 octet values from MSB to LSB:
+/====================================================================\
+|Bit  |    31~24	     |      23~16	    |   15~8      |     7~0    |
+|====================================================================
+|Octet|   1st octet	 |    2nd octet	    |  3rd octet	  |  4th octet |
+|====================================================================
+|Value|Proxy condition|Firmware condition|PMD condition |	PMD reason |
+\====================================================================/
+detailed code meaning refer to 3HH-03653-AAAA-PBZZA:SHDSL Proxy API Definition
+          ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       Only supported for STU-C customer side"     
+ ::= { shdslSegmentTerminationStatusEntry 11 }
+
+shdslSegmentTerminationTCPAMModulation OBJECT-TYPE
+    SYNTAX      INTEGER {
+                tcPam32(1),
+                tcPam16(2),
+                unknown(3)
+            }
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        " This object specifies Current TC-PAM modulation of this segment termination.
+          NOTE: For remote units(STU-R or SRUs),it is always same with value recovered from STU-C. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       tcPam32 | tcPam16 | unknown
+            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+
+::= { shdslSegmentTerminationStatusEntry 12 }
+
+
+-- SHDSL Performance Group
+-- =======================
+
+
+shdslSegmentTerminationCurrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ShdslSegmentTerminationCurrEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table contains current status and performance information
+        for Segment Terminations in SHDSL Lines. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines * maximum number of segment terminations per line (18)]
+            DESCR: STU-C, STU-R and 8 SRUs. Customer side of STU-C, network side of STU-R, customer and network side of SRU"
+    ::= { shdslPerformance 1 }
+
+shdslSegmentTerminationCurrEntry OBJECT-TYPE
+    SYNTAX      ShdslSegmentTerminationCurrEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry in the shdslSegmentTerminationCurrTable.  Each entry 
+        contains performance information relating to a 
+        single Segment termination.  It is indexed by the ifIndex of 
+        the SHDSL line, the UnitId of the associated unit, 
+        the side of the unit, and the wire-pair of the associated 
+        unit."
+    INDEX { ifIndex, shdslUnitId, shdslSegmentSide, 
+            shdslSegmentTerminationWirePair}
+    ::= { shdslSegmentTerminationCurrTable 1 }
+
+ShdslSegmentTerminationCurrEntry ::=
+    SEQUENCE
+    {
+    shdslSegmentTerminationCurr15MinTimeElapsed   INTEGER,
+    shdslSegmentTerminationCurr15MinES            Counter,
+    shdslSegmentTerminationCurr15MinSES           Counter,
+    shdslSegmentTerminationCurr15MinCRCanomalies  Counter,
+    shdslSegmentTerminationCurr15MinLOSWS         Counter,
+    shdslSegmentTerminationCurr15MinUAS           Counter,
+    shdslSegmentTerminationCurr1DayTimeElapsed    INTEGER,
+    shdslSegmentTerminationCurr1DayES             Counter,
+    shdslSegmentTerminationCurr1DaySES            Counter,
+    shdslSegmentTerminationCurr1DayCRCanomalies   Counter,
+    shdslSegmentTerminationCurr1DayLOSWS          Counter,
+    shdslSegmentTerminationCurr1DayUAS            Counter,
+    shdslSegmentTermination15MinValidIntervals   INTEGER,
+    shdslSegmentTermination1DayValidIntervals   INTEGER,
+    shdslSegmentTerminationCurr15MinInvalidDataFlag  INTEGER,
+    shdslSegmentTerminationCurr1DayInvalidDataFlag   INTEGER,
+    shdslSegmentTerminationCurr15MinReInit        Counter, 
+    shdslSegmentTerminationCurr1DayReInit         Counter 
+}
+
+
+shdslSegmentTerminationCurr15MinTimeElapsed OBJECT-TYPE
+    SYNTAX       INTEGER (0..900)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Total elapsed seconds in the current 15-minute interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..900       DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 1 }
+
+shdslSegmentTerminationCurr15MinES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Errored Seconds (ES) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 2 }
+
+shdslSegmentTerminationCurr15MinSES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Seconds (SES) in the current 
+        15-minute interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 3 }
+
+shdslSegmentTerminationCurr15MinCRCanomalies OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of CRC anomalies in the current 15-minute interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       anomalies    SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 4 }
+
+shdslSegmentTerminationCurr15MinLOSWS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Loss of Sync Word (LOSW) Seconds in the
+        current 15-minute interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 5 }
+
+shdslSegmentTerminationCurr15MinUAS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Unavailable Seconds (UAS) in the current
+        15-minute interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 6 }
+
+shdslSegmentTerminationCurr1DayTimeElapsed OBJECT-TYPE
+    SYNTAX       INTEGER (0..86400)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Number of seconds that have elapsed since the
+        beginning of the current 1-day interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..86400     DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 7 }
+
+shdslSegmentTerminationCurr1DayES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Errored Seconds (ES) during the current
+        day. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 8 }
+
+shdslSegmentTerminationCurr1DaySES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Seconds (SES) during
+        the current day. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 9 }
+
+shdslSegmentTerminationCurr1DayCRCanomalies OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of CRC anomalies during the current day. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       anomalies    SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 10 }
+
+shdslSegmentTerminationCurr1DayLOSWS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Loss of Sync Word Seconds (LOSWS) during the 
+        current day. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 11 }
+
+shdslSegmentTerminationCurr1DayUAS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Unavailable Seconds (UAS) during the current
+        day. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 12 }
+
+
+shdslSegmentTermination15MinValidIntervals      OBJECT-TYPE
+    SYNTAX              INTEGER (0..96)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "The number of previous intervals for which data has been
+         stored. In normal conditions the value of this object equals the
+         maximum number of intervals supported by the system. If the 
+         the relevant device was brought online more recently,
+         the value will be the number of complete 15 minute
+         intervals the device has been online. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..96        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= {shdslSegmentTerminationCurrEntry 13}
+
+
+shdslSegmentTermination1DayValidIntervals       OBJECT-TYPE
+    SYNTAX              INTEGER (0..30)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "The number of previous intervals for which data has been
+         stored. In normal conditions the value of this object equals the
+         maximum number of intervals supported by the system. If the 
+         the relevant device was brought online more recently,
+         the value will be the number of complete 1 day
+         intervals the device has been online. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..30        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= {shdslSegmentTerminationCurrEntry 14}
+
+shdslSegmentTerminationCurr15MinInvalidDataFlag OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "This flag indicates the validity of the corresponding PM data 
+        in current 15 minutes. If the measured time deviates by more than 10 seconds from 
+        the nominal interval duration (900 seconds for a 15 minutes interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period 
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= {shdslSegmentTerminationCurrEntry 15}
+
+shdslSegmentTerminationCurr1DayInvalidDataFlag OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "This flag indicates the validity of the corresponding PM data 
+        in current day. If the measured time deviates by more than 10 seconds from 
+        the nominal interval duration (86400 seconds for a 24 hour interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period 
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= {shdslSegmentTerminationCurrEntry 16}
+
+shdslSegmentTerminationCurr15MinReInit OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS       read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of total re-initializations of link in the current 15-minute
+        interval.
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 17 }
+
+
+shdslSegmentTerminationCurr1DayReInit OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of total re-initialization of a link in the current 
+        day. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslSegmentTerminationCurrEntry 18 }
+
+
+-- Segment Termination 15-Minute Performance Interval Group
+-- ========================================================
+
+shdsl15MinIntervalTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Shdsl15MinIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table provides one row for each SHDSL endpoint
+        performance data collection interval. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines * maximum of segment terminations per line (18) * number of 15Min intervals (32)]
+            DESCR: STU-C, STU-R and 8 SRUs. customer side of STU-C, network side of STU-R, customer and network side of SRU"
+    ::= { shdslPerformance 2 }
+
+shdsl15MinIntervalEntry OBJECT-TYPE
+    SYNTAX      Shdsl15MinIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry in the shdsl15MinIntervalTable."
+    INDEX { ifIndex, shdslUnitId, shdslSegmentSide,
+            shdslSegmentTerminationWirePair, shdsl15MinIntervalNumber}
+    ::= { shdsl15MinIntervalTable 1 }
+
+Shdsl15MinIntervalEntry ::=
+    SEQUENCE
+    {
+    shdsl15MinIntervalNumber         INTEGER,
+    shdsl15MinIntervalMoniSecs         INTEGER,
+    shdsl15MinIntervalES             Counter,
+    shdsl15MinIntervalSES            Counter,
+    shdsl15MinIntervalCRCanomalies   Counter,
+    shdsl15MinIntervalLOSWS          Counter,
+    shdsl15MinIntervalUAS            Counter,
+    shdsl15MinIntervalInvalidDataFlag INTEGER,
+    shdsl15MinIntervalTimeStamp      NetworkTimeInSeconds,
+    shdsl15MinIntervalReInit         Counter
+    }
+
+shdsl15MinIntervalNumber OBJECT-TYPE
+    SYNTAX      INTEGER(1..96)
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Performance Data Interval number. 1 is the the most recent 
+        previous interval; interval 96 is 24 hours ago. Intervals 
+        2..96 are optional.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       1..32        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       Only 32 previous 15-Min intervals are kept"
+    ::= { shdsl15MinIntervalEntry 1 }
+
+shdsl15MinIntervalMoniSecs OBJECT-TYPE
+    SYNTAX       INTEGER (0..900)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "The amount of time in the 15-Min interval over which
+        the performance monitoring information is actually
+        counted.  This value will be the same as the interval
+        duration except in a situation where performance
+        monitoring data could not be collected for any reason. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..900       DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl15MinIntervalEntry 2 }
+
+shdsl15MinIntervalES OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Count of Errored Seconds (ES) during the interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl15MinIntervalEntry 3 }
+
+shdsl15MinIntervalSES OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Count of Severely Errored Seconds (SES) during the
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl15MinIntervalEntry 4 }
+
+shdsl15MinIntervalCRCanomalies OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Count of CRC anomalies during the interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       anomalies    SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl15MinIntervalEntry 5 }
+
+shdsl15MinIntervalLOSWS OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Count of Loss of Sync Word (LOSW) Seconds during
+        the interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl15MinIntervalEntry 6 }
+
+shdsl15MinIntervalUAS OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Count of Unavailable Seconds (UAS) during the
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl15MinIntervalEntry 7 }
+
+shdsl15MinIntervalInvalidDataFlag OBJECT-TYPE
+    SYNTAX     INTEGER (0..1)
+    ACCESS     read-only
+    STATUS     mandatory
+    DESCRIPTION 
+       "This flag indicates the validity of the corresponding PM data 
+        in previous 15-minutes interval. If the measured time deviates by more than 10 seconds from 
+        the nominal interval duration (900 seconds for a 15 minutes interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period 
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl15MinIntervalEntry 8 }
+    
+shdsl15MinIntervalTimeStamp OBJECT-TYPE
+    SYNTAX      NetworkTimeInSeconds
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Network time in seconds indicating the start of the interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+::= { shdsl15MinIntervalEntry 9 } 
+
+shdsl15MinIntervalReInit OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Count of total re-intialization of a link in the previous 15-minutes interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+::= { shdsl15MinIntervalEntry 10 }
+  
+
+-- Segment Termination 1-Day Performance Interval Group
+-- ====================================================
+
+shdsl1DayIntervalTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF Shdsl1DayIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table provides one row for each SHDSL endpoint
+        performance data collection interval. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines * maximum number of segment terminations per line (18) * number of day (1)]
+            DESCR: STU-C, STU-R and 8 SRUs. customer side of STU-C, network side of STU-R, customer and network side of SRU"
+    ::= { shdslPerformance 3 }
+
+shdsl1DayIntervalEntry OBJECT-TYPE
+    SYNTAX      Shdsl1DayIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry in the shdsl1DayIntervalTable."
+    INDEX { ifIndex, shdslUnitId, shdslSegmentSide,
+            shdslSegmentTerminationWirePair, shdsl1DayIntervalNumber }
+    ::= { shdsl1DayIntervalTable 1 }
+
+Shdsl1DayIntervalEntry ::=
+    SEQUENCE
+    {
+    shdsl1DayIntervalNumber         INTEGER,
+    shdsl1DayIntervalMoniSecs         INTEGER,
+    shdsl1DayIntervalES               Counter,
+    shdsl1DayIntervalSES              Counter,
+    shdsl1DayIntervalCRCanomalies     Counter,
+    shdsl1DayIntervalLOSWS            Counter,
+    shdsl1DayIntervalUAS              Counter,
+    shdsl1DayIntervalInvalidDataFlag  INTEGER,
+    shdsl1DayIntervalTimeStamp        NetworkTimeInSeconds,
+    shdsl1DayIntervalReInit           Counter 
+    }
+
+shdsl1DayIntervalNumber OBJECT-TYPE
+    SYNTAX      INTEGER(1..30)
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "History Data Interval number. Interval 1 is the
+        the most recent previous day; interval 30 is 30
+        days ago. Intervals 2..30 are optional.
+     
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       1            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       Only most recent previous 1-day interval is kept"
+    ::= { shdsl1DayIntervalEntry 1 }
+
+shdsl1DayIntervalMoniSecs OBJECT-TYPE
+    SYNTAX       INTEGER (0..86400)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "The amount of time in the 1-day interval over which
+        the performance monitoring information is actually
+        counted.  This value will be the same as the interval
+        duration except in a situation where performance
+        monitoring data could not be collected for any reason. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..86400     DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl1DayIntervalEntry 2 }
+
+shdsl1DayIntervalES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Errored Seconds (ES) during the 1-day
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl1DayIntervalEntry 3 }
+
+shdsl1DayIntervalSES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Seconds (SES) during the 1-day
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl1DayIntervalEntry 4 }
+
+shdsl1DayIntervalCRCanomalies OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of CRC anomalies during the 1-day interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       anomalies    SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl1DayIntervalEntry 5 }
+
+shdsl1DayIntervalLOSWS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Loss of Sync Word (LOSW) Seconds during the
+        1-day interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl1DayIntervalEntry 6 }
+
+shdsl1DayIntervalUAS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Unavailable Seconds (UAS) during the 1-day interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl1DayIntervalEntry 7 }
+
+shdsl1DayIntervalInvalidDataFlag OBJECT-TYPE
+    SYNTAX     INTEGER (0..1)
+    ACCESS     read-only
+    STATUS     mandatory
+    DESCRIPTION 
+       "This flag indicates the validity of the corresponding PM data 
+        in previous day interval. If the measured time deviates by more than 10 seconds from 
+        the nominal interval duration (86400 seconds for a 24 hour interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period 
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl1DayIntervalEntry 8 }
+    
+shdsl1DayIntervalTimeStamp OBJECT-TYPE
+    SYNTAX       NetworkTimeInSeconds
+    ACCESS       read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Network time in seconds indicating the start of the interval.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl1DayIntervalEntry 9 } 
+    
+shdsl1DayIntervalReInit OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of total re-intialization of a link in the previous 1-day interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdsl1DayIntervalEntry 10 }
+   
+
+-- SHDSL Span PM Tables Related to Re-initializations
+-- ==================================================
+
+shdslPMCurrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ShdslPMCurrEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table contains current status and performance information
+        for SHDSL Spans related to re-initializations. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines]
+            DESCR:       "
+    ::= { shdslPerformance 4 }
+
+shdslPMCurrEntry OBJECT-TYPE
+    SYNTAX      ShdslPMCurrEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "unit."
+    INDEX { ifIndex }
+    ::= { shdslPMCurrTable 1 }
+
+ShdslPMCurrEntry ::=
+    SEQUENCE
+    {
+    shdslPMCurr15MinTimeElapsed   INTEGER,
+    shdslPMCurr15MinReInit   Counter,
+    shdslPMCurr15MinReInitLPR   Counter,
+    shdslPMCurr1DayTimeElapsed    INTEGER,
+    shdslPMCurr1DayReInit    Counter,
+    shdslPMCurr1DayReInitLPR    Counter,
+    shdslPM15MinValidIntervals   INTEGER,
+    shdslPM1DayValidIntervals   INTEGER,
+    shdslPMCurr15MinReInitFailure Counter,
+    shdslPMCurr1DayReInitFailure  Counter,
+    shdslPMCurr15MinInvalidDataFlag INTEGER,
+    shdslPMCurr1DayInvalidDataFlag   INTEGER
+}
+
+shdslPMCurr15MinTimeElapsed OBJECT-TYPE
+    SYNTAX       INTEGER (0..900)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Total elapsed seconds in the current 15-minute interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..900       DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPMCurrEntry 1 }
+
+
+shdslPMCurr15MinReInit OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of total re-initializations in the current 15-minute
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPMCurrEntry 2 }
+
+shdslPMCurr15MinReInitLPR OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of re-initializations due to LPR events in the current 15-minute
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPMCurrEntry 3 }
+
+shdslPMCurr1DayTimeElapsed OBJECT-TYPE
+    SYNTAX       INTEGER (0..86400)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Number of seconds that have elapsed since the
+        beginning of the current 1-day interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       86400        DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPMCurrEntry 4 }
+
+shdslPMCurr1DayReInit OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of re-initializations in the current 1-day
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPMCurrEntry 5 }
+
+shdslPMCurr1DayReInitLPR OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of  re-initializations due to LPR events in the current 1-day
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPMCurrEntry 6 }
+
+
+shdslPM15MinValidIntervals      OBJECT-TYPE
+    SYNTAX              INTEGER (0..96)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "The number of previous intervals for which data has been
+         stored. In normal conditions the value of this object equals the
+         maximum number of intervals supported by the system. If the 
+         the relevant device was brought online more recently,
+         the value will be the number of complete 15 minute
+         intervals the device has been online. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..96        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= {shdslPMCurrEntry 7}
+
+
+shdslPM1DayValidIntervals       OBJECT-TYPE
+    SYNTAX              INTEGER (0..30)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "The number of previous intervals for which data has been
+         stored. In normal conditions the value of this object equals the
+         maximum number of intervals supported by the system. If the 
+         the relevant device was brought online more recently,
+         the value will be the number of complete 1 day
+         intervals the device has been online. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..30           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= {shdslPMCurrEntry 8}
+
+shdslPMCurr15MinReInitFailure OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS       read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of the re-initializations failed in the current 15-minute
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { shdslPMCurrEntry 9 }
+    
+shdslPMCurr1DayReInitFailure OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS       read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of re-initializations failed in the current 1-day interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { shdslPMCurrEntry 10 }    
+
+shdslPMCurr15MinInvalidDataFlag     OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "This flag indicates the validity of the corresponding PM data 
+        in current 15 minutes. If the measured time deviates by more than 10 seconds from 
+        the nominal interval duration (900 seconds for a 15 minutes interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period 
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= {shdslPMCurrEntry 11 }
+
+shdslPMCurr1DayInvalidDataFlag     OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "This flag indicates the validity of the corresponding PM data 
+        in current day. If the measured time deviates by more than 10 seconds from 
+        the nominal interval duration (86400 seconds for a 24 hour interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period 
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= {shdslPMCurrEntry 12 }
+
+-- ReInitialization Related 15Min Intervals
+-- ========================================
+
+shdslPM15MinIntervalTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ShdslPM15MinIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table contains status and performance history information
+        for SHDSL Spans related to re-initializations. (One row for each interval). 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines * number of 15Min intervals (32)]
+            DESCR:       "
+    ::= { shdslPerformance 5 }
+
+shdslPM15MinIntervalEntry OBJECT-TYPE
+    SYNTAX      ShdslPM15MinIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "unit."
+    INDEX { ifIndex, shdslPM15MinIntervalNumber }
+    ::= { shdslPM15MinIntervalTable 1 }
+
+ShdslPM15MinIntervalEntry ::=
+    SEQUENCE
+    {
+    shdslPM15MinIntervalNumber INTEGER,
+    shdslPM15MinIntervalMoniSecs INTEGER,
+    shdslPM15MinIntervalReInit   Counter,
+    shdslPM15MinIntervalReInitLPR   Counter,
+    shdslPM15MinIntervalReInitFailure Counter,
+    shdslPM15MinIntervalInvalidDataFlag INTEGER,
+    shdslPM15MinIntervalTimeStamp   NetworkTimeInSeconds
+}
+
+shdslPM15MinIntervalNumber OBJECT-TYPE
+    SYNTAX      INTEGER(1..96)
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Performance Data Interval number. 1 is the the most recent
+        previous interval; interval 96 is 24 hours ago. Intervals
+        2..96 are optional.
+
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       1..32        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       Only 32 previous 15-Min intervals are kept"
+    ::= { shdslPM15MinIntervalEntry 1 }
+
+shdslPM15MinIntervalMoniSecs OBJECT-TYPE
+    SYNTAX       INTEGER (0..900)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "The amount of time in the 15-Min interval over which
+        the performance monitoring information is actually
+        counted.  This value will be the same as the interval
+        duration except in a situation where performance
+        monitoring data could not be collected for any reason. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..900       DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPM15MinIntervalEntry 2 }
+
+shdslPM15MinIntervalReInit OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of re-initializations in the 15-minute
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPM15MinIntervalEntry 3 }
+
+shdslPM15MinIntervalReInitLPR OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of re-initializations due to LPR events in the 15-minute
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPM15MinIntervalEntry 4 }
+
+shdslPM15MinIntervalReInitFailure OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of re-initializations Failed in the previous 15-minutes
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPM15MinIntervalEntry 5 }
+    
+shdslPM15MinIntervalInvalidDataFlag     OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "This flag indicates the validity of the corresponding PM data 
+        in previous 15-minutes interval. If the measured time deviates by more than 10 seconds from 
+        the nominal interval duration (900 seconds for a 15 minutes interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period 
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= {shdslPM15MinIntervalEntry 6 }
+
+shdslPM15MinIntervalTimeStamp  OBJECT-TYPE
+    SYNTAX       NetworkTimeInSeconds
+    ACCESS       read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Network time in seconds indicating the start of the interval.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPM15MinIntervalEntry 7 }
+    
+-- ReInitialization Related 1Day Intervals
+-- =======================================
+
+shdslPM1DayIntervalTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ShdslPM1DayIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table contains status and performance history information
+        for SHDSL Spans related to re-initializations. (One row for each interval). 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of SHDSL lines * number of day (1)]
+            DESCR:       "
+    ::= { shdslPerformance 6 }
+
+shdslPM1DayIntervalEntry OBJECT-TYPE
+    SYNTAX      ShdslPM1DayIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "unit."
+    INDEX { ifIndex , shdslPM1DayIntervalNumber }
+    ::= { shdslPM1DayIntervalTable 1 }
+
+ShdslPM1DayIntervalEntry ::=
+    SEQUENCE
+    {
+    shdslPM1DayIntervalNumber INTEGER,
+    shdslPM1DayIntervalMoniSecs INTEGER,
+    shdslPM1DayIntervalReInit   Counter,
+    shdslPM1DayIntervalReInitLPR   Counter,
+    shdslPM1DayIntervalReInitFailure Counter,
+    shdslPM1DayIntervalInvalidDataFlag INTEGER,
+    shdslPM1DayIntervalTimeStamp   NetworkTimeInSeconds
+}
+
+shdslPM1DayIntervalNumber OBJECT-TYPE
+    SYNTAX      INTEGER(1..30)
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Performance Data Interval number. 1 is the the most recent
+        previous interval; interval 96 is 24 hours ago. Intervals
+        2..96 are optional.
+
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       1            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       Only 1 previous 1-Day interval is kept"
+    ::= { shdslPM1DayIntervalEntry 1 }
+
+shdslPM1DayIntervalMoniSecs OBJECT-TYPE
+    SYNTAX       INTEGER (0..86400)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "The amount of time in the 1-day interval over which
+        the performance monitoring information is actually
+        counted.  This value will be the same as the interval
+        duration except in a situation where performance
+        monitoring data could not be collected for any reason. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..86400     DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPM1DayIntervalEntry 2 }
+
+shdslPM1DayIntervalReInit OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of re-initializations in the 1-day
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPM1DayIntervalEntry 3 }
+
+shdslPM1DayIntervalReInitLPR OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of re-inititialization due to LPR events in the 1-day
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+DESCR:       NA"
+    ::= { shdslPM1DayIntervalEntry 4 }
+
+shdslPM1DayIntervalReInitFailure  OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of re-initializations Failed in the previous day
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPM1DayIntervalEntry 5 }
+    
+shdslPM1DayIntervalInvalidDataFlag     OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "This flag indicates the validity of the corresponding PM data 
+        in previous day interval. If the measured time deviates by more than 10 seconds from 
+        the nominal interval duration (86400 seconds for a 24 hour interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period 
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= {shdslPM1DayIntervalEntry 6 }
+
+shdslPM1DayIntervalTimeStamp  OBJECT-TYPE
+    SYNTAX       NetworkTimeInSeconds
+    ACCESS       read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Network time in seconds indicating the start of the interval.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { shdslPM1DayIntervalEntry 7 }
+    
+END
+
+

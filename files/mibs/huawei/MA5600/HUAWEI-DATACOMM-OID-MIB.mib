@@ -1,0 +1,283 @@
+-- ====================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description: Huawei Datacomm OID MIB,this mib will maintain the mib oid 
+--              for router and lanswitch only
+-- Reference:
+-- Version:     V1.10
+-- History:
+--              cuikemao,2005-05-13,added hwBRASMib { hwDatacomm 40 }
+--              cuikemao,2005-04-21,added hwBgpAcctMIB { hwDatacomm 39 }
+--              cuikemao,2005-03-31,added hwBFDMIB { hwDatacomm 38 }
+--              cuikemao,2004-10-30,added hwDCTrapMIB { hwDatacomm 37 }
+--              cuikemao,2004-10-30,added hwL3Vlan { hwDatacomm 100 }
+-- ====================================================================
+
+HUAWEI-DATACOMM-OID-MIB    DEFINITIONS ::= BEGIN
+    
+    IMPORTS
+        hwDatacomm
+            FROM HUAWEI-MIB;
+    
+    --  HUAWEI datacommunication extension mib 
+    -- name: guoxiaojun
+    -- id: 29157
+    -- product: R2600,R1700,R3600
+    -- reason: new mib requirement for voice
+    voice                           OBJECT IDENTIFIER ::= { hwDatacomm 1 }
+        -- name: guoxiaojun
+        -- id: 29157
+        -- product: R2600,R1700,R3600
+        -- reason: new mib requirement for voice General ,
+        --      voice interface , voice analog interface, voice digital interface,
+        --      voice dial control, call active, call history, GK client, 
+        --      AAA client, H323 call sataict.
+        hwVoiceGeneralMIB           OBJECT IDENTIFIER ::= { voice 1 }
+        hwVoiceIfMIB                OBJECT IDENTIFIER ::= { voice 2 }
+        hwVoiceAnalogInterfaceMIB   OBJECT IDENTIFIER ::= { voice 3 }
+        hwVoiceDigitalInterfaceMIB  OBJECT IDENTIFIER ::= { voice 4 }
+        hwVoiceDialControlMIB       OBJECT IDENTIFIER ::= { voice 5 }
+        hwVoiceCallActiveMIB        OBJECT IDENTIFIER ::= { voice 6 }
+        hwVoiceCallHistoryMIB       OBJECT IDENTIFIER ::= { voice 7 }
+        hwVoiceGKClientMIB	        OBJECT IDENTIFIER ::= { voice 8 }           
+        hwVoiceAAAClientMIB	        OBJECT IDENTIFIER ::= { voice 9 }
+        hwVoiceH323CallStatMIB	    OBJECT IDENTIFIER ::= { voice 11 }
+    
+    -- name: xuqingwei
+    -- id: 27902
+    -- product: 
+    -- reason: new mib requirement for hwIPX,hwFWTP,hwHIIP,hwHRP.
+    hwIPX	                        OBJECT IDENTIFIER ::= { hwDatacomm 2 }
+    hwFWTP	                        OBJECT IDENTIFIER ::= { hwDatacomm 3 }
+    hwHIIP	                        OBJECT IDENTIFIER ::= { hwDatacomm 4 }
+    hwHRP	                        OBJECT IDENTIFIER ::= { hwDatacomm 5 }
+
+    -- name: xuqingwei
+    -- id: 27902
+    -- product: 
+    -- reason: new mib requirement for safety characteristic.
+    hwASPF		                    OBJECT IDENTIFIER ::= { hwDatacomm 6 }
+    hwNAT		                    OBJECT IDENTIFIER ::= { hwDatacomm 7 }
+    hwBLS		                    OBJECT IDENTIFIER ::= { hwDatacomm 8 }
+    hwMACBIND	                    OBJECT IDENTIFIER ::= { hwDatacomm 9 }	
+    hwATK	                        OBJECT IDENTIFIER ::= { hwDatacomm 10 }
+    hwSECSTAT	                    OBJECT IDENTIFIER ::= { hwDatacomm 11 }
+    hwPFLT		                    OBJECT IDENTIFIER ::= { hwDatacomm 12 }
+    hwTRNG		                    OBJECT IDENTIFIER ::= { hwDatacomm 13 }
+    hwSMAP		                    OBJECT IDENTIFIER ::= { hwDatacomm 14 }
+    hwSZONE		                    OBJECT IDENTIFIER ::= { hwDatacomm 15 }
+    hwSLOG		                    OBJECT IDENTIFIER ::= { hwDatacomm 16 }
+    
+    -- name: guoxiaojun
+    -- id: 29157
+    -- product: R2600,R1700,R3600
+    -- reason: new mib requirement for SSH.
+    hwSSHMIB                        OBJECT IDENTIFIER ::= { hwDatacomm 17 }
+    
+    -- name: libingshan
+    -- id: 22055
+    -- product: NE05/08/08E/16/16E
+    -- reason: new mib requirement for user log.
+    hwUserLogMIB                    OBJECT IDENTIFIER ::= { hwDatacomm 18 }
+    
+    -- name: xuqingwei
+    -- id: 27902
+    -- product: 
+    -- reason: new mib requirement for system management
+    hwSystemMan                     OBJECT IDENTIFIER ::= { hwDatacomm 19 }
+    
+    -- name: limeng 
+    -- id: 15814
+    -- product: 
+    -- reason: new mib requirement for hwTACACS (to send Email)
+    hwTACACS                        OBJECT IDENTIFIER ::= { hwDatacomm 20 }
+    
+    -- name: libingshan
+    -- id: 22055
+    -- product: NE05/08/08E/16/16E
+    -- reason: new mib requirement for portal of router narrowband.
+    hwNBPortalMIB                   OBJECT IDENTIFIER ::= { hwDatacomm 21 }
+    
+    -- name: xuqingwei
+    -- id: 27902
+    -- product: VRP
+    -- reason: new mib requirement for NTP server,command over snmp
+    hwNTP                           OBJECT IDENTIFIER ::= { hwDatacomm 22 }
+    hwCmdOverSnmpMib                OBJECT IDENTIFIER ::= { hwDatacomm 23 }
+    
+    -- name: zhangxianping 
+    -- id: 29813
+    -- product: VRP
+    -- reason: new mib requirement for ISIS
+    hwISIS                          OBJECT IDENTIFIER ::= { hwDatacomm 24 }
+    
+    -- name: xuqingwei
+    -- id: 27902
+    -- product: Lanswitch platform
+    -- reason: new mib requirement for LACP
+    hwLAG                           OBJECT IDENTIFIER ::= { hwDatacomm 25 }
+    
+    -- name: fuzhenyu
+    -- id: 30224
+    -- product: Lanswitch platform
+    -- reason: new mib requirement for smon vlan enable purpose
+    hwSmonExtend                    OBJECT IDENTIFIER ::= { hwDatacomm 26 }
+    
+    -- name: zhangxianping
+    -- id: 29813
+    -- product: VRP
+    -- reason: new mib requirement for Task mib
+    hwTask                          OBJECT IDENTIFIER ::= { hwDatacomm 27 }
+    
+    -- name: lvzhenfeng
+    -- id: 18230
+    -- product: Quidview
+    -- reason: new mib requirement for RFC DismanPing(MIB) extend
+    hwDismanPing                    OBJECT IDENTIFIER ::= { hwDatacomm 28 }
+    
+    -- name: fuzhenyu
+    -- id: 30224
+    -- product: Lanswitch platform
+    -- reason: move old mib tree(huawei.hwProducts.lanSw.lswCommon) 
+    --          to new location(huawei.huaweiMgmt.hwDatacomm)
+    hwLswVlan                       OBJECT IDENTIFIER ::= { hwDatacomm 29 }
+    
+    -- name: cuikemao
+    -- id: 20339
+    -- date: 2003-09-25
+    -- product: Eudemon2000 Series(Eudemon 2100, Eudemon 2200)
+    -- reason: new mib requirement for Eudemon2000 Series
+    hwAddrMgmt                      OBJECT IDENTIFIER ::= { hwDatacomm 30 }
+    
+    -- name: cuikemao
+    -- id: 20339
+    -- date: 2003-11-06
+    -- product: 8070 8011 8060
+    -- reason: new mib requirement for hwEntityExtentMIB
+    hwEntityExtentMIB               OBJECT IDENTIFIER ::= { hwDatacomm 31 }
+    
+    -- name: cuikemao
+    -- id: 20339
+    -- date: 2004-07-13
+    -- product: VRP
+    -- reason: new mib requirement for HUAWEI-QoS 
+    hwQoS                           OBJECT IDENTIFIER ::= { hwDatacomm 32 }
+    
+        -- name: cuikemao
+        -- id: 20339
+        -- date: 2004-07-13
+        -- product: VRP
+        -- reason: new mib requirement for HUAWEI-CBQOS-MIB
+        hwCBQoSMIB                  OBJECT IDENTIFIER ::= { hwQoS 1 }
+        
+        -- name: cuikemao
+        -- id: 20339
+        -- date: 2004-05-18
+        -- product: VRP
+        -- reason: new mib requirement for HUAWEI-IF-QOS-MIB
+        hwIfQoSMib                  OBJECT IDENTIFIER ::= { hwQoS 2 }
+        -- name: cuikemao
+        -- id: 20339
+        -- date: 2004-05-18
+        -- product: VRP
+        -- reason: new mib requirement for HUAWEI-FR-QOS-MIB
+        hwFrQoSMib                  OBJECT IDENTIFIER ::= { hwQoS 3 }
+        
+        -- name: cuikemao
+        -- id: 20339
+        -- date: 2004-05-18
+        -- product: VRP
+        -- reason: new mib requirement for HUAWEI-XQoS-MIB(Qos Ext)
+        hwXQoSMIB                   OBJECT IDENTIFIER ::= { hwQoS 4 }
+    
+    -- name: cuikemao
+    -- id: 20339
+    -- date: 2004-05-26
+    -- product: VRP
+    -- reason: new mib requirement for HUAWEI-MP-MIB
+    hwMultilinkPPP                  OBJECT IDENTIFIER ::= { hwDatacomm 33 }
+    
+    -- name: cuikemao
+    -- id: 20339
+    -- date: 2004-06-29
+    -- product: VRP
+    -- reason: new mib requirement for HUAWEI-TCP-MIB
+    hwTCPMib                        OBJECT IDENTIFIER ::= { hwDatacomm 34 }
+    
+    -- name: cuikemao
+    -- id: 20339
+    -- date: 2004-06-29
+    -- product: VRP
+    -- reason: new mib requirement for HUAWEI-BGP-MIB
+    hwBGPMib                        OBJECT IDENTIFIER ::= { hwDatacomm 35 }
+
+    -- name:    cuikemao
+    -- id:      20339
+    -- date:    2004-06-29
+    -- product: VRP
+    -- reason:  new mib requirement for HUAWEI-RPR-MIB
+    hwRPRMIB                        OBJECT IDENTIFIER ::= { hwDatacomm 36 }
+    
+    -- name:    cuikemao
+    -- id:      20339
+    -- date:    2004-10-30
+    -- product: VRP
+    -- reason:  new mib requirement for HUAWEI-DC-TRAP-MIB 
+    --          indexed by entPhysicalIndex
+    hwDCTrapMIB                     OBJECT IDENTIFIER ::= { hwDatacomm 37 }
+    
+    -- name:    cuikemao
+    -- id:      20339
+    -- date:    2005-03-31
+    -- product: VRP
+    -- reason:  requirement for BFD MIB
+    hwBFDMIB                        OBJECT IDENTIFIER ::= { hwDatacomm 38 }
+
+    -- name:    cuikemao
+    -- id:      20339
+    -- date:    2005-04-21
+    -- product: VRP
+    -- reason:  requirement for HUAWEI-BGP-ACCOUNTING.mib
+    hwBgpAcctMIB                    OBJECT IDENTIFIER ::= { hwDatacomm 39 }
+
+    -- name:    cuikemao
+    -- id:      20339
+    -- date:    2005-05-13
+    -- product: 8052
+    -- reason:  requirement for HUAWEI-BRAS-ME-MIB.mib
+    hwBRASMib                       OBJECT IDENTIFIER ::= { hwDatacomm 40 }
+
+    -- 20050520 VRP  Zhang Xianping Applied for hwDatacomm.hwIfExtMib,           HUAWEI-IF-EXT-MIB.mib
+    --                                          hwDatacomm.hwL2Mgmt.hwL2IfMib,   HUAWEI-L2IF-MIB.mib
+    --                                          hwDatacomm.hwL2Mgmt.hwMACMgmtMib,HUAWEI-MAC-MGMT-MIB.mib
+    --                                          hwDatacomm.hwL2Mgmt.hwL2VlanMib, HUAWEI-L2VLAN-MIB.mib
+    --                                          hwDatacomm.hwL2Mgmt.hwMstpMib,   HUAWEI-MSTP-MIB.mib
+    hwIfExtMib                      OBJECT IDENTIFIER ::= { hwDatacomm 41 }
+    hwL2Mgmt                        OBJECT IDENTIFIER ::= { hwDatacomm 42 }
+        hwL2IfMib                   OBJECT IDENTIFIER ::= { hwL2Mgmt 1 }
+        hwMACMgmtMib                OBJECT IDENTIFIER ::= { hwL2Mgmt 2 }
+        hwL2VlanMib                 OBJECT IDENTIFIER ::= { hwL2Mgmt 3 }
+        hwMstpMib                   OBJECT IDENTIFIER ::= { hwL2Mgmt 4 }
+        
+    -- name:    huruoheng
+    -- id:      46673
+    -- date:    2005-07-4
+    -- product: 8070 8011 
+    -- reason:  for old equipment(s) that don't support entity-mib    
+    hwModuleInfo                        OBJECT IDENTIFIER ::= { hwDatacomm 43 }
+    
+    -- name:    huruoheng
+    -- id:      46673
+    -- date:    2005-08-19
+    -- product: 8031 
+    -- reason:  for multicast function    
+    hwMultiCastMib                       OBJECT IDENTIFIER ::= { hwDatacomm 44 }    
+    
+    -- name:    cuikemao
+    -- id:      20339
+    -- date:    2004-11-01
+    -- product: VRP
+    -- reason:  requirement for HUAWEI L3 Vlan Management MIB
+    hwL3Vlan                        OBJECT IDENTIFIER ::= { hwDatacomm 100 }
+
+END

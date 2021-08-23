@@ -1,0 +1,536 @@
+--  =================================================================
+-- Copyright (C) by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description:     HUAWEI-DSLAM-PITP-MIB
+-- Reference:      
+-- Version: V1.03 
+-- date     :2004-07-28,
+--           2006-02-21, Added by l52111 for RAIOMODE of BT
+--           2006-04-06, Added by l52111 for RAIOMODE division of PITP Pmode&Vmode&DHCP Option82
+--           2006-04-30, Modified by l52111 for FNHD29992:修改hwDslamPITPPmodeSuboption90Status叶子节点DEFVAL
+--           2006-06-26, Modified by yinjiasheng(46877) for CID/RID模板化
+--           2006-08-31 ,Modified by l42644 for BT模式中增加CID (0x81-0x8e)选项:添加 hwDslamPITPPmodeSuboptionTable 表
+-- =================================================================
+
+	HUAWEI-DSLAM-PITP-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			hwAdsllinePvcVpi, hwAdslLinePvcVci			
+				FROM HUAWEI-ADSL-MIB			
+			huaweiUtility			
+				FROM HUAWEI-MIB			
+			ifIndex			
+				FROM IF-MIB			
+			Unsigned32, OBJECT-TYPE, MODULE-IDENTITY			
+				FROM SNMPv2-SMI			
+			TruthValue, RowStatus, DisplayString			
+				FROM SNMPv2-TC;
+	
+	
+		hwDslamPITP MODULE-IDENTITY 
+			LAST-UPDATED "200407280900Z"
+			ORGANIZATION 
+				"Fix-Net Dept, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,  P.R.C.
+				http://www.huawei.com
+				Zip: 518057
+				"
+			DESCRIPTION 
+				"
+				huawei HUAWEI-DSLAM-PITP-MIB.
+				"
+			::= { huaweiUtility 42 }
+
+	
+--  ------------------------------------------------------------------------
+-- System Management Parameter
+-- ------------------------------------------------------------------------ 
+		hwDslamPITPStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				disable(1),
+				enablevmode(2),
+				enablepmode(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				PITP administer state, the value can be disable, enablevmode, enablepmode, 
+				and the default value is disable.
+				"
+			DEFVAL { disable }
+			::= { hwDslamPITP 1 }
+		
+		hwDslamPITPVmodeEtherType OBJECT-TYPE
+			SYNTAX Unsigned32 (1536..65535)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The ethernet protocol type of vmode PDU, the default is 0x8200.
+				"
+			DEFVAL { 33280 }
+			::= { hwDslamPITP 2 }
+		
+		hwDslamPITPXdslPortRateInfoSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				disable(1),
+				enable(2)
+				}
+			MAX-ACCESS   read-write
+			STATUS       current
+			DESCRIPTION
+			        "
+			        Xdsl port rate infomation switch, current support Adsl only.
+			        "
+		     	DEFVAL {disable}
+			::= { hwDslamPITP 3}
+			
+		hwDslamPITPCNTelSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				disable(1),
+				enable(2)
+				}
+			MAX-ACCESS   read-write
+			STATUS       current
+			DESCRIPTION
+			        "
+			        Xdsl add BRAS infomation switch .
+			        "
+		     	DEFVAL {disable}
+			::= { hwDslamPITP 4}	
+
+		hwDslamPITPTITagSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				disable(1),
+				enable(2)
+				}
+			MAX-ACCESS   read-write
+			STATUS       current
+			DESCRIPTION
+			        "
+			        TI Add Dhcp && PITP Tag infomation switch .
+			        "
+		     	DEFVAL {disable}
+			::= { hwDslamPITP 5}	
+
+		hwDslamPITPRAIOMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				common(1),
+				xdsl-port-rate(2),
+				cntel(3),
+				ti(4),
+				neuf(5),
+				port-userlabel(6),
+				bt(7),				
+				service-port-userlabel(8),
+				dslforum-default(9),
+				brt(10),
+				user-defined(11),
+				ft(12)				
+				}
+			MAX-ACCESS   read-write
+			STATUS       current
+			DESCRIPTION
+			        "
+			        RAIO(Relay agent info Option) mode of all object.
+			        "
+		     	DEFVAL {common}
+			::= { hwDslamPITP 6}	
+			
+		hwDslamPITPPMODERAIOMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				common(1),
+				xdsl-port-rate(2),
+				cntel(3),
+				ti(4),
+				neuf(5),
+				port-userlabel(6),
+				bt(7)
+				}
+			MAX-ACCESS   read-write
+			STATUS       current
+			DESCRIPTION
+			        "
+			        RAIO(Relay agent info Option) mode of PITP pmode. 
+			        "
+		     	DEFVAL {common}
+			::= { hwDslamPITP 7}	
+
+		hwDslamPITPVMODERAIOMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				common(1),
+				cntel(3),
+				}
+			MAX-ACCESS   read-write
+			STATUS       current
+			DESCRIPTION
+			        "
+			        RAIO(Relay agent info Option) mode of PITP vmode.
+			        "
+		     	DEFVAL {common}
+			::= { hwDslamPITP 8}	
+	
+		hwDslamDHCPOPTION82RAIOMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				common(1),
+				xdsl-port-rate(2),
+				cntel(3),
+				ti(4),
+				neuf(5),
+				port-userlabel(6),
+				bt(7),
+				service-port-userlabel(8),
+				dslforum-default(9),
+				brt(10),
+				user-defined(11),
+				ft(12)				
+				}
+			MAX-ACCESS   read-write
+			STATUS       current
+			DESCRIPTION
+			        "
+			        RAIO(Relay agent info Option) mode of DHCP option82.
+			        "
+		     	DEFVAL {common}
+			::= { hwDslamPITP 9}	
+
+
+--  -------------------------------------------------------------------------   
+-- RAIO Format Management Table
+-- -------------------------------------------------------------------------   							
+		hwDslamRAIOFormatTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDslamRAIOFormatEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" RAIO format table.  
+				  RAIO格式表.
+				"
+			::= { hwDslamPITP 10 }
+		
+		hwDslamRAIOFormatEntry OBJECT-TYPE
+			SYNTAX HwDslamRAIOFormatEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"RAIO format entry."
+			INDEX { hwDslamRAIOObject, hwDslamRAIOIdPara, hwDslamRAIOMode, hwDslamRAIOIfType }
+			::= { hwDslamRAIOFormatTable 1 }
+		
+		HwDslamRAIOFormatEntry ::=
+			SEQUENCE {				
+				hwDslamRAIOObject                      INTEGER,
+				hwDslamRAIOIdPara	               INTEGER,
+				hwDslamRAIOMode		               INTEGER,	
+				hwDslamRAIOIfType	               INTEGER,
+				hwDslamRAIOFormatString                DisplayString,
+				hwDslamRAIORowStatus		       RowStatus
+			}
+				
+
+		hwDslamRAIOObject OBJECT-TYPE
+			SYNTAX INTEGER 
+			         {
+				    pitp(1), 			            
+			            dhcp-option82(2)
+			         }
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" RAIO object. "
+			::= { hwDslamRAIOFormatEntry 1 }
+			
+			
+		hwDslamRAIOIdPara OBJECT-TYPE
+			SYNTAX INTEGER 
+			         {
+				    cid(1), 
+			            rid(2),
+			            info(3)			
+			         }
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" cid or rid. "
+			::= { hwDslamRAIOFormatEntry 2 }
+			
+
+		hwDslamRAIOMode OBJECT-TYPE
+			SYNTAX INTEGER 
+			        {
+				common(1),
+				xdsl-port-rate(2),
+				cntel(3),
+				ti(4),
+				neuf(5),
+				port-userlabel(6),
+				bt(7),
+				service-port-userlabel(8),
+				dslforum-default(9),
+				brt(10),
+				user-defined(11),
+				ft(12)
+				}			
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" RAIO mode index. "
+			::= { hwDslamRAIOFormatEntry 3 }
+
+		hwDslamRAIOIfType OBJECT-TYPE
+			SYNTAX INTEGER 
+			        {
+				atm(1),
+				eth(2),
+				xpon(3)
+				}			
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" Interface Type. "
+			::= { hwDslamRAIOFormatEntry 4 }			                     
+                    	
+		hwDslamRAIOFormatString OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..127))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				RAIO format string.
+				"
+			::= { hwDslamRAIOFormatEntry 5 }							
+			
+                 hwDslamRAIORowStatus OBJECT-TYPE
+                    SYNTAX       RowStatus
+                    MAX-ACCESS   read-create
+                    STATUS       current
+                    DESCRIPTION
+				"
+				Row status.
+				Add or delete a table item.
+				"
+                    DEFVAL { active }
+                    ::= { hwDslamRAIOFormatEntry 6}  
+                    
+					
+--  -------------------------------------------------------------------------   
+-- Port/Pvc Management Table
+-- -------------------------------------------------------------------------       
+		hwDslamPITPPmodePortPvcTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDslamPITPPmodePortPvcEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				PITP pmode of pvc supported port management table.
+				"
+			::= { hwDslamPITP 11 }
+		
+		hwDslamPITPPmodePortPvcEntry OBJECT-TYPE
+			SYNTAX HwDslamPITPPmodePortPvcEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				PITP pmode of pvc supported port management entry.
+				"
+			INDEX { ifIndex, hwAdsllinePvcVpi, hwAdslLinePvcVci }
+			::= { hwDslamPITPPmodePortPvcTable 1 }
+		
+		HwDslamPITPPmodePortPvcEntry ::=
+			SEQUENCE { 
+				hwDslamPITPPmodePortPvcAdminStatus
+					TruthValue,
+				hwDslamPITPPmodePortPvcRowStatus
+					RowStatus
+			 }
+
+		hwDslamPITPPmodePortPvcAdminStatus OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				PITP pmode of pvc supported port administer state: true(enable)/false(disable),the default is false.
+				"
+			DEFVAL { false }
+			::= { hwDslamPITPPmodePortPvcEntry 1 }
+		
+		hwDslamPITPPmodePortPvcRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				Row status.
+				Add or delete a table item.
+				"
+			::= { hwDslamPITPPmodePortPvcEntry 2 }
+		
+--  -------------------------------------------------------------------------   
+-- Port Management Table
+-- -------------------------------------------------------------------------       
+		hwDslamPITPPmodePortTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDslamPITPPmodePortEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				PITP pmode of port management table.
+			        "
+			::= { hwDslamPITP 12 }
+		
+		hwDslamPITPPmodePortEntry OBJECT-TYPE
+			SYNTAX HwDslamPITPPmodePortEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				PITP pmode of port management entry.
+				"
+			INDEX { ifIndex }
+			::= { hwDslamPITPPmodePortTable 1 }
+		
+		HwDslamPITPPmodePortEntry ::=
+			SEQUENCE { 
+				hwDslamPITPPmodePortAdminStatus
+					TruthValue,
+				hwDslamPITPPmodePortUplinkStatus
+					TruthValue,
+				hwDslamPITPPmodePortRowStatus
+					RowStatus
+			 }
+
+		hwDslamPITPPmodePortAdminStatus OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				PITP pmode of port administer state: true(enable)/false(disable),the default is false.
+				"
+			DEFVAL { false }
+			::= { hwDslamPITPPmodePortEntry 1 }
+		
+		hwDslamPITPPmodePortUplinkStatus OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Up-link administer state,only a port on main board can be a up-link;
+				true(yes)/false(no),the default is true.
+				"
+			::= { hwDslamPITPPmodePortEntry 2 }
+		
+		hwDslamPITPPmodePortRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				Row status.
+				Add or delete a table item.
+				"
+			::= { hwDslamPITPPmodePortEntry 3 }
+		
+	
+-- -------------------------------------------------------------------------   
+-- PITP Pmode Suboption 90 
+-- -------------------------------------------------------------------------       
+		hwDslamPITPPmodeSuboption90Status OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				PITP Pmode Suboption90 global administer state: true(enable)/false(disable),the default is false..
+				"
+			DEFVAL { false }
+			::= { hwDslamPITP 13 }
+			
+--  -------------------------------------------------------------------------   
+-- PITP Pmode Suboption 81-8e, 90选项
+-- -------------------------------------------------------------------------       
+		hwDslamPITPPmodeSuboptionTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDslamPITPPmodeSuboptionEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				PITP pmode suboption table.
+			        "
+			::= { hwDslamPITP 14 }
+		
+		hwDslamPITPPmodeSuboptionEntry OBJECT-TYPE
+			SYNTAX HwDslamPITPPmodeSuboptionEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				PITP pmode suboption entry.
+				"
+			INDEX { hwDslamPITPPmodeSuboptionIndex }
+			::= { hwDslamPITPPmodeSuboptionTable 1 }
+		
+		HwDslamPITPPmodeSuboptionEntry ::=
+			SEQUENCE { 
+				hwDslamPITPPmodeSuboptionIndex
+					Integer32,
+				hwDslamPITPPmodeSuboptionStatus
+					TruthValue
+			 }
+
+		hwDslamPITPPmodeSuboptionIndex OBJECT-TYPE
+			SYNTAX Integer32 (1..15)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the index of PITP pmode suboption:
+				    ——index 1 stand for suboption 0x81;
+				    ——index 2 stand for suboption 0x82;
+				    ——index 3 stand for suboption 0x83;
+				    ——index 4 stand for suboption 0x84;
+				    ——index 5 stand for suboption 0x85;
+				    ——index 6 stand for suboption 0x86;
+				    ——index 7 stand for suboption 0x87;
+				    ——index 8 stand for suboption 0x88;
+				    ——index 9 stand for suboption 0x89;
+				    ——index 10 stand for suboption 0x8a;
+				    ——index 11 stand for suboption 0x8b;
+				    ——index 12 stand for suboption 0x8c;
+				    ——index 13 stand for suboption 0x8d;
+				    ——index 14 stand for suboption 0x8e;
+				    ——index 15 stand for suboption 0x90;
+				"
+			DEFVAL { 1 }
+			::= { hwDslamPITPPmodeSuboptionEntry 1 }
+		
+		hwDslamPITPPmodeSuboptionStatus OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the configuration of PITP pmode suboption: true(enable)/false(disable),the default is false..
+				"
+		        DEFVAL { 1 }
+			::= { hwDslamPITPPmodeSuboptionEntry 2 }
+		
+
+	END
+
+

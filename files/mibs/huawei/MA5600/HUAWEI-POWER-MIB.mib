@@ -1,0 +1,2602 @@
+--  ============================================================================
+-- Copyright (C) 2004 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description:  
+-- Reference:  
+-- Version: V3.04
+-- History: 
+-- ============================================================================
+
+	HUAWEI-POWER-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			hwEnvEmuIndex			
+				FROM HUAWEI-ENVIRONMENT-MIB			
+			huaweiUtility			
+				FROM HUAWEI-MIB			
+			Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE			
+				FROM SNMPv2-SMI			
+			DisplayString, RowStatus, TruthValue, DateAndTime, TEXTUAL-CONVENTION			
+				FROM SNMPv2-TC;
+	
+	
+		hwPower MODULE-IDENTITY 
+			LAST-UPDATED "200507280900Z"
+			ORGANIZATION 
+				"Fix-Net Dept, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floor 5, Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,  P.R.C.
+				http://www.huawei.com
+				Zip: 518057
+				"
+			DESCRIPTION 
+				"
+				huawei Power mib.
+				"
+			::= { huaweiUtility 2 }
+		
+
+	
+		MeasuresRange ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"Basic unit of measure:
+				1)pressure: indicated by mv, 1V £½ 1000 mV
+				2)current: indicated by mA, 1A £½ 1000 mA
+				3)temperature: indicated by 1% degree centigrade"
+			SYNTAX Integer32
+			
+
+	
+		hwPowerMonObjects OBJECT IDENTIFIER ::= { hwPower 1 }
+		
+		hwPowerSysInfoTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwPowerSysInfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Power basic information table"
+			::= { hwPowerMonObjects 1 }
+		
+		hwPowerSysInfoEntry OBJECT-TYPE
+			SYNTAX HwPowerSysInfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Power basic information entry"
+			INDEX { hwEnvEmuIndex, hwPowerIndex }
+			::= { hwPowerSysInfoTable 1 }
+		
+		HwPowerSysInfoEntry ::=
+			SEQUENCE { 
+				hwPowerIndex
+					Integer32,
+				hwPowerType
+					INTEGER,
+				hwPowerName
+					DisplayString,
+				hwPowerState
+					INTEGER,
+				hwPowerRowStatus
+					RowStatus,
+				hwPowerControlMode
+					INTEGER,
+				hwPowerRemoteFrameID
+					Integer32,
+				hwPowerProtect
+					INTEGER,
+				hwPowerVersion
+					DisplayString,
+				hwPowerSupplyState
+				        INTEGER
+			 }
+
+		hwPowerIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Power device number (There can be multiple powers to an EMU.)"
+			::= { hwPowerSysInfoEntry 1 }
+		
+		hwPowerType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				power4875(1),
+				power4810(2),
+				power48100(3),
+				power4850(4),
+				power48240(5),
+				power48120(6),
+				power48300(7),
+				power48240SinglePhase(8),
+				universalPower(9),
+				power4845(10),
+				rpower(11),
+				power4805(15),
+                                power4820(16),
+                               onps(17),
+				psma(100),
+				perm-al175nt(101),
+                mcs3000(104),
+				other(255)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Power type"
+			::= { hwPowerSysInfoEntry 2 }
+		
+		hwPowerName OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Power name"
+			::= { hwPowerSysInfoEntry 3 }
+		
+		hwPowerState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				fault(2),
+			        protecting(3),
+			        switched(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Power board status:
+				Refers to the status of communication between the internal monitor board of the power device and the external upper board.
+				normal(1),      normal state
+				fault(2),       fault state 
+			        protecting(3),  backup power work on protect state
+			        switched(4),    non-backup power fault,but is protected by backup power"
+			::= { hwPowerSysInfoEntry 4 }
+		
+		hwPowerRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"RowStatus standard operation"
+			::= { hwPowerSysInfoEntry 5 }
+		
+		hwPowerControlMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				manualControl(1),
+				autoControl(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Control mode of the power monitor module
+				manualControl(1), control by manual, namely, the remote mode
+				autoControl(2), auto control mode, the default is auto control mode"
+			DEFVAL { 1 }
+			::= { hwPowerSysInfoEntry 6 }
+			
+		hwPowerRemoteFrameID OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Apply for remote prividing power system, it is the frame ID that remote unit exists"
+			::= { hwPowerSysInfoEntry 7 }
+			
+		hwPowerProtect OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				protect(1),
+				undoProtect(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Apply for remote prividing power system,used to enable or disable N+1 protect function
+				protect(1),      enable N+1 protect function
+				undoProtect(2)   disabe N+1 protect function"
+			::= { hwPowerSysInfoEntry 8 }
+			
+		hwPowerVersion OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Version of power"
+			::= { hwPowerSysInfoEntry 9 }
+			
+		hwPowerSupplyState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				ac(1),
+				battery(2)			      
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				ac(1),     
+				battery(2),      
+			        "
+			::= { hwPowerSysInfoEntry 10 }
+		
+		hwACInputTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwACInputEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"AC input table"
+			::= { hwPowerMonObjects 2 }
+		
+		hwACInputEntry OBJECT-TYPE
+			SYNTAX HwACInputEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"AC input entry"
+			INDEX { hwEnvEmuIndex, hwPowerIndex, hwACLoopIndex }
+			::= { hwACInputTable 1 }
+		
+		HwACInputEntry ::=
+			SEQUENCE { 
+				hwACLoopIndex
+					Integer32,
+				hwACPowerState
+					INTEGER,
+				hwACVoltA
+					MeasuresRange,
+				hwACCurrentA
+					MeasuresRange,
+				hwACVoltB
+					MeasuresRange,
+				hwACCurrentB
+					MeasuresRange,
+				hwACVoltC
+					MeasuresRange,
+				hwACCurrentC
+					MeasuresRange,
+				hwACVoltageHigh
+					MeasuresRange,
+				hwACVoltageLow
+					MeasuresRange,
+				hwACRowStatus
+					RowStatus,
+				hwACVoltageAState        
+					INTEGER, 
+				hwACVoltageBState
+					INTEGER, 
+				hwACVoltageCState
+					INTEGER				
+			 }
+
+		hwACLoopIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Input loop index (There can be two channels of input for AC current, which are the backups for each other."
+			::= { hwACInputEntry 1 }
+		
+		hwACPowerState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				offline(2),
+				exceedVoltage(3),
+				belowVoltage(4),
+				backup(5)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Status of power supply
+				normal(1),
+				offline(2),
+				exceedVoltage(3),
+				belowVoltage(4),
+				backup(5)"
+			::= { hwACInputEntry 2 }
+		
+		hwACVoltA OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mv"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Inuput AC voltage A (Unit: mv)"
+			::= { hwACInputEntry 3 }
+		
+		hwACCurrentA OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"AC input voltage A (Unit: mA)"
+			::= { hwACInputEntry 4 }
+		
+		hwACVoltB OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"AC input voltage B (Unit: mv)"
+			::= { hwACInputEntry 5 }
+		
+		hwACCurrentB OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"AC input current B (Unit: mA)"
+			::= { hwACInputEntry 6 }
+		
+		hwACVoltC OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mv"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"AC input current C (Unit: mv)"
+			::= { hwACInputEntry 7 }
+		
+		hwACCurrentC OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"AC input current C (Unit: mA)"
+			::= { hwACInputEntry 8 }
+		
+		hwACVoltageHigh OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"AC input exceed-voltage alarm point(unit: mv)"
+			DEFVAL { 280000 }
+			::= { hwACInputEntry 9 }
+		
+		hwACVoltageLow OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"AC input below-voltage alarm point (unit: mv)"
+			DEFVAL { 180000 }
+			::= { hwACInputEntry 10 }
+		
+		hwACRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Only adding, deletion and status query are supported."
+			::= { hwACInputEntry 11 }
+		
+	         hwACVoltageAState OBJECT-TYPE
+			SYNTAX INTEGER 
+			{
+			     normal(0),
+                             belowVoltage(1) , 
+			     exceedVoltage(2),		     
+			     missing-phase(3)	     			    
+			}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Phase AB/A of AC input state 
+				0: normal
+				1: belowVoltage
+			        2£ºexceedVoltage
+				3: missing phase 				
+				"
+			::= { hwACInputEntry 12 }
+
+		hwACVoltageBState OBJECT-TYPE
+			SYNTAX INTEGER 
+			{
+			     normal(0),
+			     belowVoltage(1) , 
+			     exceedVoltage(2),		     
+			     missing-phase(3)     			    
+			}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Phase BC/B of AC input state 
+				0: normal
+				1: belowVoltage
+			        2£ºexceedVoltage
+				3: missing phase				
+				"
+			::= { hwACInputEntry 13 }
+               
+	 hwACVoltageCState OBJECT-TYPE
+			SYNTAX INTEGER 
+			{
+			     normal(0),
+			     belowVoltage(1) , 
+			     exceedVoltage(2),
+			     missing-phase(3)	     			    
+			}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Phase CA/C of AC input state 
+				0: normal
+				1: belowVoltage
+			        2£ºexceedVoltage
+				3: missing phase				
+				"
+			::= { hwACInputEntry 14 }                            	
+		
+		hwDCOutTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDCOutEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"DC output table"
+			::= { hwPowerMonObjects 3 }
+		
+		hwDCOutEntry OBJECT-TYPE
+			SYNTAX HwDCOutEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"DC output entry"
+			INDEX { hwEnvEmuIndex, hwPowerIndex }
+			::= { hwDCOutTable 1 }
+		
+		HwDCOutEntry ::=
+			SEQUENCE { 
+				hwDCVoltageOut
+					MeasuresRange,
+				hwDCCurrentOut
+					MeasuresRange,
+				hwDCVoltageOutHigh
+					MeasuresRange,
+				hwDCVoltageOutLow
+					MeasuresRange,
+				hwDCVoltageOutState
+					INTEGER,
+				hwDCCurrentOutHigh
+					MeasuresRange,
+				hwDCCurrentOutLow
+					MeasuresRange,
+				hwDCCurrentOutState
+					INTEGER,
+				hwDCOutRowStatus
+					RowStatus,
+				hwDCOutLoadCurrent
+					MeasuresRange,
+				hwDCOutLoadTmpHigh
+					MeasuresRange,
+				hwDCOutRunState
+					BITS ,  
+				hwDCCommunicationState     
+				   INTEGER 
+			 }
+
+		hwDCVoltageOut OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"DC voltage output: in unit of mv"
+			::= { hwDCOutEntry 1 }
+		
+		hwDCCurrentOut OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"DC current output: in unit of mA"
+			::= { hwDCOutEntry 2 }
+		
+		hwDCVoltageOutHigh OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Output DC exceed-voltage alarm point (unit: mv). Default value is 58V"
+			DEFVAL { 58000 }
+			::= { hwDCOutEntry 3 }
+		
+		hwDCVoltageOutLow OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Output DC below-voltage alarm point (unit: mv). Default value is 45V."
+			DEFVAL { 45000 }
+			::= { hwDCOutEntry 4 }
+		
+		hwDCVoltageOutState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				exceedVoltage(2),
+				belowVoltage(3)
+				}
+			MAX-ACCESS read-only
+			STATUS deprecated
+			DESCRIPTION
+				"DC output voltage status
+				normal(1),
+				exceedVoltage(2),
+				belowVoltage(3)"
+			::= { hwDCOutEntry 5 }
+		
+		hwDCCurrentOutHigh OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Output DC exceed-current alarm point (unit: mA)"
+			::= { hwDCOutEntry 6 }
+		
+		hwDCCurrentOutLow OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Output below-current alarm point (unit: mA)"
+			::= { hwDCOutEntry 7 }
+		
+		hwDCCurrentOutState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				exceedVoltage(2),
+				belowVoltage(3)
+				}
+			MAX-ACCESS read-only
+			STATUS deprecated
+			DESCRIPTION
+				"DC output current status"
+			::= { hwDCOutEntry 8 }
+		
+		hwDCOutRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"RowStatus standard operation"
+			::= { hwDCOutEntry 9 }
+		
+		hwDCOutLoadCurrent OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Total load current of DC output, in unit of mA"
+			::= { hwDCOutEntry 10 }
+		
+		hwDCOutLoadTmpHigh OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "0.01 degree"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The off protection point under the load temperature, by default, it is 65 degrees centigrade."
+			DEFVAL { 6500 }
+			::= { hwDCOutEntry 11 }
+		
+		hwDCOutRunState OBJECT-TYPE
+			SYNTAX BITS
+				{
+				battery1ChargeCurOver(0),
+				battery2ChargeCurOver(1),
+				batteryVoltageOver(2),
+				batteryVoltageLack(3),
+				loadOff(4),
+				batteryOff(5),
+				communicationFailure(6),
+				dcOutManual(7)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"DC output running status:
+				   battery1ChargeCurOver(0), battery 1 charge over-current 
+				          battery2ChargeCurOver(1), battery 2 charge over-current 
+				          batteryVoltageOver(2), output over-voltage 
+				          batteryVoltageLack(3), battery lack-voltage 
+				          loadOff(4), load off twice 
+				          batteryOff(5), battery protection (off once)
+				          communicationFailure(6), communication fails
+				          dcOutManual(7)£¬DC by manual "
+			::= { hwDCOutEntry 12 }
+		
+		hwDCCommunicationState  OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(0),
+				fault(1),
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"DC communication status
+				0: normal(0),
+				1: fault(1),			
+				"
+			::= { hwDCOutEntry 13 }
+						
+		hwLoadinfoTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwLoadinfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Load information table"
+			::= { hwPowerMonObjects 4 }
+		
+		hwLoadinfoEntry OBJECT-TYPE
+			SYNTAX HwLoadinfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Load information entry"
+			INDEX { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			::= { hwLoadinfoTable 1 }
+		
+		HwLoadinfoEntry ::=
+			SEQUENCE { 
+				hwLoadIndex
+					Integer32,
+				hwLoadInfoAdminState
+					INTEGER,
+				hwLoadOperStatus
+					INTEGER,
+				hwLoadCurrent
+					MeasuresRange,
+				hwLoadVoltage
+					MeasuresRange,
+				hwLoadVoltageHigh
+					MeasuresRange,
+				hwLoadLoadName
+					DisplayString,
+				hwLoadInfoRowStatus
+					RowStatus,
+				hwLoadFuseState
+					INTEGER, 
+			        hwLoadHoreIndex
+			                Integer32
+			 }
+
+		hwLoadIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Loop index: usually each DC output loop corresponds to a load."
+			::= { hwLoadinfoEntry 1 }
+		
+		hwLoadInfoAdminState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Load operation
+				1: Load is enabled.
+				2: Load is disabled."
+			DEFVAL { 1 }
+			::= { hwLoadinfoEntry 2 }
+		
+		hwLoadOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2),
+				stop(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Statuses of power supply:
+				1: normal
+				2: abnormal
+				3: stopping power supply"
+			::= { hwLoadinfoEntry 3 }
+		
+		hwLoadCurrent OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Present current (unit: mA)"
+			::= { hwLoadinfoEntry 4 }
+		
+		hwLoadVoltage OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Present voltage (unit: mv)"
+			::= { hwLoadinfoEntry 5 }
+		
+		hwLoadVoltageHigh OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Off voltage (Stop external voltage), in unit of mV,
+				When DC output voltage exceeds the value set, the load will be automatically cut off.
+				Default value is 43.5V"
+			DEFVAL { 43500 }
+			::= { hwLoadinfoEntry 6 }
+		
+		hwLoadLoadName OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Load name: usually each DC output loop corresponds to a load."
+			::= { hwLoadinfoEntry 7 }
+		
+		hwLoadInfoRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"RowStatus standard operation"
+			::= { hwLoadinfoEntry 8 }
+		
+		hwLoadFuseState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Load fuse state, including the auxiliary load fuse
+				on(1), the fuse is connected
+				off(2), the fuse is disconnected"
+			::= { hwLoadinfoEntry 9 }
+		
+		hwLoadHoreIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+                                load hore index
+				"
+			::= { hwLoadinfoEntry 10 }
+
+		
+		hwRectifierTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwRectifierEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Rectifier module table"
+			::= { hwPowerMonObjects 5 }
+		
+		hwRectifierEntry OBJECT-TYPE
+			SYNTAX HwRectifierEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Rectifier module entry"
+			INDEX { hwEnvEmuIndex, hwPowerIndex, hwRectifierIndex }
+			::= { hwRectifierTable 1 }
+		
+		HwRectifierEntry ::=
+			SEQUENCE { 
+				hwRectifierIndex
+					Integer32,
+				hwRectifierAdminState
+					INTEGER,
+				hwRectifierOperState
+					INTEGER,
+				hwRectifierVoltage
+					MeasuresRange,
+				hwRectifierCurrent
+					MeasuresRange,
+				hwRectifierRowStatus
+					RowStatus,
+				hwRectifierCurrentLimit
+					TruthValue,
+				hwRectifierRunState
+					BITS,             
+				hwRectifierChargeState
+				        INTEGER
+			 }
+
+		hwRectifierIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Module index (There are multiple rectifier 
+				modules to a power source)"
+			::= { hwRectifierEntry 1 }
+		
+		hwRectifierAdminState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Switchover operation of rectifier module
+				1: Rectifier module is enabled
+				2: Rectifier module is disabled."
+			DEFVAL { 1 }
+			::= { hwRectifierEntry 2 }
+		
+		hwRectifierOperState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				fault(2),
+				protect(3),
+				communicationFailure(4),
+				on(5),
+				off(6)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Present state, 5 and 6 respectively indicates the on/off state of the 48100 device."
+			::= { hwRectifierEntry 3 }
+		
+		hwRectifierVoltage OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Output voltage (unit: mv)"
+			::= { hwRectifierEntry 4 }
+		
+		hwRectifierCurrent OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Output current (unit: mA)"
+			::= { hwRectifierEntry 5 }
+		
+		hwRectifierRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"RowStatus standard operation"
+			::= { hwRectifierEntry 6 }
+		
+		hwRectifierCurrentLimit OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" whether current limit or not?	"
+			DEFVAL { 1 }
+			::= { hwRectifierEntry 7 }
+		
+		hwRectifierRunState OBJECT-TYPE
+			SYNTAX BITS
+				{
+				rectifierOn(0),
+				averageCharge(1),
+				output(2),
+				isLimit(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Running state of rectifier module
+				rectifierOn(0), the module is on
+				       averageCharge(1), the module is being average charged.
+				       output(2), the module has output
+				       isLimit(3), whether is current limit or not?"
+			::= { hwRectifierEntry 8 }
+		
+		hwRectifierChargeState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				float(0),    
+				average(1),
+				test(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Charging state of rectifier 
+				0: average
+				1: float. 
+				2: test.
+				"
+			DEFVAL { 0 }
+			::= { hwRectifierEntry 9 }
+		
+		hwBatteryGroup OBJECT IDENTIFIER ::= { hwPowerMonObjects 6 }
+		
+		hwBatteryGroupTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBatteryGroupEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Basic information table of battery group"
+			::= { hwBatteryGroup 1 }
+		
+		hwBatteryGroupEntry OBJECT-TYPE
+			SYNTAX HwBatteryGroupEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Basic information entry of battery group"
+			INDEX { hwEnvEmuIndex, hwPowerIndex }
+			::= { hwBatteryGroupTable 1 }
+		
+		HwBatteryGroupEntry ::=
+			SEQUENCE { 
+				hwBatteryGroupCapacity
+					Integer32,
+				hwBatteryGroupCapcaityRemain
+					Integer32,
+				hwBatteryGroups
+					Integer32,
+				hwBatteryGroupVoltageLow
+					MeasuresRange,
+				hwBatteryGroupChargeLimit
+					MeasuresRange,
+				hwBatteryGroupRowStatus
+					RowStatus,
+				hwBatteryGroupOperStatus
+					INTEGER,
+				hwBatteryGroupVoltageHigh
+					MeasuresRange,
+				hwBatteryGroupTwiceOffVoltage
+					MeasuresRange,
+				hwBatteryGroupProtectVoltage
+					MeasuresRange,
+				hwBatteryGroupTmpOffHigh
+					MeasuresRange
+			 }
+
+		hwBatteryGroupCapacity OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Total capacity of the present battery group (unit: Ah)."
+			::= { hwBatteryGroupEntry 1 }
+		
+		hwBatteryGroupCapcaityRemain OBJECT-TYPE
+			SYNTAX Integer32 (0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Total capacity of the present battery group (unit: Ah)."
+			::= { hwBatteryGroupEntry 2 }
+		
+		hwBatteryGroups OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Number of battery group"
+			DEFVAL { 2 }
+			::= { hwBatteryGroupEntry 3 }
+		
+		hwBatteryGroupVoltageLow OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"When the voltage of the battery group is lower than the value set, 				the battery group will no longer supply power. Its unit is mV.
+				Default value is 43V"
+			DEFVAL { 43000 }
+			::= { hwBatteryGroupEntry 4 }
+		
+		hwBatteryGroupChargeLimit OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "percent"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Charge limit point quotient, the product of which and the max 				capacity of the battery group is the max charge current allowed. 
+				Default value is 0.15, in unit of 1%."
+			DEFVAL { 15 }
+			::= { hwBatteryGroupEntry 5 }
+		
+		hwBatteryGroupRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"RowStatus standard operation"
+			::= { hwBatteryGroupEntry 6 }
+		
+		hwBatteryGroupOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"When the mains supply is abnormal, the battery group usually 
+				supplies power in an emergency. Therefore, the power supply state 				of the battery is:
+				on(1), indicating on;
+				       off(2), indicating off."
+			::= { hwBatteryGroupEntry 7 }
+		
+		hwBatteryGroupVoltageHigh OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"When the voltage of the battery group is higher than the value 				set, the battery group will no longer supply power. Its unit is mV.
+				Default value is 43V."
+			DEFVAL { 43000 }
+			::= { hwBatteryGroupEntry 8 }
+		
+		hwBatteryGroupTwiceOffVoltage OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The twice off protection voltage of the battery group, default"
+			DEFVAL { 44000 }
+			::= { hwBatteryGroupEntry 9 }
+		
+		hwBatteryGroupProtectVoltage OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The first off protection voltage of the battery,
+				whose default is 43V"
+			DEFVAL { 43000 }
+			::= { hwBatteryGroupEntry 10 }
+		
+		hwBatteryGroupTmpOffHigh OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "0.01 degree"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The high temperature off protection point of the battery group, 				whose default is 50 degrees centigrade"
+			DEFVAL { 5000 }
+			::= { hwBatteryGroupEntry 11 }
+		
+		hwChargeTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwChargeEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Charge management table"
+			::= { hwBatteryGroup 2 }
+		
+		hwChargeEntry OBJECT-TYPE
+			SYNTAX HwChargeEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Charge management entry (index: 1: EMU ID 2: power device index)"
+			INDEX { hwEnvEmuIndex, hwPowerIndex }
+			::= { hwChargeTable 1 }
+		
+		HwChargeEntry ::=
+			SEQUENCE { 
+				hwChargeAdminStatus
+					INTEGER,
+				hwChargeOperStatus
+					INTEGER,
+				hwAverageChargeVoltage
+					MeasuresRange,
+				hwFloatChargeVoltage
+					MeasuresRange,
+				hwChargeControlRowStatus
+					RowStatus,
+				hwAverageChargeTime
+					Integer32,
+				hwBatteryTmpRedeemingQuotiety
+					Integer32
+			 }
+
+		hwChargeAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				average(1),
+				float(2),
+				auto(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Charge management mode
+				1: average charge
+				2: float charge
+				3: auto-control"
+			DEFVAL { 2 }
+			::= { hwChargeEntry 1 }
+		
+		hwChargeOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				average(1),
+				float(2),
+				full(3),
+				noCharge(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				--charge management mode--
+				charge status
+				1: average charge
+				2: float charge
+				3: full 
+				4: no charge"
+			::= { hwChargeEntry 2 }
+		
+		hwAverageChargeVoltage OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Voltage value of average charge, in unit of mv.
+				Default value is 56.5V."
+			DEFVAL { 56500 }
+			::= { hwChargeEntry 3 }
+		
+		hwFloatChargeVoltage OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Voltage value of float charge, in unit of mv. 
+				Default value is 53.5V."
+			DEFVAL { 53500 }
+			::= { hwChargeEntry 4 }
+		
+		hwChargeControlRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"RowStatus standard operation"
+			::= { hwChargeEntry 5 }
+		
+		hwAverageChargeTime OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "day"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Timing average charge time interval, effective range is floating point   
+				number 190 days. Default value is 60 days."
+			DEFVAL { 60 }
+			::= { hwChargeEntry 6 }
+		
+		hwBatteryTmpRedeemingQuotiety OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Temperature redeeming quotient, used to set the co-relation 
+				between the float charge voltage and the battery temperature.
+				It means ¡°How much will the float charge voltage decrease 
+				with the increasing of every degree centigrade of the battery
+				 temperature. The unit is mV.¡±
+				Specific value is determined by the redeem feature curve of 
+				floating charge for the battery group used.
+				Default value is 100mV."
+			DEFVAL { 100 }
+			::= { hwChargeEntry 7 }
+		
+		hwBatteryTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBatteryEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Battery group state table"
+			::= { hwBatteryGroup 3 }
+		
+		hwBatteryEntry OBJECT-TYPE
+			SYNTAX HwBatteryEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Battery group state entry"
+			INDEX { hwEnvEmuIndex, hwPowerIndex, hwBatteryIndex }
+			::= { hwBatteryTable 1 }
+		
+		HwBatteryEntry ::=
+			SEQUENCE { 
+				hwBatteryIndex
+					Integer32,
+				hwBatteryCapacity
+					Integer32,
+				hwBatteryLoopState
+					INTEGER,
+				hwBatteryVoltage
+					MeasuresRange,
+				hwBatteryState
+					INTEGER,
+				hwBatteryCurrent
+					MeasuresRange,
+				hwBatteryTemperature
+					Integer32,
+				hwBatteryRowStatus
+					RowStatus,
+				hwBatteryCurrentHigh
+					MeasuresRange,
+				hwBatteryFuseState
+					INTEGER,
+				hwBatteryContactState
+					INTEGER,     
+				hwBatteryRemainCapacity
+					Integer32,
+				hwBatteryProtectState
+				        INTEGER,   
+				hwBatteryVoltageState
+				  INTEGER,    
+                                hwBatteryHardwareState
+				  INTEGER   
+			 }
+
+		hwBatteryIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Battery group loop index"
+			::= { hwBatteryEntry 1 }
+		
+		hwBatteryCapacity OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The permitted max battery capacity of the battery group loop charge (unit: Ah)."
+			DEFVAL { 100 }
+			::= { hwBatteryEntry 2 }
+		
+		hwBatteryLoopState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Present status"
+			::= { hwBatteryEntry 3 }
+		
+		hwBatteryVoltage OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mV"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The loop voltage of the battery group (unit: mv)"
+			::= { hwBatteryEntry 4 }
+		
+		hwBatteryState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				charge(1),
+				discharge(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The present state of the battery group loop
+				1: charge state
+				2: discharge state"
+			::= { hwBatteryEntry 5 }
+		
+		hwBatteryCurrent OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Present current (unit: mA)"
+			::= { hwBatteryEntry 6 }
+		
+		hwBatteryTemperature OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "degree"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The loop temperature of the battery group (unit: centigrade)."
+			::= { hwBatteryEntry 7 }
+		
+		hwBatteryRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"RowStatus standard operation"
+			::= { hwBatteryEntry 8 }
+		
+		hwBatteryCurrentHigh OBJECT-TYPE
+			SYNTAX MeasuresRange
+			UNITS "mA"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The over-current alarm point of the battery group"
+			::= { hwBatteryEntry 9 }
+		
+		hwBatteryFuseState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Battery fuse state
+				on(1), the fuse is connected.
+				off(2), the fuse is disconnected."
+			::= { hwBatteryEntry 10 }
+		
+		hwBatteryContactState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The state of the battery contactor
+				on(1), the contactor is connected;
+				off(2), the contactor is disconnected."
+			::= { hwBatteryEntry 11 }
+		
+			
+			
+		hwBatteryRemainCapacity OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Remain capacity of the battery 
+				"
+			DEFVAL { 100 }
+			::= { hwBatteryEntry 12 }
+
+	       hwBatteryProtectState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				overtemperature(2),
+				overCurrent(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"				
+				on(1),
+				overtemperature(2),
+				overCurrent(3)"
+			::= { hwBatteryEntry 13 }
+
+		hwBatteryVoltageState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				exceedVoltage(2),
+				belowVoltage(3),
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				normal(1),
+				exceedVoltage(2),
+				belowVoltage(3),
+				"
+			::= { hwBatteryEntry 14 }
+
+		hwBatteryHardwareState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				fault(2),
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				normal(1),
+				fault(2),
+				"
+			::= { hwBatteryEntry 15 }
+		
+		hwBatteryTestTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBatteryTestEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Battery test table"
+			::= { hwBatteryGroup 4 }
+		
+		hwBatteryTestEntry OBJECT-TYPE
+			SYNTAX HwBatteryTestEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Battery test entry"
+			INDEX { hwEnvEmuIndex, hwPowerIndex }
+			::= { hwBatteryTestTable 1 }
+		
+		HwBatteryTestEntry ::=
+			SEQUENCE { 
+				hwBatteryTestAdminStatus
+					INTEGER,
+				hwBatteryTestAutoDischargePeriod
+					Integer32,
+				hwBatteryTestResult
+					INTEGER,
+				hwBatteryTestStartTime
+					DateAndTime,
+				hwBatteryTestDuration
+					Integer32,
+				hwBatteryTestTerminateVoltage
+					Integer32,
+				hwBatteryTestTotalDischargeAH
+					Integer32,
+				hwBatteryTestOperStatus
+					INTEGER,
+				hwBatteryTestPhase
+					INTEGER,
+				hwBatteryTestStartHour
+					Integer32
+			 }
+
+		hwBatteryTestAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+			        {
+			            start(1), 
+			            terminate(2),
+			            enableAutoTest(3), 
+			            disableAutoTest(4)
+			        }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Battery test admin status
+				start(1), start testing
+			        terminate(2), terminate testing
+			        enableAutoTest(3),enable auto test function
+			        disableAutoTest(4),disable auto test function"
+			::= { hwBatteryTestEntry 1 }
+		
+		hwBatteryTestAutoDischargePeriod OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "day"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Auto discharge test period(unit:day)
+				effective range is (30 ~ 240)days
+				default value is 180 days"
+			DEFVAL { 180 }
+			::= { hwBatteryTestEntry 2 }
+		
+		hwBatteryTestResult OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				testing(1),
+				complete(2),
+				alarmTerminated(3),
+				hostTerminated(4),
+				overtimeTerminated(5),
+				normal(6)
+				}
+			MAX-ACCESS read-only
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Test result:
+				testing(1), testing
+				       complete(2), complete normally
+				       stoppedByAlarm(3), stopped by alarms
+				       stoppedByHost(4), stopped by host
+				       stoppedOfOverTime(5),stopped because of over 100 hours
+				       notTest(6), have not start test "
+			::= { hwBatteryTestEntry 3 }
+		
+		hwBatteryTestStartTime OBJECT-TYPE
+			SYNTAX DateAndTime
+			MAX-ACCESS read-only
+			STATUS obsolete
+			DESCRIPTION
+				"Time of starting test"
+			::= { hwBatteryTestEntry 4 }
+		
+		hwBatteryTestDuration OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "hour"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Battery discharge test duration(unit:hour)
+				effective range is (1 ~ 5)o'clock
+				default value is 2 hours"
+			::= { hwBatteryTestEntry 5 }
+		
+		hwBatteryTestTerminateVoltage OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "mV"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Battery discharge test end voltage(unit:mV)
+				effective range(DC lack+0.5V ~ voltage of floating charge)
+				default value is (46000 mV)"
+			::= { hwBatteryTestEntry 6 }
+		
+		hwBatteryTestTotalDischargeAH OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "mAH"
+			MAX-ACCESS read-only
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Total discharge AH(unit: mAH)"
+			::= { hwBatteryTestEntry 7 }
+		
+		hwBatteryTestOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				autoTestPermit(1),
+				autoTestForbid(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Battery discharge test operate status:
+				autoTestPermit(1), auto discharge test enable
+				autoTestForbid(2), auto discharge test disable"
+			::= { hwBatteryTestEntry 8 }
+		
+		hwBatteryTestPhase OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				charge(1),
+				discharge(2),
+				record(3),
+				finish(4),
+				waitingfordischarge(5)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Battery discharge test phase:
+				charge(1), charge
+				discharge(2), discharge
+				record(3), power equipment recording test result
+				finish(4), discharge complete
+				waiting for discharge(5), prepare job have done,waiting for discharge command"
+			::= { hwBatteryTestEntry 9 }
+		
+		hwBatteryTestStartHour OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "hour"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Discharge start time
+				effective range is (0 ~ 23)o'clock
+				default value is 0 o'clock"
+			DEFVAL { '0'b }
+			::= { hwBatteryTestEntry 10 }
+		
+		hwBatteryLogTestTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBatteryLogTestEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Battery test result table"
+			::= { hwBatteryGroup 5 }
+		
+		hwBatteryLogTestEntry OBJECT-TYPE
+			SYNTAX HwBatteryLogTestEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Battery test result entry"
+			INDEX { hwEnvEmuIndex, hwPowerIndex, hwBatteryLogTestIndex }
+			::= { hwBatteryLogTestTable 1 }
+		
+		HwBatteryLogTestEntry ::=
+			SEQUENCE { 
+				hwBatteryLogTestIndex
+					Integer32,
+				hwBatteryLogTestStartTime
+					DateAndTime,
+				hwBatteryLogTestDischargeDuration
+					Integer32,
+				hwBatteryLogTestTerminateVoltage
+					Integer32,
+				hwBatteryLogTestBatteryStatus
+					INTEGER,
+				hwBatteryLogTestTotalDischargeAH
+					Integer32,
+				hwBatteryLogTestFinish
+					INTEGER
+			 }
+
+		hwBatteryLogTestIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Battery discharge test result index"
+			::= { hwBatteryLogTestEntry 1 }
+		
+		hwBatteryLogTestStartTime OBJECT-TYPE
+			SYNTAX DateAndTime
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Battery discharge test start time"
+			::= { hwBatteryLogTestEntry 2 }
+		
+		hwBatteryLogTestDischargeDuration OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "minute"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Duration of discharge (unit:minute)"
+			::= { hwBatteryLogTestEntry 3 }
+		
+		hwBatteryLogTestTerminateVoltage OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "mV"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				End voltage of battery discharge test(unit:mV)"
+			::= { hwBatteryLogTestEntry 4 }
+		
+		hwBatteryLogTestBatteryStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				expectant(1),
+				unexpected(2),
+				unknow(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Battery status
+				passed(1)
+				failed(2)
+				unknown(3)"
+			::= { hwBatteryLogTestEntry 5 }
+		
+		hwBatteryLogTestTotalDischargeAH OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "mAH"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Discharge cumulate AH(unit:mAH)"
+			::= { hwBatteryLogTestEntry 6 }
+		
+		hwBatteryLogTestFinish OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				testing(1),   
+				completed(2),
+				alarmTerminated (3),
+				hostTerminated(4),
+				overtimeTerminated(5)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Test result:
+				testing(1), testing
+				complete(2), complete normally
+				stoppedByAlarm(3), stopped by alarms
+				stoppedByHost(4), stopped by host
+				stoppedOfOverTime(5),stopped because of over 100 hours
+				notTest(6), have not start test "
+
+			::= { hwBatteryLogTestEntry 7 }
+	
+	
+	
+	
+		hwRemoteProvidePowerInfoTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwRemoteProvidePowerInfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Remote provide power basic information table"
+			::= { hwPowerMonObjects 7 }
+			
+		hwRemoteProvidePowerInfoEntry OBJECT-TYPE
+			SYNTAX HwRemoteProvidePowerInfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Entry of the table."
+			INDEX { hwEnvEmuIndex,hwPowerIndex }
+			::= { hwRemoteProvidePowerInfoTable 1 }		      
+			
+		HwRemoteProvidePowerInfoEntry ::=
+		    SEQUENCE { 				           
+                     hwPowerCentralState
+                          INTEGER,
+                     hwPowerCentralDCInPutState    
+                          INTEGER,
+                     hwPowerCentralDCOutputState
+                          INTEGER,
+                     hwPowerCentralDCOutputMode
+                          INTEGER,
+                     hwPowerRemoteCommState
+                          INTEGER,
+                     hwPowerRemoteDCInputState
+                          INTEGER,
+                     hwPowerRemoteLineCurState
+                          INTEGER,    
+                     hwPowerRemotePowerState
+                          INTEGER,
+                     hwPowerRemoteLineState
+                          BITS,                
+                     hwPowerCentralLoadState
+                          INTEGER                                                 
+			        }		        
+	      
+	       hwPowerCentralState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				temOver(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				State of the central module.
+				normal(1),   normal state
+				temOver(2),  temperature over"
+			::= { hwRemoteProvidePowerInfoEntry 1 }
+			
+	       hwPowerCentralDCInPutState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+                                lack(2),
+				over(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				State of central module DC input.
+				normal(1),   normal state
+                		lack(2),     voltage underflow  
+				over(3)      voltage overflow"
+			::= { hwRemoteProvidePowerInfoEntry 2}
+
+               hwPowerCentralDCOutputState OBJECT-TYPE
+	                SYNTAX INTEGER
+	                       {
+                                normal(1),
+                                volLack(2),
+				                volOver(3),
+                                loadOver(4),
+                                shortCircuit(5)
+                                noLoad(6),
+                                
+                               }                       
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION 
+		               "State of central module DC output.
+		                normal(1),   normal state 
+                        volLack(2),  voltage underflow
+				        volOver(3),  voltage overflow
+                        loadOver(4), over loading                    
+                        shortCircuit(5), short circuit 
+                        noLoad(6),   no load"
+			::= { hwRemoteProvidePowerInfoEntry 3 } 
+			
+	       hwPowerCentralDCOutputMode OBJECT-TYPE
+	                SYNTAX INTEGER
+	                       {
+                                highVolMode (1),
+                                lowVolMode  (2)				
+                           }                       
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION 
+		               "Mode of central module DC output:
+                        highVolMode (1),  high voltage output mode
+                        lowVolMode  (2),  low voltage output mode"
+			::= { hwRemoteProvidePowerInfoEntry 4 } 
+
+	       hwPowerRemoteCommState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				revfault(2),
+				sendfault(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Remote power module communications state.
+				normal(1),  normal
+				revfault(2),  receiving fault	
+				sendfault,    send fault"
+			::= { hwRemoteProvidePowerInfoEntry 5 }	
+			
+	       hwPowerRemoteDCInputState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+                                normal(1),
+                                lack(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			       "State of remote module DC input.
+			        normal(1),   normal state
+                    lack(2),     voltage underflow"
+			::= { hwRemoteProvidePowerInfoEntry 6 }	
+
+	       hwPowerRemoteLineCurState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+                                normal(1),
+                                cablejoining(2),
+                                curLeakage(3),
+                                curOver(4),
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			       "state of line between central and remote module.
+			        normal(1), normal
+                                cablejoining(2),  cable joining
+                                curLeakage(3), cur Leakage
+                                curOver(4)     cur Over
+                               " 
+			::= { hwRemoteProvidePowerInfoEntry 7 }	
+			
+		hwPowerRemotePowerState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+                                normal(1),
+                                fault(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			       "state of remote UA60 power.
+			        normal(1), normal
+                                Fault(2),  fault" 
+			::= { hwRemoteProvidePowerInfoEntry 8 }	
+			
+			
+		hwPowerRemoteLineState OBJECT-TYPE
+			SYNTAX BITS
+				{
+                                u1state(0),
+                                u2state(1),
+                                u3state(2),
+                                u4state(3),
+                                a1state(4),
+                                a2state(5),
+                                a3state(6),
+                                a4state(7)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			       "state of line U1.
+			        u1state(1), u1 state
+                                u2state(1), u2 state
+                                u3state(1), u3 state
+                                u4state(1), u4 state
+                                a1state(1), a1 state
+                                a2state(1), a2 state
+                                a3state(1), a3 state
+                                a4state(1), a4 state 
+                               " 
+			::= { hwRemoteProvidePowerInfoEntry 9 }
+
+                 hwPowerCentralLoadState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+                                normal(1),
+                                overload(2),
+                                nonload(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			       "state of central load.
+			        normal(1), normal
+                                Overload(2),  overload
+                                nonload(3),nonload
+                               " 
+			::= { hwRemoteProvidePowerInfoEntry 10 }
+
+		
+		hwPowerMibTrap OBJECT IDENTIFIER ::= { hwPower 2 }
+		
+		hwPowerTrapOid OBJECT IDENTIFIER ::= { hwPowerMibTrap 1 }
+		
+		hwPowerTrapsDefine OBJECT IDENTIFIER ::= { hwPowerMibTrap 2 }
+		
+		hwPowerTraps OBJECT IDENTIFIER ::= { hwPowerTrapsDefine 0 }
+		
+		powerConnFaultAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				" Fault alarm of the communication between the power module and the monitoring board"
+			::= { hwPowerTraps 1 }
+		
+		powerConnFaultAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				" The fault alarm resume of the communication between the power module and the monitoring board:"
+			::= { hwPowerTraps 2 }
+		
+		acInputVoltageAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwACLoopIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				Exception alarm of AC input voltage"
+			::= { hwPowerTraps 3 }
+		
+		acInputVoltageAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwACLoopIndex }
+			STATUS current
+			DESCRIPTION 
+				"Exception alarm of AC input voltage"
+			::= { hwPowerTraps 4 }
+		
+		acInputVoltageHighAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwACLoopIndex }
+			STATUS current
+			DESCRIPTION 
+				"Exception alarm resume of AC input"
+			::= { hwPowerTraps 5 }
+		
+		acInputVoltageHighAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwACLoopIndex }
+			STATUS current
+			DESCRIPTION 
+				"Exception alarm resume of AC input"
+			::= { hwPowerTraps 6 }
+		
+		acInputVoltageLowAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwACLoopIndex }
+			STATUS current
+			DESCRIPTION 
+				"Overvoltage alarm resume of AC input module"
+			::= { hwPowerTraps 7 }
+		
+		acInputVoltageLowAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwACLoopIndex }
+			STATUS current
+			DESCRIPTION 
+				"Below-voltage alarm of AC input module"
+			::= { hwPowerTraps 8 }
+		
+		dcOutputVoltageHighAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Overvoltage alarm of DC output module"
+			::= { hwPowerTraps 9 }
+		
+		dcOutputVoltageHighAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Overvoltage alarm resume of AC output module"
+			::= { hwPowerTraps 10 }
+		
+		dcOutputCurrentHighAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Over-current alarm of DC output module "
+			::= { hwPowerTraps 11 }
+		
+		dcOutputCurrentHighAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Over-current alarm resume of DC output module "
+			::= { hwPowerTraps 12 }
+		
+		dcOutputVoltageLowAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Below-current alarm of DC output module"
+			::= { hwPowerTraps 13 }
+		
+		dcOutputVoltageLowAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Below-current alarm resume of DC output module."
+			::= { hwPowerTraps 14 }
+		
+		dcOutputCurrentLowAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Below-current alarm of DC output module."
+			::= { hwPowerTraps 15 }
+		
+		dcOutputCurrentLowAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Below-current alarm resume of DC output module "
+			::= { hwPowerTraps 16 }
+		
+		overLoadPowerAbnormalAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Alarm of abnormal load"
+			::= { hwPowerTraps 17 }
+		
+		overLoadPowerAbnormalAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Alarm resume of abnormal load"
+			::= { hwPowerTraps 18 }
+		
+		overBattPowerOffAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex }
+			STATUS current
+			DESCRIPTION 
+				"Power off alarm of the battery"
+			::= { hwPowerTraps 19 }
+		
+		overBattPowerOffAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex }
+			STATUS current
+			DESCRIPTION 
+				"Power off alarm resume of the battery"
+			::= { hwPowerTraps 20 }
+		
+		overLoadPowerOffAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Load power off alarm"
+			::= { hwPowerTraps 21 }
+		
+		overLoadPowerOffAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Alarm resume of load power off"
+			::= { hwPowerTraps 22 }
+		
+		acMainsSupplyAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwACLoopIndex }
+			STATUS current
+			DESCRIPTION 
+				"No alarm of AC mains supply"
+			::= { hwPowerTraps 23 }
+		
+		acMainsSupplyAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwACLoopIndex }
+			STATUS current
+			DESCRIPTION 
+				"No alarm resume of AC mains supply "
+			::= { hwPowerTraps 24 }
+		
+		batteryLoopAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Loop disconnect alarm of battery group "
+			::= { hwPowerTraps 25 }
+		
+		batteryLoopAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Loop disconnect alarm resume of the battery group"
+			::= { hwPowerTraps 26 }
+		
+		batteryFuseAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Fuse disconnect alarm of the battery group"
+			::= { hwPowerTraps 27 }
+		
+		batteryFuseAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Fuse disconnect alarm resume of the battery group "
+			::= { hwPowerTraps 28 }
+		
+		batteryContachAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Fuse disconnect alarm resume of the battery group"
+			::= { hwPowerTraps 29 }
+		
+		batteryContachAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Contactor disconnect alarm resume of the battery group"
+			::= { hwPowerTraps 30 }
+		
+		userModuleOffAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Power off alarm of the user module"
+			::= { hwPowerTraps 31 }
+		
+		userModuleOffAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Power off alarm resume of the user module"
+			::= { hwPowerTraps 32 }
+		
+		transferModuleOffAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Power off alarm of transfer module"
+			::= { hwPowerTraps 33 }
+		
+		transferModuleOffAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Power off alarm of transfer module"
+			::= { hwPowerTraps 34 }
+		
+		userModuleSwitchAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Switch-off alarm of user module"
+			::= { hwPowerTraps 35 }
+		
+		transferModuleSwitchAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Switch-off alarm of transfer module"
+			::= { hwPowerTraps 37 }
+		
+		loadFuseAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Alarm of load fuse"
+			::= { hwPowerTraps 39 }
+		
+		loadFuseAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Alarm resume of load fuse"
+			::= { hwPowerTraps 40 }
+		
+		chargeCtrlStateAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Control state alarm of average floating charge conversion"
+			::= { hwPowerTraps 41 }
+		
+		chargeModeAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Alarm of charge state conversion"
+			::= { hwPowerTraps 42 }
+		
+		acCommFailAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"AC panel communication failure alarm"
+			::= { hwPowerTraps 43 }
+		
+		acCommFailAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"Alarm resume of AC panel communication failure"
+			::= { hwPowerTraps 44 }
+		
+		batteryChargeOverAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Over-current alarm of battery group"
+			::= { hwPowerTraps 45 }
+		
+		batteryChargeOverAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Over-current of alarm resume of battery group."
+			::= { hwPowerTraps 46 }
+		
+		batteryVoltageLackAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Voltage lack alarm of battery group"
+			::= { hwPowerTraps 47 }
+		
+		batteryVoltageLackAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Voltage lack alarm resume of battery group"
+			::= { hwPowerTraps 48 }
+		
+		loadTwiceOffAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Load twice off alarm"
+			::= { hwPowerTraps 49 }
+		
+		loadTwiceOffAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Low twice off alarm resume"
+			::= { hwPowerTraps 50 }
+		
+		loadOnceOffAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Load once off alarm"
+			::= { hwPowerTraps 51 }
+		
+		loadOnceOffAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwBatteryIndex }
+			STATUS current
+			DESCRIPTION 
+				"Load once of alarm resume"
+			::= { hwPowerTraps 52 }
+		
+		acInputPowerOffAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Power off alarm of AC loop"
+			::= { hwPowerTraps 53 }
+		
+		acInputPowerOffAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"Power off alarm resume of AC loop"
+			::= { hwPowerTraps 54 }
+		
+		acInputLoopSwtichAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex, hwLoadIndex }
+			STATUS current
+			DESCRIPTION 
+				"AC loop switch alarm"
+			::= { hwPowerTraps 55 }
+		
+		batteryDischargeTestStartAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				battery discharge test start alarm"
+			::= { hwPowerTraps 56 }
+		
+		batteryDischargeTestStopAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				battery discharge test stop alarm"
+			::= { hwPowerTraps 57 }
+
+              powerProtectAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				power enbale protection function alarm"
+			::= { hwPowerTraps 58 }
+
+              powerUndoProtectAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				power disable protection funtion alarm"
+			::= { hwPowerTraps 59 }
+
+              powerCentralOutputModeSwtichAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				the central output mode swtich alarm"
+			::= { hwPowerTraps 60 }
+
+              powerCentralTempretaureAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				the central tempretaure abnormal alarm"
+			::= { hwPowerTraps 61 }
+
+              powerCentralInputAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				the central input voltage abnormal alarm"
+			::= { hwPowerTraps 62 }
+
+              powerCentralOutputAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				the central output voltage abnormal alarm"
+			::= { hwPowerTraps 63 }
+              
+              powerRemoteCommFaultAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				communiction between the remote and central fault alarm "
+			::= { hwPowerTraps 64 }
+
+              powerRemoteVoltageAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				remote voltage abnormal alarm"
+			::= { hwPowerTraps 65}
+
+              powerLineAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				line abnormal alarm"
+			::= { hwPowerTraps 66 }
+
+              powerRemotePowerAlarm NOTIFICATION-TYPE                     
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				remote power abnormal alarm"
+			::= { hwPowerTraps 67 }
+			
+	      powerRemotePowerAlarm NOTIFICATION-TYPE                     
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				Line UA abnormal alarm
+				"
+			::= { hwPowerTraps 68 }
+			
+	      powerRemotePowerAlarm NOTIFICATION-TYPE                     
+			OBJECTS { hwEnvEmuIndex, hwPowerIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				Central load abnormal alarm
+				"
+			::= { hwPowerTraps 69 }	
+		
+	      hwACInfomationTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwACInfomationEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"AC infomation table
+				"
+			::= { hwPowerMonObjects 8 }
+		
+		hwACInfomationEntry OBJECT-TYPE
+			SYNTAX HwACInfomationEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"AC infomation entry
+				"
+			INDEX { hwEnvEmuIndex, hwPowerIndex }
+			::= { hwACInfomationTable 1 }
+		
+		HwACInfomationEntry ::=
+			SEQUENCE { 
+				hwACInfoCommState 
+					INTEGER,
+				hwACInfoThunderState             
+					INTEGER,
+				hwACInfoCurrentLoop      		
+					INTEGER,
+				hwACInfoMCBTrigger
+					INTEGER, 
+			        hwACInfoFrequency   
+					INTEGER,		    	
+				hwACInfoRowStatus
+					RowStatus
+			 }
+		
+		hwACInfoCommState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(0),
+				fault(1),
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"communication state of AC input module
+				0: normal
+				1: fault.				
+				"
+			DEFVAL { 0 }
+			::= { hwACInfomationEntry 1 }
+		
+		hwACInfoThunderState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(0),
+				fault(1),
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Thunder's state
+				0: normal
+				1: fault				
+				"
+			::= { hwACInfomationEntry 2 }
+		
+		hwACInfoCurrentLoop OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Current AC input working loop
+				"
+			::= { hwACInfomationEntry 3 }
+		
+		hwACInfoMCBTrigger OBJECT-TYPE
+			SYNTAX INTEGER     
+				{
+				normal(0),
+				break-down(1),
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				AC input MCB trigger state
+				0: normal
+				1: break-down				
+				"
+			::= { hwACInfomationEntry 4 }         
+			
+		hwACInfoFrequency OBJECT-TYPE
+			SYNTAX INTEGER
+			UNITS "HZ"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The infomation of AC input frequency  
+				"
+			::= { hwACInfomationEntry 5 }
+
+		hwACInfoRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"RowStatus standard operation
+				"
+			::= { hwACInfomationEntry 6 }
+				
+		powerConformance OBJECT IDENTIFIER ::= { hwPower 3 }
+		
+		powerCompliances OBJECT IDENTIFIER ::= { powerConformance 1 }
+		
+		powerGroups OBJECT IDENTIFIER ::= { powerConformance 2 }
+END

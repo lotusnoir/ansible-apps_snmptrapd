@@ -1,0 +1,452 @@
+-- L2_USER_IP_MGNT-MIB
+-- =============================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2007, Alcatel. All Rights Reserved.
+-- =============================================================================
+
+ 
+L2-USER-IP-MGNT-MIB DEFINITIONS ::= BEGIN
+ 
+-- MODULE IDENTITY
+-- LAST-UPDATED "201208280000Z"
+-- ORGANIZATION "Alcatel"
+-- CONTACT-INFO "email:asam.mibsupport@alcatel.be"
+-- DESCRIPTION "L2User IP Management MIB"
+
+-- REVISION "201208280000Z"
+-- DESCRIPTION
+--        "Version: 3FE28997EAAA_Vx.x.x.x.x
+--         Editor:  Karthik Chandra Bose S
+--         Changes:
+--                * Define l2UserIpSystemGroup, add l2UserIpMaxNumIpV6PrefixesPerLine."
+
+-- REVISION "201109130000Z"
+-- DESCRIPTION
+--        "Version: 3FE28997EAAA_Vx.x.x.x.x
+--         Editor:  Xiong Xiaohong
+--         Changes:
+--                * Define a new table L2User IPv6 Table."
+
+-- REVISION "201003010000Z"
+-- DESCRIPTION
+--        "Version:  3FE28997EAAA_Vx.x.x.x.x
+--         Editor:   Xiong Xiaohong
+--         Changes:  
+--                * Define a new table extendIpAddressPrefixTable."
+       
+
+-- REVISION "200910150000Z"
+-- DESCRIPTION
+--        "Version:  3FE28997EAAA_Vx.x.x.x.x
+--         Editor:   Zhang Yihui
+--         Changes:  
+--         * Modify the description of l2UserIpTable, update its TABLESIZE "DEP [for Intel LIM, 384 entries per LT for BCM LIM,not supported]" to "DEP [for Intel LIM, 384 entries per LT, for NALT-E, 576 entries per LT,for BCM LIM,not supported, for GPON LT, 8192 entries per LT]".
+--         * Modify the description of l2UserIpEntry, "decomposition  - the prefix length is not less than 23 on DSL board. But no limitation on GPON LT"
+
+
+--  REVISION "200702281348Z"
+--  DESCRIPTION
+--        "Version: 3FE28997EAAA_E1.0.0.0
+--         Editor:  Srinivas Chinnam
+--         Changes: Changes after review."
+
+-- REVISION "200705220000Z"
+-- DESCRIPTION
+--        "Version:  3FE28997EAAA_E2.0.0.0
+--         Editor:   Jia Junjie
+--         Changes:Modify the description of l2UserIpTable, update its TABLESIZE "DEP [for Intel LIM, 384 entries per
+--         LT for BCM LIM,not supported]" to "DEP [for Intel LIM, 384 entries per LT, for NALT-E, 576 entries per LT,for BCM 
+--         LIM,not supported]".
+--
+-- ========================================================================
+
+ 
+IMPORTS
+      ifIndex
+        FROM ITF-MIB
+      OBJECT-TYPE
+        FROM RFC-1212
+      RowStatus
+        FROM SNMPv2-TC
+      VlanId, VlanIndex
+	    FROM Q-BRIDGE-MIB
+      IpAddress, Gauge
+        FROM RFC1155-SMI
+      InetAddress
+        FROM INET-ADDRESS-MIB
+      InetAddressType       
+        FROM INET-ADDRESS-MIB
+      InetAddressPrefixLength    
+        FROM INET-ADDRESS-MIB
+      asam
+        FROM SYSTEM-MIB
+      ipAddressPrefixIfIndex, ipAddressPrefixType,
+      ipAddressPrefixPrefix,  ipAddressPrefixLength
+        FROM IP-MIB;
+
+
+-- ========================================================================
+ 
+-- L2User IP Management Group
+ 
+-- ========================================================================
+
+l2UserIpMgntMIB            OBJECT IDENTIFIER ::= {asam 78}
+
+
+-- ========================================================================
+ 
+-- L2 User IP Management table
+ 
+-- ========================================================================
+l2UserIpTable OBJECT-TYPE
+SYNTAX  SEQUENCE OF L2UserIpEntry
+ACCESS  not-accessible
+STATUS  mandatory
+DESCRIPTION
+        		"A table containing configuration information of static users and
+             dynamic users learnt through snooping. Currently this table holds only
+             the configuration information of the static users. 
+
+The ifIndex refers to the interface index of the user interfaces. 
+
+Currently the values supported by l2UserIpRowStatus are .active.,   .createAndGo. and .destroy..
+
+             ALCATEL NOTE:
+                    TABLESIZE:  DEP [
+		    for Intel LIM, 384 entries per LT, 
+		    for NALT-E, 576 entries per LT, 
+                    for BCM LIM,not supported, 
+		    for GPON LIM, 8192 entries per LT to be supported]
+
+             DESCR: NA "
+               ::= { l2UserIpMgntMIB 1 }
+ 
+l2UserIpEntry OBJECT-TYPE
+SYNTAX  L2UserIpEntry
+ACCESS  not-accessible
+STATUS  mandatory
+DESCRIPTION
+"An entry in the l2UserIpTable. All entries in the table are dynamically created.
+                
+* Row Creation. An entry is created by a set-request with the
+                  l2UserIpRowStatus set to createAndGo(4). The set-request
+                  would be successful if:
+                    - the specified vlan port(user)interface exists.
+                    - the specified vlan port is associated with a L2 forwarder.
+   - the L2 forwarder should not be of type S-VLAN XCON,  Qos Aware VLAN or IPoA CC VLAN.
+- the specified user IP address and prefix length does not 
+                      overlap with the existing entries.
+                    - the number of static users/subnet depends on board type (e.g for IXP board max 384 per LT, the number of static users does not exceed 16k per LT after decomposition).
+   - the number of static users does not exceed 16k per LT after    decomposition
+                    - the prefix length is not less than 23 on DSL board. But no limitation on GPON LT.
+
+
+                * Row Deletion. A table entry is deleted by a set-request with
+                  the l2UserIpRowStatus set to destroy(4). A table entry can
+                  also be auto-deleted. The auto-deletion can happen when,
+- the association between Vlan-port and L2 forwarder is removed (OR)
+- the associated user interface gets deleted (OR)
+- the associated L2 forwarder is deleted.
+
+                * Index Usage. The ifIndex refers to the vlan-port (user) interface 
+                  (from IfTable)."
+INDEX   { ifIndex, l2UserIpAddressType, l2UserIpAddress, l2UserIpPrefixLength }
+                ::= { l2UserIpTable 1 }
+
+ L2UserIpEntry ::=
+                SEQUENCE        {
+                                l2UserIpAddressType 
+									  InetAddressType,
+                                l2UserIpAddress
+                                        InetAddress,
+                                l2UserIpPrefixLength
+                                        InetAddressPrefixLength,
+                                l2UserIpRowStatus
+                                        RowStatus
+                                }
+
+
+l2UserIpAddressType OBJECT-TYPE
+SYNTAX  InetAddressType
+ACCESS  read-write
+STATUS  mandatory
+DESCRIPTION
+"The address type of l2UserIpAdress.
+ALCATEL NOTE:
+ACCESS:      RW            USAGE:       MAND
+PERSIST:     YES           INSRVMOD:    NO
+RANGE:       1 --only IPv4
+DEFVALUE:    NA
+UNITS:       NA            SPARSE:      NA
+DESCR:       NA"
+::= { l2UserIpEntry 1 }
+
+
+
+l2UserIpAddress OBJECT-TYPE
+SYNTAX  InetAddress
+ACCESS  read-write
+STATUS  mandatory
+DESCRIPTION
+"The IP address to which this entry.s addressing information pertains.
+ALCATEL NOTE:
+ACCESS:      RW            USAGE:       MAND
+PERSIST:     YES           INSRVMOD:    NO
+RANGE:       NA            DEFVALUE:    NA
+UNITS:       NA            SPARSE:      NA
+DESCR:       NA"
+::= { l2UserIpEntry 2 }
+
+
+l2UserIpPrefixLength OBJECT-TYPE
+SYNTAX  InetAddressPrefixLength
+ACCESS  read-write
+STATUS  mandatory
+DESCRIPTION
+" The IP address prefix which is basically the number of '1' bits in the netmask.  
+ALCATEL NOTE:
+ACCESS:      RW            USAGE:       MAND
+PERSIST:     YES           INSRVMOD:    NO
+RANGE:       8-32         DEFVALUE:    NA
+UNITS:       NA            SPARSE:      NA
+DESCR:       NA"
+::= { l2UserIpEntry 3 }
+
+l2UserIpRowStatus OBJECT-TYPE
+           SYNTAX       RowStatus
+           ACCESS       read-write
+           STATUS       mandatory
+           DESCRIPTION
+"A L2 User IP entry can be created or deleted by using this
+ variable. Two operations 'create and go' and `destroy` has been
+supported for this table. The status of the row is made .active. ones the row is created.
+
+Apart from l2UserIpRowStatus, ifIndex, l2UserIpAddressType, l2UserIpAddress and l2UserIpPrefixLength are mandatory objects for row creation and deletion.
+  ALCATEL NOTE:
+             ACCESS:  	RW         	      		USAGE:		MAND
+             PERSIST:    YES                		INSRVMOD:    NA
+             RANGE:      1|4|6 					DEFVALUE:   NA 
+             UNITS:      NA                 		SPARSE:      NA
+             DESCR:      NA"
+          ::= { l2UserIpEntry 4 }
+
+--
+-- extend  ipAddressPrefixTable
+--
+    extendIpAddressPrefixTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ExtendIpAddressPrefixEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+"This table lists the proprietary attributes of IP address
+ prefix. There is an entry in this table for every entry in the
+ ipAddressPrefixTable.
+            ALCATEL NOTE:
+                TABLESIZE: DEP (DHCPv6 session number)
+                DESCR: NA
+            "
+    ::= { l2UserIpMgntMIB 2 }
+
+    extendIpAddressPrefixEntry OBJECT-TYPE
+        SYNTAX ExtendIpAddressPrefixEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "One entry in table extendIpAddressPrefixTable.
+             Row creation: An entry is created by the system when the DHCPv6
+                           Application snoop a DHCPv6 session is created.
+             Row deletion: An entry is deleted by the system when the DHCPv6
+                           Application considers a DHCPv6 session is terminated.
+             Index usage:  the index is the vlan port interface index and DHCPv6
+              Ipv6Prefix and prefix length.
+             Note that entries will be presented to the SNMP manager in full
+             lexicographical order
+            "
+        INDEX {ipAddressPrefixIfIndex, ipAddressPrefixType,
+               ipAddressPrefixPrefix, ipAddressPrefixLength }
+    ::= { extendIpAddressPrefixTable 1}
+
+    ExtendIpAddressPrefixEntry::= SEQUENCE 
+    {
+        extendIpAddressPrefixForwarderId     Gauge
+    }
+
+    extendIpAddressPrefixForwarderId    OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+           "This identifies the ID of the forwarder to which this session belongs,
+            it is the corresponding index of network VLAN associated to the user port.
+        ALCATEL NOTE:
+           ACCESS:     RO           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:         NA           SPARSE:      NA
+           DESCR:       NA"
+      ::={ extendIpAddressPrefixEntry 1 }
+
+--========================================================================
+ 
+-- L2 User IPv6 Management table
+ 
+--========================================================================
+l2UserIPv6Table OBJECT-TYPE
+SYNTAX  SEQUENCE OF L2UserIPv6Entry
+ACCESS  not-accessible
+STATUS  mandatory
+DESCRIPTION
+   "A table containing configuration information of static IPv6 users.
+   The ifIndex refers to the interface index of the user interfaces. 
+
+   Currently the values supported by l2UserIpRowStatus are 'active',   
+   'createAndGo' and 'destroy'.
+
+   ALCATEL NOTE:
+         TABLESIZE: DEP []
+         DESCR: NA "
+             ::= { l2UserIpMgntMIB 3 }
+ 
+l2UserIPv6Entry OBJECT-TYPE
+SYNTAX  L2UserIPv6Entry
+ACCESS  not-accessible
+STATUS  mandatory
+DESCRIPTION
+    "An entry in the l2UserIPv6Table. All entries in the table are dynamically created.
+                
+    * Row Creation. An entry is created by a set-request with the
+                  l2UserIPv6RowStatus set to createAndGo(4). The set-request would be successful if:
+                    - the specified vlan port(user)interface exists.
+                    - the specified vlan port is associated with a L2 forwarder.
+                    - the L2 forwarder should not be of type S-VLAN XCON,  Qos Aware VLAN or IPoA CC VLAN.
+                    - the specified user IPv6 address and prefix length does not 
+                      overlap with the existing entries.
+                    - the number of static users depends on the board type.
+                    - the prefix length is not less than 49 and not larger than 64. 
+
+
+    * Row Deletion. A table entry is deleted by a set-request with
+                  the l2UserIPv6RowStatus set to destroy(6). A table entry can
+                  also be auto-deleted. The auto-deletion can happen when,
+                   - the association between Vlan-port and L2 forwarder is removed (OR)
+                   - the associated user interface gets deleted (OR)
+                   - the associated L2 forwarder is deleted.
+
+    * Index Usage. The ifIndex refers to the vlan-port (user) interface (from IfTable)."
+      INDEX{ ifIndex, l2UserIPv6AddressPrefix, l2UserIPv6AddressPrefixLength}
+                ::= { l2UserIPv6Table 1 }
+
+ L2UserIPv6Entry ::=
+                SEQUENCE {
+                      l2UserIPv6AddressPrefix           InetAddress,
+                      l2UserIPv6AddressPrefixLength     InetAddressPrefixLength,
+                      l2UserIPv6RowStatus               RowStatus
+                         }
+
+l2UserIPv6AddressPrefix OBJECT-TYPE
+SYNTAX  InetAddress
+ACCESS  read-write
+STATUS  mandatory
+DESCRIPTION
+"The IPv6 address prefix to which this entry's addressing information pertains.
+ALCATEL NOTE:
+ACCESS:      RW            USAGE:       MAND
+PERSIST:     YES           INSRVMOD:    NO
+RANGE:       NA            DEFVALUE:    NA
+UNITS:       NA            SPARSE:      NA
+DESCR:       NA"
+::= { l2UserIPv6Entry 1 }
+
+
+l2UserIPv6AddressPrefixLength OBJECT-TYPE
+SYNTAX  InetAddressPrefixLength
+ACCESS  read-write
+STATUS  mandatory
+DESCRIPTION
+" The prefix length associated with this prefix.
+The value 0 has no special meaning for this object. It simply refers to address ::/0 
+ALCATEL NOTE:
+ACCESS:      RW            USAGE:       MAND
+PERSIST:     YES           INSRVMOD:    NO
+RANGE:       0-128         DEFVALUE:    NA
+UNITS:       NA            SPARSE:      NA
+DESCR:       NA"
+::= { l2UserIPv6Entry 2 }
+
+l2UserIPv6RowStatus OBJECT-TYPE
+           SYNTAX       RowStatus
+           ACCESS       read-write
+           STATUS       mandatory
+           DESCRIPTION
+"A L2 User IPv6 entry can be created or deleted by using this
+ variable. Two operations 'create and go' and `destroy` has been
+supported for this table. The status of the row is made 'active' ones the row is created.
+
+Apart from l2UserIPv6RowStatus, ifIndex, l2UserIPv6AddressPrefix and l2UserIPv6AddressPrefixLength are mandatory objects for row creation and deletion.
+  ALCATEL NOTE:
+             ACCESS:  	 RW         	      		USAGE:	     MAND
+             PERSIST:    YES                		INSRVMOD:    NA
+             RANGE:      1|4|6 			        DEFVALUE:    NA 
+             UNITS:      NA                 		SPARSE:      NA
+             DESCR:      NA"
+          ::= { l2UserIPv6Entry 3 }
+
+-- ========================================================================
+ 
+-- L2User IP Management System SubGroup
+ 
+-- ========================================================================
+
+l2UserIpSystemGroup            OBJECT IDENTIFIER ::= {l2UserIpMgntMIB 4}
+
+l2UserIpMaxNumIpV6PrefixesPerLine OBJECT-TYPE
+      SYNTAX  INTEGER (0..4)
+      ACCESS  read-write
+      STATUS  mandatory
+      DESCRIPTION
+         "The maximum number of IPv6 prefixes that can be configured and/or learned per line. 
+          This configuration is valid for L2+ LTs only and is applied to all L2+ LTs configured in the system.
+          For example, on a 72 port LT, the configured values translate as follows.
+          0 => 8 IPv4 addresses per line on average, 0 for IPv6 addresses
+          1 => 6 IPv4 addresses per line on average, max 1 IPv6 address per line
+          2 => 4 IPv4 addresses per line on average, max 2 IPv6 addresses per line
+          3 => 2 IPv4 addresses per line on average, max 3 IPv6 addresses per line
+          4 => 0 IPv4 addresses, max 4 IPv6 addresses per line
+          ALCATEL NOTE:
+              ACCESS:     NA       USAGE:      NA
+              PERSIST:    YES      INSRVMOD:   NA
+              RANGE:      0-4      DEFVALUE:   0
+              UNITS:      NA       SPARSE:     NA
+              DESCR:      NA"
+      DEFVAL { 0 }   
+      ::= { l2UserIpSystemGroup 1 }
+
+END
+

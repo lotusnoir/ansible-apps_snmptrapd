@@ -1,0 +1,942 @@
+TRAP-MIB DEFINITIONS ::= BEGIN
+
+--  ==========================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied,
+--  with respect to the sufficiency, accuracy, or utility of any information
+--  or opinion contained herein. Alcatel-Lucent expressly advises that any use
+--  of for any purpose or reliance upon this technical reference is at the risk
+--  of the user and that Alcatel-Lucent shall not be liable for any damage or
+--  injury incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products
+--  and to withdraw any or all of them at any future time.
+-- Copyright (C) 2009, Alcatel. All Rights Reserved.
+--  ==========================================================================
+
+
+-- MODULE-IDENTITY
+-- LAST-UPDATED "201604200000Z"   -* April 20, 2016
+-- ORGANIZATION "Alcatel-Lucent"
+-- ORIGINATOR "Marc Van Vlimmeren"
+-- CONTACT-INFO
+--
+--         Email:  asam.mibsupport@alcatel-lucent.com
+--
+-- DESCRIPTION
+--    "This module defines a portion of the management
+--    information base (MIB) for managing traps."
+--
+--  ==========================================================================
+-- HISTORY:
+--
+-- REVISION     "20161118000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V5.6
+--      Editor: SUN Hong A
+--      Changes:
+--      *  ALU02290912: MIB Readiness for ALU02087988 : POL: dynamic VLAN assignment"
+--
+-- REVISION     "20160527000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V5.5
+--      Editor: Wang Qian H
+--      Changes:
+--      *   ALU01750885: Add an availableBandwidthChange trap to notify the operator
+--         if bandwidth of a PON or Channel Pair has changed."
+--
+--
+-- REVISION     "20160420000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V5.5
+--      Editor: Balagopal Velusamy
+--      Changes:
+--      *  ALU02074765: Add registerNode trap to notify to the operator on
+--         successful completion of  auto provision of node."
+--
+-- REVISION     "20160208000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V5.4.01 
+--      Editor: Karel Meijfroidt
+--      Changes:
+--      *  ALU02060271: Add an ontActChanPairChange trap to notify the operator
+--         if there is at least one NGPON2 ONT that changed his actual Channel
+--         Pair where he gets service from."
+--
+--
+-- REVISION     "201506180000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V5.3
+--              Editor: Wu Yue E
+--              Changes:                        
+--               ALU01986526&ALU02057352: Add PTP dying gasp trap
+--               for 7367 SX-16F and 7363-MX."
+
+-- REVISION     "201210020000Z" 
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.1.2 
+--              Editor: Sridevi Dwaraganath
+--              Changes:                        
+--               ALU01823984: Updated  asamTrapManagerAdditionalInfo Description 
+--               for alrmChgOccurred trap by new scalar MIB objects defined in 
+--                ALARM MIB.
+
+-- REVISION     "201009110000Z" 
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.0.2
+--              Editor: Zhang Xiaofeng
+--              Changes:                        
+--               ALU00758309: Add trap for NELT-B LT MST changes.
+
+--
+-- REVISION     "201005110000Z" 
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.0.1
+--              Editor: Jean Samoise       
+--              Changes:                        
+--               ALU00117331: Add trap for global counter portmapping remote LT changes.
+
+--
+-- REVISION     "201006220000Z" 
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.1.0.0.4
+--              Editor: Palaniappan Ramasamy
+--              Changes:                        
+--              * ALU00123148 - DTAG requirement 
+--                Add asamTrapManagerLogIpAddress MIB Object.
+--              "
+-- REVISION     "201006070000Z" 
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.1.0.0.3
+--              Editor: Karel Meijfroidt        
+--              Changes:                        
+--              * ALU00417905 EMS must be able to detect lost traps
+--              "
+-- REVISION     "201004010000Z" 
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.1.0.0.2
+--              Editor: Karel Meijfroidt        
+--              Changes:                        
+--              * ALU00113317 Correct description of asamTrapManagerTrapMask
+--                this means bit27 and following move down two lower
+--              "                                   
+-- REVISION     "200910020000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.0.10.0.0
+--              Editor: Karel Meijfroidt
+--              Changes: RCR BDFam52637
+--              * Add asamTrapManagerTrapExtMask MIB object.
+--              * Add 'radiusServerFailure' bit0 on asamTrapManagerTrapExtMask."
+--              * Add 'loginOccured' bit1 on asamTrapManagerTrapExtMask."
+--              * Add 'logoutOccured' bit2 on asamTrapManagerTrapExtMask."
+--              * Add 'asamTrapManagerChangeOccured' bit3 on asamTrapManagerTrapExtMask."
+--
+-- REVISION     "200907150000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.1.0.0.0
+--              Editor: Patrick Swinkels
+--              Changes:
+--              * Add asamNumOfNTRReferenceChanges to asamTrapManagerTrapMask
+--              (bit 30) and update DEFVAL (ANTmt52520).
+--              "
+-- REVISION     "200807030000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.0.0.0.0
+--              Editor: He Chunye
+--              Changes:
+--              * Add 'lineTestReport' bit (bit 10) on asamTrapManagerTrapMask.
+--              and update DEFVAL.
+--              "
+-- REVISION     "200710260000Z" 
+-- DESCRIPTION  "Version: 3EC15362EAAA_V3.5.0.0.0
+--              Editor: Wang Jianglin
+--              Changes: 
+--              * Add a new type trap: dhcpSessionPreempted, (bit 15).
+--              FR No. ANTms55180.
+--              "
+
+-- REVISION     "200702020000Z" 
+-- DESCRIPTION  "Version: 3EC15362EAAA_V3.4.0.0.0
+--              Editor: He Yang
+--              Changes: 
+--              * Add value eqptRestartNumberOfChanges  on 
+--              asamTrapManagerTrapMask
+--              "
+
+-- REVISION     "200509140000Z"  -* September 14, 2005
+-- DESCRIPTION  "Version: 3EC15362EAAA_V2.3.0.0.1
+--              Editor: Yuan Chen
+--              Changes:
+--              * updated DEFVAL and description of asamTrapManagerTrapMask :
+--                add the 'topoChanged' bit (bit 13) for Cluster Management
+--                feature, which need a new trap type to be defined. 
+--                RCR No.: BDFhw24182.
+--              "
+
+--
+-- REVISION     "200412100000Z"  -* December 10, 2004
+-- DESCRIPTION  "Version: 3EC15362EAAA_V1.0.0.1
+--              Editor: Jun B Zhang
+--              Changes:
+--              * updated DEFVAL and description of asamTrapManagerTrapMask :
+--                add the 'licenseKeyChangeOccurred' bit (bit 12). 
+--              "
+
+-- REVISION     "200409080000Z"  -* September 08, 2004
+-- DESCRIPTION  "Version: 3EC15362AAAA_E5.1.0.1
+--              Editor: Agnes Lauryssens
+--              Changes:
+--              * updated DEFVAL and description of asamTrapManagerTrapMask :
+--                replace the 'eqptProtNumberOfChanges' bit (bit 26), which is 
+--                already in use in R4.x, by bit 27. 
+--              "
+
+-- REVISION     "200403220000Z"  -* March 22, 2004
+-- DESCRIPTION  "Version: 3EC15362AAAA_E5.1.0.0
+--              Editor: Marc Van Vlimmeren
+--              Changes:
+--              * updated DEFVAL, and bitmap in specification of
+--                asamTrapManagerTrapMask to include LicenseKeyChangeOccured.
+--              * obsolete traps moved to the end of the module.
+--              * MODULE-IDENTITY construct updated according to new template.
+--              * Trap shaping ranges corrected."
+--
+-- REVISION     "200303110000Z"  -* March 11, 2003
+-- DESCRIPTION  "Version: 3EC15362AAAA_E5.0.1.1
+--              Editor: Marc Van Vlimmeren
+--              Changes:
+--              * updated DEFVAL, and bitmap in specification of
+--                asamTrapManagerTrapMask to exclude asamUasNumDbChanges.
+--                Ref. CR BDFaa51344."
+--
+-- REVISION     "200211180000Z"  -* November 18, 2002
+-- DESCRIPTION  "Version: 3EC15362AAAA_E5.0.1.0
+--              Editor: Marc Van Vlimmeren
+--              Changes:
+--              * updated DEFVAL, and bitmap in specification of
+--                asamTrapManagerTrapMask to include asamUasNumDbChanges."
+--
+-- REVISION     "200211180000Z"  -* November 18, 2002
+-- DESCRIPTION  "Version: 3EC15362AAAA_E5.0.0.1
+--              Editor: Marc Van Vlimmeren
+--              Changes:
+--              * updated DEFVAL, and bitmap in specification of
+--                asamTrapManagerTrapMask to exclude
+--                  asamRedundancyNumberOfChanges.
+--              * editorial updates in DESCRIPTION of several objects."
+--
+-- REVISION     "200112180000Z"  -* December 18, 2001
+-- DESCRIPTION  "Version: 3EC15362AAAA_E5.0.0.0
+--              Editor: Marc Van Vlimmeren
+--              Changes:
+--              * all deprecated objects made obsolete.
+--              * default values added in trap destination table
+--                where appropriate.
+--              * warmStart trap not supported, removed where appropriate."
+--
+--  ==========================================================================
+
+
+
+IMPORTS
+
+    OBJECT-TYPE
+        FROM RFC-1212
+
+    Gauge, IpAddress, Counter
+        FROM RFC1155-SMI
+
+    NetworkTimeInSeconds
+        FROM ASAM-TC-MIB
+
+    RowStatus
+        FROM SNMPv2-TC
+
+    AsamAlarmSeverityType
+        FROM ASAM-ALARM-MIB
+
+    asam
+        FROM SYSTEM-MIB; 
+    
+
+AsamTrapPriority    ::=  INTEGER { 
+                    urgent          (1),
+                    high        (2),
+                    medium      (3), 
+                    low     (4)
+                    } 
+
+
+AsamTrapMode        ::= INTEGER {
+                    enabled         (1), 
+                    disabled        (2)
+                    }
+
+AsamTrapMask        ::= OCTET STRING (SIZE(4))
+
+AsamTrapReset       ::= INTEGER {
+                    resetCompleted      (1),
+                    reset           (2)
+                    }
+
+AsamTrapOverflow    ::= INTEGER {
+                    notoverflowed   (1),
+                    overflowed      (2)
+                    }
+
+
+asamTrapMIB         OBJECT IDENTIFIER ::= { asam 2 }
+
+asamTrapDefinitionTable         OBJECT-TYPE
+    SYNTAX          SEQUENCE OF AsamTrapDefinitionEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "This table allows to define the reporting mode and
+                    priority for each supported trap."
+::= {asamTrapMIB 3}
+
+asamTrapDefinitionEntry         OBJECT-TYPE
+    SYNTAX          AsamTrapDefinitionEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "Entry for Trap definitions"
+    INDEX           {asamTrapId}
+::= {asamTrapDefinitionTable 1}
+
+
+AsamTrapDefinitionEntry ::=         SEQUENCE {
+                    asamTrapId              INTEGER(0..65535),
+                    asamTrapPriority        AsamTrapPriority,
+                    asamTrapRepMode         AsamTrapMode
+                    }
+
+asamTrapId                      OBJECT-TYPE
+    SYNTAX          INTEGER(0..65535)
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "Index of the table and trap identifier. For standard
+                    traps, this id is used as generic trap type. For
+                    enterprise traps, this id is used as the specific
+                    trap type in the TRAP PDU."
+::= {asamTrapDefinitionEntry 1}
+
+
+asamTrapPriority                    OBJECT-TYPE
+    SYNTAX          AsamTrapPriority
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "This object allows to configure the priority
+                    of a trap. This value can be set to urgent,
+                    high, medium or low. "
+::= {asamTrapDefinitionEntry 2}
+
+asamTrapRepMode                     OBJECT-TYPE
+    SYNTAX          AsamTrapMode
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "This object is to manage the reporting mode 
+                    of a trap. This value can be set to Enabled
+                    or Disabled."
+::= {asamTrapDefinitionEntry 3}
+
+
+asamTrapManagersTable        OBJECT-TYPE
+    SYNTAX          SEQUENCE OF AsamTrapManagerEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "An SNMP manager should create an entry in this table
+                    when it requests to receive traps."
+::= {asamTrapMIB 11}
+
+asamTrapManagerEntry    OBJECT-TYPE
+    SYNTAX          AsamTrapManagerEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "Entry for Trap destinations"
+    INDEX           {asamTrapManagerAddress, asamTrapManagerPort }
+::= {asamTrapManagersTable 1}
+
+AsamTrapManagerEntry ::=    SEQUENCE
+                    {
+                    asamTrapManagerAddress             IpAddress, 
+                    asamTrapManagerPort                INTEGER,
+                    asamTrapManagerPriority            AsamTrapPriority,
+                    asamTrapManagerTrapMask            AsamTrapMask,
+                    asamTrapManagerMaxPerWindow        INTEGER,
+                    asamTrapManagerWindowTime          INTEGER,
+                    asamTrapManagerMaxBufSize          INTEGER,
+                    asamTrapManagerSecondsInBetween    INTEGER,
+                    asamTrapManagerResetBuffer         AsamTrapReset,
+                    asamTrapManagerResetTime           NetworkTimeInSeconds,
+                    asamTrapManagerBufferOverflow      AsamTrapOverflow,
+                    asamTrapManagerAlarmSeverity       AsamAlarmSeverityType,
+                    asamTrapManagerRowStatus           RowStatus,
+                    asamTrapManagerTrapExtMask         AsamTrapMask
+                    }
+
+
+asamTrapManagerAddress      OBJECT-TYPE
+    SYNTAX          IpAddress
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "IP address of the SNMP manager to send traps to." 
+::= {asamTrapManagerEntry 1}
+
+asamTrapManagerPort         OBJECT-TYPE
+    SYNTAX          INTEGER  (0..65536)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "The destination UDP port number for sending traps"
+::= {asamTrapManagerEntry 2}
+
+
+asamTrapManagerPriority     OBJECT-TYPE
+    SYNTAX          AsamTrapPriority 
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "The Lowest priority of a trap that should
+                    be sent to the SNMP manager."
+    DEFVAL          { medium }
+::= {asamTrapManagerEntry 3}
+
+asamTrapManagerTrapMask            OBJECT-TYPE
+    SYNTAX          AsamTrapMask
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "This is a bitmask.  Each bit represents a trap or
+                    a variable in the changeOccured trap.
+                    If a bit is set, the corresponding trap or
+                    variable within a trap is enabled.
+                    Following list gives the assigned bits for the traps:
+                    bit 0 : coldStart
+                    bit 2 : linkDown
+                    bit 3 : linkUp
+                    bit 4 : authenticationFailure
+                    bit 7 : changeOccured
+                    bit 10: lineTestReport
+                    bit 11: initStarted
+                    bit 12: licenseKeyChangeOccurred
+                    bit 13: topoChanged
+                    bit 15: dhcpSessionPreempted
+                    Following list gives the assigned bits for the changeOccured
+                    variables:
+                    bit 16: asamAlarmTrapNumberOfAlarmChanges
+                    bit 17: asamPhyItfNumberChangeOccurred
+                    bit 18: eqptHwNumberOfChanges
+                    bit 19: asamNumberOfSets
+                    bit 20: asamNumberOfIndeterminateChanges
+                    bit 21: asamNumberOfWarningChanges
+                    bit 22: asamNumberOfMinorChanges
+                    bit 23: asamNumberOfMajorChanges
+                    bit 24: asamNumberOfCriticalChanges
+                    bit 25: eqptProtNumberOfChanges
+                    bit 26: asamCraftLoginStatus
+                    bit 27: eqptRestartNumberOfChanges
+                    bit 28: asamNumOfNTRReferenceChanges
+                    bit 29: eqptPortMappingGlobalChangeCounter"                     
+     DEFVAL         { '1FFF8481'H } 
+::= {asamTrapManagerEntry 4}
+
+
+asamTrapManagerMaxPerWindow         OBJECT-TYPE
+    SYNTAX          INTEGER(1..20)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "This object defines the number of traps that can 
+                    be sent in a limited time base. This limited 
+                    time-base is defined as Window Time."
+    DEFVAL          { 2 }
+::= {asamTrapManagerEntry 5}
+
+
+asamTrapManagerWindowTime           OBJECT-TYPE
+    SYNTAX          INTEGER(0..3600)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "This object defines the time-base for
+                    asamTrapManagerMaxPerWindow."
+    DEFVAL          { 60 }
+::= {asamTrapManagerEntry 6}
+
+
+asamTrapManagerMaxBufSize           OBJECT-TYPE
+    SYNTAX          INTEGER(1..20)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "This object defines the number of traps that can be
+                     queued while waiting to be sent."
+    DEFVAL          { 10 }
+::= {asamTrapManagerEntry 7}
+
+
+asamTrapManagerSecondsInBetween     OBJECT-TYPE
+    SYNTAX          INTEGER(0..3600)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "This object defines the number of seconds to
+                    be waited between 2 traps. Traffic shaping
+                    is done according to this object value."
+    DEFVAL          { 30 }
+::= {asamTrapManagerEntry 8}
+
+asamTrapManagerResetBuffer          OBJECT-TYPE
+    SYNTAX          AsamTrapReset
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "This object is a button-like object. The
+                    parameters for filtering and shaping only become
+                    active after a trap has been sent.
+                    To activate new values immediately,
+                    buffers should be reset. This object is defined
+                    to reset buffers. When it is set to reset,
+                    the buffer is cleared and new shaping parameters
+                    are taken into account. The object value is set to
+                    resetCompleted at the end of the reset process.
+                    The ASAM does not take any action, when the
+                    object value is set to resetCompleted by the SNMP
+                    manager."
+::= {asamTrapManagerEntry 9}
+
+asamTrapManagerResetTime      OBJECT-TYPE
+    SYNTAX          NetworkTimeInSeconds
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "Time when the buffer has been reset."
+::= {asamTrapManagerEntry 10}
+
+asamTrapManagerBufferOverflow       OBJECT-TYPE
+    SYNTAX          AsamTrapOverflow
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "This object indicates the status of the trap buffer.
+                    If buffer overflow occurred, it is set to overflowed.
+                    The object value is set to notoverflowed, after resetting
+                    the buffer."
+    DEFVAL          { notoverflowed }
+::= {asamTrapManagerEntry 11}
+
+asamTrapManagerAlarmSeverity        OBJECT-TYPE
+   SYNTAX          AsamAlarmSeverityType
+   ACCESS          read-write
+   STATUS          mandatory
+   DESCRIPTION     "This object represents the lowest severity level that an 
+                   alarm must have in order to be reported."
+   DEFVAL          { major }
+::= {asamTrapManagerEntry 12}
+
+asamTrapManagerRowStatus  OBJECT-TYPE
+    SYNTAX          RowStatus
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Object to create and delete a row."
+::= {asamTrapManagerEntry 13}
+
+asamTrapManagerTrapExtMask            OBJECT-TYPE
+    SYNTAX          AsamTrapMask
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "This is a bitmask.  Each bit represents a trap.
+                    If a bit is set, the corresponding trap is enabled.
+                    Following list gives the assigned bits for the traps:
+                    bit 0 : radiusServerFailure
+                    bit 1 : loginOccured
+                    bit 2 : logoutOccured
+                    bit 3 : asamTrapManagerChangeOccured
+                    bit 4 : mstGenTrap
+                    bit 5 : mstErrTrap
+                    bit 6 : mstProtocolMigrationTrap
+                    bit 7 : mstInvalidBpduRxdTrap
+                    bit 8 : mstRegionConfigChangeTrap
+                    bit 9 : alrmChgOccurred
+                    bit 10: outOfSync
+                    bit 11: dyingGaspTrap
+                    bit 12: ontActChanPairChange
+                    bit 13: registerNode
+                    bit 14: availableBandwidthChange
+		    bit 15: domainTrapFailureReason"
+     DEFVAL         { '00000000'H } 
+::= {asamTrapManagerEntry 14}
+
+asamTrapManagersLogTable        OBJECT-TYPE
+    SYNTAX          SEQUENCE OF AsamTrapManagerLogEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "A read only table that keeps per SNMP Manager of the asamTrapManagersTable
+                    the last send traps."
+::= {asamTrapMIB 12}
+
+asamTrapManagerLogEntry    OBJECT-TYPE
+    SYNTAX          AsamTrapManagerLogEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "Entry for Trap Managers Log Table"
+    INDEX           {asamTrapManagerLogAddress, asamTrapManagerLogPort, asamTrapManagerLogSeqId }
+::= {asamTrapManagersLogTable 1}
+
+AsamTrapManagerLogEntry ::=    SEQUENCE
+                    {
+                    asamTrapManagerLogAddress             IpAddress, 
+                    asamTrapManagerLogPort                INTEGER,
+                    asamTrapManagerLogSeqId               Counter,
+                    asamTrapManagerLogTrapId              INTEGER,
+--                    asamTrapManagerLogIfIndex             INTEGER,
+--                    asamTrapManagerLogIpAddress           IpAddress
+                    asamTrapManagerAdditionalInfo         OCTET STRING 
+                    }
+
+
+asamTrapManagerLogAddress      OBJECT-TYPE
+    SYNTAX          IpAddress
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "IP address of the SNMP manager" 
+::= {asamTrapManagerLogEntry 1}
+
+
+asamTrapManagerLogPort         OBJECT-TYPE
+    SYNTAX          INTEGER  (0..65536)
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "The destination UDP port number of the SNMP manager"
+::= {asamTrapManagerLogEntry 2}
+
+
+asamTrapManagerLogSeqId       OBJECT-TYPE
+    SYNTAX          Counter
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "The sequence number of the Trap"
+::= {asamTrapManagerLogEntry 3}
+
+
+asamTrapManagerLogTrapId    OBJECT-TYPE
+    SYNTAX          INTEGER  (0..255)
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "The Trap Id."
+::= {asamTrapManagerLogEntry 4}
+
+
+-- asamTrapManagerLogIfIndex      OBJECT-TYPE
+--    SYNTAX          INTEGER
+--    ACCESS          read-only
+--    STATUS          mandatory
+--    DESCRIPTION     "The content of the Trap in case of LinkDown and LinkUp trap"
+-- ::= {asamTrapManagerLogEntry 5}
+
+-- asamTrapManagerLogIpAddress      OBJECT-TYPE
+--    SYNTAX          IpAddress
+--    ACCESS          read-only
+--    STATUS          mandatory
+--    DESCRIPTION     "IpAddress should be part of the content of the Trap in case of loginOccured, logoutOccured and asamTrapManagerChangeOccured trap"
+-- ::= {asamTrapManagerLogEntry 6}
+
+asamTrapManagerAdditionalInfo     OBJECT-TYPE
+    SYNTAX          OCTET STRING  (SIZE(0..512))
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "This contains additional information of each trap that is reported to the manager.
+                     Length of the octet string varies for each trap.Below mentioned rules help to interpret the trap content stored in the mib.
+		     
+		     * Octet string will be empty for coldStart, authenticationFailure, initStarted, topoChanged and outOfSync traps
+		     
+		     * linkUp and linkDown traps (4 OCTETS):
+		       OCTETS 0...3   : ifIndex
+		     
+		     * changeOccured (56 OCTETS):
+		       OCTETS 0...3   : asamAlarmTrapNumberOfAlarmChanges
+		       OCTETS 4...7   : asamPhyItfNumberChangeOccurred
+		       OCTETS 8...11  : eqptHwNumberOfChanges
+		       OCTETS 12...15 : asamNumberofsets
+		       OCTETS 16...19 : asamNumberOfIndeterminateChanges
+		       OCTETS 20...23 : asamNumberOfWarningChanges
+		       OCTETS 24...27 : asamNumberOfMinorChanges
+		       OCTETS 28...31 : asamNumberOfMajorChanges
+		       OCTETS 32...35 : asamNumberOfCriticalChanges
+		       OCTETS 36...39 : eqptProtNumberOfChanges
+		       OCTETS 40...43 : asamCraftLoginStatus
+		       OCTETS 44...47 : eqptRestartNumberOfChanges
+		       OCTETS 48...51 : asamNumOfNTRReferenceChange
+		       OCTETS 52...55 : eqptPortMappingGlobalChangeCounter
+		     
+		     * lineTestReport (20 OCTETS):
+		       OCTETS 0...3   : ltTrapSessionId
+		       OCTETS 4...7   : ltTrapCmd
+		       OCTETS 8...11  : ltTrapLineId
+		       OCTETS 12...15 : ltTrapStatus
+		       OCTETS 16...19 : ltTrapLineHookStatus
+		       
+		     * licenseKeyChangeOccurred (116 OCTETS):
+		       OCTETS 0...3     : ADSL2+ licenseCounter
+		       OCTETS 4...7     : READSL2 licenseCounter
+		       OCTETS 8...11    : IGMP licenseCounter
+		       OCTETS 12...15   : BVB licenseCounter
+		       OCTETS 16...19   : Annex-M licenseCounter
+		       OCTETS 20...23   : IP Forwarding licenseCounter
+		       OCTETS 24...27   : PPPoX Relay licenseCounter
+		       OCTETS 28...31   : PPPoX Termination licenseCounter
+		       OCTETS 32...35   : 802.1x licenseCounter
+		       OCTETS 36...39   : reserved
+		       OCTETS 40...43   : reserved
+		       OCTETS 44...47   : reserved		       
+		       OCTETS 48...51   : IPoA-CC and IPoA-RB licenseCounter
+		       OCTETS 52...55   : UPBO-policing licenseCounter
+		       OCTETS 56...59   : XDSL-PerLine-Overrule licenseCounter
+		       OCTETS 60...63   : Impulse Noise Sensor licenseCounter
+		       OCTETS 64...67   : ADSL1/2 PSD Shaping licenseCounter
+		       OCTETS 68...71   : Annex-J licenseCounter
+		       OCTETS 72...75   : SyncE licenseCounter
+		       OCTETS 76...79   : 2.5 Gbps enabled LT licenseCounter
+		       OCTETS 80...83   : NT load sharing + redundancy licenseCounter
+		       OCTETS 84...87   : SHDSL cross-talk cancellation licenseCounter
+		       OCTETS 88...91   : SRA on VDSL2 licenseCounter
+		       OCTETS 92...95   : ARQ licenseCounter
+		       OCTETS 96...99   : 10 Gbps enabled LT licenseCounter
+		       OCTETS 100...103 : 20 Gbps enabled LT licenseCounter
+		       OCTETS 104...107 : Gxr licenseCounter
+		       OCTETS 108...111 : IPv6 security licenseCounter,
+		       OCTETS 112...115 : Lawful Intercept licenseCounter
+		       
+		     * dhcpSessionPreempted (20 OCTETS):
+		       OCTETS 0...3   : dhcpTrapPreSessionForwarderType
+		       OCTETS 4...7   : dhcpTrapPreSessionForwarderId
+		       OCTETS 8...11  : dhcpTrapPreSessionIPAddress
+		       OCTETS 12...15 : dhcpTrapPreSessionIfIndex
+		       OCTETS 16...19 : dhcpTrapPreSessionReason
+		       
+		     * radiusServerFailure (255 OCTETS):
+		       OCTETS 0...254 : radAuthServerAddress
+		       
+		     * loginOccured, logoutOccured traps (4 OCTETS):
+		       OCTETS 0...3   : ipAdEntAddr
+		     
+		     * asamTrapManagerChangeOccured (8 OCTETS):
+		       OCTETS 0...3   : ipAdEntAddr
+		       OCTETS 4...7   : asamTrapManagerPort
+		       
+		     * mstGenTrap (14 OCTETS):
+		       OCTETS 0...5   : mstBrgAddress
+		       OCTETS 6...9   : mstGenTrapType
+		       OCTETS 10...13 : mstInstanceIndex
+		     
+		     * mstErrTrap (14 OCTETS):
+		       OCTETS 0...5   : mstBrgAddress
+		       OCTETS 6...9   : mstErrTrapType
+		       OCTETS 10...13 : mstInstanceIndex
+		     
+		     * mstProtocolMigrationTrap (18 OCTETS):
+		       OCTETS 0...5   : mstBrgAddress
+		       OCTETS 6...9   : mstPortTrapIndex
+		       OCTETS 10...13 : mstForceProtocolVersion
+		       OCTETS 14...17 : mstPortMigrationType
+		       
+		     * mstInvalidBpduRxdTrap (18 OCTETS):
+		       OCTETS 0...5   : mstBrgAddress
+		       OCTETS 6...9   : mstPortTrapIndex
+		       OCTETS 10...13 : mstPktErrType
+		       OCTETS 14...17 : mstPktErrVal
+		     
+		     * mstRegionConfigChangeTrap (78 OCTETS):
+		       OCTETS 0...5   : mstBrgAddress
+		       OCTETS 6...9   : mstMstiConfigIdSel
+		       OCTETS 10...41 : mstMstiRegionName
+		       OCTETS 42...45 : mstMstiRegionVersion
+		       OCTETS 46...77 : mstMstiConfigDigest
+		      
+		     * alrmChgOccurred (279 OCTETS):
+		        OCTETS 0...3    : asamAlarmReportId 
+		       OCTETS 4...7    : asamAlarmReportAlarmState 
+		       OCTETS 8...11   : asamAlarmReportSeverity 
+		       OCTETS 12...15  : asamAlarmReportIndex1 
+		       OCTETS 16...19  : asamAlarmReportIndex2 
+		       OCTETS 20...23  : asamAlarmReportTime 
+		       OCTETS 24...278 : asamAlarmReportAddInfo 
+ 
+                     * ontActChanPairChange (4 OCTETS) :
+                      OCTETS 0...3    : ng2MobilityOntActChanPairChangeLogLastIndex 
+
+                     * registerNode (11 OCTETS) :
+                      OCTETS 0...10    : eqptAsamId
+
+                     * availableBandwidthChange(4 OCTETS) :
+                      OCTETS 0...3    : availableBandwidthChangeLogLastIndex
+		     
+		     * domainMacAuthFailure (50 OCTETS):
+		       OCTETS 0...5   : domainTrapMacAddress
+		       OCTETS 6...9   : domainTrapIfIndex
+		       OCTETS 10...13 : domainTrapDynAssignVlanId
+		       OCTETS 14...45 : domainTrapQoSProfName
+		       OCTETS 46...49 : domainTrapMacAuthFailureReason"  
+
+    ::= {asamTrapManagerLogEntry 5}
+
+
+
+--***********************************************************************
+-- Following object definitions are obsolete!
+--***********************************************************************
+
+asamTrapDestinationNextAvailable    OBJECT-TYPE
+    SYNTAX          INTEGER (0..10)
+    ACCESS          read-only
+    STATUS          obsolete
+    DESCRIPTION     "This object gives the next available index
+                    in the asamTrapDestinationTable. If it 
+                    returns 0, it means no free index left."
+::= {asamTrapMIB 1}
+
+asamTrapDestinationTable        OBJECT-TYPE
+    SYNTAX          SEQUENCE OF AsamTrapDestinationEntry
+    ACCESS          not-accessible
+    STATUS          obsolete
+    DESCRIPTION     "NMC should create an entry in this table when it  
+                    requests to receive traps. The index to create a 
+                    row should be equal to the object value of 
+                    asamTrapDestinationNextAvailable. And Row
+                    Status field of the entry should be set to 
+                    CreateAndGo. If other objects in the entry 
+                    are set to valid values, RowStatus is set to 
+                    Active by the agent and entry becomes Active.
+                    To delete an entry from this table, RowStatus 
+                    should be set to Destroy value by the SNMP 
+                    manager. "
+::= {asamTrapMIB 2}
+
+asamTrapDestinationEntry    OBJECT-TYPE
+    SYNTAX          AsamTrapDestinationEntry
+    ACCESS          not-accessible
+    STATUS          obsolete
+    DESCRIPTION     "Entry for Trap destinations"
+    INDEX           {asamTrapDestinationIndex}
+::= {asamTrapDestinationTable 1}
+
+AsamTrapDestinationEntry ::=    SEQUENCE
+                    {asamTrapDestinationIndex       INTEGER,
+                    asamTrapDestinationAddress      IpAddress, 
+                    asamTrapDestinationPort         INTEGER,
+                    asamTrapDestinationPriority     AsamTrapPriority,
+                    asamTrapDestinationEntryStatus  RowStatus}
+
+
+asamTrapDestinationIndex            OBJECT-TYPE
+    SYNTAX          INTEGER (1..10)
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "Index of the Trap destination entry"
+::= {asamTrapDestinationEntry 1}
+
+asamTrapDestinationAddress      OBJECT-TYPE
+    SYNTAX          IpAddress
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "Network address of the Network Management
+                    Center to send traps." 
+::= {asamTrapDestinationEntry 2}
+
+asamTrapDestinationPort         OBJECT-TYPE
+    SYNTAX          INTEGER  (1..65536)
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "The destination port number for sending traps"
+    DEFVAL          { 162 }
+::=     {asamTrapDestinationEntry 3}
+
+
+asamTrapDestinationPriority     OBJECT-TYPE
+    SYNTAX          AsamTrapPriority 
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "The Lowest priority of a trap that should
+                    be sent to the Network Management Center."
+    DEFVAL          { medium }
+::=     {asamTrapDestinationEntry 4}
+
+asamTrapDestinationEntryStatus  OBJECT-TYPE
+    SYNTAX          RowStatus
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "Validity of this entry. If it is set to CreateAndGo 
+                    by the SNMP Manager, other objects of the entry are 
+                    checked. If they are valid, then the agent sets RowStatus 
+                    to Active. If set to Destroy, the entry is deleted."
+::= {asamTrapDestinationEntry 5}
+
+asamTrapMaxPerWindow                OBJECT-TYPE
+    SYNTAX          INTEGER(0..4294967295)
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "This object defines the number of traps that can 
+                    be sent in a limited time base. This limited 
+                    time-base is defined as Window Time."
+    DEFVAL          { 2 }
+::= {asamTrapMIB 4}
+
+
+asamTrapWindowTime              OBJECT-TYPE
+    SYNTAX          INTEGER(0..4294967295)
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "This object defines the number of seconds that 
+                    the number traps is limited by the value of 
+                    Trap Max Per Window object."
+    DEFVAL          { 60 }
+::= {asamTrapMIB 5}
+
+
+asamTrapMaxBufSize              OBJECT-TYPE
+    SYNTAX          INTEGER(0..4294967295)
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "This object defines the number buffers to 
+                    keep traps to be sent."
+    DEFVAL          { 10 }
+::= {asamTrapMIB 6}
+
+
+asamTrapSecondsInBetween            OBJECT-TYPE
+    SYNTAX          INTEGER(0..4294967295)
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "This object defines the number seconds to 
+                    be waited between 2 traps. Traffic shaping
+                    is done according to this object value."
+    DEFVAL          { 30 }  
+::= {asamTrapMIB 7}
+
+asamTrapResetBuffer             OBJECT-TYPE
+    SYNTAX          AsamTrapReset
+    ACCESS          read-write
+    STATUS          obsolete
+    DESCRIPTION     "This object is a button-like object. The 
+                    parameter for filtering and shaping are not 
+                    active immediately. To activate new values, 
+                    buffers should be reset. This object is defined 
+                    to reset buffers. When it is set to Reset Value,
+                    the buffer is reset. At the end of reset process,
+                    object value is set to resetCompleted. If 
+                    object value is set to resetCompleted by the SNMP
+                    manager, no action is taken by the agent."
+::= {asamTrapMIB 8}
+
+asamTrapResetBufferTime             OBJECT-TYPE
+    SYNTAX          NetworkTimeInSeconds
+    ACCESS          read-only
+    STATUS          obsolete
+    DESCRIPTION     "Time when the buffer has been reset."
+::= {asamTrapMIB 9}
+
+asamTrapBufferOverflow          OBJECT-TYPE
+    SYNTAX          AsamTrapOverflow
+    ACCESS          read-only
+    STATUS          obsolete
+    DESCRIPTION     "This object gives the information whether the trap buffer
+                    Has overflowed or not. If buffer overflows it is set to
+                    overflowed value. After resetting the buffer, the object value
+                    is set to notoverflowed."
+::= {asamTrapMIB 10}
+
+END
+

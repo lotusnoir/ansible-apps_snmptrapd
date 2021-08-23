@@ -1,0 +1,103 @@
+TIMETRA-SAS-ETH-RING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        NOTIFICATION-TYPE, Unsigned32         FROM SNMPv2-SMI
+
+        MODULE-COMPLIANCE, OBJECT-GROUP,
+        NOTIFICATION-GROUP                    FROM SNMPv2-CONF
+
+        TEXTUAL-CONVENTION, RowStatus,
+        TimeStamp, TruthValue, MacAddress     FROM SNMPv2-TC
+
+        timetraSASObjs, timetraSASNotifyPrefix, 
+        timetraSASConfs, timetraSASModules    FROM TIMETRA-SAS-GLOBAL-MIB
+
+        tmnxEthRingPathEntry                  FROM TIMETRA-ETH-RING-MIB
+
+        ;
+
+timetraSASEthRingMIBModule MODULE-IDENTITY
+        LAST-UPDATED "201411010000Z"
+        ORGANIZATION "Nokia"
+        CONTACT-INFO
+            "Nokia SROS Support
+             Web: http://www.nokia.com"
+        DESCRIPTION
+        "This document is the SNMP MIB module to manage and provision the
+        Ethernet Ring components of the Nokia SROS device.
+
+        Copyright (c) 2009-2014 Nokia.  All rights reserved.
+        Reproduction of this document is authorized on the condition that
+        the foregoing copyright notice is included.
+
+        This SNMP MIB module (Specification) embodies Nokia's
+        proprietary intellectual property.  Nokia retains
+        all title and ownership in the Specification, including any
+        revisions.
+
+        Nokia grants all interested parties a non-exclusive
+        license to use and distribute an unmodified copy of this
+        Specification in connection with management of Nokia
+        products, and without fee, provided this copyright notice and
+        license appear on all copies.
+
+        This Specification is supplied 'as is', and Nokia
+        makes no warranty, either express or implied, as to the use,
+        operation, condition, or performance of the Specification."
+
+--
+--  Revision History
+--
+        REVISION        "1411010000Z"
+        DESCRIPTION     "Rev 1.0                01 Nov 2014 00:00
+                         7.0 release of the TIMETRA-SAS-ETH-RING-MIB.mib"
+
+        ::= { timetraSASModules 19 }
+
+
+    tmnxSASEthRingObjs         OBJECT IDENTIFIER ::= { timetraSASObjs 19 }
+    tmnxSASEthRingNotifyObjs     OBJECT IDENTIFIER ::= { timetraSASObjs 20 }
+    tmnxSASEthRingNotifications  OBJECT IDENTIFIER ::= { timetraSASNotifyPrefix 11 }
+    tmnxSASEthRingConformance    OBJECT IDENTIFIER ::= { timetraSASConfs 15 }
+
+
+--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+tmnxEthRingPathExtnTable             OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TmnxEthRingPathExtnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The tmnxEthRingPathTable consists of the paths associated with
+         the corresponding tmnxEthRingConfigEntry."
+    ::= { tmnxSASEthRingObjs 1 }
+
+tmnxEthRingPathExtnEntry          OBJECT-TYPE
+    SYNTAX      TmnxEthRingPathExtnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The tmnxEthRingPathExtnEntry contains the commands available to
+         execute on an existing Ethernet Ring Group Path.
+
+         Rows in this table are created and destroyed by the system."
+    AUGMENTS    { tmnxEthRingPathEntry }
+    ::= { tmnxEthRingPathExtnTable 1 }
+
+TmnxEthRingPathExtnEntry          ::= SEQUENCE {
+    tmnxEthRingPathCtrlSapTag         INTEGER
+}
+
+tmnxEthRingPathCtrlSapTag         OBJECT-TYPE
+    SYNTAX      INTEGER (0..4094)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "tmnxEthRingPathCtrlSapTag specifies the control sap tag for this eth-ring
+         path"
+    ::= { tmnxEthRingPathExtnEntry 1 }
+
+END
+
+

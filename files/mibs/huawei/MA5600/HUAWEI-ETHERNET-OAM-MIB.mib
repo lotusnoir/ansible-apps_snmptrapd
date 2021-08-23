@@ -1,0 +1,1344 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description: Ethernet OAM for IASV500R003
+-- Reference:  
+-- Version: V1.00
+-- History:
+-- Dong Yin 53327 2005-02-23 
+-- ============================================================================
+    HUAWEI-ETHERNET-OAM-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS      
+            huaweiMgmt            
+                FROM HUAWEI-MIB            
+            IpAddress, Integer32, Counter32, OBJECT-TYPE, MODULE-IDENTITY            
+                FROM SNMPv2-SMI            
+            RowStatus, TruthValue, MacAddress            
+                FROM SNMPv2-TC;
+    
+        hwEthernetOAM MODULE-IDENTITY
+            LAST-UPDATED "200602230900Z" -- February 23, 2006 at 09:00 GMT
+            ORGANIZATION "Fix-Net Dept, Huawei Technologies Co.,Ltd."
+            CONTACT-INFO 
+                "Floor 5, Block 4, R&D Building,
+                Huawei Longgang Production Base,
+                Shenzhen,  P.R.C.
+                http://www.huawei.com                
+                "
+            DESCRIPTION 
+                "
+                huawei CES  mib.
+                "
+            REVISION "200602230900Z" -- February 23, 2006 at 09:00 GMT	
+            DESCRIPTION
+                "
+                V1.00    
+                First create HUAWEI-ETHOAM-MIB  
+                Reference 802.1ag-d6.0
+                "
+            ::= { huaweiMgmt 101 }
+        
+        hwEthernetOAMMibObject OBJECT IDENTIFIER ::= { hwEthernetOAM 1 } 
+    -- --------------------------------------------------------------
+    -- Groups in the CFM MIB
+    -- --------------------------------------------------------------
+        hwCfmMaintenanceDomain OBJECT IDENTIFIER ::= { hwEthernetOAMMibObject 1 } 
+        hwCfmMaintenanceAssociation OBJECT IDENTIFIER ::= { hwEthernetOAMMibObject 2 } 
+        hwCfmMaintenanceAssociationEndPoint OBJECT IDENTIFIER ::= { hwEthernetOAMMibObject 3 }   
+        hwCfmRemoteMaintenanceAssociationEndPoint OBJECT IDENTIFIER ::= { hwEthernetOAMMibObject 4 }         
+    -- --------------------------------------------------------------      
+                                             
+    -- --------------------------------------------------------------
+    -- The Maintenance Domain Object. This group will contain all
+    -- the MIB objects used to maintain Maintenance Domains in a
+    -- MIB.
+    -- --------------------------------------------------------------    
+        hwCfmMaintenanceDomainNextIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..2)
+            MAX-ACCESS read-only  
+            STATUS current  
+            DESCRIPTION
+                "
+                Value to be used as the index of the MaintenanceDomain
+                table when the management entity wants to create a new row
+                in the table.
+                "  
+            REFERENCE  
+                "802.1ag-d6.0"    
+            ::= { hwCfmMaintenanceDomain 1 }
+   -- -------------------------------------------------------------------------   
+   --        Cfm Maintenance Doamin Table
+   -- ------------------------------------------------------------------------- 
+ 
+        hwCfmMaintenanceDomainTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwCfmMaintenanceDomainEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+                The MaintenanceDomain table. Each row in the table
+                represents a different maintenance domain.
+                A Maintenace domain is described in 802.1ag (3.22) as the
+                network or the part of the network for which faults in
+                connectivity are to be managed, belonging to a single
+                administration. The boundary of a Maintenance Domain is
+                defined by a set DSAPs, each of which may become a point of
+                connectivity to a Service Instance.               
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceDomain 2 }
+        
+        hwCfmMaintenanceDomainEntry OBJECT-TYPE
+            SYNTAX HwCfmMaintenanceDomainEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+               The Maintenance Domain table entry.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            INDEX { hwCfmMaintenanceDomainIndex }
+            ::= { hwCfmMaintenanceDomainTable 1 }
+        
+        HwCfmMaintenanceDomainEntry ::=
+            SEQUENCE { 
+                hwCfmMaintenanceDomainIndex
+                    Integer32,
+                hwCfmMaintenanceDomainNameFormat
+                    INTEGER,
+                hwCfmMaintenanceDomainName
+                    OCTET STRING, 
+                hwCfmMaintenanceDomainLevel
+                    INTEGER,
+                hwCfmMaintenanceDomainRowStatus
+                    RowStatus
+                     }
+
+        hwCfmMaintenanceDomainIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..2) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The index to the maintenance domain table.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"               
+            ::= { hwCfmMaintenanceDomainEntry 1 }
+        
+        hwCfmMaintenanceDomainNameFormat OBJECT-TYPE
+            SYNTAX INTEGER {
+                    noName      (1),
+                    dnsName     (2),
+                    macInteger  (3),
+                    string      (4)
+                            }   
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+               The type of CFM Maintenance Domain name.
+               In order to divide Maintanance Domain name from different types.
+               Format of the Maintenance Domain Name TLV. The value can
+               be one of the following:
+                -carrierCode. ITU-T M.1400 Carrier Code.
+                -countryCode. ISO 3166 country code.
+                -dnsName. DNS name.
+                -macAddress. MAC address + 2-octec integer.
+                -vpnId. RFC 2685 VPN ID.
+               "
+            ::= { hwCfmMaintenanceDomainEntry 2 }
+        
+        hwCfmMaintenanceDomainName OBJECT-TYPE
+            SYNTAX OCTET STRING  (SIZE (0..43))
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                The Maintenance Domain name. Each Maintenance Domain has
+                unique name amongst all those used or available to a
+                service provider or operator, and to facilitate easy
+                identification of administrative responsibility for the
+                Maintenance Domain.
+                Maintenance Domain names can be represented in different
+                formats.
+                "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceDomainEntry 3 }
+                               
+        hwCfmMaintenanceDomainLevel OBJECT-TYPE
+            SYNTAX INTEGER {
+                    level0 (0),
+                    level1 (1),
+                    level2 (2),
+                    level3 (3),
+                    level4 (4),
+                    level5 (5),
+                    level6 (6),
+                    level7 (7)                                                                                
+                            }   
+            MAX-ACCESS read-write
+            STATUS current        
+            DESCRIPTION
+                "
+                The MA Level for a particular Maintenance Domain.
+                In order to allow administrations to configure different
+                Maintenance Domains in the same Bridge without having to
+                resort to detailed inter-organizational agreements as to
+                which MA Levels are available for use, an administrator of
+                a Maintenance Domain is expected to decide which of three
+                roles that Maintenance Domain will play: the 'Customer'
+                role, the 'Service Provider' role, or the 'Operator' role.
+                The administrator is free to assign an MA Level to a
+                Maintenance Domain within the range defined in the
+                CfmMaLevels textual convention according to the
+                Maintenance Domain's role. If two administrations ae
+                operating Maintenance Domains using the same role in one
+                Bridge,then they must agree to the MA Level each will
+                use.                
+                "
+            REFERENCE  
+                "802.1ag-d6.0"                
+            ::= { hwCfmMaintenanceDomainEntry 4 }
+                       
+        hwCfmMaintenanceDomainRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+               "
+               Status of this table's entry.
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"               
+            ::= { hwCfmMaintenanceDomainEntry 5 }
+
+    -- --------------------------------------------------------------
+    -- The Maintenance Association Object. This group will
+    -- contain all the MIB objects used to maintain Maintenance
+    -- Associations in the MIB.
+    -- --------------------------------------------------------------
+      hwCfmMaintenanceAssociationNextIndexTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwCfmMaintenanceAssociationNextIndexEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+                The Cfm Maintenance Association next index table.       
+               "
+            REFERENCE  
+               "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociation 1 }  
+            
+        hwCfmMaintenanceAssociationNextIndexEntry OBJECT-TYPE
+            SYNTAX HwCfmMaintenanceAssociationNextIndexEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+               The Cfm Maintenance Association next index table entry.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            INDEX { hwCfmMaintenanceDomainCurrentIndexOfMA }
+            ::= { hwCfmMaintenanceAssociationNextIndexTable 1 }
+
+        HwCfmMaintenanceAssociationNextIndexEntry ::=
+            SEQUENCE {  
+                hwCfmMaintenanceDomainCurrentIndexOfMA 
+                    Integer32,            
+                hwCfmMaintenanceAssociationNextIndex
+                    Integer32        
+                    }
+
+        hwCfmMaintenanceDomainCurrentIndexOfMA OBJECT-TYPE
+            SYNTAX Integer32 (0..2) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               Index of an MD table the MA belongs to.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationNextIndexEntry 1 } 
+              
+        hwCfmMaintenanceAssociationNextIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..47) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+                Value to be used as the index of the MaintenanceAssociation
+                table when the management entity wants to create a new row
+                in the table.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationNextIndexEntry 2 }
+
+        
+   -- -------------------------------------------------------------------------   
+   --        Cfm Maintenance Association Table
+   -- -------------------------------------------------------------------------  
+      hwCfmMaintenanceAssociationTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwCfmMaintenanceAssociationEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+                The Maintenance Association table. Each row in the table
+                represents a MA. A MA a set of MEPs, each configured with
+                the same MAID and MA Level. It is also a full mesh of
+                Maintenance Entities.
+                Creation of a Service Instance establishes a connectionless
+                association among the selected DSAPs. Configuring a
+                Maintenance association End Point (MEP) at each of the
+                DSAPs creates a Maintenance Association (MA) to monitor
+                that connectionless connectivity. The MA is identified by a
+                Short MA Name that is unique within the Maintenance Domain
+                and chosen to facilitate easy identification of the Service
+                Instance. Together, the Maintenance Domain Name and the
+                Short MA Name form the Maintenance Association Identifier
+                (MAID) that is carried in CFM Messages to identify
+                incorrect connectivity among Service Instances. A small
+                integer, the Maintenance association End Point Identifier
+                (MEPID), identifies each MEP among those configured on a
+                single MA (802.1ag clause 18.2).
+                This table uses two indices, being the first one the index
+                of the Maintenance Domain table. The reason is because of
+                the definition of Maintenace Domain (a set of one or more
+                MAs). SNMP SMI does not allow to stat in a MIB that an
+                object in a table is an array. The solution is to take the
+                index (or indices) of the first table and add one or more
+                indices.       
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociation 2 }
+        
+        hwCfmMaintenanceAssociationEntry OBJECT-TYPE
+            SYNTAX HwCfmMaintenanceAssociationEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+               The MA table entry.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            INDEX { hwCfmMaintenanceDomainIndexOfMA,hwCfmMaintenanceAssociationIndex }
+            ::= { hwCfmMaintenanceAssociationTable 1 }
+        
+        HwCfmMaintenanceAssociationEntry ::=
+            SEQUENCE { 
+                hwCfmMaintenanceDomainIndexOfMA
+                    Integer32,                     
+                hwCfmMaintenanceAssociationIndex 
+                    Integer32,            
+                hwCfmMaintenanceAssociationNameFormat
+                    INTEGER,        
+                hwCfmMaintenanceAssociationName    
+                    OCTET STRING, 
+                hwCfmMaintenanceAssociationVlanID    
+                    Integer32,
+                hwCfmMaintenanceAssociationCCInterval    
+                    INTEGER,  
+                hwCfmMaintenanceAssociationRemoteMEPCheckStatus
+                    INTEGER,
+                hwCfmMaintenanceAssociationRowStatus   
+                    RowStatus
+                     }
+
+        hwCfmMaintenanceDomainIndexOfMA OBJECT-TYPE
+            SYNTAX Integer32 (0..2) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               Index of an MD which the MA belongs to.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEntry 1 } 
+            
+        hwCfmMaintenanceAssociationIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..47) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               Index of the MA table.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEntry 2 }
+        
+        hwCfmMaintenanceAssociationNameFormat OBJECT-TYPE
+            SYNTAX INTEGER { 
+                    vid         (1),
+                    string      (2),
+                    integer     (3),
+                    vpnid       (4),
+                    carriercode (32)
+                            }    
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+               The type of CFM Maintenance Association name.
+               Format of the short MA Name TLV. The value can be one of
+               the following:
+                -vid. vlanid
+                -string. Character string.
+                -integer. 2-octect integer
+                -vpnId. RFC 2685 VPN ID.
+                -carriercode. for ITUT               
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEntry 3 }
+        
+        hwCfmMaintenanceAssociationName OBJECT-TYPE
+            SYNTAX OCTET STRING  (SIZE (0..43))
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                The name of CFM Maintenance Association which is unique   
+                within a Maintenance Domain.
+                " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEntry 4 }
+                               
+        hwCfmMaintenanceAssociationVlanID OBJECT-TYPE
+            SYNTAX Integer32  (2..4093)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                The Vlan related to the CFM Maintenance Association Entity.
+                "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEntry 5 }
+               
+        hwCfmMaintenanceAssociationCCInterval OBJECT-TYPE
+            SYNTAX INTEGER {
+                    intervalNone    (0),
+                    interval300HZ   (1),
+                    interval10ms    (2),
+                    interval100ms   (3),
+                    interval1s      (4),
+                    interval10s     (5),
+                    interval1m      (6),
+                    interval10m     (7)                    
+                            }   
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                The Continuity Check Message's interval of CFM Maintenance Association Entity.
+                Indicates the interval at which CCMs are sent by a MEP.
+                The possible values are:
+                -intervalNone No CCMs are sent (disabled).
+                -interval1ms CCMs are sent every 1 millisecond.
+                -interval300Hz CCMs are sent every 3 1/3 milliseconds(300Hz).
+                -interval10ms CCMs are sent every 10 milliseconds.
+                -interval100ms CCMs are sent every 100 milliseconds.
+                -interval1s CCMs are sent every 1 second. 
+                -interval10s CCMs are sent every 10 seconds.
+                -interval60s CCMs are sent every 60 seconds.                
+                "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEntry 6 }
+                        
+        hwCfmMaintenanceAssociationRemoteMEPCheckStatus OBJECT-TYPE
+            SYNTAX INTEGER {
+                    enable  (1),
+                    disable (2)
+                            }    
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                The RemoteMEP Check Status of CFM Maintenance Association Entity.
+                "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEntry 7 }
+                        
+        hwCfmMaintenanceAssociationRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+               "
+               Status of this table's entry.
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEntry 8 }  
+            
+    -- --------------------------------------------------------------
+    -- The MEP Object. This object represents a Maintenance End
+    -- Point as described in 802.1ag document.
+    -- --------------------------------------------------------------
+      hwCfmMaintenanceAssociationEndPointNextIndexTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwCfmMaintenanceAssociationEndPointNextIndexEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+                The Cfm Maintenance Association End Point next index table.       
+               "
+            REFERENCE  
+               "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPoint 1 }  
+            
+        hwCfmMaintenanceAssociationEndPointNextIndexEntry OBJECT-TYPE
+            SYNTAX HwCfmMaintenanceAssociationEndPointNextIndexEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+                   The Cfm Maintenance Association End Point next index table entry.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            INDEX { hwCfmMaintenanceDomainCurrentIndexOfMEP, hwCfmMaintenanceAssociationCurrentIndexOfMEP }
+            ::= { hwCfmMaintenanceAssociationEndPointNextIndexTable 1 }
+
+        HwCfmMaintenanceAssociationEndPointNextIndexEntry ::=
+            SEQUENCE {  
+                hwCfmMaintenanceDomainCurrentIndexOfMEP 
+                    Integer32,    
+                hwCfmMaintenanceAssociationCurrentIndexOfMEP 
+                    Integer32,    
+                hwCfmMaintenanceAssociationEndPointNextIndex
+                    Integer32        
+                    }
+
+        hwCfmMaintenanceDomainCurrentIndexOfMEP OBJECT-TYPE
+            SYNTAX Integer32 (0..2) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               Index of an MD table.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPointNextIndexEntry 1 } 
+
+        hwCfmMaintenanceAssociationCurrentIndexOfMEP OBJECT-TYPE
+            SYNTAX Integer32 (0..47) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               Index of an MA table.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPointNextIndexEntry 2 }
+                          
+        hwCfmMaintenanceAssociationEndPointNextIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..0) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+                Value to be used as the index of the MaintenanceAssociationEndPoint
+                table when the management entity wants to create a new row
+                in the table.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPointNextIndexEntry 3 }
+  
+   -- -------------------------------------------------------------------------   
+   --        Cfm Maintenance Association End Point Table
+   -- -------------------------------------------------------------------------     
+      hwCfmMaintenanceAssociationEndPointTable  OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwCfmMaintenanceAssociationEndPointEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+                The MEP table. Each row in the table represents a different MEP.    
+                The MEP table. Each row in the table represents a
+                different MEP. A MEP (Maintenance association End Point) is
+                an actively managed functional component, associated with a
+                specific DSAP of a Service Instance, which can generate and
+                receive CFM frames and track any responses. It is an end
+                point of a single Maintenance Association, and terminates a
+                separate Maintenance Entity for each of the other MEPs in
+                the same Maintenance Association (802.1ag clause 3.17).    
+                This table uses three indices, being the first two the
+                indices of the Maintenance Domain and MA tables, the reason
+                being that a MEP is allways related to an MA and
+                Maintenance Domain. SNMP SMI does not allow to stat in a
+                MIB that an object in a table is an array. The solution is
+                to take the index (or indices) of the first table (or
+                tables) and add one or more indices.           
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPoint 2 }
+        
+        hwCfmMaintenanceAssociationEndPointEntry OBJECT-TYPE
+            SYNTAX HwCfmMaintenanceAssociationEndPointEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+               The MEP table entry.
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            INDEX { hwCfmMaintenanceDomainIndexOfMEP,hwCfmMaintenanceAssociationIndexOfMEP,
+                    hwCfmMaintenanceAssociationEndPointIndex }
+            ::= { hwCfmMaintenanceAssociationEndPointTable 1 }
+        
+        HwCfmMaintenanceAssociationEndPointEntry ::=
+            SEQUENCE {
+                hwCfmMaintenanceDomainIndexOfMEP
+                    Integer32,                     
+                hwCfmMaintenanceAssociationIndexOfMEP 
+                    Integer32,                               
+                hwCfmMaintenanceAssociationEndPointIndex
+                    Integer32,
+                hwCfmMaintenanceAssociationEndPointIdentifier 
+                    Integer32,
+                hwCfmMaintenanceAssociationEndPointPortID    
+                    Integer32,
+                hwCfmMaintenanceAssociationEndPointDirection    
+                    INTEGER,
+                hwCfmMaintenanceAssociationEndPointAdminStatus    
+                    INTEGER,
+                hwCfmMaintenanceAssociationEndPointPriority    
+                    INTEGER,            
+                hwCfmMaintenanceAssociationEndPointCCStatus    
+                    INTEGER,            
+                hwCfmMaintenanceAssociationEndPointRowStatus         
+                    RowStatus
+                     }     
+
+        hwCfmMaintenanceDomainIndexOfMEP OBJECT-TYPE
+            SYNTAX Integer32 (0..2) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The MD table index which the MEP belongs to.
+               "
+             REFERENCE  
+                "802.1ag-d6.0"
+              
+            ::= { hwCfmMaintenanceAssociationEndPointEntry 1 }
+
+        hwCfmMaintenanceAssociationIndexOfMEP OBJECT-TYPE
+            SYNTAX Integer32 (0..47) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The MA table index which the MEP belongs to.
+               "
+             REFERENCE  
+                "802.1ag-d6.0"
+              
+            ::= { hwCfmMaintenanceAssociationEndPointEntry 2 }
+                     
+        hwCfmMaintenanceAssociationEndPointIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..0) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The MEP table index.
+               "
+             REFERENCE  
+                "802.1ag-d6.0"
+              
+            ::= { hwCfmMaintenanceAssociationEndPointEntry 3 }
+        
+        hwCfmMaintenanceAssociationEndPointIdentifier OBJECT-TYPE
+            SYNTAX Integer32 (1..8191)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+                Integer that is unique among all the MEPs in the same
+                MA. Other definition is: a small integer, unique over a
+                given Maintenance Association, identifying a specific
+                Maintenance association End Point.
+                MEP Identifier is also known as the MEPID.               
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+              
+            ::= { hwCfmMaintenanceAssociationEndPointEntry 4 }
+        
+        hwCfmMaintenanceAssociationEndPointPortID OBJECT-TYPE
+            SYNTAX Integer32  
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                Port number where this MEP is located in the Bridge.
+                " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPointEntry 5 }
+                               
+        hwCfmMaintenanceAssociationEndPointDirection OBJECT-TYPE
+            SYNTAX INTEGER {
+                        outward (0),
+                        inward  (1)
+                            }   
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                Indicates the direction in which the MEP faces on the Bridge port.
+                association (MEP or MIP) faces on the bridge port:
+                - Outward. Sends Continuity Check Messages away from the MAC Relay Entity.
+                - Inward.  Sends Continuity Check Messages towards the MAC Relay Entity                
+                " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPointEntry 6 }
+               
+        hwCfmMaintenanceAssociationEndPointAdminStatus OBJECT-TYPE
+            SYNTAX INTEGER {
+                    enable  (1),
+                    disable (2)
+                            }   
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                The administrative status of CFM Maintenance Association End Point Entity.
+                "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPointEntry 7 }
+                        
+        hwCfmMaintenanceAssociationEndPointPriority OBJECT-TYPE
+            SYNTAX INTEGER  (0..7)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                The priority of Continuity Check Message.
+                " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPointEntry 8 }
+
+        hwCfmMaintenanceAssociationEndPointCCStatus OBJECT-TYPE
+            SYNTAX INTEGER {
+                    enable  (1),
+                    disable (2)
+                            }   
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "
+                The Continuity Check status of CFM Maintenance Association End Point Entity.
+                "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPointEntry 9 }
+                        
+        hwCfmMaintenanceAssociationEndPointRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+               "
+               Status of this table's entry.
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmMaintenanceAssociationEndPointEntry 10 } 
+            
+            
+    -- --------------------------------------------------------------
+    -- The Remote MEP Object. This object represents a Remote Maintenance End
+    -- Point as described in 802.1ag document.
+    -- --------------------------------------------------------------
+      hwCfmRemoteMaintenanceAssociationEndPointNextIndexTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwCfmRemoteMaintenanceAssociationEndPointNextIndexEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+                The Cfm Remote Maintenance Association End Point next index table.       
+               "
+            REFERENCE  
+               "802.1ag-d6.0"
+            ::= { hwCfmRemoteMaintenanceAssociationEndPoint 1 }  
+            
+        hwCfmRemoteMaintenanceAssociationEndPointNextIndexEntry OBJECT-TYPE
+            SYNTAX HwCfmRemoteMaintenanceAssociationEndPointNextIndexEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+                   The Cfm Remote Maintenance Association End Point next index table entry.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            INDEX { hwCfmMaintenanceDomainCurrentIndexOfRMEP, hwCfmMaintenanceAssociationCurrentIndexOfRMEP }
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointNextIndexTable 1 }
+
+        HwCfmRemoteMaintenanceAssociationEndPointNextIndexEntry ::=
+            SEQUENCE {  
+                hwCfmMaintenanceDomainCurrentIndexOfRMEP 
+                    Integer32,    
+                hwCfmMaintenanceAssociationCurrentIndexOfRMEP 
+                    Integer32,    
+                hwCfmRemoteMaintenanceAssociationEndPointNextIndex
+                    Integer32        
+                    }
+
+        hwCfmMaintenanceDomainCurrentIndexOfRMEP OBJECT-TYPE
+            SYNTAX Integer32 (0..2) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               Index of an MD table the remote MEP belongs to.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointNextIndexEntry 1 } 
+
+        hwCfmMaintenanceAssociationCurrentIndexOfRMEP OBJECT-TYPE
+            SYNTAX Integer32 (0..47) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               Index of an MA table the remote MEP belongs to.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointNextIndexEntry 2 }
+                          
+        hwCfmRemoteMaintenanceAssociationEndPointNextIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..5)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+                Value to be used as the index of the RemoteMaintenanceAssociationEndPoint
+                table when the management entity wants to create a new row
+                in the table.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointNextIndexEntry 3 }
+            
+              
+   -- -------------------------------------------------------------------------   
+   --        Cfm Remote Maintenance Association End Point Table
+   -- -------------------------------------------------------------------------   
+        hwCfmRemoteMaintenanceAssociationEndPointTable  OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwCfmRemoteMaintenanceAssociationEndPointEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+               The remote MEP table. Each row in the table represents a different 
+               remote MEP within a Maintenance Association.               
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+               
+            ::= { hwCfmRemoteMaintenanceAssociationEndPoint 2 }
+        
+        hwCfmRemoteMaintenanceAssociationEndPointEntry OBJECT-TYPE
+            SYNTAX HwCfmRemoteMaintenanceAssociationEndPointEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+               The Remote MEP table entry.
+               "  
+            REFERENCE  
+                "802.1ag-d6.0"
+               
+            INDEX { hwCfmMaintenanceDomainIndexOfRMEP, hwCfmMaintenanceAssociationIndexOfRMEP,
+                    hwCfmRemoteMaintenanceAssociationEndPointIndex }
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointTable 1 }
+        
+        HwCfmRemoteMaintenanceAssociationEndPointEntry ::=
+            SEQUENCE {
+                hwCfmMaintenanceDomainIndexOfRMEP
+                    Integer32,                     
+                hwCfmMaintenanceAssociationIndexOfRMEP 
+                    Integer32,                  
+                hwCfmRemoteMaintenanceAssociationEndPointIndex       
+                    Integer32,
+                hwCfmRemoteMaintenanceAssociationEndPointIdentifier     
+                    Integer32,
+                hwCfmRemoteMaintenanceAssociationEndPointMacAddress  
+                    MacAddress,
+                hwCfmRemoteMaintenanceAssociationEndPointRowStatus  
+                    RowStatus
+                    }
+
+        hwCfmMaintenanceDomainIndexOfRMEP OBJECT-TYPE
+            SYNTAX Integer32 (0..2) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The MD table Index which the remote MEP belongs to.
+               "   
+            REFERENCE  
+                "802.1ag-d6.0"
+               
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointEntry 1 }
+
+        hwCfmMaintenanceAssociationIndexOfRMEP OBJECT-TYPE
+            SYNTAX Integer32 (0..47) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The MA table Index which the remote MEP belongs to.
+               "   
+            REFERENCE  
+                "802.1ag-d6.0"
+               
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointEntry 2 }
+
+        hwCfmRemoteMaintenanceAssociationEndPointIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..5)
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The Remote MEP table Index.
+               "   
+            REFERENCE  
+                "802.1ag-d6.0"
+               
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointEntry 3 }
+        
+        hwCfmRemoteMaintenanceAssociationEndPointIdentifier OBJECT-TYPE
+            SYNTAX Integer32 (1..8191) 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+                   Integer that is unique among all the Remote MEPs in the same
+                MA. MEP Identifier is also known as the RemoteMEPID. 
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointEntry 4 }
+        
+        hwCfmRemoteMaintenanceAssociationEndPointMacAddress OBJECT-TYPE
+            SYNTAX MacAddress
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "
+                The MAC address of CFM Remote MEP.
+                "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointEntry 5 }
+                        
+        hwCfmRemoteMaintenanceAssociationEndPointRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+               "
+               Status of this table's entry.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmRemoteMaintenanceAssociationEndPointEntry 6 }
+
+
+   -- -------------------------------------------------------------------------   
+   --        Cfm LoopBack Table
+   -- -------------------------------------------------------------------------  
+   hwCfmLoopBackTable   OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwCfmLoopBackEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+               Cfm LoopBack Check table.               
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwEthernetOAMMibObject 5 }
+        
+        hwCfmLoopBackEntry OBJECT-TYPE
+            SYNTAX HwCfmLoopBackEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+               The LoopBack table entry.
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            INDEX { hwCfmLoopBackMaintenanceDomainIndex, hwCfmLoopBackMaintenanceAssociationIndex,
+                    hwCfmLoopBackMaintenanceAssociationEndPointIndex }
+            ::= { hwCfmLoopBackTable 1 }
+        
+        HwCfmLoopBackEntry ::=
+            SEQUENCE {
+                hwCfmLoopBackMaintenanceDomainIndex
+                    Integer32,                     
+                hwCfmLoopBackMaintenanceAssociationIndex 
+                    Integer32,                  
+                hwCfmLoopBackMaintenanceAssociationEndPointIndex       
+                    Integer32,
+                hwCfmLoopBackDstMacAddress     
+                    MacAddress,
+                hwCfmLoopBackNumOut  
+                    Integer32,
+                hwCfmLoopBackInterval
+                    INTEGER,
+                hwCfmLoopBackPriority
+                    Integer32,
+                hwCfmLoopBackRowStatus  
+                    RowStatus
+                    }
+
+         hwCfmLoopBackMaintenanceDomainIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..2) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The MDindex of the MEP is this LoopBack Message sent from.
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLoopBackEntry 1 }   
+
+         hwCfmLoopBackMaintenanceAssociationIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..47) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The MAindex of the MEP is this LoopBack Message sent from
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLoopBackEntry 2 }   
+               
+         hwCfmLoopBackMaintenanceAssociationEndPointIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..0) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               Which MEP is this LoopBack Message sent from.
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLoopBackEntry 3 }    
+            
+          hwCfmLoopBackDstMacAddress OBJECT-TYPE
+            SYNTAX MacAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+               The mac-address of the Remote MEP or MIP is this LoopBack Messages sent to.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLoopBackEntry 4 }  
+        
+        hwCfmLoopBackNumOut OBJECT-TYPE
+            SYNTAX Integer32 (1..10)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+               The number of LoopBack Messages to send.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            DEFVAL { 4 }   
+            ::= { hwCfmLoopBackEntry 5 } 
+
+         hwCfmLoopBackInterval OBJECT-TYPE
+                   SYNTAX INTEGER {
+                    interval100ms    (1),
+                    interval200ms    (2),
+                    interval300ms    (3),
+                    interval400ms    (4),
+                    interval500ms    (5),
+                    interval600ms    (6),
+                    interval700ms    (7),
+                    interval800ms    (8),
+                    interval900ms    (9),
+                    interval1000ms   (10),
+                    interval1100ms   (11),
+                    interval1200ms   (12),
+                    interval1300ms   (13),
+                    interval1400ms   (14),
+                    interval1500ms   (15),
+                    interval1600ms   (16),
+                    interval1700ms   (17),
+                    interval1800ms   (18),
+                    interval1900ms   (19),
+                    interval2000ms   (20)
+                            } 
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+               The interval of LoopBack Messages to send.
+               " 
+             REFERENCE  
+                "802.1ag-d6.0"
+              
+            ::= { hwCfmLoopBackEntry 6 }
+
+        hwCfmLoopBackPriority OBJECT-TYPE
+            SYNTAX Integer32 (0..7)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+               The priority of LoopBack Messages to send.
+               " 
+             REFERENCE  
+                "802.1ag-d6.0"
+              
+            ::= { hwCfmLoopBackEntry 7 }
+            
+          hwCfmLoopBackRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+               "
+               Status of this table's entry.
+               " 
+             REFERENCE  
+                "802.1ag-d6.0"
+              
+            ::= { hwCfmLoopBackEntry 8 }
+
+
+   
+   -- -------------------------------------------------------------------------   
+   --        Cfm LinkTrace Table
+   -- -------------------------------------------------------------------------  
+
+   hwCfmLinkTraceTable   OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwCfmLinkTraceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+               The LinkTrace table entry.               
+               "  
+            REFERENCE  
+                "802.1ag-d6.0"
+               
+            ::= { hwEthernetOAMMibObject 6 }
+        
+        hwCfmLinkTraceEntry OBJECT-TYPE
+            SYNTAX HwCfmLinkTraceEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+               "
+               The LinkTrace Check table entry.
+               " 
+            REFERENCE  
+                "802.1ag-d6.0"
+            INDEX { hwCfmLinkTraceMaintenanceDomainIndex,hwCfmLinkTraceMaintenanceAssociationIndex,
+                    hwCfmLinkTraceMaintenanceAssociationEndPointIndex }
+            ::= { hwCfmLinkTraceTable 1 }
+        
+        HwCfmLinkTraceEntry ::=
+            SEQUENCE {
+                hwCfmLinkTraceMaintenanceDomainIndex
+                    Integer32,                     
+                hwCfmLinkTraceMaintenanceAssociationIndex 
+                    Integer32,                  
+                hwCfmLinkTraceMaintenanceAssociationEndPointIndex       
+                    Integer32,
+                hwCfmLinkTraceDstMacAddress     
+                    MacAddress, 
+                hwCfmLinkTracePriority     
+                    Integer32,
+                hwCfmLinkTraceRowStatus  
+                    RowStatus,
+                hwCfmLinkTraceTtl
+                    Integer32
+                    }
+
+        hwCfmLinkTraceMaintenanceDomainIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..2) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The MDindex of the MEP is this LinkTrace Message sent from.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLinkTraceEntry 1 } 
+
+        hwCfmLinkTraceMaintenanceAssociationIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..47) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               The MAindex of the MEP is this LinkTrace Message sent from.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLinkTraceEntry 2 } 
+               
+         hwCfmLinkTraceMaintenanceAssociationEndPointIndex OBJECT-TYPE
+            SYNTAX Integer32 (0..0) 
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+               "
+               Which Remote MEP is this LinkTrace Message sent from.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLinkTraceEntry 3 }    
+            
+          hwCfmLinkTraceDstMacAddress OBJECT-TYPE
+            SYNTAX MacAddress
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+               The mac-address of the Remote MEP or MIP is this LinkTrace Message sent to.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLinkTraceEntry 4 }  
+                    
+          hwCfmLinkTracePriority OBJECT-TYPE
+            SYNTAX Integer32 (0..7)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+               The Priority of the Remote MEP or MIP is this LinkTrace Message sent to.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLinkTraceEntry 5 }             
+
+          hwCfmLinkTraceRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+               "
+               Status of this table's entry.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLinkTraceEntry 6 }
+            
+          hwCfmLinkTraceTtl OBJECT-TYPE
+            SYNTAX Integer32 (64..255)
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+               "
+               The TTL of the Remote MEP or MIP is this LinkTrace Message sent to.
+               "
+            REFERENCE  
+                "802.1ag-d6.0"
+            ::= { hwCfmLinkTraceEntry 7 } 
+                        
+   -- -------------------------------------------------------------------------   
+   --        Cfm Global Config 
+   -- -------------------------------------------------------------------------  
+          hwCfmGlobalStatus   OBJECT-TYPE
+           SYNTAX INTEGER {
+                    enable  (1),
+                    disable (2)
+                            } 
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              CFM global config status.
+              "
+           REFERENCE  
+              "802.1ag-d6.0"
+           ::= { hwEthernetOAMMibObject 7 }     
+   
+           hwCfmBaseMulticastMacAddress   OBJECT-TYPE
+           SYNTAX       MacAddress
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              Cfm base multi-cast MAC address.
+              "
+           REFERENCE  
+              "802.1ag-d6.0" 
+           ::= { hwEthernetOAMMibObject 8 }
+
+          hwCfmSnmpAlarmGlobalStatus   OBJECT-TYPE
+           SYNTAX INTEGER {
+                    enable  (1),
+                    disable (2)
+                            } 
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              Snmp Alarm Status.
+              "
+           REFERENCE  
+              "802.1ag-d6.0"
+           ::= { hwEthernetOAMMibObject 9 }   
+                  
+         hwCfmRemoteMEPCheckGlobalStatus   OBJECT-TYPE
+             SYNTAX INTEGER {
+                    enable  (1),
+                    disable (2)
+                            } 
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              Remote Mep Check Status.
+              " 
+            REFERENCE  
+              "802.1ag-d6.0" 
+           ::= { hwEthernetOAMMibObject 10 }             
+            
+         END
+

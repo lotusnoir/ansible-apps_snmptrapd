@@ -1,0 +1,1198 @@
+--  ============================================================================
+-- Copyright (C) by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description:  
+-- Reference:  
+-- Version: V3.14
+-- History:
+-- ============================================================================
+
+	HUAWEI-ENVIRONMENT-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+		
+			huaweiUtility			
+				FROM HUAWEI-MIB			
+			Integer32, BITS, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE			
+				FROM SNMPv2-SMI			
+			DisplayString, RowStatus			
+				FROM SNMPv2-TC;
+	
+	
+		hwEnvironment MODULE-IDENTITY
+			LAST-UPDATED "200505280900Z"
+			ORGANIZATION "Fix-Net DepT, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,   P.R.C.
+				http://www.huawei.com
+				Zip: 518057
+				"
+			DESCRIPTION 
+				" The environment Monitoring MIB"
+			::= { huaweiUtility 1 }
+		
+	
+	
+--
+-- Node definitions
+--
+	
+		-- 1.3.6.1.4.1.2011.6.1.1
+		hwEnvironmentMon OBJECT IDENTIFIER ::= { hwEnvironment 1 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1
+		hwEnvironmentInfoTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwEnvironmentInfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Basic information table of the environment monitoring
+				"
+			::= { hwEnvironmentMon 1 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1
+		hwEnvironmentInfoEntry OBJECT-TYPE
+			SYNTAX HwEnvironmentInfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Basic information table entry of environment monitoring
+				"
+			INDEX { hwEnvEmuIndex }
+			::= { hwEnvironmentInfoTable 1 }
+		
+		HwEnvironmentInfoEntry ::=
+			SEQUENCE { 
+				hwEnvEmuIndex
+					Integer32,
+				hwEnvEmuType
+					INTEGER,
+				hwEnvBoardName
+					DisplayString,
+				hwEnvCommState
+					INTEGER,
+				hwEnvRowStatus
+					RowStatus,
+				hwEnvVersion
+					DisplayString,
+				hwEnvFrameId
+					Integer32,
+				hwEnvAdminStatus
+					INTEGER,
+				hwEnvSlaveNodeId
+					Integer32,
+				hwEnvComType
+					INTEGER
+			 }
+
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1.1
+		hwEnvEmuIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..2048)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Environment monitoring unit ID, used as an index
+				"
+			::= { hwEnvironmentInfoEntry 1 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1.2
+		hwEnvEmuType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				h302ESC(1),
+				h303ESC(2),
+				h4875(3),
+				h301ESC(4),
+				switch(5),
+				fanEscFrame(6),
+				fanFrame(7),
+				h4845(8),
+				fanFCBFrame(9),
+				fanFDMUFrame(10),
+				h304ESC(11),
+				pwma(12),
+				h561esc(13),
+				H801Esc(14),
+				H612pwbp(15),
+				Pse158(16),
+				h4805(19),
+				pdu(20),
+				ac_rmu(21),
+				ac_fan(22),
+				dc_fan(23),
+				rmun1509(24),
+				onps150(25),
+				other(255)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Monitoring board type:
+				
+				
+				h302ESC(1),
+				h303ESC(2),
+				h4875(3)：4875 power monitoring frame,
+				h301ESC(4),
+				switch(5) ：Distribute monitoring frame,
+				fanEscFrame(6) ：ESC monitoring fan frame,
+				fanFrame(7)： monitoring fan frame,
+				h4845(8),4845 power monitoring,
+				fanFCBFrame(9), FCB monitoring fan frame,
+				fanFDMUFrame(10),FDMUmonitoring fan frame, 
+				h304ESC(11), provides the management function of battery. 
+				pwma(12),   
+				h561esc(13), H561ESC
+				H801esc(14),H801Esc
+				H612pwbp(15), H612pwbp
+				h4805(19), 
+				pdu(20),   
+				ac_rmu(21),
+				ac_fan(22),
+				dc_fan(23),
+				rmun1509(24),
+				onps150(25),
+				other(255)
+				"
+			::= { hwEnvironmentInfoEntry 2 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1.3
+		hwEnvBoardName OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The name of the monitoring board    "
+			::= { hwEnvironmentInfoEntry 3 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1.4
+		hwEnvCommState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				shutdown(2),
+				fault(3),
+				abnormal(4),
+				config(5)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Communication status: only to satisfy the special 
+				requirements of products.
+				
+				normal(1),
+				shutdown(2),
+				fault(3),
+				abnormal(4),
+				config(5)
+				
+				The following are not recommended to used. 
+				fault(3),
+				abnormal(4),
+				config(5)
+				"
+			::= { hwEnvironmentInfoEntry 4 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1.5
+		hwEnvRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				RowStatus standard operation				
+				"
+			::= { hwEnvironmentInfoEntry 5 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1.6
+		hwEnvVersion OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Monitoring version information
+				"
+			::= { hwEnvironmentInfoEntry 6 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1.7
+		hwEnvFrameId OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The frame ID corresponding to the monitoring unit
+				"
+			::= { hwEnvironmentInfoEntry 7 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1.8
+		hwEnvAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				noOperation(1),
+				reset(2)
+				manage(3),
+				unmanage(4),
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The management status of the monitoring unit
+				
+				noOperation(1) -- no any operation 
+				reset(2)       -- reset the monitoring board  
+				manage(3)      -- manage the monitoring unit   
+				unmanage(4)      -- undo manage the monitoring unit   
+				"
+			::= { hwEnvironmentInfoEntry 8 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1.9
+		hwEnvSlaveNodeId OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The slave node ID corresponding to the monitoring unit.
+				"
+			::= { hwEnvironmentInfoEntry 9 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.1.1.10
+		hwEnvComType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				unknown(1),
+				serialRS485(2),
+				serialRS232(3),
+				serialRS422(4)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The communication protocol type between the monitoring unit 
+				and the upstream equipment.				
+				unknown(1),      
+				serialRS485(2),  
+			        serialRS232(3),  
+			        serialRS422(4)   
+				"
+			::= { hwEnvironmentInfoEntry 10 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2
+		hwAnaChannelTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwAnaChannelEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Analog sensor table
+				"
+			::= { hwEnvironmentMon 2 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1
+		hwAnaChannelEntry OBJECT-TYPE
+			SYNTAX HwAnaChannelEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Analog sensor table entry
+				"
+			INDEX { hwEnvEmuIndex, hwAnaChannelIndex }
+			::= { hwAnaChannelTable 1 }
+		
+		HwAnaChannelEntry ::=
+			SEQUENCE { 
+				hwAnaChannelIndex
+					Integer32,
+				hwAnaName
+					DisplayString,
+				hwAnaType
+					INTEGER,
+				hwAnaMeasureType
+					DisplayString,
+				hwAnaWorkHigh
+					Integer32,
+				hwAnaWorkLow
+					Integer32,
+				hwAnaAlmHigh
+					Integer32,
+				hwAnaAlmLow
+					Integer32,
+				hwAnaCurrentValue
+					Integer32,
+				hwAnaAlarmState
+					INTEGER,
+				hwAnaRowStatus
+					RowStatus,
+				hwAnaAlarmID
+					INTEGER
+			 }
+
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.1
+		hwAnaChannelIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Analog sensor channel ID
+				"
+			::= { hwAnaChannelEntry 1 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.2
+		hwAnaName OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Analog sensor name. For the sensor of the fixed name, 
+				this variable is consistent with the sensor name of the 
+				monitoring unit. Other sensors are named according to the 
+				measured physical quantity.
+				"
+			::= { hwAnaChannelEntry 2 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.3
+		hwAnaType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				voltage(1),
+				current(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				sensor type:
+				voltage(1)  ,
+				current（2）
+				"
+			::= { hwAnaChannelEntry 3 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.4
+		hwAnaMeasureType OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The measured analog unit
+				"
+			::= { hwAnaChannelEntry 4 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.5
+		hwAnaWorkHigh OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				High limit of the analog normal work
+				"
+			::= { hwAnaChannelEntry 5 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.6
+		hwAnaWorkLow OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Low limit of the analog normal work
+				"
+			::= { hwAnaChannelEntry 6 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.7
+		hwAnaAlmHigh OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				High limit of the analog alarm. The alarm is produced 
+				when the measurement value is higher than this value
+				"
+			::= { hwAnaChannelEntry 7 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.8
+		hwAnaAlmLow OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The low limit of the analog alarm. The alarm is produced
+				when the measurement value is lower than this value.
+				"
+			::= { hwAnaChannelEntry 8 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.9
+		hwAnaCurrentValue OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "milli"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The actual measurement value of the present analog."
+			::= { hwAnaChannelEntry 9 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.10
+		hwAnaAlarmState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				overWorkHigh(2),
+				belowWorkLow(3),
+				abnormal(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The statuses of the present analog sensor:
+				normal (1)：     the measurement is lower than the set high 
+				limit of the alarm, and higher than the low limit.				 
+				overWorkHigh (2)：the measurement is over the set high limit of the alarm.						  测量值大于设定的告警上限值
+				belowWorkLow (3)：the measurement is below the set low limit of the alarm.						  测量值小于设定的告警下限值
+				abnormal(4): the measurement is outside the scope of limit of the alarm.                                                  测量值超出设定的告警上下限值"
+			::= { hwAnaChannelEntry 10 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.11
+		hwAnaRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				RowStatus standard operation
+				"
+			::= { hwAnaChannelEntry 11 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.2.1.12
+		hwAnaAlarmID OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				temperature(1),
+				humidity(2),
+				voltage(3),
+				current(4),
+				userDefinedAlarm0(100),
+				userDefinedAlarm1(101),
+				userDefinedAlarm2(102),
+				userDefinedAlarm3(103),
+				userDefinedAlarm4(104),
+				userDefinedAlarm5(105),
+				userDefinedAlarm6(106),
+				userDefinedAlarm7(107),
+				userDefinedAlarm8(108),
+				userDefinedAlarm9(109),
+				userDefinedAlarm10(110),
+				userDefinedAlarm11(111),
+				userDefinedAlarm12(112),
+				userDefinedAlarm13(113),
+				userDefinedAlarm14(114),
+				userDefinedAlarm15(115),
+				default(65535)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+		        "
+		        Analog alarm define:
+		        temperature (1): temperature alarm
+		        humidity (2): humidity alarm
+		        voltage (3): voltage alarm
+		        current (4): current alarm
+		        100~115 : analog user-defined alarm 0~15
+		        default (65535) : analog alarm"
+			::= { hwAnaChannelEntry 12 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.3
+		hwDigChannelTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDigChannelEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Digital sensor table
+				"
+			::= { hwEnvironmentMon 3 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.3.1
+		hwDigChannelEntry OBJECT-TYPE
+			SYNTAX HwDigChannelEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Digital sensor table entry
+				"
+			INDEX { hwEnvEmuIndex, hwDigChannelIndex }
+			::= { hwDigChannelTable 1 }
+		
+		HwDigChannelEntry ::=
+			SEQUENCE { 
+				hwDigChannelIndex
+					Integer32,
+				hwDigChannelName
+					DisplayString,
+				hwAlmCondition
+					INTEGER,
+				hwDigChannelState
+					INTEGER,
+				hwDigRowStatus
+					RowStatus,
+				hwDigAlarmID
+					INTEGER
+			 }
+
+		-- 1.3.6.1.4.1.2011.6.1.1.3.1.1
+		hwDigChannelIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Digital sensor channel ID
+				"
+			::= { hwDigChannelEntry 1 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.3.1.2
+		hwDigChannelName OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Digital sensor name. For the sensor of the fixed name,
+				 this variable s consistent with the sensor name of the 
+				monitoring unit. Other sensors are named according to the 
+				measured physical quantity.
+				"
+			::= { hwDigChannelEntry 2 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.3.1.3
+		hwAlmCondition OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				lowLevelAlarm(1),
+				highLevelAlarm(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Alarm conditions:
+				Low Level Alarm: refers to the alarm produced when the digital sensor detects the low level.
+				High Level Alarm: refers to the alarm produced when the digital sensor detects the high level.
+				"
+			::= { hwDigChannelEntry 3 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.3.1.4
+		hwDigChannelState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				alarm(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The present status of the digital sensor:
+				normal(1)         -- The digital sensor works normally.
+				alarm(2)        --The digital sensor produces the alarm signal.		
+				
+				"
+			::= { hwDigChannelEntry 4 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.3.1.5
+		hwDigRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				RowStatus standard operation.
+				"
+			::= { hwDigChannelEntry 5 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.3.1.6
+		hwDigAlarmID OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				ac_voltage(1),
+				ac_switch(2),
+				battery_voltage(3),
+				battery_fuse(4),
+				load_fuse(5),
+				rectifier(6),
+				dc_power(7),
+				cupboard_door(8),
+				room_door(9),
+				window(10),
+				thief(11),
+				wiring(12),
+				fan(13),
+				fire(14),
+				fog(15),
+				water(16),
+				diesel(17),
+				smell(18),
+				air-condition(19),
+				arrester(20),
+				userDefinedAlarm0(100),
+				userDefinedAlarm1(101),
+				userDefinedAlarm2(102),
+				userDefinedAlarm3(103),
+				userDefinedAlarm4(104),
+				userDefinedAlarm5(105),
+				userDefinedAlarm6(106),
+				userDefinedAlarm7(107),
+				userDefinedAlarm8(108),
+				userDefinedAlarm9(109),
+				userDefinedAlarm10(110),
+				userDefinedAlarm11(111),
+				userDefinedAlarm12(112),
+				userDefinedAlarm13(113),
+				userDefinedAlarm14(114),
+				userDefinedAlarm15(115),
+				userDefinedAlarm16(116),
+				userDefinedAlarm17(117),
+				userDefinedAlarm18(118),
+				userDefinedAlarm19(119),
+				userDefinedAlarm20(120),
+				userDefinedAlarm21(121),
+				userDefinedAlarm22(122),
+				userDefinedAlarm23(123),
+				userDefinedAlarm24(124),
+				userDefinedAlarm25(125),
+				userDefinedAlarm26(126),
+				userDefinedAlarm27(127),
+				userDefinedAlarm28(128),
+				userDefinedAlarm29(129),
+				userDefinedAlarm30(130),
+				userDefinedAlarm31(131),
+				default(65535)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+		        "
+		        Digital alarm define
+		        ac_voltage (1): ac voltage alarm
+		        ac_switch  (2): ac switch alarm
+		        battery_voltage (3): battery voltage alarm
+		        battery_fuse (4): battery fuse alarm
+		        load_fuse (5) : load fuse alarm
+		        rectifier (6) : rectifier alarm
+		        dc_power (7) : dc power alarm
+		        cupboard_door (8) : cupboard alarm
+		        room_door (9) : room door alarm
+		        window (10) : window alarm
+		        thief (11) : thief alarm
+		        wiring (12) : wiring alarm
+		        fan (13) : fan alarm
+		        fire (14) : fire alarm
+		        fog (15) : fog alarm
+		        water (16) : water alarm
+		        diesel (17) : diesel alarm
+		        smell (18) : smell alarm
+		        air-condition (19) : air-condition alarm
+		        arrester (20) : arrester alarm
+		        100~131 : digital user-defined alarm 0~31
+		        default (65535) : digital alarm"
+			::= { hwDigChannelEntry 6 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.4
+		hwControlOutTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwControlOutEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Control out table
+				"
+			::= { hwEnvironmentMon 4 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.4.1
+		hwControlOutEntry OBJECT-TYPE
+			SYNTAX HwControlOutEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Control out table entry
+				"
+			INDEX { hwEnvEmuIndex, hwControlOutIndex }
+			::= { hwControlOutTable 1 }
+		
+		HwControlOutEntry ::=
+			SEQUENCE { 
+				hwControlOutIndex
+					Integer32,
+				hwControlOutName
+					DisplayString,
+				hwControlOutAdminStatus
+					INTEGER,
+				hwControlOutRowStatus
+					RowStatus
+			 }
+
+		-- 1.3.6.1.4.1.2011.6.1.1.4.1.1
+		hwControlOutIndex OBJECT-TYPE
+			SYNTAX Integer32 (0..255)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Control out index
+				"
+			::= { hwControlOutEntry 1 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.4.1.2
+		hwControlOutName OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Control out name
+				"
+			::= { hwControlOutEntry 2 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.4.1.3
+		hwControlOutAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Control Out administration: executes the on/off operation.
+				"
+			::= { hwControlOutEntry 3 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.4.1.4
+		hwControlOutRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				RowStatus standard operation.
+				"
+			::= { hwControlOutEntry 4 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5
+		hwFanTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwFanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Device fan table
+				"
+			::= { hwEnvironmentMon 5 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1
+		hwFanEntry OBJECT-TYPE
+			SYNTAX HwFanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Device fan table entry
+				"
+			INDEX { hwEnvEmuIndex }
+			::= { hwFanTable 1 }
+		
+		HwFanEntry ::=
+			SEQUENCE { 
+				hwFanName
+					DisplayString,
+				hwFanControlMode
+					INTEGER,
+				hwFanControlState
+					BITS,
+				hwESCFanTempAutoOn
+					Integer32,
+				hwESCFanTempAutoOff
+					Integer32,
+				hwFanRowStatus
+					RowStatus,
+				hwCurrentTemp
+					Integer32,
+				hwFanSpeedMode
+					INTEGER,
+				hwFanSpeed
+					Integer32,
+				hwFanTypeDescription
+					DisplayString
+			 }
+
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1.1
+		hwFanName OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Fan name "
+			::= { hwFanEntry 1 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1.2
+		hwFanControlMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				manual(1),
+				auto(2),
+				fixed(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The fan control modes of the fan frame:
+				manual(1)  －－The fan is always on, and the fan speed can be manually adjusted.
+				auto(2)     －－The fan is in the automatic mode, and can be automatically controlled depending on the temperature.
+				fixed(3)     －－The fan is in the fixed mode, and its speed is not allowed 
+				
+				  "
+			::= { hwFanEntry 2 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1.3
+		hwFanControlState OBJECT-TYPE
+			SYNTAX BITS
+				{
+				fan1(0),
+				fan2(1),
+				fan3(2),
+				fan4(3),
+				fan5(4),
+				fan6(5)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				fan1(0), indicates the 1st fan needs to be opened.
+				fan2(1), indicates the 2nd fan needs to be opened.
+				fan3(2), indicates the 3rd fan needs to be opened.
+				fan4(3), indicates the 4th fan needs to be opened.
+				fan5(4), indicates the 5th fan needs to be opened.
+				fan6(5), indicates the 6th fan needs to be opened.				
+				For ESC fan, all should be checked to turn on the fan, while all should not be checked to turn off the fan.
+
+				
+				"
+			::= { hwFanEntry 3 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1.4
+		hwESCFanTempAutoOn OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The fan temperature set, in unit of centigrade. It only functions for the fan monitoring board of ESC will take. This field is not applicable to the type of Fan monitoring board. Only when the fan control mode of the fan frame is hwFanControl =auto (3), will the temperature control mode take effect. When detecting the environment temperature higher than the set value, the fan will be on (or increase its rotation).
+				
+				"
+			::= { hwFanEntry 4 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1.5
+		hwESCFanTempAutoOff OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The fan temperature set, in unit of centigrade. It only functions for the fan monitoring board of ESC will take. This field is not applicable to the type of Fan monitoring board. Only when the fan control mode of the fan frame is hwFanControl =auto (3), will the temperature control mode take effect. When detecting the environment temperature lower than the set value, the fan will be off (decrease its rotation).
+				
+				"
+			::= { hwFanEntry 5 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1.6
+		hwFanRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				RowStatus standard operation
+				"
+			::= { hwFanEntry 6 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1.7
+		hwCurrentTemp OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The present temperature value, in unit of cent-centigrade
+				"
+			::= { hwFanEntry 7 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1.8
+		hwFanSpeedMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				continue(1),
+				discontinue(2),
+				percent(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The adjusting rotation mode of the fan: 
+				continue(1)    －－continuous control
+				discontinue(2) －－discrete control
+				percent(3)     －－duty ratio control
+				"
+			::= { hwFanEntry 8 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1.9
+		hwFanSpeed OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				When hwFanSpeedMode is the continue mode, 0 indicates the present 
+				wind speed +1, while 1 indicates the present wind speed -1.
+				 When hwFanSpeedMode is discontinue, 0 indicates fixed high speed, 
+				while 1 indicates fixed low speed. When hwFanSpeedMode is present,
+				 the value delivered by the main control is the percent value,
+				ranging from 50 to 100, used to initialize the rotation of fan for 
+				various device main controls.
+				"
+			::= { hwFanEntry 9 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.1.5.1.10
+		hwFanTypeDescription OBJECT-TYPE
+			SYNTAX DisplayString
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Fan Type Description
+				"
+			::= { hwFanEntry 10 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2
+		snmpTrapsDef OBJECT IDENTIFIER ::= { hwEnvironment 2 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0
+		emmsnmpTraps OBJECT IDENTIFIER ::= { snmpTrapsDef 0 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.1
+		envCommAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				The communication alarm of environment monitoring board, reporting 
+				the environment monitoring unit ID:
+				"
+			::= { emmsnmpTraps 1 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.2
+		envCommAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				The communication alarm resume of the environment monitoring,
+				 reporting the environment monitoring unit ID.
+				"
+			::= { emmsnmpTraps 2 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.3
+		anaFaultAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwAnaChannelIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				The alarm resume of the analog exception, reporting the 
+				environment monitoring unit ID.
+				
+				"
+			::= { emmsnmpTraps 3 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.4
+		anaFaultAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwAnaChannelIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				The alarm resume of the analog exception, reporting 
+				the environment monitoring unit ID.
+				
+				"
+			::= { emmsnmpTraps 4 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.5
+		anaTooHighAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwAnaChannelIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				The alarm of too high an analog, reporting the environment
+				 monitoring unit ID and the channel ID of the analog sensor.						
+				
+				"
+			::= { emmsnmpTraps 5 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.6
+		anaTooHighAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwAnaChannelIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				The alarm of too high analog resume, reporting the 
+				environment monitoring unit ID.
+				
+				"
+			::= { emmsnmpTraps 6 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.7
+		anaTooLowAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwAnaChannelIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				The alarm of too low an analog, reporting the environment
+				 monitoring unit ID and the channel ID of the analog sensor.
+							
+				
+				"
+			::= { emmsnmpTraps 7 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.8
+		anaTooLowAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwAnaChannelIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				The alarm of too low an analog, reporting the 
+				environment monitoring unit ID.
+				
+				"
+			::= { emmsnmpTraps 8 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.9
+		controlAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwControlOutIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				The control alarm, reporting the environment monitoring unit ID.
+				
+				"
+			::= { emmsnmpTraps 9 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.10
+		controlAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwControlOutIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				The control alarm, reporting the environment monitoring unit ID.
+				
+				"
+			::= { emmsnmpTraps 10 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.11
+		digtalMeasureAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwDigChannelIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				The digital measure alarm, reporting the environment 
+				monitoring unit ID and the channel ID of the digital sensor
+				
+				"
+			::= { emmsnmpTraps 11 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.12
+		digtaleasureAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex, hwDigChannelIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				The digital measure alarm resume, reporting the environment
+				 monitoring unit ID and the channel ID of the digital sensor.
+				
+				"
+			::= { emmsnmpTraps 12 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.13
+		fanExistsAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				Fan nonexistance alarm
+				
+				"
+			::= { emmsnmpTraps 13 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.14
+		fanExistsAlarmResume NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				Fan nonexistance alarm resume
+				
+				"
+			::= { emmsnmpTraps 14 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.2.0.15
+		fanRunStateAlarm NOTIFICATION-TYPE
+			OBJECTS { hwEnvEmuIndex }
+			STATUS current
+			DESCRIPTION 
+				" 
+				Fan running status alarm
+				
+				"
+			::= { emmsnmpTraps 15 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.3
+		envConformance OBJECT IDENTIFIER ::= { hwEnvironment 3 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.3.1
+		envCompliances OBJECT IDENTIFIER ::= { envConformance 1 }
+		
+		-- 1.3.6.1.4.1.2011.6.1.3.2
+		envGroups OBJECT IDENTIFIER ::= { envConformance 2 }
+		
+
+		
+	
+	END
+
+--
+-- HUAWEI-ENVIRONMENT-MIB.mib
+--

@@ -1,0 +1,1860 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description:  
+-- Reference:  
+-- Version: V3.25
+-- History:
+-- 李成员申请修改扩充hwVlanMIBEntry节点, 新增了hwVlanAttrib及对应的表操作支持
+-- hwMuxVlanPortConfTable中新增hwMuxVlanUplinkPort和
+-- hwMuxVlanDownlinkPort两个节点，用于支持UA5000的MUX VLAN配置。
+-- 新增 hwVlanAggregationTable VLAN聚合表
+-- 新增 hwSuperVlanPvcTable super VLAN ARP 广播 PVC 表
+-- 修改 hwVlanAttrib 枚举值
+-- hwVlanMngObject中新增hwStackingVlanOuterEthernetType叶子
+-- 新增 hwVlanParaTable VLAN属性表
+-- 修改 hwVlanName定义的字符类型
+-- ============================================================================
+
+	HUAWEI-VLAN-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			hwSlotIndex			
+				FROM HUAWEI-DEVICE-MIB			
+			huaweiMgmt			
+				FROM HUAWEI-MIB			
+			ifIndex			
+				FROM IF-MIB			
+			TimeTicks, IpAddress, Integer32, Unsigned32, OBJECT-TYPE, 
+			MODULE-IDENTITY, OBJECT-IDENTITY			
+				FROM SNMPv2-SMI			
+			TruthValue, RowStatus, TEXTUAL-CONVENTION			
+				FROM SNMPv2-TC;
+	
+	
+
+		hwVlan MODULE-IDENTITY 
+			LAST-UPDATED "200411270900Z"		
+			ORGANIZATION 
+				"Fix-Net Dep, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floor 5 ,Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,  P.R.C.
+				http://www.huawei.com
+				Zip:518129
+				"
+			DESCRIPTION 
+				"huawei vlan  MIb	"
+			::= { huaweiMgmt 6 }
+		
+	
+
+	
+		VlanIndex ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"A value used to index per-VLAN tables: values of 0 and
+				4095 are not permitted; if the value is between 1 and
+				4094 inclusive, it represents an IEEE 802.1Q VLAN-ID with
+				global scope within a given bridged domain (see VlanId
+				textual convention).  If the value is greater than 4095
+				then it represents a VLAN with scope local to the
+				particular agent, i.e. one without a global VLAN-ID
+				assigned to it. Such VLANs are outside the scope of
+				IEEE 802.1Q but it is convenient to be able to manage them
+				in the same way using this MIB."
+			SYNTAX Unsigned32
+			
+		SnmpAdminString ::= TEXTUAL-CONVENTION
+			DISPLAY-HINT 
+				"255a"
+			STATUS current
+			DESCRIPTION 
+				"An octet string containing administrative
+				information, preferably in human-readable form.
+				
+				To facilitate internationalization, this
+				information is represented using the ISO/IEC
+				IS 10646-1 character set, encoded as an octet
+				string using the UTF-8 transformation format
+				described in [RFC2279].
+				
+				Since additional code points are added by
+				amendments to the 10646 standard from time
+				to time, implementations must be prepared to
+				encounter any code point from 0x00000000 to
+				0x7fffffff.  Byte sequences that do not
+				correspond to the valid UTF-8 encoding of a
+				code point or are outside this range are
+				prohibited.
+				
+				The use of control codes should be avoided.
+				
+				When it is necessary to represent a newline,
+				the control code sequence CR LF should be used.
+				
+				The use of leading or trailing white space should
+				be avoided.
+				
+				For code points not directly supported by user
+				interface hardware or software, an alternative
+				means of entry and display, such as hexadecimal,
+				may be provided.
+				
+				For information encoded in 7-bit US-ASCII,
+				the UTF-8 encoding is identical to the
+				US-ASCII encoding.
+				
+				UTF-8 may require multiple bytes to represent a
+				single character / code point; thus the length
+				of this object in octets may be different from
+				the number of characters encoded.  Similarly,
+				size constraints refer to the number of encoded
+				octets, not the number of characters represented
+				by an encoding.
+				
+				Note that when this TC is used for an object that
+				is used or envisioned to be used as an index, then
+				a SIZE restriction MUST be specified so that the
+				number of sub-identifiers for any object instance
+				does not exceed the limit of 128, as defined by
+				[RFC1905].
+				
+				Note that the size of an SnmpAdminString object is
+				measured in octets, not characters.
+				"
+			SYNTAX OCTET STRING (SIZE (0..255))
+			
+		PortList ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"Each octet within this value specifies a set of eight
+				ports, with the first octet specifying ports 1 through
+				8, the second octet specifying ports 9 through 16, etc.
+				Within each octet, the most significant bit represents
+				the lowest numbered port, and the least significant bit
+				represents the highest numbered port.  Thus, each port
+				of the bridge is represented by a single bit within the
+				value of this object.  If that bit has a value of '1'
+				then that port is included in the set of ports; the port
+				is not included if its bit has a value of '0'."
+			SYNTAX OCTET STRING
+			
+	
+--
+-- Node definitions
+--
+	
+		hwVlanMngObject OBJECT-IDENTITY
+			STATUS current
+			DESCRIPTION 
+				"
+				Vlan Object
+				"
+			::= { hwVlan 1 }
+		
+		hwVlanMIBTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwVlanMIBEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				VLAN Table
+				"
+			::= { hwVlanMngObject 1 }
+		
+		hwVlanMIBEntry OBJECT-TYPE
+			SYNTAX HwVlanMIBEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"  
+				VLAN Entry
+				"
+			INDEX { hwVlanIndex }
+			::= { hwVlanMIBTable 1 }
+		
+		HwVlanMIBEntry ::=
+			SEQUENCE { 
+				hwVlanIndex
+					VlanIndex,
+				hwVlanName
+					OCTET STRING,
+				hwVlanPorts
+					PortList,
+				hwVlanType
+					INTEGER,
+				hwVlanMacFilter
+					TruthValue,
+				hwVlanMcastUnknownProtos
+					TruthValue,
+				hwExistInterface
+					TruthValue,
+				hwVlanInterfaceIndex
+					INTEGER,
+				hwVlanMacLearn
+					TruthValue,
+				hwVlanStatus
+					INTEGER,
+				hwVlanCreationTime
+					TimeTicks,
+				hwVlanPriority
+					INTEGER,
+				hwVlanRowStatus
+					RowStatus,
+			        hwVlanAttrib
+			                INTEGER,
+			        hwVlanSuperID
+			                INTEGER,
+			        hwVlanPolicyMulticast
+			                INTEGER
+			 }
+
+		hwVlanIndex OBJECT-TYPE
+			SYNTAX VlanIndex
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The VLAN index means Vlan Id
+				"
+			::= { hwVlanMIBEntry 1 }
+		
+		hwVlanName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..200))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				vlan Name
+				"
+			::= { hwVlanMIBEntry 2 }
+		
+		hwVlanPorts OBJECT-TYPE
+			SYNTAX PortList
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				This table indicates ports belong to the VLAN.If the VLAN includes this port,the corresponding bit is set to 1.
+				"
+			::= { hwVlanMIBEntry 3 }
+		
+		hwVlanType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				superVlan(1),
+				commonVlan(2),
+				subVlan(3),
+				primaryVlan(4),
+				secondaryVlan(5),
+				regionVlan(6),
+				smartVlan(7),
+				muxVlan(8),
+				multiVlan(9)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				vlan type 
+				"
+			::= { hwVlanMIBEntry 4 }
+		
+		hwVlanMacFilter OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				mac filter flag by mac 
+				"
+			::= { hwVlanMIBEntry 5 }
+		
+		hwVlanMcastUnknownProtos OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				multicast unknown protocals flag in the Vlan field  
+				"
+			::= { hwVlanMIBEntry 6 }
+		
+		hwExistInterface OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" 
+				virtual interface used by vlan
+				"
+			::= { hwVlanMIBEntry 7 }
+		
+		hwVlanInterfaceIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				vlan interface index
+				"
+			::= { hwVlanMIBEntry 8 }
+		
+		hwVlanMacLearn OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Mac learn Flag by mac(common vlan/Sub_vlan) 
+				"
+			::= { hwVlanMIBEntry 9 }
+		
+		hwVlanStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				other(1),
+				permanent(2),
+				dynamicGvrp(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" 
+				vlan status
+				"
+			::= { hwVlanMIBEntry 10 }
+		
+		hwVlanCreationTime OBJECT-TYPE
+			SYNTAX TimeTicks
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the time of creating vlan
+				"
+			::= { hwVlanMIBEntry 11 }
+		
+		hwVlanPriority OBJECT-TYPE
+			SYNTAX INTEGER (0..7)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				vlan priority 
+				"
+			DEFVAL { 0 }
+			::= { hwVlanMIBEntry 12 }
+		
+		hwVlanRowStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				    active(1),
+				    notInService(2),
+				    notReady(3),
+				    createAndGo(4),   
+				    createAndWait(5),
+				    destroy(6), 
+				    modify(7)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				row admin status
+				"
+			::= { hwVlanMIBEntry 13 }
+		
+		hwVlanAttrib OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				    common(1),
+				    qinq(2),
+				    stacking(3),
+				    subvlan(4)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				VLAN attribution. 
+				1: common, default property of VLAN;
+				2: QinQ, support tunnel function of VLAN.
+				3: stacking, support stacking function of VLAN. 
+				4: subvlan, sub vlan of vlan aggregate.
+                                "
+			DEFVAL { 1 }
+			::= { hwVlanMIBEntry 14 }						
+		
+		hwVlanSuperID OBJECT-TYPE
+			SYNTAX INTEGER (0..4093)
+  			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				index of the super VLAN. 
+				0 means this vlan doesn't belong to any super VLAN.
+				If the value isn't equal to 0,the value means the super VLAN which this VLAN belong to.
+				"
+			::= { hwVlanMIBEntry 15 }	
+					
+		hwVlanPolicyMulticast OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				    forward(1),
+				    discard(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Multicast packet forwarding policy based on VLAN. 
+				1: forward, multicast packet will be forwarded;
+				2: discard, upstream multicast packet and downstream unkown multicast packet will be discarded.
+                                "
+			DEFVAL { 1 }
+			::= { hwVlanMIBEntry 18 }
+
+		
+		hwifSVLANVlanListTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwifSVLANVlanListEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Super vlan list table,shows  the sub VLANs of the super VLAN.
+				"
+			::= { hwVlanMngObject 3 }
+		
+		hwifSVLANVlanListEntry OBJECT-TYPE
+			SYNTAX HwifSVLANVlanListEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Sub VLAN lists entry of Super Vlans
+			        "
+			INDEX { hwifSvlanVlanID }
+			::= { hwifSVLANVlanListTable 1 }
+		
+		HwifSVLANVlanListEntry ::=
+			SEQUENCE { 
+				hwifSvlanVlanID
+					VlanIndex,
+				hwifSvlanSubVlanlistLow
+					OCTET STRING,
+				hwifSvlanSubVlanlisHigh
+					OCTET STRING,
+				hwifSvlanOperStatus
+					RowStatus
+			 }
+
+		hwifSvlanVlanID OBJECT-TYPE
+			SYNTAX VlanIndex
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" super VLAN ID "
+			::= { hwifSVLANVlanListEntry 1 }
+		
+		hwifSvlanSubVlanlistLow OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..256))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The low oct string for sub vlan list of Primary Vlans, Each bit is one vlan. All bits  be  2048(256 * 8) vlan.   
+				Sub VLAN will be added to super VLAN.
+				"
+			::= { hwifSVLANVlanListEntry 2 }
+		
+		hwifSvlanSubVlanlisHigh OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..256))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The high oct string for sub vlan list of Primary Vlans, Each bit is one vlan. All bits  be  2048(256 * 8) vlan    
+				Sub VLAN will be added to super VLAN.
+				"
+			::= { hwifSVLANVlanListEntry 3 }
+		
+		hwifSvlanOperStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" 
+				vlan operational status
+				"
+			::= { hwifSVLANVlanListEntry 4 }
+		
+		hwifPVLANMappingTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwifPVLANMappingEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Secondary vlan lists of Primary Vlans
+				"
+			::= { hwVlanMngObject 4 }
+		
+		hwifPVLANMappingEntry OBJECT-TYPE
+			SYNTAX HwifPVLANMappingEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Secondary vlan lists of Primary Vlans
+				"
+			INDEX { hwifPvlanPrimaryVlanID }
+			::= { hwifPVLANMappingTable 1 }
+		
+		HwifPVLANMappingEntry ::=
+			SEQUENCE { 
+				hwifPvlanPrimaryVlanID
+					VlanIndex,
+				hwifPvlanSecondaryVlanlistLow
+					OCTET STRING,
+				hwifPvlanSecondaryVlanlistHigh
+					OCTET STRING,
+				hwifPvlanOperStatus
+					RowStatus
+			 }
+
+		hwifPvlanPrimaryVlanID OBJECT-TYPE
+			SYNTAX VlanIndex
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Primary VLAN ID "
+			::= { hwifPVLANMappingEntry 1 }
+		
+		hwifPvlanSecondaryVlanlistLow OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..256))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The second low oct string for sub vlan list of Primary Vlans, Each bit is one vlan. All bits  be  2048(256 * 8) vlan    
+				Secondary VLAN will be added to primary VLAN.
+				"
+			::= { hwifPVLANMappingEntry 2 }
+		
+		hwifPvlanSecondaryVlanlistHigh OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..256))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The second low oct string for sub vlan list of Primary Vlans, Each bit is one vlan. All bits  be  2048(256 * 8) vlan    
+				Secondary VLAN will be added to primary VLAN.
+				"
+			::= { hwifPVLANMappingEntry 3 }
+		
+		hwifPvlanOperStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				vlan operational status  
+				"
+			::= { hwifPVLANMappingEntry 4 }
+		
+		hwRegionVLanTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwRegionVLanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				region vlan Table
+				"
+			::= { hwVlanMngObject 5 }
+		
+		hwRegionVLanEntry OBJECT-TYPE
+			SYNTAX HwRegionVLanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				region vlan Table entry
+				"
+			INDEX { hwVlanIndex }
+			::= { hwRegionVLanTable 1 }
+		
+		HwRegionVLanEntry ::=
+			SEQUENCE { 
+				hwRegionVpi
+					INTEGER,
+				hwRegionVci
+					INTEGER,
+				hwRegionPVCRowStatus
+					RowStatus
+
+			 }
+
+		hwRegionVpi OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				atm vpi of the vlan 
+				"
+			::= { hwRegionVLanEntry 1 }
+		
+		hwRegionVci OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				atm vci of the vlan
+				"
+			::= { hwRegionVLanEntry 2 }
+		hwRegionPVCRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"			
+				4 is used for creating group pvc for region VLAN, 6 is used for deleting group pvc for region VLAN.					
+				"
+			::= { hwRegionVLanEntry 3 }
+			
+		
+		hwSmartVLanTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwSmartVLanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Smart vlan Table
+				"
+			::= { hwVlanMngObject 6 }
+		
+		hwSmartVLanEntry OBJECT-TYPE
+			SYNTAX HwSmartVLanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				Smart vlan Table entry
+				"
+			INDEX { hwSmartVlanID }
+			::= { hwSmartVLanTable 1 }
+		
+		HwSmartVLanEntry ::=
+			SEQUENCE { 
+				hwSmartVlanID
+					VlanIndex,
+				hwSmartVlanUplinkPort
+					PortList,
+				hwSmartVlanDownlinkPort
+					PortList,
+				hwSmartVlanRowStatus
+					RowStatus
+			 }
+
+		hwSmartVlanID OBJECT-TYPE
+			SYNTAX VlanIndex
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Smart VLAN ID "
+			::= { hwSmartVLanEntry 1 }
+		
+		hwSmartVlanUplinkPort OBJECT-TYPE
+			SYNTAX PortList
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				smart vlan uplink port ports
+				"
+			::= { hwSmartVLanEntry 2 }
+		
+		hwSmartVlanDownlinkPort OBJECT-TYPE
+			SYNTAX PortList
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				smart vlan downlink ports
+				"
+			::= { hwSmartVLanEntry 3 }
+		
+		hwSmartVlanRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" 
+				row admin status  
+				"
+			::= { hwSmartVLanEntry 4 }
+		
+		hwMuxVlanEnable OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Enable/disable MUX VLAN
+				"
+			::= { hwVlanMngObject 7 }
+		
+		hwMuxVlanPortConfTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwMuxVlanPortConfEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				MUX VLAN port configuration.
+				"
+			::= { hwVlanMngObject 8 }
+		
+		hwMuxVlanPortConfEntry OBJECT-TYPE
+			SYNTAX HwMuxVlanPortConfEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"An entry of hwMuxVlanPortConfTable."
+			INDEX { ifIndex }
+			::= { hwMuxVlanPortConfTable 1 }
+		
+		HwMuxVlanPortConfEntry ::=
+			SEQUENCE { 
+				hwMuxVlanPortType
+					INTEGER,
+				hwMuxVlanStartVlanId
+					Integer32,
+				hwMuxVlanGroupNum
+					Integer32,
+				hwMuxVlanPortConfRowStatus
+					RowStatus,
+			        hwMuxVlanUplinkPort
+			                Integer32,
+			        hwMuxVlanDownlinkPort
+			                Integer32
+			 }
+
+		hwMuxVlanPortType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				uplinkPort(1),
+				cascadingPort(2)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				Configure the uplink-port or cascading-port for the MUX VLAN.
+				"
+			DEFVAL { 2 }
+			::= { hwMuxVlanPortConfEntry 1 }
+		
+		hwMuxVlanStartVlanId OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				Start VLAN id.
+                                "
+			DEFVAL { 128 }
+			::= { hwMuxVlanPortConfEntry 2 }
+		
+		hwMuxVlanGroupNum OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				VLAN group number.
+                                "
+			::= { hwMuxVlanPortConfEntry 3 }
+		
+		hwMuxVlanPortConfRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				Row status.
+				"
+			::= { hwMuxVlanPortConfEntry 4 }
+			
+	        hwMuxVlanUplinkPort OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				Uplink port for mux vlan configuration.(for UA 5000)
+				"
+			::= { hwMuxVlanPortConfEntry 5 }
+			
+	        hwMuxVlanDownlinkPort OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				Downlink port for mux vlan configuration.
+				If the value is -1, use inner port instead(Only used for UA5000).
+				"
+			::= { hwMuxVlanPortConfEntry 6 }	    
+		
+		hwMuxVlanSlotConfTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwMuxVlanSlotConfEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				I/O board MUX VLAN configure table
+				"
+			::= { hwVlanMngObject 9 }
+		
+		hwMuxVlanSlotConfEntry OBJECT-TYPE
+			SYNTAX HwMuxVlanSlotConfEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				I/O board MUX VLAN configure table entry
+				"
+			INDEX { hwSlotIndex }
+			::= { hwMuxVlanSlotConfTable 1 }
+		
+		HwMuxVlanSlotConfEntry ::=
+			SEQUENCE { 
+				hwMuxVlanSlotStartVlanId
+					Integer32,
+				hwMuxVlanSlotRowStatus
+					RowStatus
+			 }
+
+		hwMuxVlanSlotStartVlanId OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				Start VLAN id for the I/O board.
+				"
+			::= { hwMuxVlanSlotConfEntry 1 }
+		
+		hwMuxVlanSlotRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"
+				Row status.
+				"
+			::= { hwMuxVlanSlotConfEntry 2 }
+			
+		hwMultiVLanTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwMultiVLanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Multi vlan Table
+				"
+			::= { hwVlanMngObject 10 }
+		
+		hwMultiVLanEntry OBJECT-TYPE
+			SYNTAX HwMultiVLanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				Multi vlan Table entry
+				"
+			INDEX { hwMultiVlanID }
+			::= { hwMultiVLanTable 1 }
+		
+		HwMultiVLanEntry ::=
+			SEQUENCE { 
+				hwMultiVlanID
+					VlanIndex,
+				hwMultiVlanUplinkPort
+					PortList,
+				hwMultiVlanDownlinkPort
+					PortList,
+				hwMultiVlanRowStatus
+					RowStatus
+			 }
+
+		hwMultiVlanID OBJECT-TYPE
+			SYNTAX VlanIndex
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Multi VLAN ID "
+			::= { hwMultiVLanEntry 1 }
+		
+		hwMultiVlanUplinkPort OBJECT-TYPE
+			SYNTAX PortList
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Multi vlan uplink port ports
+				"
+			::= { hwMultiVLanEntry 2 }
+		
+		hwMultiVlanDownlinkPort OBJECT-TYPE
+			SYNTAX PortList
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Multi vlan downlink ports
+				"
+			::= { hwMultiVLanEntry 3 }
+		
+		hwMultiVlanRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" 
+				row admin status  
+				"
+			::= { hwMultiVLanEntry 4 }
+
+    hwVlanAggregationTable    OBJECT-TYPE
+        SYNTAX      SEQUENCE OF HwVlanAggregationEntry
+        ACCESS      not-accessible
+        STATUS      mandatory
+        DESCRIPTION
+            "
+            VLAN aggregation table.
+            "
+    ::= { hwVlanMngObject 11 }
+
+    hwVlanAggregationEntry    OBJECT-TYPE
+        SYNTAX     HwVlanAggregationEntry
+        ACCESS     not-accessible
+        STATUS     mandatory
+        DESCRIPTION
+            "
+            RFC3069 introduces the concept of VLAN aggregation.
+            This list contains VLAN aggregation table entry for query and operation variables.
+            "
+        INDEX { hwVlanAggregationSuperVlanId, hwVlanAggregationSubVlanId}
+    ::= { hwVlanAggregationTable  1 }
+
+    HwVlanAggregationEntry    ::= SEQUENCE  {
+            hwVlanAggregationSuperVlanId           INTEGER,
+            hwVlanAggregationSubVlanId             INTEGER,
+            hwVlanAggregationSubVlanArpProxyStatus INTEGER,
+            hwVlanAggregationRowStatus        RowStatus
+            }
+
+    hwVlanAggregationSuperVlanId       OBJECT-TYPE
+        SYNTAX  INTEGER (2..4093)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "
+            The super-VLAN ID of the aggregation.
+            "
+    ::= { hwVlanAggregationEntry 1 }
+
+    hwVlanAggregationSubVlanId         OBJECT-TYPE
+        SYNTAX  INTEGER (2..4093)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "
+            The sub-VLAN ID of the aggregation.
+            "
+    ::= { hwVlanAggregationEntry 2 }
+    
+    hwVlanAggregationSubVlanArpProxyStatus OBJECT-TYPE
+        SYNTAX  INTEGER
+                {
+                    enabled(1),
+                    disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "
+            The enable status for arp agent status of this sub VLAN.
+             Its value range is enabled (1) and disabled (2). By default, it is disabled.
+            "
+    ::= { hwVlanAggregationEntry 3 }
+
+    hwVlanAggregationRowStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        ACCESS  read-create
+        STATUS  mandatory
+        DESCRIPTION
+            "
+            This leaf is used to add sub-VLANs to an aggregation,
+             or delete sub-VLANs from an aggregation.
+             An aggregation entry is identified by super-VLAN and sub-VLAN.
+             The super-VLAN of an aggregation is created by
+             hwVlanMIBTable.hwVlanMIBEntry.hwVlanType.
+             To add a sub-VLAN, index with super-VLAN ID and sub-VLAN ID,
+             and rowstatus set as createAndGo.
+             To delete a sub-VLAN, index with super-VLAN ID and sub-VLAN ID,
+             and rowstatus set as destroy.
+             To set arp proxy status of a sub-VLAN, index with super-VLAN 
+             ID and sub-VLAN ID, and rowstatus set as createAndGo
+            "
+    ::= { hwVlanAggregationEntry 4 }
+
+		
+--
+-- hwStackingVlanInnerEthernetType
+--		
+		hwStackingVlanInnerEthernetType OBJECT-TYPE
+			SYNTAX Unsigned32 (0..65535)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				set the inner ethernet type of the VLANs whose attribute is stacking.
+				Default value: 0x8100
+				"
+			::= { hwVlanMngObject 13 }		
+			
+--	
+--hwVlanUpCarTable			
+--
+		hwVlanUpCarTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwVlanUpCarEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				VLAN up direct car table
+				"
+			::= { hwVlanMngObject 15 }
+		
+		hwVlanUpCarEntry OBJECT-TYPE
+			SYNTAX HwVlanUpCarEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"  
+				VLAN up direct car Entry
+				"
+			INDEX { hwVlanUpCarId }
+			::= { hwVlanUpCarTable 1 }
+		
+		HwVlanUpCarEntry ::=
+			SEQUENCE { 
+				hwVlanUpCarId
+					INTEGER,
+			        hwVlanUpCarName
+					SnmpAdminString,
+				hwVlanUpCarBandValue
+					INTEGER,
+				hwVlanUpCarBurstValue
+					INTEGER,
+				hwVlanUpCarIsUsed
+				        INTEGER,
+				hwVlanUpCarRowStatus
+					RowStatus
+			 }
+
+		hwVlanUpCarId OBJECT-TYPE
+			SYNTAX INTEGER (1..4000)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Up direct Carid
+				"
+			::= { hwVlanUpCarEntry  1 }
+		
+                hwVlanUpCarName OBJECT-TYPE
+			SYNTAX SnmpAdminString (SIZE (0..32))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Up direct car name
+				"
+			::= { hwVlanUpCarEntry  2 }
+
+		hwVlanUpCarBandValue OBJECT-TYPE
+			SYNTAX INTEGER (64..1048512)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Car band value,The car value is multiple of 64kbps.Unit :kbps 
+				"
+			::= { hwVlanUpCarEntry  3 }
+		
+		hwVlanUpCarBurstValue OBJECT-TYPE
+			SYNTAX INTEGER (2..8192)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Car burst value ,Unit:kbps
+				"
+			::= { hwVlanUpCarEntry  4 }
+		
+		hwVlanUpCarIsUsed OBJECT-TYPE
+			SYNTAX INTEGER 
+			        {
+				used(1),
+				no-used(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" 
+				The carid is used.
+				"
+			::= { hwVlanUpCarEntry  5 }	
+			
+	        hwVlanUpCarRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" 
+				row admin status  
+				"
+			::= { hwVlanUpCarEntry  6 }
+--	
+--hwVlanDownCarTable			
+--
+		hwVlanDownCarTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwVlanDownCarEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				VLAN down direct car table
+				"
+			::= { hwVlanMngObject 16 }
+		
+		hwVlanDownCarEntry OBJECT-TYPE
+			SYNTAX HwVlanDownCarEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"  
+				VLAN down direct car Entry
+				"
+			INDEX { hwVlanDownCarId }
+			::= { hwVlanDownCarTable 1 }
+		
+		HwVlanDownCarEntry ::=
+			SEQUENCE { 
+				hwVlanDownCarId
+					INTEGER,
+				hwVlanDownCarName
+					SnmpAdminString,
+				hwVlanDownCarBandValue
+					INTEGER,
+				hwVlanDownCarBurstValue
+					INTEGER,
+			        hwVlanDownCarIsUsed
+			                INTEGER,
+				hwVlanDownCarRowStatus
+					RowStatus
+			 }
+
+		hwVlanDownCarId OBJECT-TYPE
+			SYNTAX INTEGER (1..4000)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Down direct carid
+				"
+			::= { hwVlanDownCarEntry  1 }
+			
+		hwVlanDownCarName OBJECT-TYPE
+			SYNTAX SnmpAdminString (SIZE (0..32))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Down direct car name
+				"
+			::= { hwVlanDownCarEntry  2 }
+			
+		hwVlanDownCarBandValue OBJECT-TYPE
+			SYNTAX INTEGER (64..1048512)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Car band value,The car value is multiple of 64kbps.Unit :kbps 
+				"
+			::= { hwVlanDownCarEntry  3 }
+		
+		hwVlanDownCarBurstValue OBJECT-TYPE
+			SYNTAX INTEGER (2..8192)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Car burst value ,Unit:kbps
+				"
+			::= { hwVlanDownCarEntry  4 }
+			
+		hwVlanDownCarIsUsed OBJECT-TYPE
+			SYNTAX INTEGER 
+			        {
+				used(1),
+				no-used(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" 
+				The carid is used.
+				"
+			::= { hwVlanDownCarEntry  5 }	
+			
+	        hwVlanDownCarRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" 
+				row admin status  
+				"
+			::= { hwVlanDownCarEntry  6 }			
+--	
+--hwVlanParaTable			
+--
+		hwVlanParaTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwVlanParaEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				VLAN para table,include hwVlanParaIndex, hwVlanMacLearnCpability, hwVlanMaxMacLearnNum,
+                                hwVlanUpdirectCar, hwVlanDownDirectCar 
+				"
+			::= { hwVlanMngObject 17 }
+		
+		hwVlanParaEntry OBJECT-TYPE
+			SYNTAX HwVlanParaEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"  
+				VLAN para Entry
+				"
+			INDEX { hwVlanParaIndex }
+			::= { hwVlanParaTable 1 }
+		
+		HwVlanParaEntry ::=
+			SEQUENCE { 
+				hwVlanParaIndex
+					VlanIndex,
+				hwVlanMacLearnCpability
+					INTEGER,
+				hwVlanMaxMacLearnNum
+					INTEGER,
+				hwVlanUpDirectCarID
+					INTEGER,
+				hwVlanDownDirectCarID
+					INTEGER
+			 }
+
+		hwVlanParaIndex OBJECT-TYPE
+			SYNTAX VlanIndex
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The VLAN index means Vlan Id
+				"
+			::= { hwVlanParaEntry 1 }
+		
+		hwVlanMacLearnCpability OBJECT-TYPE
+			SYNTAX INTEGER
+			         {
+			             enabled(1),
+                                     disabled(2)
+			         }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				mac learn or not flag by vlan 
+				"
+		        DEFVAL { 1 }
+			::= { hwVlanParaEntry 2 }
+		
+		hwVlanMaxMacLearnNum OBJECT-TYPE
+			SYNTAX INTEGER (0..255)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				vlan max mac learn number  
+				"
+			DEFVAL { 255 }
+			::= { hwVlanParaEntry 3 }
+		
+		hwVlanUpDirectCarID OBJECT-TYPE
+			SYNTAX INTEGER (1..4000)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				vlan up direct carID
+				"
+		        DEFVAL { 1 }
+			::= { hwVlanParaEntry 4 }
+		
+		hwVlanDownDirectCarID OBJECT-TYPE
+			SYNTAX INTEGER (1..4000)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				vlan down direct carID 
+                                "
+			DEFVAL { 1 }
+			::= { hwVlanParaEntry 5 }								
+
+--
+-- hwStackingVlanOuterEthernetType
+--		
+		hwStackingVlanOuterEthernetType OBJECT-TYPE
+			SYNTAX Unsigned32 (1536..65535)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				set the Outer vlan TPID of the VLANs whose attribute is stacking.
+				Default value: 0x8100
+				"
+			::= { hwVlanMngObject 65000 }		
+					
+--
+-- hwVlanLocalSwitch
+--		
+		hwVlanLocalSwitch OBJECT-TYPE
+                        SYNTAX INTEGER
+           	        {
+                        enable(1),
+                        disable(2)
+                        }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Set the global Local VLAN switch."
+			DEFVAL { 2 }
+			::= { hwVlanMngObject 65003 }
+
+--
+-- hwLocalVlanTable
+--	
+		hwLocalVlanTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF hwLocalVlanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Local VLAN table."
+			::= { hwVlanMngObject 65004 }
+		
+		hwLocalVlanEntry OBJECT-TYPE
+			SYNTAX hwLocalVlanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Local VLAN entry."
+			INDEX { hwVlanIndex }
+			::= { hwLocalVlanTable 1 }
+		
+		hwLocalVlanEntry ::=
+			SEQUENCE { 
+				hwLocalVlan
+			        INTEGER
+			 }
+
+		hwLocalVlan OBJECT-TYPE
+                        SYNTAX INTEGER
+           	        {
+                        enable(1),
+                        disable(2)
+                        }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Set Local VLAN."
+			DEFVAL { 2 }
+			::= { hwLocalVlanEntry 1 }
+
+--
+-- hwVlanInterfaceTable
+--		
+				
+	   hwVlanInterfaceTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwVlanInterfaceEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"vlan interface table"
+			::= { hwVlanMngObject 2 }
+		
+		hwVlanInterfaceEntry OBJECT-TYPE
+			SYNTAX HwVlanInterfaceEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"vlan interface entry"
+			INDEX { hwVlanInterfaceID }
+			::= { hwVlanInterfaceTable 1 }
+		
+		HwVlanInterfaceEntry ::=
+			SEQUENCE { 
+				hwVlanInterfaceID
+					INTEGER,
+				hwVlanID
+					INTEGER,
+				hwVlanIpAddress
+					IpAddress,
+				hwVlanIpAddressMask
+					IpAddress,
+				hwVlanInterfaceAdminStatus
+					INTEGER,
+				hwVlanInterfaceFrameType
+					INTEGER,
+				hwInterfaceRowStatus
+					RowStatus
+			 }
+
+		hwVlanInterfaceID OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"vlan interface id"
+			::= { hwVlanInterfaceEntry 1 }
+		
+		hwVlanID OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"vlan id
+				
+				 VLANID "
+			::= { hwVlanInterfaceEntry 2 }
+		
+		hwVlanIpAddress OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"vlan ip address"
+			::= { hwVlanInterfaceEntry 3 }
+		
+		hwVlanIpAddressMask OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"vlan ip mask address"
+			::= { hwVlanInterfaceEntry 4 }
+		
+		hwVlanInterfaceAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				up(1),
+				down(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"vlan interface admin status"
+			::= { hwVlanInterfaceEntry 5 }
+		
+		hwVlanInterfaceFrameType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				ethernetii(1),
+				ethernetsnap(2),
+				ethernet8022(3),
+				ethernet8023(4)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"vlan interface frame type"
+			::= { hwVlanInterfaceEntry 6 }
+		
+		hwInterfaceRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" row admin status"
+			::= { hwVlanInterfaceEntry 7 }
+
+--
+-- hwVlanInterfaceSubIpAddrTable
+--		
+		hwVlanInterfaceSubIpAddrTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwVlanInterfaceSubIpAddrEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" vlan interfacesubipaddr table"
+			::= { hwVlanMngObject 22 }
+		
+		hwVlanInterfaceSubIpAddrEntry OBJECT-TYPE
+			SYNTAX HwVlanInterfaceSubIpAddrEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"vlan interfacesubipaddr entry"
+			INDEX { hwVlanInterfaceIDWithSub, hwVlanSubIpAddress, hwVlanSubIpAddressMask}
+			::= { hwVlanInterfaceSubIpAddrTable 1 }
+		
+		HwVlanInterfaceSubIpAddrEntry ::=
+			SEQUENCE { 
+				hwVlanInterfaceIDWithSub
+				  	  INTEGER,
+				hwVlanSubIpAddress
+					IpAddress,
+				hwVlanSubIpAddressMask
+					IpAddress,
+				hwInterfaceSubIpAddrRowStatus
+					RowStatus
+			 }
+		
+		hwVlanInterfaceIDWithSub OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"vlan interface id"
+			::= { hwVlanInterfaceSubIpAddrEntry 1 }		
+		
+		hwVlanSubIpAddress OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"vlan sub ip address"
+			::= { hwVlanInterfaceSubIpAddrEntry 2 }
+		
+		hwVlanSubIpAddressMask OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"vlan sub ip mask address"
+			::= { hwVlanInterfaceSubIpAddrEntry 3 }
+	
+		hwInterfaceSubIpAddrRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" row admin status"
+			::= { hwVlanInterfaceSubIpAddrEntry 4 }
+		
+--
+-- hwPacketTunnelTable
+--			
+	    hwPacketTunnelTable    OBJECT-TYPE
+            SYNTAX          SEQUENCE OF HwPacketTunnelEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+               "huawei IPDSLAM packet tunnel mib"
+            ::= { hwVlanMngObject 21 }
+    
+        hwPacketTunnelEntry    OBJECT-TYPE
+            SYNTAX          HwPacketTunnelEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+               "huawei IPDSLAM packet tunnel mib"
+            INDEX   { 
+                  hwVlanIndex
+                    }
+            ::= { hwPacketTunnelTable 1 }
+    
+        HwPacketTunnelEntry ::=
+    	    SEQUENCE {
+    	         hwPacketTunnelRip
+                 INTEGER
+    	         }
+    	         
+        hwPacketTunnelRip        OBJECT-TYPE
+            SYNTAX      INTEGER
+           	           {
+                           enable(1),
+                           disable(2)
+                       }           
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "huawei IPDSLAM rip tunnel mib"
+            ::= { hwPacketTunnelEntry 1}		
+--
+-- hwBpduTunnelTable
+--	
+        hwBpduTunnelTable    OBJECT-TYPE
+            SYNTAX          SEQUENCE OF HwBpduTunnelEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+                "huawei IPDSLAM bpdu tunnel mib"
+            ::= { hwVlanMngObject 18 }
+    
+        hwBpduTunnelEntry    OBJECT-TYPE
+            SYNTAX          HwBpduTunnelEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+                "huawei IPDSLAM bpdu tunnel mib"
+            INDEX   { 
+                   hwVlanIndex
+                }      
+            
+            ::= { hwBpduTunnelTable 1 }
+    
+        HwBpduTunnelEntry ::=
+    	    SEQUENCE {
+    	        hwBpduTunnel
+                     INTEGER
+    	             }
+    	         
+        hwBpduTunnel        OBJECT-TYPE
+            SYNTAX      INTEGER
+           	           {
+                           enable(1),
+                           disable(2)
+                       }           
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "huawei IPDSLAM bpdu tunnel mib"
+            ::= { hwBpduTunnelEntry 1}		
+
+--
+-- hwVOIPAddressTable
+--	
+  		
+ hwVOIPAddressTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF HwVOIPAddressProfileEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"voip multiply IP table"
+		::= { hwVlanMngObject 19 }
+                                                                          
+   hwVOIPAddressProfileEntry OBJECT-TYPE
+		SYNTAX HwVOIPAddressProfileEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"IP address of VAG"
+		INDEX { hwVOIPAddressIndex }
+		::= { hwVOIPAddressTable 1 }
+		
+	HwVOIPAddressProfileEntry ::=
+		SEQUENCE { 
+			hwVOIPAddressIndex
+				INTEGER,
+			hwVOIPIPType
+		    INTEGER,
+		  hwVOIPIPAddress
+				IpAddress,   
+		  hwVOIPSubMask
+				IpAddress,    
+		  hwVOIPGateway
+				IpAddress,    
+		  hwVOIPMACAddress
+				OCTET STRING,
+	    hwVOIPVlanTagIdentifier
+	 			INTEGER, 						
+	    hwVOIPQosIPStrategy
+		    INTEGER,
+	    hwVOIPAddressRowStatus
+				RowStatus	    
+		}
+		 
+	hwVOIPAddressIndex OBJECT-TYPE
+		SYNTAX INTEGER (0..15)
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"the index of media :0-7 the index of signaling :8-15 "
+			::= { hwVOIPAddressProfileEntry 1 }   
+	
+	hwVOIPIPType OBJECT-TYPE
+		SYNTAX INTEGER
+				{
+				media(1),
+				signaling(2)
+				}
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"IP type:
+			 1:media
+			 2:signaling"
+		::= { hwVOIPAddressProfileEntry 2 } 
+		
+	hwVOIPIPAddress OBJECT-TYPE
+		SYNTAX IpAddress
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"IP address"
+		::= { hwVOIPAddressProfileEntry 3 }   
+       
+	
+	hwVOIPSubMask OBJECT-TYPE
+		SYNTAX IpAddress
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"subMask of VAG "
+		::= { hwVOIPAddressProfileEntry 4 }   
+		                         
+	hwVOIPGateway OBJECT-TYPE
+		SYNTAX IpAddress
+		MAX-ACCESS  read-create
+		STATUS current
+		DESCRIPTION   
+			"gateway of VAG"
+		::= { hwVOIPAddressProfileEntry 5 }   
+		                             
+    hwVOIPMACAddress OBJECT-TYPE
+		SYNTAX OCTET STRING (SIZE(17..17))
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"MAC address"
+		::= { hwVOIPAddressProfileEntry  6 }      
+
+   hwVOIPVlanTagIdentifier OBJECT-TYPE
+		SYNTAX INTEGER
+				(0..4095)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"vlanid of VAG"
+		::= { hwVOIPAddressProfileEntry 7 }   		
+		                                                    
+   hwVOIPQosIPStrategy OBJECT-TYPE
+		SYNTAX INTEGER
+				{
+				tos(1),
+				dscp(2)
+				}
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION
+			"qos ip strategy
+			 1:tos
+			 2:dscp"
+		::= { hwVOIPAddressProfileEntry 8 }    
+		
+	hwVOIPAddressRowStatus OBJECT-TYPE
+		SYNTAX	RowStatus
+    		MAX-ACCESS	read-create
+    		STATUS	current
+    		DESCRIPTION "The status of this conceptual row.
+                	    Until instances of all corresponding columns are appropriately configured, 
+                	    the value of the corresponding instance of the hwAddressRowStatus column is 
+                	    'notReady'." 
+                 ::= { hwVOIPAddressProfileEntry 9 } 
+                 
+ --
+-- hwVOIPQosTable
+--	
+  hwVOIPQosTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF HwVOIPQosPvmProfileEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Qos IP tos and vlan priority table"
+		::= { hwVlanMngObject 20 }  
+		
+	hwVOIPQosProfileEntry OBJECT-TYPE
+		SYNTAX HwVOIPQosPvmProfileEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION
+			"Qos IP tos and vlan priority "
+		INDEX { hwVOIPAddressIndex}
+		::= { hwVOIPQosTable 1 }
+		
+	HwVOIPQosPvmProfileEntry ::=
+		SEQUENCE { 
+			hwVOIPQosIPTosValue
+				INTEGER,   
+			hwVOIPQosIPDscpValue         
+				INTEGER,    
+			hwVOIPQosVlanPriority     
+				INTEGER
+		}
+		
+	hwVOIPQosIPTosValue OBJECT-TYPE
+		SYNTAX INTEGER (0..255)
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"Qos value of tos"
+	    	::= { hwVOIPQosProfileEntry 1 } 
+				
+	hwVOIPQosIPDscpValue OBJECT-TYPE
+		SYNTAX INTEGER (0..255)
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"Qos value of dscp"
+			::= { hwVOIPQosProfileEntry 2 } 
+		
+	hwVOIPQosVlanPriority  OBJECT-TYPE
+		SYNTAX INTEGER (0..7)
+		MAX-ACCESS read-create
+		STATUS current
+		DESCRIPTION
+			"Qos vlan priority"
+			::= { hwVOIPQosProfileEntry 3 }  	
+					
+			
+	hwSmartVlanIsolateSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Enable/Disable Smart vlan isolate-config.
+				Its value range is enabled (1) and disabled (2). By default, it is enabled.
+				"
+			DEFVAL { 1 }
+			::= { hwVlanMngObject 26 }		
+	END
+

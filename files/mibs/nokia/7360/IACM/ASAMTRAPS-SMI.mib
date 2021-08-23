@@ -1,0 +1,1045 @@
+ASAMTRAPS-SMI DEFINITIONS ::= BEGIN
+
+--  ==========================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied, 
+--  with respect to the sufficiency, accuracy, or utility of any information 
+--  or opinion contained herein. Alcatel-Lucent expressly advises that any 
+--  use of for any purpose or reliance upon this technical reference is at 
+--  the risk of the user and that Alcatel-Lucent shall not be liable for 
+--  any damage or injury incurred by any person arising out of the sufficiency, 
+--  accuracy, or utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these 
+--  products and to withdraw any or all of them at any future time.
+--  Copyright (C) 2009, Alcatel-Lucent. All Rights Reserved.
+--  ==========================================================================
+--
+-- MODULE-IDENTITY
+-- LAST-UPDATED "20161118000Z"   -* Nov. 18, 2016
+-- ORGANIZATION "Alcatel-Lucent"
+-- ORIGINATOR "Marc Van Vlimmeren"
+-- CONTACT-INFO
+--
+--         Email:  asam.mibsupport@alcatel-lucent.com
+--
+-- DESCRIPTION
+--    "This module defines a the enterprise specific traps,
+--     used by the ASAM."
+--
+-- ===========================================================================
+-- ===========================================================================
+--
+-- REVISION     "20161118000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V5.6
+--      Editor: SUN Hong A
+--      Changes:
+--      *  ALU02290912: MIB Readiness for ALU02087988 : POL: dynamic VLAN assignment"
+--
+-- REVISION     "20161018000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V5.6
+--      Editor: Eric J.Hu
+--      Changes:
+--      *  ALU02203627: 7363 MX/ SX support OID (1.3.6.1.4.1.637.0.25) to show detail alarm information"
+--
+-- REVISION     "20160527000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V5.5 
+--      Editor: Wang Qian H
+--      Changes:
+--      *  ALU01750885: Add an availableBandwidthChange trap to notify the operator
+--         if bandwidth of a PON or Channel Pair has changed."
+--
+-- REVISION     "20160420000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V5.5 
+--      Editor: Balagopal Velusamy
+--      Changes:
+--      *  ALU02074765: Add registerNode trap to notify to the operator 
+--         on successful completion of auto provision of node." 
+--
+-- REVISION     "20160208000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V5.4.01 
+--      Editor: Karel Meijfroidt
+--      Changes:
+--      *  ALU02060271: Add an ontActChanPairChange trap to notify the operator
+--         if there is at least one NGPON2 ONT that changed its actual Channel
+--         Pair."
+--
+-- REVISION     "20151208000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V5.4
+--      Editor: LU Hao D
+--      Changes:
+--         Add licenceCounter for VULA to licenseKeyChangeOccurred
+--         ALU02023389, FELT-B : NNI - Inc. 1
+
+-- REVISION     "20150618000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V5.3 
+--      Editor: Wu Yue E
+--      Changes:
+--      *  ALU01986526&ALU02057352: Add PTP dying gasp trap
+--         for 7367 SX-16F and 7363-MX."
+--
+-- REVISION     "200130424000Z"  -* April 22, 2013
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.6 
+--      Editor:Senthil Kumar Palani
+--      Changes:
+--      *  Modify description of '802.1Q CCI enabled MEPS'
+--         to 'Ethernet OAM Advanced Monitoring Functions'
+--
+-- REVISION     "200121002000Z"  -* October 02, 2012
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.4.0.1.2 
+--              Editor: Sridevi Dwaraganath
+--              Changes: 
+--               *ALU01823984: Replaced the variables used in the alrmChgOccured 
+--                 trap by new scalar MIB objects from the Alarm MIB.
+--
+-- REVISION     "201111200000Z"				    
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.4.0.0.1
+--              Editor: Tom Batsele
+--              Changes:
+--              * Add 1 license counter for MPLS
+--
+-- REVISION     "201111090000Z"				    
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.4.0.0.0
+--              Editor: Rommy Volders
+--              Changes:
+--              * Add 1 license counter for 802.1Q CCI enabled MEPS
+--
+-- REVISION     "201007090000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.5.1
+--              Editor: Lieve Dierick
+--              Changes:
+--              * Add 1 license counter to the concerned trap: Lawful Intercept"
+--
+-- REVISION     "201006210000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.0.4
+--              Editor: Bart Libert
+--              Changes:
+--              * asamNumOfNTRReferenceChanges is imported from NTR-MIB now
+--
+-- REVISION     "201005190000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.0.3
+--              Editor: Lieve Dierick
+--              Changes:
+--              * Add 1 license counter to the concerned trap: Gxr"
+--
+-- REVISION     "201005310000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.0.3
+--              Editor: Gang Zhu
+--              Changes:
+--              * Add 1 license counter to the concerned trap:IPv6 security"
+--
+-- REVISION     "201006110000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.0.3
+--              Editor: Zhang xiaofeng
+--              Changes:
+--              * Add MSTP related Trap definiation."
+
+-- REVISION     "201002110000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.0.2
+--              Editor: Miranda De Bock
+--              Changes:
+--              * Add 1 license counter to the concerned trap:10 Gbps and 20 Gbps."
+--
+-- REVISION     "201001280000Z"				    
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.0.1
+--              Editor: Karel Meijfroidt
+--              Changes:
+--              * Add 1 license counter to the concerned trap:ARQ."
+--
+--  REVISION "201003290000Z"
+--  DESCRIPTION
+--      "Version: 3EC36485EDAA_V4.2.0.0.0
+--       Editor: Jean Samoise  
+--       Changes :
+--            AALU00117331 : 
+--            Generate trap at configuration change of the PortMapping data.
+--
+-- REVISION     "200912020000Z"
+-- DESCRIPTION  "Version: 3EC15362EAAA_V4.2.0.0.0
+--              Editor: Karel Meijfroidt
+--              Changes:                        
+--              * Add 1 license counter to the concerned trap:SRA on VDSL2."
+--
+-- REVISION     "201010230000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.0.10.0.4
+--              Editor: Palaniappan Ramasamy
+--              *  ALU00123148: 
+--                 Add loginOccured trap
+--                 Add logoutOccured trap
+--                 Add asamTrapManagerChangeOccured trap.
+--              "
+--
+-- REVISION     "201003290000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.1.0.0.3
+--              Editor: Karel Meijfroidt
+--              Changes:
+--              * Add object type definitions for all Alcatel enterprise traps."
+--
+--
+-- REVISION     "200910020000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.0.10.0.0
+--              Editor: Karel Meijfroidt
+--              * BDFam52637:  Add radiusServerFailure trap."
+--
+-- REVISION     "200909280000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.1.0.0.2
+--              Editor: Peter Van Mele
+--              Changes:
+--              * Add 1 license counter1 to the concerned trap:SHDSL CTC."
+--              
+--
+-- REVISION     "200909625180000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.1.0.0.1
+--              Editor: Peter Van Mele
+--              * ANTmt72355: Add 1 license counter1 to the concerned trap:
+--                   NT load sharing + redundancy "
+--
+-- REVISION     "200907150000Z"
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.1.0.0.0
+--              Editor: Patrick Swinkels
+--              Changes:
+--              * Add asamNumOfNTRReferenceChanges to changeOccured (ANTmt52520)."
+--
+-- REVISION     "200906020000Z"  -* June 2, 2009
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.0.0.1.0
+--              Editor: Karel Meijfroidt
+--              * ANTmt55877:  Rebased R3.7.10 version of the MIB to R4.0.02."
+--
+-- REVISION     "200904070000Z"  -* April 7, 2009
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.0.0.1.0
+--              Editor: Karel Meijfroidt
+--              * ANTmt51200:  Merged R3.7.10 version of the MIB to R4.0.02.
+--                This includes the changes done by Lucien Marcotte for SYNCE
+--                feature."
+--
+-- REVISION     "200806300000Z"  -* Jun. 30, 2008
+-- DESCRIPTION  "Version: 3EC37309EAAA_V4.0.0.0.0
+--              Editor: He Chunye
+--              * ANTms60111: R4.0v SIP Integrated Line Test
+--              Changes:
+--              * Re-use trap id 10 for lineTestReport trap"
+--
+-- REVISION     "200803130000Z"  -* March 13, 2008
+-- DESCRIPTION  "Version: 3EC37309EAAA_V3.7.0.0.0
+--              Editor: Zheng Bozhi
+--              * ANTms51673: Annex-J/M on IFX 72p MultiADSL ISDN"
+--
+-- REVISION     "200710300000Z"  -* Oct. 30, 2007
+-- DESCRIPTION  "Version: 3EC37309EAAA_V3.5.0.0.2
+--              Editor: Wang Jianglin
+--              * New trap type is added: dhcpSessionPreempted
+--              * This trap is introduced by ANTms55180.
+--                When a dynamic IP address is preempted for 
+--                ip-aware bridege and enhanced-iBridge forwarding modes, 
+--                a trap should be generated and sent out."
+--
+-- REVISION     "200705310000Z"  -* May 31, 2007
+-- DESCRIPTION  "Version: 3EC37309EAAA_V3.5.0.0.1
+--              Editor: Jean-Claude Del Col
+--              * LicenseKeyChangeOccured trap : 
+--              1. ADSL1/2 PSD Shaping license Counter added."
+--
+-- REVISION     "200705030000Z"  -* May 03, 2007
+-- DESCRIPTION  "Version: 3EC37309EAAA_V3.5.0.0.0
+--              Editor: Jean-Claude Del Col
+--              * LicenseKeyChangeOccured trap : 
+--              1. XDSL Per Line Overrule license Counter added.
+--              2. Impulse Noise sensor license Counter added."
+--
+-- REVISION     "200703120000Z"  -* March 12, 2007
+-- DESCRIPTION  "Version: 3EC37309EAAA_V3.4.0.0.2
+--              Editor: Laurent Deru
+--              * LicenseKeyChangeOccured trap : UPBO Policing license Counter
+--                added."
+--
+-- REVISION     "200702020000Z"  
+-- DESCRIPTION  "Version: 3EC37309EAAA_V3.4.0.0.1
+--              Editor: He Yang
+--              Changes:
+--              * Added eqptRestartNumberOfChanges for Changeoccured trap"
+--
+-- REVISION     "200605300000Z"  -* May 30, 2006
+-- DESCRIPTION  "Version: 3EC37309EAAA_V3.1.0.0.2
+--              Editor: Marc Van Vlimmeren / Hendrik Van Hove
+--              Changes:
+--              * Added asamCraftLoginStatus from R2.5"
+--
+-- REVISION     "200601230000Z"  -* January 23, 2006
+-- DESCRIPTION  "Version: 3FE21961EAAA_V2.4.0.6
+--              Editor: Bart Bogaert
+--              Changes:
+--              * Implemented BDFhw70643: strict syntax checks (smilint):
+--                Moved trap definition from RFC-1215 to this module."
+--
+-- REVISION     "200509140000Z"  -* September 14, 2005
+-- DESCRIPTION  "Version: 3EC37309EAAA_V2.3.0.0.1
+--              Editor: Yuan Chen
+--              Changes:
+--              * New trap type added: topoChanged.
+--              * this trap type is introduced by Cluster Management feature,
+--                when the topology information is changed, a topoChanged trap
+--                is sent out.
+--                RCR No. BDFhw24182"
+--
+-- REVISION     "200507120000Z"  -* July 12, 2005
+-- DESCRIPTION  "Version: 3EC37309EAAA_V2.4.0.0.0
+--              Editor: Li Jing
+--              Changes:
+--              * LicenseKeyChangeOccurred trap : license counter added to 13."
+--
+-- REVISION     "200412030000Z"  -* December 3, 2004
+-- DESCRIPTION  "Version: 3EC37309EAAA_V1.0.0.0.0
+--              Editor: Jun B Zhang
+--              Changes:
+--              * LicenseKeyChangeOccured trap : license Counter added from 5 to 10."
+--
+-- REVISION     "200409080000Z"  -* September 8, 2004
+-- DESCRIPTION  "Version: 3EC37309AAAA_E5.1.0.2
+--              Editor: Agnes Lauryssens
+--              Changes:
+--              * LicenseKeyChangeOccured trap : license Counter added."
+--
+-- REVISION     "200403190000Z"  -* March 19, 2004
+-- DESCRIPTION  "Version: 3EC37309AAAA_E5.1.0.1
+--              Editor: Marc Van Vlimmeren
+--              Changes:
+--              * New trap type added: LicenseKeyChangeOccured.
+--              * obsolete traps moved to the end of the module."
+--
+-- REVISION     "200311250000Z"  -* Novemver 25, 2003
+-- DESCRIPTION  "Version: 3EC37309AAAA_E5.1.0.0
+--              Editor: Marc Van Vlimmeren
+--              Changes:
+--              * variable asamRedundancyNumberOfChanges added to
+--                the changeOccured trap.
+--              MODULE-IDENTITY construct updated according to new template."
+--
+-- REVISION     "200303110000Z"  -* March 11, 2003
+-- DESCRIPTION  "Version: 3EC37309AAAA_E5.0.1.1
+--              Editor: Marc Van Vlimmeren
+--              Changes: variable asamUasNumDbChanges removed from
+--              the changeOccured trap. See CR BDFaa51344"
+--
+-- REVISION     "200211180000Z"  -* November 18, 2002
+-- DESCRIPTION  "Version: 3EC37309AAAA_E5.0.1.0
+--              Editor: Marc Van Vlimmeren
+--              Changes: variable asamUasNumDbChanges added to
+--              the changeOccured trap."
+--
+-- REVISION     "200211180000Z"  -* November 18, 2002
+-- DESCRIPTION  "Version: 3EC37309AAAA_E5.0.0.1
+--              Editor: Marc Van Vlimmeren
+--              Changes: variable asamRedundancyNumberOfChanges removed from
+--              the changeOccured trap."
+--
+-- REVISION     "200112270000Z"  -* December 27, 2001
+-- DESCRIPTION  "Version: 3EC37309AAAA_E5.0.0.0
+--              Editor: Marc Van Vlimmeren
+--              Changes: NDA statement added.
+--               new trap type added (initStarted).
+--               variable asamHwNumberOfChanges in changeOccured trap changed
+--               by eqptHwNumberOfChanges.
+--               variable eqptProtNumberOfChanges added to changeOccured trap.
+--               notes added to indicate that sessionStarted, sessionEnded and
+--               sessionRequest traps are obsolete."
+--
+-- ===========================================================================
+
+
+IMPORTS
+       alcatel
+         FROM SYSTEM-MIB
+       asamCraftLoginStatus
+         FROM ASAM-SYSTEM-MIB
+       asamNumOfNTRReferenceChanges
+         FROM NTR-MIB
+       eqptHwNumberOfChanges,
+       eqptProtNumberOfChanges,
+       eqptRestartNumberOfChanges
+         FROM ASAM-EQUIP-MIB
+       asamPhyItfNumberChangeOccurred
+         FROM ITF-MIB-EXT
+       AsamAlarmStateType,
+       asamAlarmTrapNumberOfAlarmChanges,
+       asamNumberOfIndeterminateChanges,
+       asamNumberOfWarningChanges,
+       asamNumberOfMinorChanges,
+       asamNumberOfMajorChanges,
+       asamNumberOfCriticalChanges,
+       asamAlarmReportId,
+       asamAlarmReportAlarmState,
+       asamAlarmReportSeverity,
+       asamAlarmReportIndex1,
+       asamAlarmReportIndex2,
+       asamAlarmReportTime,
+       asamAlarmReportAddInfo
+         FROM ASAM-ALARM-MIB
+       asamNumberOfSets
+         FROM TRANSACTION-MIB
+--     asamRedundancyNumberOfChanges
+--       FROM ASAM-REDUNDANCY-MIB
+       licenseCounter
+         FROM ASAM-SYSTEM-MIB
+       ifIndex
+         FROM ITF-MIB 
+         ipAdEntAddr,
+       snmp, egpNeighAddr, DisplayString
+         FROM RFC1213-MIB
+       ltTrapSessionId,
+       ltTrapCmd,
+       ltTrapLineId,
+       ltTrapStatus,
+       ltTrapLineHookStatus
+         FROM MEGACO-MIB
+       TRAP-TYPE
+         FROM RFC-1215
+       OBJECT-TYPE
+         FROM RFC-1212
+       dhcpTrapPreSessionForwarderType, 
+       dhcpTrapPreSessionForwarderId,
+       dhcpTrapPreSessionIPAddress,
+       dhcpTrapPreSessionIfIndex,
+       dhcpTrapPreSessionReason
+         FROM DHCP-RELAY-MIB 
+       eqptPortMappingGlobalChangeCounter
+         FROM ASAM-EQUIP-MIB
+         radAuthServerAddress
+         FROM RADIUS-CLIENT-MIB
+       mstBrgAddress,
+       mstGenTrapType,
+       mstErrTrapType,
+       mstMstiBridgeRegionalRoot,
+       mstMstiBridgeInstanceIndex,
+       mstPortTrapIndex,
+       mstForceProtocolVersion,
+       mstPortMigrationType,
+       mstPktErrType,
+       mstPktErrVal,
+       mstMstiConfigIdSel,
+       mstMstiRegionName,
+       mstMstiRegionVersion,
+       mstMstiConfigDigest,
+       mstInstanceIndex
+         FROM MST-MIB
+       asamTrapManagerPort,
+       asamTrapManagerAlarmSeverity
+         FROM TRAP-MIB
+       ng2MobilityOntActChanPairChangeLogLastIndex
+         FROM NG-PON2-MIB
+       eqptAsamId
+         FROM ASAM-EQUIP-MIB
+
+       availableBandwidthChangeLogLastIndex
+         FROM QOS-MIB
+       domainTrapMacAddress, 
+       domainTrapIfIndex,
+       domainTrapDynAssignVlanId, 
+       domainTrapQoSProfName,
+       domainTrapMacAuthFailureReason
+       	 FROM DOMAIN-MIB
+       ;
+
+-- Define OIDs
+
+       alcatelTraps      OBJECT IDENTIFIER ::=  { alcatel 0 }
+
+-- SMI TRAP-TYPE
+
+-- Alcatel enterprise specific traps
+--     Each time an OBJECT-TYPE is declared so that Alcatel Enterrpise Traps are recognized by the SNMP tools
+
+alcatelChangeOccuredTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+                  "Reference to the Alcatel enterprise specific changeOccured trap"
+    ::= { alcatelTraps 7 }
+
+changeOccured       TRAP-TYPE
+    ENTERPRISE      alcatel
+    VARIABLES       {
+                      asamAlarmTrapNumberOfAlarmChanges,
+                      asamPhyItfNumberChangeOccurred,
+                      eqptHwNumberOfChanges,
+                      asamNumberOfSets,
+                      asamNumberOfIndeterminateChanges,
+                      asamNumberOfWarningChanges,
+                      asamNumberOfMinorChanges,
+                      asamNumberOfMajorChanges,
+                      asamNumberOfCriticalChanges,
+--                    asamRedundancyNumberOfChanges,
+                      eqptProtNumberOfChanges,
+                      asamCraftLoginStatus,
+                      eqptRestartNumberOfChanges,
+                      asamNumOfNTRReferenceChanges,
+                      eqptPortMappingGlobalChangeCounter
+                      
+                    }
+    DESCRIPTION     "This trap is sent when the value of one of its
+                    variables has changed."
+::= 7
+
+alcatelLineTestReportTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION 
+                  "Reference to the Alcatel enterprise specific lineTestReport trap"
+    ::= { alcatelTraps 10 }
+
+lineTestReport      TRAP-TYPE
+    ENTERPRISE      alcatel
+    VARIABLES       {
+                      ltTrapSessionId,
+                      ltTrapCmd,
+                      ltTrapLineId,
+                      ltTrapStatus,
+                      ltTrapLineHookStatus
+       
+                    }
+    DESCRIPTION     "This is for notify network manager test status."
+       
+::= 10
+
+alcatelInitStartedTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific initStarted trap"
+    ::= { alcatelTraps 11 }
+
+initStarted         TRAP-TYPE
+    ENTERPRISE      alcatel
+    DESCRIPTION     "The ASAM sends an initStarted trap during its
+                    initialisation phase, as soon as IP connectivity
+                    is established "
+::= 11
+
+alcatelLicenseKeyChangeOccurredTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific licenseKeyChangeOccurred trap"
+    ::= { alcatelTraps 12 }
+
+licenseKeyChangeOccurred       TRAP-TYPE
+    ENTERPRISE      alcatel
+    VARIABLES       {
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+		      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+                      licenseCounter,
+					  licenseCounter,
+                      licenseCounter
+                    }
+    DESCRIPTION     "This trap is sent when the value of one of its
+                    variables has changed.
+                    Note that this trap contains different instances
+                    of the same variable. The index of the variable
+                    differentiates the instances as follows:
+                    1  licenseCounter for ADSL2+
+                    2  licenseCounter for READSL2
+                    3  licenseCounter for IGMP
+                    4  licenseCounter for BVB
+                    5  licenseCounter for Annex-M
+                    6  licenseCounter for IP Forwarding
+                    7  licenseCounter for PPPoX Relay
+                    8  licenseCounter for PPPoX Termination
+                    9  licenseCounter for 802.1x
+                    13 licenseCounter for IPoA-CC and IPoA-RB
+                    14 licenseCounter for UPBO-policing
+                    15 licenseCounter for XDSL-PerLine-Overrule
+                    16 licenseCounter for Impulse Noise Sensor
+                    17 licenseCounter for ADSL1/2 PSD Shaping
+                    18 licenseCounter for Annex-J
+                    19 licenseCounter for SyncE
+                    20 licenseCounter for 2.5 Gbps enabled LT
+                    21 licenseCounter for NT load sharing + redundancy 
+                    22 licenseCounter for SHDSL cross-talk cancellation	
+                    23 licenseCounter for SRA on VDSL2
+                    24 licenseCounter for ARQ
+                    25 licenseCounter for 10 Gbps enabled LT
+                    26 licenseCounter for 20 Gbps enabled LT
+                    27 licenseCounter for Gxr
+                    28 licenseCounter for IPv6 security
+                    29 licenseCounter for Lawful Intercept
+                    31 licenseCounter for Green DSL L2 mode
+                    32 licenseCounter for Ethernet OAM Advanced Monitoring Functions
+                    33 licenceCounter for MPLS
+                    34 licenceCounter for VPLUS
+                    35 licenceCounter for gfast
+                    36 licenceCounter for VULA
+                    37 licenseCounter for Multi-VSG
+                    "
+::= 12
+
+alcatelTopoChangedTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific topoChanged trap"
+    ::= { alcatelTraps 13 }
+
+topoChanged         TRAP-TYPE
+    ENTERPRISE      alcatel
+    DESCRIPTION     "When an ISAM is configured as the command or backup-
+                    command node in a cluster, as long as the ISAM detected
+                    the topology in the cluster is changed, the ISAM will
+                    send a topoChanged trap."
+::= 13
+
+alcatelDhcpSessionPreemptedTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific dhcpSessionPreempted trap"
+    ::= { alcatelTraps 15 }
+
+dhcpSessionPreempted         TRAP-TYPE
+    ENTERPRISE      alcatel
+    VARIABLES {
+                dhcpTrapPreSessionForwarderType, 
+                dhcpTrapPreSessionForwarderId,
+                dhcpTrapPreSessionIPAddress,
+                dhcpTrapPreSessionIfIndex,
+                dhcpTrapPreSessionReason
+              }
+    DESCRIPTION     "When a dynamic ip address is preempted for
+                    ip-aware bridge or enhanced iBridge forwarding mode, 
+                    ISAM should generate and send out this trap. 
+                    Following is the item description.
+                    1.dhcpTrapPreSessionForwarderType, Forwarder type (L2/L3)
+                      (1) L2
+                      (2) L3
+                    2.dhcpTrapPreSessionForwarderId, Forwarder id (VRF-id/VLAN-id)
+                    3.dhcpTrapPreSessionIPAddress, Preempted session IP address
+                    4.dhcpTrapPreSessionIfIndex, User interface ifIndex
+                    5.dhcpTrapPreSessionReason, Reason for preemption, including:
+                      (1)conflict with static;
+                      (2)conflict with DHCP;
+                      (3)no resources available.
+                    "
+::= 15
+
+alcatelRadiusServerFailureTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific radiusServerFailure trap"
+    ::= { alcatelTraps 16 }
+
+radiusServerFailure  TRAP-TYPE
+    ENTERPRISE       alcatel
+    VARIABLES        { radAuthServerAddress }
+    DESCRIPTION     "When a RADIUS server fails to successfully
+                    respond to a request from the ISAM, this trap
+                    is sent with the address of the server that failed.
+                    RADIUS servers are configured with a dead interval
+                    which prevents the use of the same server for that
+                    interval, limiting the number of traps sent.
+    ALCATEL NOTE:
+       SUPPORT:     YES
+       PERSIST:     NA
+       INSRVMOD:    NA
+       RANGE:       NA
+       DEFVALUE:    NA
+       UNITS:       NA"
+::= 16
+
+alcatelLoginOccuredTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific loginOccured trap"
+    ::= { alcatelTraps 17 }
+
+loginOccured TRAP-TYPE
+    ENTERPRISE       alcatel
+    VARIABLES        { ipAdEntAddr }
+    DESCRIPTION     "When a CLI or TL1 user sucessfully logs into
+                    ISAM from a remote address, this trap is sent 
+                    with the address from which user logs in.
+    ALCATEL NOTE:
+       SUPPORT:     YES
+       PERSIST:     NA
+       INSRVMOD:    NA
+       RANGE:       NA
+       DEFVALUE:    NA
+       UNITS:       NA"
+::= 17
+
+alcatelLogoutOccuredTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific logoutOccured trap"
+    ::= { alcatelTraps 18 }
+
+logoutOccured TRAP-TYPE
+    ENTERPRISE       alcatel
+    VARIABLES        { ipAdEntAddr }
+    DESCRIPTION     "When a CLI or TL1 user sucessfully logs out 
+                    or is logged out from the ISAM, this trap is 
+                    sent with the address from which user logs in.
+    ALCATEL NOTE:
+       SUPPORT:     YES
+       PERSIST:     NA
+       INSRVMOD:    NA
+       RANGE:       NA
+       DEFVALUE:    NA
+       UNITS:       NA"
+::= 18
+
+
+alcatelasamTrapManagerChangeOccuredTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific asamTrapManagerChangeOccured trap"
+    ::= { alcatelTraps 19 }
+
+asamTrapManagerChangeOccured TRAP-TYPE
+    ENTERPRISE       alcatel
+    VARIABLES        { ipAdEntAddr,asamTrapManagerPort }
+    DESCRIPTION     "Each time an entry is added or deleted from
+                     the asamTrapManagerTable, this trap will be 
+                     sent with the address and port number of the manager that 
+                     was added or deleted from the table.
+    ALCATEL NOTE:
+       SUPPORT:     YES
+       PERSIST:     NA
+       INSRVMOD:    NA
+       RANGE:       NA
+       DEFVALUE:    NA
+       UNITS:       NA"
+::= 19
+
+
+--***********************************************************************
+-- Following 20-24 traps are for mst!
+--***********************************************************************
+
+alcatelmstGenTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+                  "Reference to the Alcatel enterprise specific mstGenTrap trap"
+    ::= { alcatelTraps 20 }
+
+mstGenTrap TRAP-TYPE
+    ENTERPRISE  alcatel
+    VARIABLES   { mstBrgAddress, mstGenTrapType,mstInstanceIndex}
+    DESCRIPTION 
+        "Generated when any of the general events like protocol up or 
+         protocol down, or MSTP instance up or down occurs"
+    ::= 20
+         
+         
+alcatelmstErrTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+                  "Reference to the Alcatel enterprise specific mstErrTrap trap"
+    ::= { alcatelTraps 21 }
+
+mstErrTrap TRAP-TYPE
+    ENTERPRISE  alcatel
+    VARIABLES   { mstBrgAddress, mstErrTrapType }
+    DESCRIPTION 
+        "Generated when any of the error events like memory failure or buffer failure
+         or protocol migration or new root or topology change occurs "
+    ::= 21
+         
+
+         
+alcatelmstProtocolMigrationTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+                  "Reference to the Alcatel enterprise specific mstProtocolMigrationTrap trap"
+    ::= { alcatelTraps 22 }
+
+mstProtocolMigrationTrap TRAP-TYPE
+    ENTERPRISE  alcatel
+    VARIABLES   { mstBrgAddress, mstPortTrapIndex, 
+                  mstForceProtocolVersion, mstPortMigrationType }
+    DESCRIPTION 
+        "Generated when port protocol migration happens in the port "
+    ::= 22
+         
+alcatelmstInvalidBpduRxdTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+                  "Reference to the Alcatel enterprise specific mstInvalidBpduRxdTrap trap"
+    ::= { alcatelTraps 23 }
+    
+mstInvalidBpduRxdTrap TRAP-TYPE
+    ENTERPRISE  alcatel
+    VARIABLES   { mstBrgAddress, mstPortTrapIndex, 
+                  mstPktErrType, mstPktErrVal }
+    DESCRIPTION 
+        "Generated when the invalid packet is received for 
+         bpdu/stp/rstp/maximum age/forward delay/hello time"
+    ::= 23
+         
+alcatelmstRegionConfigChangeTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+                  "Reference to the Alcatel enterprise specific mstRegionConfigChangeTrap trap"
+    ::= { alcatelTraps 24 }
+    
+mstRegionConfigChangeTrap TRAP-TYPE
+    ENTERPRISE  alcatel
+    VARIABLES   { mstBrgAddress, 
+                  mstMstiConfigIdSel, mstMstiRegionName, 
+                  mstMstiRegionVersion, mstMstiConfigDigest }
+    DESCRIPTION 
+        "Generated when the MST region's configuration     
+         identifier changes."
+    ::= 24
+
+alcatelalrmChgOccurredTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific alarm Change Occurred trap.
+		  This trap is applicable for both IHUB platforms and Remote products 7363 MX/7367 SX."
+    ::= { alcatelTraps 25 }
+
+    
+alrmChgOccurred TRAP-TYPE
+    ENTERPRISE  alcatel
+     VARIABLES   { asamAlarmReportId,
+       asamAlarmReportAlarmState,
+       asamAlarmReportSeverity,
+       asamAlarmReportIndex1,
+       asamAlarmReportIndex2,
+       asamAlarmReportTime,
+       asamAlarmReportAddInfo }
+DESCRIPTION 
+        "This trap is generated when the alarm is raised/cleared"     
+  ::= 25
+
+alcateloutOfSyncTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific Out of Sync trap
+		  This trap is applicable for both IHUB platforms and Remote products 7363 MX/7367 SX."
+    ::= { alcatelTraps 26 }
+
+outOfSync  TRAP-TYPE
+    ENTERPRISE  alcatel
+    DESCRIPTION 
+        "Generated when the Trap buffer is full"     
+  ::= 26
+
+alcatelDyingGaspTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the ALU enterprise specific Dying-gasp trap.
+                   This trap is applicable only for PTP uplink."
+    ::= { alcatelTraps 27 }
+
+dyingGasp  TRAP-TYPE
+    ENTERPRISE  alcatel
+    DESCRIPTION 
+        "Generated when power shutdown(power failure or switch off)"
+    ::= 27
+
+alcatelontActChanPairChangeTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+        "Reference to the Alcatel enterprise specific ontActChanPairChange trap"
+    ::= { alcatelTraps 28 }
+    
+ontActChanPairChange TRAP-TYPE
+    ENTERPRISE  alcatel
+    VARIABLES   { ng2MobilityOntActChanPairChangeLogLastIndex }
+    DESCRIPTION 
+        "Generated when at least one ONT has changed its actual Channel Pair
+         and a corresponding entry has been added in the related log table."
+    ::= 28
+
+alcatelregisterNodeTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+        "Reference to the Alcatel enterprise specific registerNode  trap.
+         Applicable only for Platforms supporting Zero Touch Provision."
+    ::= { alcatelTraps 29 }
+
+registerNode TRAP-TYPE
+    ENTERPRISE  alcatel
+    VARIABLES   { eqptAsamId }
+    DESCRIPTION
+        "Generated when auto provision of the node has been completed
+        without user intervention."
+    ::= 29
+
+alcatelavailableBandwidthChangeTrap OBJECT-TYPE
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+        "Reference to the Alcatel enterprise specific availableBandwidthChange trap"
+    ::= { alcatelTraps 30 }
+    
+availableBandwidthChange TRAP-TYPE
+    ENTERPRISE  alcatel
+    VARIABLES   { availableBandwidthChangeLogLastIndex }
+    DESCRIPTION 
+        "Generated when the bandwidth of PON/Channel-pair changes
+         and a corresponding entry has been added in the related log table."
+    ::= 30
+
+alcatelDot1xMacAuthFailureTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific dot1xMacAuthFailure trap"
+    ::= { alcatelTraps 31 }
+
+domainMacAuthFailure         TRAP-TYPE
+    ENTERPRISE      alcatel
+    VARIABLES {
+                domainTrapMacAddress, 
+		domainTrapIfIndex,
+                domainTrapDynAssignVlanId, 
+                domainTrapQoSProfName,
+		domainTrapMacAuthFailureReason
+              }
+    DESCRIPTION     "When Radius Server distribute VSA to a mac based authentication
+                    session and return failure, 
+                    ISAM should generate and send out this trap. 
+                    Following is the item description.
+                    1.domainTrapMacAddress, mac-auth mac address
+                    2.domainTrapIfIndex, User interface ifIndex
+                    3.domainTrapDynAssignVlanId, Dynamic Assignment Forward Id in VSA
+                    4.domainTrapQoSProfName, QoS Profile Name in VSA
+                    5.domainTrapMacAuthFailureReason, Reason for mac-auth Failure, including:
+                      (1)Invalid Dynamic VLAN Assignment Failure
+                      (2)Static Mac Exist Failure
+		      (3)Bridge Port Not Exist Failure
+		      (4)Invalid Dynamic QoS Profile Assignment Failure
+		      (5)Invailed RADIUS VSA infomation
+		      (6)No vailed vlan information from RADIUS
+		      (7)Mac based Authentication Attache failed"
+::= 31
+
+--***********************************************************************
+-- Following traps are obsolete!
+--***********************************************************************
+
+alcatelSessionStartedTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific sessionStarted trap"
+    ::= { alcatelTraps 8 }
+
+sessionStarted      TRAP-TYPE
+    ENTERPRISE      alcatel
+--  VARIABLES       { setSessionIpAddress } -* Not Defined yet
+    DESCRIPTION     "When a manager starts a SET session, agent
+                    generates this trap to inform all manager that
+                    SET actions are allowed for the NMC that has
+                    IpAddress in the variable-binding.
+
+    NOTE: the STATUS of the sessionStarted trap is obsolete."
+
+::= 8
+
+alcatelSessionEndedTrap OBJECT-TYPE 
+    SYNTAX     OBJECT IDENTIFIER
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION        
+                  "Reference to the Alcatel enterprise specific sessionEnded trap"
+    ::= { alcatelTraps 9 }
+
+sessionEnded        TRAP-TYPE
+    ENTERPRISE      alcatel
+    DESCRIPTION     "When a manager ends a SET session, agent
+                    generates this trap to inform that Set Session
+                    is free at this moment.
+
+    NOTE: the STATUS of the sessionEnded trap is obsolete."
+
+::= 9
+
+
+END
+

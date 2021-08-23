@@ -1,0 +1,395 @@
+IACM-DIST-SERV-MIB DEFINITIONS ::= BEGIN
+-- =============================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel-Lucent expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel-Lucent shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2010, Alcatel-Lucent. All Rights Reserved.
+-- =============================================================================
+
+-- MODULE-IDENTITY 
+--       LAST-UPDATED "201010260900Z"
+--       ORGANIZATION "Alcatel-Lucent"
+--       CONTACT-INFO
+--
+--            "Email:  asam.mibsupport@alcatel.be" 
+--
+-- DESCRIPTION "This MIB module supports configuration and    
+--              performance related parameters for the distributed service."
+
+--  REVISION "201010260900Z"
+--  DESCRIPTION
+--        "Version: <MIB identification>
+--         Editor: <name of document author>
+--         Changes:  Initial Version"
+
+
+
+IMPORTS
+
+	asam 
+		FROM SYSTEM-MIB
+
+	OBJECT-TYPE
+		FROM RFC-1212
+
+	InterfaceIndex, ifIndex
+		FROM ITF-MIB
+
+	RowStatus 
+		FROM SNMPv2-TC
+
+	AtmVpIdentifier, AtmVcIdentifier
+        	FROM ATM-TC-MIB;
+
+
+iacmDistServMIB OBJECT IDENTIFIER ::= { asam 98 } 
+
+-- Groups in iacmDistServMIB 
+
+iacmDistServObjects  OBJECT IDENTIFIER ::= { iacmDistServMIB 1 }
+
+
+IacmDistSdpId ::= INTEGER (0|1..17407)
+-- TEXTUAL-CONVENTION
+--    STATUS          current
+--    DESCRIPTION     "A 16-bit number used to identify a Service
+--                     Distribution Point. This ID must be unique only
+--                     within the ESR where it is defined. The value 0
+--                     is used as the null ID."
+--    SYNTAX          Unsigned32 (0|1..17407)
+
+IacmDistLspIdList ::= OCTET STRING (SIZE (0..68)) 
+-- TEXTUAL-CONVENTION
+--    STATUS          current
+--    DESCRIPTION     "Each group of four octets in this string specify
+--                     a 32-bit LSP ID, which corresponds to the
+--                     iacmDistVRtrMplsLspIndex of the given MPLS LSP.
+--                     The LSP IDs are stored in network byte order; i.e. 
+--                     octet N corresponds to the most significant 8 bits of
+--                     the LSP ID, and octet N+3 correspond to the least
+--                     significant 8 bits. The list is terminated by the
+--                     null LSP ID. The LSP IDs in this list are not
+--                     required to be sorted in any specific order. The
+--                     list is large enough to hold up to 16 LSP IDs,
+--                     plus the null terminator."
+--    SYNTAX          OCTET STRING (SIZE (0..68))
+
+IacmDistServType ::= INTEGER {
+--    TEXTUAL-CONVENTION
+--    STATUS          current
+--    DESCRIPTION     "This textual convention is used to specify the
+--                     type of a given service."
+--    SYNTAX          INTEGER {
+                        unknown (0), -- Unknown service type
+                        epipe   (1), -- Ethernet pipe
+                        p3pipe  (2), -- POS pipe
+                        tls     (3), -- Virtual private LAN service
+                        vprn    (4), -- Virtual private routed network
+                        ies     (5), -- Internet enhanced service
+                        mirror  (6), -- Mirror service
+                        apipe   (7), -- ATM pipe service
+                        fpipe   (8), -- FR pipe service
+                        ipipe   (9), -- IP interworking pipe service
+                        cpipe   (10) -- Circuit Emulation pipe service
+                    }
+
+IacmDistServId ::= INTEGER (1..2147483647) 
+--    TEXTUAL-CONVENTION
+--    STATUS          current
+--    DESCRIPTION     "A number used to identify a Service. This ID
+--                     must be unique within the Service Domain.
+--                     The value 0 is used as the null ID."
+--    SYNTAX          Unsigned32 (0|1..2147483647|2147483648)
+
+
+
+-- ================================
+-- Base Service Table
+-- ================================
+iacmDistSvcBaseInfoTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF IacmDistSvcBaseInfoEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     
+	"A table that contains basic service information."
+
+    ::= { iacmDistServObjects 1 }
+
+iacmDistSvcBaseInfoEntry OBJECT-TYPE
+    SYNTAX          IacmDistSvcBaseInfoEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     
+	"Basic information about a specific service."
+
+    INDEX           { iacmDistSvcId }
+    ::= { iacmDistSvcBaseInfoTable 1 }
+
+IacmDistSvcBaseInfoEntry ::= SEQUENCE {
+	iacmDistSvcId                 IacmDistServId,
+        iacmDistSvcType               IacmDistServType,
+        iacmDistSvcQosProfileIndex       INTEGER,
+        iacmDistSvcRowStatus          RowStatus
+	}
+
+iacmDistSvcId OBJECT-TYPE
+    SYNTAX          IacmDistServId
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     
+	"The value of the object svcId specifies the
+	 Service identifier. This value should be unique within the
+	 service domain.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSvcBaseInfoEntry 1 }
+
+
+iacmDistSvcType OBJECT-TYPE
+    SYNTAX          IacmDistServType
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     
+	"The value of the object svcType specifies the service
+	 type: e.g. epipe, tls, etc. The value of this object
+	 must be specified when the row is created and cannot be
+	 changed while the row status is 'active'.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       7            DEFVALUE:    7
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       Only APIPE service is supported.
+	"
+    ::= { iacmDistSvcBaseInfoEntry 2 }
+
+iacmDistSvcQosProfileIndex OBJECT-TYPE
+	SYNTAX		INTEGER (0..65535)        
+	ACCESS		read-write
+        STATUS		optional
+        DESCRIPTION	
+	"This contains the qos profile index for the 
+	given qos session. A value of 0 indicate that no qos 
+	profile attached to this service.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+	DEFVAL          { 0 }
+	::= { iacmDistSvcBaseInfoEntry 3 }
+		
+iacmDistSvcRowStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     
+	"This value of the object  iacmDistSvcRowStatus specifies the
+	status of this row.
+
+	To delete an entry from this table, the corresponding
+	service must have no SDP bindings.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NO           INSRVMOD:    YES
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSvcBaseInfoEntry 4 } 
+
+iacmDistSvcAtmAccessTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF IacmDistSvcAtmAccessEntry
+    ACCESS        not-accessible
+    STATUS            mandatory
+    DESCRIPTION
+	"This table represents the association of ATM VCL into
+	the corresponding APIPE service."
+        
+    ::= { iacmDistServObjects 2 }
+
+iacmDistSvcAtmAccessEntry OBJECT-TYPE
+    SYNTAX        IacmDistSvcAtmAccessEntry
+    ACCESS        not-accessible
+    STATUS        mandatory
+    DESCRIPTION
+        "A row in this table represents an ATM service that needs to be
+         adapted and carried over PSN.ATM encapsulation type must be
+         `none` to allow creation of this table entry."
+
+    INDEX { iacmDistSvcId, ifIndex }
+    ::= { iacmDistSvcAtmAccessTable 1 }
+
+IacmDistSvcAtmAccessEntry ::= SEQUENCE {
+      iacmDistSvcAtmAccessRowStatus              RowStatus,
+      iacmDistSvcAtmAccessInMappedVpi            AtmVpIdentifier,
+      iacmDistSvcAtmAccessInMappedVci            AtmVcIdentifier,
+      iacmDistSvcAtmAccessOutMappedVpi           AtmVpIdentifier,
+      iacmDistSvcAtmAccessOutMappedVci           AtmVcIdentifier
+     }
+
+
+
+iacmDistSvcAtmAccessRowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "This object is used to create and delete a row in
+         this table.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NO           INSRVMOD:    YES
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSvcAtmAccessEntry 1 }
+
+iacmDistSvcAtmAccessInMappedVpi OBJECT-TYPE
+    SYNTAX        AtmVpIdentifier
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "The generated ATM VPI value for the APIPE service.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       0...255      DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSvcAtmAccessEntry 2 }
+
+iacmDistSvcAtmAccessInMappedVci OBJECT-TYPE
+    SYNTAX        AtmVcIdentifier
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "The generated ATM VCI value for the APIPE service.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       32...65535   DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSvcAtmAccessEntry 3 }
+
+
+iacmDistSvcAtmAccessOutMappedVpi OBJECT-TYPE
+    SYNTAX        AtmVpIdentifier
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "The egress generated ATM VPI value for the APIPE service.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       0...255      DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSvcAtmAccessEntry 4 }
+
+iacmDistSvcAtmAccessOutMappedVci OBJECT-TYPE
+    SYNTAX        AtmVcIdentifier
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "The egress generated ATM VCI value for the APIPE service.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       32...65535   DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSvcAtmAccessEntry 5 }
+
+iacmDistSvcAccessMappingTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF IacmDistSvcAccessMappingEntry
+    ACCESS        not-accessible
+    STATUS            mandatory
+    DESCRIPTION
+	"This table represents the association from access port to
+	the corresponding service."
+        
+    ::= { iacmDistServObjects 3 }
+
+iacmDistSvcAccessMappingEntry OBJECT-TYPE
+    SYNTAX        IacmDistSvcAccessMappingEntry
+    ACCESS        not-accessible
+    STATUS        mandatory
+    DESCRIPTION
+        "A row in this table represents a mapping between an access port IfIndex to 
+        a service Id. The system automatically creates an entry in this table for 
+        each corresponding entry(for example: iacmDistSvcAtmAccessEntry) created in the 
+        corresponding table(for example: iacmDistSvcAtmAccessTable). Similarly, when 
+        the corresponding entry is deleted, the entry in this table is automatically 
+        deleted by the system, too. This table can be used for all the services."
+
+    INDEX { ifIndex, iacmDistSvcAccessMappingSvcId }
+    ::= { iacmDistSvcAccessMappingTable 1 }
+
+IacmDistSvcAccessMappingEntry ::= SEQUENCE {
+      iacmDistSvcAccessMappingSvcId       IacmDistServId
+     }
+
+iacmDistSvcAccessMappingSvcId OBJECT-TYPE
+    SYNTAX        IacmDistServId
+    ACCESS        read-only
+    STATUS        mandatory
+    DESCRIPTION
+        "The Id of the service  to which the access port is bound.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NO           INSRVMOD:    YES
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSvcAccessMappingEntry 1 }
+END
+

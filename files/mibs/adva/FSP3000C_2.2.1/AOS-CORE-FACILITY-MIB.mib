@@ -1,0 +1,916 @@
+AOS-CORE-FACILITY-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+             FROM SNMPv2-CONF
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, Integer32, Counter64, TimeTicks
+             FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION
+             FROM SNMPv2-TC
+    ifIndex
+             FROM IF-MIB
+    aosCommon
+             FROM ADVA-MIB;
+
+aosCoreFacilityMIB MODULE-IDENTITY
+    LAST-UPDATED    "201811220000Z"
+    ORGANIZATION    "ADVA Optical Networking"
+    CONTACT-INFO
+                    "ADVA Optical Networking, Inc."
+    DESCRIPTION     "This module defines the Core Facility MIB definitions
+                     used by the AOS based product lines.
+                     Copyright (C) ADVA Optical Networking."
+
+    REVISION        "201606050000Z"
+    DESCRIPTION     "First release."
+
+    REVISION        "201811220000Z"
+    DESCRIPTION     "Additional performance monitoring points defined."
+    ::= {aosCommon 3}
+
+--
+-- OID definitions
+--
+aosCoreFacilityObjects          OBJECT IDENTIFIER ::= {aosCoreFacilityMIB 1}
+aosCoreFacilityStatsObjects     OBJECT IDENTIFIER ::= {aosCoreFacilityMIB 2}
+aosCoreFacilityConformance      OBJECT IDENTIFIER ::= {aosCoreFacilityMIB 3}
+
+--
+-- Textual conventions.
+--
+
+--
+-- Scalar definitions.
+--
+
+--
+-- Facility optical statistics tables.
+--
+
+aosCoreFacOpticalPowerTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AosCoreFacOpticalPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A list of entries corresponding to the optical PM points
+             for the facilities that support them."
+    ::= { aosCoreFacilityStatsObjects 1 }
+
+aosCoreFacOpticalPowerEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFacOpticalPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry containing information applicable to a particular
+             interface."
+    INDEX { ifIndex }
+    ::= { aosCoreFacOpticalPowerTable 1 }
+
+AosCoreFacOpticalPowerEntry ::= SEQUENCE {
+    aosCoreFacOpticalPowerRx        Integer32,
+    aosCoreFacOpticalPowerTx        Integer32,
+    aosCoreFacOpticalLaserBias      Integer32,
+    aosCoreFacOpticalLaserTemp      Integer32,
+    aosCoreFacOpticalPowerTotalRx   Integer32
+}
+
+aosCoreFacOpticalPowerRx OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The optical power monitored at the input."
+     ::= { aosCoreFacOpticalPowerEntry 1 }
+
+aosCoreFacOpticalPowerTx OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The optical power monitored at the output."
+     ::= { aosCoreFacOpticalPowerEntry 2 }
+
+aosCoreFacOpticalLaserBias OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "mA"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Laser bias current."
+     ::= { aosCoreFacOpticalPowerEntry 3 }
+
+aosCoreFacOpticalLaserTemp OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 C"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Laser temperature."
+     ::= { aosCoreFacOpticalPowerEntry 4 }
+     
+aosCoreFacOpticalPowerTotalRx OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Laser temperature."
+     ::= { aosCoreFacOpticalPowerEntry 5 }
+     
+aosCoreFac15MinOpticalPowerTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AosCoreFac15MinOpticalPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A list of entries corresponding to the historical 15-minute
+             values of the optical power monitoring points."
+    ::= { aosCoreFacilityStatsObjects 2 }
+
+aosCoreFac15MinOpticalPowerEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFac15MinOpticalPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry containing information applicable to a particular
+             interface."
+    INDEX { ifIndex, aosCoreFac15MinOpticalPowerSample }
+    ::= { aosCoreFac15MinOpticalPowerTable 1 }
+
+AosCoreFac15MinOpticalPowerEntry ::= SEQUENCE {
+    aosCoreFac15MinOpticalPowerSample     Integer32,
+    aosCoreFac15MinOpticalPowerSampleTime TimeTicks,
+    aosCoreFac15MinOpticalPowerRxLow      Integer32,
+    aosCoreFac15MinOpticalPowerRxMean     Integer32,
+    aosCoreFac15MinOpticalPowerRxHigh     Integer32,
+    aosCoreFac15MinOpticalPowerTxLow      Integer32,
+    aosCoreFac15MinOpticalPowerTxMean     Integer32,
+    aosCoreFac15MinOpticalPowerTxHigh     Integer32
+}
+
+aosCoreFac15MinOpticalPowerSample OBJECT-TYPE
+    SYNTAX     Integer32 (1..99)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Sample number for given time period."
+     ::= { aosCoreFac15MinOpticalPowerEntry 1 }
+
+aosCoreFac15MinOpticalPowerSampleTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Time ticks since the sample was collected."
+     ::= { aosCoreFac15MinOpticalPowerEntry 2 }
+
+aosCoreFac15MinOpticalPowerRxLow OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The low optical power monitored at the input, 15-minute sample."
+     ::= { aosCoreFac15MinOpticalPowerEntry 3 }
+
+aosCoreFac15MinOpticalPowerRxMean OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The Meanium optical power monitored at the input, 15-minute sample."
+     ::= { aosCoreFac15MinOpticalPowerEntry 4 }
+
+aosCoreFac15MinOpticalPowerRxHigh OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The high optical power monitored at the input, 15-minute sample."
+     ::= { aosCoreFac15MinOpticalPowerEntry 5 }
+
+aosCoreFac15MinOpticalPowerTxLow OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The low optical power monitored at the output, 15-minute sample."
+     ::= { aosCoreFac15MinOpticalPowerEntry 6 }
+
+aosCoreFac15MinOpticalPowerTxMean OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The Meanium optical power monitored at the output, 15-minute sample."
+     ::= { aosCoreFac15MinOpticalPowerEntry 7 }
+
+aosCoreFac15MinOpticalPowerTxHigh OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The high optical power monitored at the output, 15-minute sample."
+     ::= { aosCoreFac15MinOpticalPowerEntry 8 }
+
+
+aosCoreFac1DayOpticalPowerTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AosCoreFac1DayOpticalPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A list of entries corresponding to the historical 1-day
+             values of the optical power monitoring points."
+    ::= { aosCoreFacilityStatsObjects 3 }
+
+aosCoreFac1DayOpticalPowerEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFac1DayOpticalPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry containing information applicable to a particular
+             interface."
+    INDEX { ifIndex, aosCoreFac1DayOpticalPowerSample }
+    ::= { aosCoreFac1DayOpticalPowerTable 1 }
+
+AosCoreFac1DayOpticalPowerEntry ::= SEQUENCE {
+    aosCoreFac1DayOpticalPowerSample     Integer32,
+    aosCoreFac1DayOpticalPowerSampleTime TimeTicks,
+    aosCoreFac1DayOpticalPowerRxLow      Integer32,
+    aosCoreFac1DayOpticalPowerRxMean     Integer32,
+    aosCoreFac1DayOpticalPowerRxHigh     Integer32,
+    aosCoreFac1DayOpticalPowerTxLow      Integer32,
+    aosCoreFac1DayOpticalPowerTxMean     Integer32,
+    aosCoreFac1DayOpticalPowerTxHigh     Integer32
+}
+
+aosCoreFac1DayOpticalPowerSample OBJECT-TYPE
+    SYNTAX     Integer32 (1..31)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Sample number for given time period."
+     ::= { aosCoreFac1DayOpticalPowerEntry 1 }
+
+aosCoreFac1DayOpticalPowerSampleTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Time ticks since the sample was collected."
+     ::= { aosCoreFac1DayOpticalPowerEntry 2 }
+
+aosCoreFac1DayOpticalPowerRxLow OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The low optical power monitored at the input, 1-day sample."
+     ::= { aosCoreFac1DayOpticalPowerEntry 3 }
+
+aosCoreFac1DayOpticalPowerRxMean OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The Meanium optical power monitored at the input, 1-day sample."
+     ::= { aosCoreFac1DayOpticalPowerEntry 4 }
+
+aosCoreFac1DayOpticalPowerRxHigh OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The high optical power monitored at the input, 1-day sample."
+     ::= { aosCoreFac1DayOpticalPowerEntry 5 }
+
+aosCoreFac1DayOpticalPowerTxLow OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The low optical power monitored at the output, 1-day sample."
+     ::= { aosCoreFac1DayOpticalPowerEntry 6 }
+
+aosCoreFac1DayOpticalPowerTxMean OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The Meanium optical power monitored at the output, 1-day sample."
+     ::= { aosCoreFac1DayOpticalPowerEntry 7 }
+
+aosCoreFac1DayOpticalPowerTxHigh OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The high optical power monitored at the output, 1-day sample."
+     ::= { aosCoreFac1DayOpticalPowerEntry 8 }
+
+   
+aosCoreFacFecTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AosCoreFacFecEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of entries corresponding to the current values of the
+             forward error correction monitoring points."
+    ::= { aosCoreFacilityStatsObjects 4 }
+
+aosCoreFacFecEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFacFecEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry of the aosCoreFacFecTable."
+    INDEX { ifIndex }
+    ::= { aosCoreFacFecTable 1 }
+
+AosCoreFacFecEntry ::= SEQUENCE {
+    aosCoreFacFecCorrectedErrors    Counter64,
+    aosCoreFacFecUncorrectedBlocks  Counter64,
+    aosCoreFacFecBitErrorRate       Counter64
+}
+
+aosCoreFacFecCorrectedErrors OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Corrected errors by the FEC process."
+     ::= { aosCoreFacFecEntry 1 }
+
+aosCoreFacFecUncorrectedBlocks OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Uncorrected blocks by the FEC process."
+     ::= { aosCoreFacFecEntry 2 }
+
+aosCoreFacFecBitErrorRate OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "1e-18"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Bit error rate."
+     ::= { aosCoreFacFecEntry 3 }
+
+
+
+aosCoreFac15MinFecTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AosCoreFac15MinFecEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of entries corresponding to the historical 15-minute
+             values of the forward error correction monitoring points."
+    ::= { aosCoreFacilityStatsObjects 5 }
+
+aosCoreFac15MinFecEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFac15MinFecEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry of the aosCoreFac15MinFecTable."
+    INDEX { ifIndex, aosCoreFac15MinFecSample }
+    ::= { aosCoreFac15MinFecTable 1 }
+
+AosCoreFac15MinFecEntry ::= SEQUENCE {
+    aosCoreFac15MinFecSample             Integer32,
+    aosCoreFac15MinFecSampleTime         TimeTicks,
+    aosCoreFac15MinFecCorrectedErrors    Counter64,
+    aosCoreFac15MinFecUncorrectedBlocks  Counter64,
+    aosCoreFac15MinFecBitErrorRate       Counter64
+}
+
+aosCoreFac15MinFecSample OBJECT-TYPE
+    SYNTAX     Integer32 (1..99)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Sample number for given time period."
+     ::= { aosCoreFac15MinFecEntry 1 }
+
+aosCoreFac15MinFecSampleTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Time since the sample was collected."
+     ::= { aosCoreFac15MinFecEntry 2 }
+
+aosCoreFac15MinFecCorrectedErrors OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Errors corrected by the FEC process within 15-minute period."
+     ::= { aosCoreFac15MinFecEntry 3 }
+
+aosCoreFac15MinFecUncorrectedBlocks OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Uncorrected blocks within 15-minute period."
+     ::= { aosCoreFac15MinFecEntry 4 }
+
+aosCoreFac15MinFecBitErrorRate OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Bit error rate within 15-minute period."
+     ::= { aosCoreFac15MinFecEntry 5 }
+
+
+
+aosCoreFac1DayFecTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AosCoreFac1DayFecEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of entries corresponding to the historical 1-day
+             values of the forward error correction monitoring points."
+    ::= { aosCoreFacilityStatsObjects 6 }
+
+aosCoreFac1DayFecEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFac1DayFecEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry of the aosCoreFac1DayFecTable."
+    INDEX { ifIndex, aosCoreFac1DayFecSample }
+    ::= { aosCoreFac1DayFecTable 1 }
+
+AosCoreFac1DayFecEntry ::= SEQUENCE {
+    aosCoreFac1DayFecSample             Integer32,
+    aosCoreFac1DayFecSampleTime         TimeTicks,
+    aosCoreFac1DayFecCorrectedErrors    Counter64,
+    aosCoreFac1DayFecUncorrectedBlocks  Counter64,
+    aosCoreFac1DayFecBitErrorRate       Counter64
+}
+
+aosCoreFac1DayFecSample OBJECT-TYPE
+    SYNTAX     Integer32 (1..31)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Sample number for given time period."
+     ::= { aosCoreFac1DayFecEntry 1 }
+
+aosCoreFac1DayFecSampleTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Time since the sample was collected."
+     ::= { aosCoreFac1DayFecEntry 2 }
+
+aosCoreFac1DayFecCorrectedErrors OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Errors corrected by the FEC process within 1-day period."
+     ::= { aosCoreFac1DayFecEntry 3 }
+
+aosCoreFac1DayFecUncorrectedBlocks OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Uncorrected blocks within 1-day period."
+     ::= { aosCoreFac1DayFecEntry 4 }
+
+aosCoreFac1DayFecBitErrorRate OBJECT-TYPE
+    SYNTAX     Counter64
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Bit error rate within 1-day period."
+     ::= { aosCoreFac1DayFecEntry 5 }
+
+
+
+aosCoreFacSnrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AosCoreFacSnrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of entries corresponding to the current values of the
+             Signal-To-Noise Ratio monitoring point."
+    ::= { aosCoreFacilityStatsObjects 7 }
+
+aosCoreFacSnrEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFacSnrEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry of the aosCoreFacSnrTable."
+    INDEX { ifIndex }
+    ::= { aosCoreFacSnrTable 1 }
+
+AosCoreFacSnrEntry ::= SEQUENCE {
+    aosCoreFacSnrValue Counter64
+}
+
+aosCoreFacSnrValue OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "10 dB"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Signal-To-Noise Ratio."
+     ::= { aosCoreFacSnrEntry 1 }
+
+
+
+aosCoreFac15MinSnrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AosCoreFac15MinSnrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of entries corresponding to the historical 15-minute
+             values of the Signal-To-Noise Ratio monitoring point."
+    ::= { aosCoreFacilityStatsObjects 8 }
+
+aosCoreFac15MinSnrEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFac15MinSnrEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry of the aosCoreFac15MinSnrTable."
+    INDEX { ifIndex, aosCoreFac15MinSnrSample }
+    ::= { aosCoreFac15MinSnrTable 1 }
+
+AosCoreFac15MinSnrEntry ::= SEQUENCE {
+    aosCoreFac15MinSnrSample       Integer32,
+    aosCoreFac15MinSnrSampleTime   TimeTicks,
+    aosCoreFac15MinSnrValueLow     Counter64,
+    aosCoreFac15MinSnrValueMean    Counter64,
+    aosCoreFac15MinSnrValueHigh    Counter64
+}
+
+aosCoreFac15MinSnrSample OBJECT-TYPE
+    SYNTAX     Integer32 (1..99)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Sample number for given time period."
+     ::= { aosCoreFac15MinSnrEntry 1 }
+
+aosCoreFac15MinSnrSampleTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Time since the sample was collected."
+     ::= { aosCoreFac15MinSnrEntry 2 }
+
+aosCoreFac15MinSnrValueLow OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "10 dB"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Lowest Signal-To-Noise Ratio measured for 15-minute period."
+     ::= { aosCoreFac15MinSnrEntry 3 }
+
+aosCoreFac15MinSnrValueMean OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "10 dB"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Mean Signal-To-Noise Ratio measured for 15-minute period."
+     ::= { aosCoreFac15MinSnrEntry 4 }
+
+aosCoreFac15MinSnrValueHigh OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "10 dB"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Highest Signal-To-Noise Ratio measured for 15-minute period."
+     ::= { aosCoreFac15MinSnrEntry 5 }
+
+
+aosCoreFac1DaySnrTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AosCoreFac1DaySnrEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A list of entries corresponding to the historical 1-day
+             values of the Signal-To-Noise Ratio monitoring point."
+    ::= { aosCoreFacilityStatsObjects 9 }
+
+aosCoreFac1DaySnrEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFac1DaySnrEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry of the aosCoreFac1DaySnrTable."
+    INDEX { ifIndex, aosCoreFac1DaySnrSample }
+    ::= { aosCoreFac1DaySnrTable 1 }
+
+AosCoreFac1DaySnrEntry ::= SEQUENCE {
+    aosCoreFac1DaySnrSample     Integer32,
+    aosCoreFac1DaySnrSampleTime TimeTicks,
+    aosCoreFac1DaySnrValueLow   Counter64,
+    aosCoreFac1DaySnrValueMean  Counter64,
+    aosCoreFac1DaySnrValueHigh  Counter64
+}
+
+aosCoreFac1DaySnrSample OBJECT-TYPE
+    SYNTAX     Integer32 (1..31)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Sample number for given time period."
+     ::= { aosCoreFac1DaySnrEntry 1 }
+
+aosCoreFac1DaySnrSampleTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Time since the sample was collected."
+     ::= { aosCoreFac1DaySnrEntry 2 }
+
+aosCoreFac1DaySnrValueLow OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "10 dB"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Lowest Signal-To-Noise Ratio measured for 1-day period."
+     ::= { aosCoreFac1DaySnrEntry 3 }
+
+aosCoreFac1DaySnrValueMean OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "10 dB"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Mean Signal-To-Noise Ratio measured for 1-day period."
+     ::= { aosCoreFac1DaySnrEntry 4 }
+
+aosCoreFac1DaySnrValueHigh OBJECT-TYPE
+    SYNTAX     Counter64
+    UNITS      "10 dB"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Highest Signal-To-Noise Ratio measured for 1-day period."
+     ::= { aosCoreFac1DaySnrEntry 5 }
+
+
+     
+aosCoreFac15MinTotalPowerTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AosCoreFac15MinTotalPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A list of entries corresponding to the historical 15-minute
+             values of the total power values."
+    ::= { aosCoreFacilityStatsObjects 10 }
+
+aosCoreFac15MinTotalPowerEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFac15MinTotalPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry containing information applicable to a particular
+             interface."
+    INDEX { ifIndex, aosCoreFac15MinTotalPowerSample }
+    ::= { aosCoreFac15MinTotalPowerTable 1 }
+
+AosCoreFac15MinTotalPowerEntry ::= SEQUENCE {
+    aosCoreFac15MinTotalPowerSample     Integer32,
+    aosCoreFac15MinTotalPowerSampleTime TimeTicks,
+    aosCoreFac15MinTotalPowerRxLow      Integer32,
+    aosCoreFac15MinTotalPowerRxMean     Integer32,
+    aosCoreFac15MinTotalPowerRxHigh     Integer32
+}
+
+aosCoreFac15MinTotalPowerSample OBJECT-TYPE
+    SYNTAX     Integer32 (1..99)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Sample number for given time period."
+     ::= { aosCoreFac15MinTotalPowerEntry 1 }
+
+aosCoreFac15MinTotalPowerSampleTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Time ticks since the sample was collected."
+     ::= { aosCoreFac15MinTotalPowerEntry 2 }
+
+aosCoreFac15MinTotalPowerRxLow OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The low Total power monitored at the input, 15-minute sample."
+     ::= { aosCoreFac15MinTotalPowerEntry 3 }
+
+aosCoreFac15MinTotalPowerRxMean OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The Meanium Total power monitored at the input, 15-minute sample."
+     ::= { aosCoreFac15MinTotalPowerEntry 4 }
+
+aosCoreFac15MinTotalPowerRxHigh OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The Meanium Total power monitored at the input, 15-minute sample."
+     ::= { aosCoreFac15MinTotalPowerEntry 5 }
+
+ aosCoreFac1DayTotalPowerTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AosCoreFac1DayTotalPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A list of entries corresponding to the historical 1-day
+             values of the total power values."
+    ::= { aosCoreFacilityStatsObjects 11 }
+
+aosCoreFac1DayTotalPowerEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFac1DayTotalPowerEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry containing information applicable to a particular
+             interface."
+    INDEX { ifIndex, aosCoreFac1DayTotalPowerSample }
+    ::= { aosCoreFac1DayTotalPowerTable 1 }
+
+AosCoreFac1DayTotalPowerEntry ::= SEQUENCE {
+    aosCoreFac1DayTotalPowerSample     Integer32,
+    aosCoreFac1DayTotalPowerSampleTime TimeTicks,
+    aosCoreFac1DayTotalPowerRxLow      Integer32,
+    aosCoreFac1DayTotalPowerRxMean     Integer32,
+    aosCoreFac1DayTotalPowerRxHigh     Integer32
+}
+
+aosCoreFac1DayTotalPowerSample OBJECT-TYPE
+    SYNTAX     Integer32 (1..99)
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Sample number for given time period."
+     ::= { aosCoreFac1DayTotalPowerEntry 1 }
+
+aosCoreFac1DayTotalPowerSampleTime OBJECT-TYPE
+    SYNTAX     TimeTicks
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Time ticks since the sample was collected."
+     ::= { aosCoreFac1DayTotalPowerEntry 2 }
+
+aosCoreFac1DayTotalPowerRxLow OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The low Total power monitored at the input, 1-day sample."
+     ::= { aosCoreFac1DayTotalPowerEntry 3 }
+
+aosCoreFac1DayTotalPowerRxMean OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The Meanium Total power monitored at the input, 1-day sample."
+     ::= { aosCoreFac1DayTotalPowerEntry 4 }
+
+aosCoreFac1DayTotalPowerRxHigh OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "0.1 dBm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "The Meanium Total power monitored at the input, 1-day sample."
+     ::= { aosCoreFac1DayTotalPowerEntry 5 }
+
+--
+-- Conformance
+--
+aosCoreFacilityCompliances      OBJECT IDENTIFIER ::= {aosCoreFacilityConformance 1}
+aosCoreFacilityGroups           OBJECT IDENTIFIER ::= {aosCoreFacilityConformance 2}
+
+aosCoreFacilityCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "Describes the requirements for conformance to the Core
+             Facility Services."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+              aosCoreFacilityStatsObjectGroup
+        }
+    ::= { aosCoreFacilityCompliances 1 }
+
+aosCoreFacilityStatsObjectGroup OBJECT-GROUP
+    OBJECTS {
+        aosCoreFacOpticalPowerRx,
+        aosCoreFacOpticalPowerTx,
+        aosCoreFacOpticalLaserBias,
+        aosCoreFacOpticalLaserTemp,
+        aosCoreFacOpticalPowerTotalRx,
+
+        aosCoreFac15MinOpticalPowerSample,
+        aosCoreFac15MinOpticalPowerSampleTime,
+        aosCoreFac15MinOpticalPowerRxLow,
+        aosCoreFac15MinOpticalPowerRxMean,
+        aosCoreFac15MinOpticalPowerRxHi,
+        aosCoreFac15MinOpticalPowerTxLow,
+        aosCoreFac15MinOpticalPowerTxMean,
+        aosCoreFac15MinOpticalPowerTxHi,
+
+        aosCoreFac1DayOpticalPowerSample,
+        aosCoreFac1DayOpticalPowerSampleTime,
+        aosCoreFac1DayOpticalPowerRxLow,
+        aosCoreFac1DayOpticalPowerRxMean,
+        aosCoreFac1DayOpticalPowerRxHi,
+        aosCoreFac1DayOpticalPowerTxLow,
+        aosCoreFac1DayOpticalPowerTxMean,
+        aosCoreFac1DayOpticalPowerTxHi,
+
+        aosCoreFacFecCorrectedErrors,
+        aosCoreFacFecUncorrectedBlocks,
+        aosCoreFacFecBitErrorRate,
+
+        aosCoreFac15MinFecSample,
+        aosCoreFac15MinFecSampleTime,
+        aosCoreFac15MinFecCorrectedErrors,
+        aosCoreFac15MinFecUncorrectedBlocks,
+        aosCoreFac15MinFecBitErrorRate,
+
+        aosCoreFac1DayFecSample,
+        aosCoreFac1DayFecSampleTime,
+        aosCoreFac1DayFecCorrectedErrors,
+        aosCoreFac1DayFecUncorrectedBlocks,
+        aosCoreFac1DayFecBitErrorRate,
+
+        aosCoreFacSnrValue,
+
+        aosCoreFac15MinSnrSample,
+        aosCoreFac15MinSnrSampleTime,
+        aosCoreFac15MinSnrValueLow,
+        aosCoreFac15MinSnrValueMean,
+        aosCoreFac15MinSnrValueHigh,
+
+        aosCoreFac1DaySnrSample,
+        aosCoreFac1DaySnrSampleTime,
+        aosCoreFac1DaySnrValueLow,
+        aosCoreFac1DaySnrValueMean,
+        aosCoreFac1DaySnrValueHigh,
+        
+        aosCoreFac15MinTotalPowerSample,
+        aosCoreFac15MinTotalPowerSampleTime,
+        aosCoreFac15MinTotalPowerRxLow,
+        aosCoreFac15MinTotalPowerRxMean,
+        aosCoreFac15MinTotalPowerRxHigh,
+
+        aosCoreFac1DayTotalPowerSample,
+        aosCoreFac1DayTotalPowerSampleTime,
+        aosCoreFac1DayTotalPowerRxLow,
+        aosCoreFac1DayTotalPowerRxMean,
+        aosCoreFac1DayTotalPowerRxHigh
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects used to manage the Core Facility
+             Stats Services."
+    ::= { aosCoreFacilityGroups 1 }
+
+END

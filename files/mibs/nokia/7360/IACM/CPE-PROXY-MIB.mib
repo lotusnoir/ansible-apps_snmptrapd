@@ -1,0 +1,560 @@
+CPE-PROXY-MIB DEFINITIONS ::= BEGIN
+-- =============================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2005, Alcatel. All Rights Reserved.
+-- =============================================================================
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED   "200605240000Z"
+--  ORGANIZATION   "Alcatel"
+--  CONTACT-INFO
+--
+--          Email:  asam.mibsupport@alcatel.be"
+--
+--  DESCRIPTION
+--        "This MIB module defines objects for management of the CPE
+--         proxy feature.
+--
+--  REVISION 200605240000Z
+--  DESCRIPTION
+--        "Version:  3FE24629EAAA_V3.1.0.0.0
+--         Editor:   Marc Van Vlimmeren
+--         Changes:  objects added for IP relay feature:
+--                   * cpeIpProxyVlan
+--                   * cpeIpProxySessionNextFreeProtocolPort
+--                   * cpeIpProxySessionTable
+--                   * cpeIpProxyDiscard
+--                   * cpeIpProxyStatsTable
+--                   object cpeProxySystemMode has been extended with
+--                   enable-iprelay (3)"
+--
+--  REVISION 200512070000Z
+--  DESCRIPTION
+--        "Version:  3FE24629EAAA_V3.0.0.0.0
+--         Editor:   Marc Van Vlimmeren
+--         Changes:  2 tables added to support multiple CPE-MM feature:
+--                   * cpeMgtMmStationConfigTable
+--                   * cpeProxyMmStatsTable"
+--
+--  REVISION 200412080000Z
+--  DESCRIPTION
+--        "Version:  3FE24629EAAA_V1.0.0.0.0
+--         Editor:   Yingzhong Miao
+--         Changes:  first version produced for ISAM R2.2"
+
+-- ============================================================================
+
+IMPORTS
+
+    OBJECT-TYPE
+        FROM RFC-1212
+    RowStatus
+        FROM SNMPv2-TC
+    Counter, IpAddress
+        FROM RFC1155-SMI
+    asam
+        FROM SYSTEM-MIB
+    InterfaceIndex
+        FROM ITF-MIB;
+
+cpeProxyMIB OBJECT IDENTIFIER ::= { asam 54 }
+
+-- **************************************************************************
+-- **         CPE Proxy System Configuration                               **
+-- **************************************************************************
+
+cpeProxySystemConfig OBJECT IDENTIFIER ::= { cpeProxyMIB 1 }
+
+cpeProxySystemMode OBJECT-TYPE
+    SYNTAX  INTEGER
+        {
+          enable-snmprelay (1),
+          disable (2),
+          enable-iprelay (3)
+        }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The activation of a CPE proxy function.
+        The default value is disable.
+        enable-snmprelay(1) activates the SNMP proxy function. This function
+        can only be enabled when the system mode is disable;
+        enable-iprelay(3) activates the IP proxy function. This function can only
+        be enabled when the system mode is disable;
+        disable(2) deactivates the active proxy function. If the active proxy
+        function is enable-iprelay(3), disabling is not allowed when at least
+        one session is still configured.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       NA           DEFVALUE:    disable
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { cpeProxySystemConfig 1 }
+
+-- cpeProxyBoottrapFilteringMode OBJECT-TYPE
+-- ::= { cpeProxySystemConfig 2 }
+
+cpeIpProxySVlan OBJECT-TYPE
+    SYNTAX  INTEGER (0..4093)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "The S-VLAN used by the IP proxy function to identify the CPE management
+        messages tranported in the system.
+        The value 0 is the initial value and means not configured.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { cpeProxySystemConfig 3 }
+
+-- **************************************************************************
+-- **         CPE-MM Configuration                                         **
+-- **************************************************************************
+
+cpeMgtStationConfig OBJECT IDENTIFIER ::= { cpeProxyMIB 2 }
+
+-- cpeMgtStationIPaddress OBJECT-TYPE
+-- ::= { cpeMgtStationConfig 1 }
+
+-- cpeMgtStationPortNumber OBJECT-TYPE
+-- ::= { cpeMgtStationConfig 2 }
+
+cpeProxyMmConfigTable   OBJECT-TYPE
+   SYNTAX SEQUENCE OF CpeProxyMmConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "This table contains management information of pre-configured
+       CPE-MM such as IP address and UDP portnumber.
+      ALCATEL NOTE:
+        SUPPORT: YES
+        TABLESIZE: 5"
+   ::= {cpeMgtStationConfig 3}
+
+cpeProxyMmConfigEntry  OBJECT-TYPE
+   SYNTAX CpeProxyMmConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Every entry contains an IP address and UDP port number for a CPE-MM.
+      Row creation : A CPE-MM entry shall be created in one step by a
+          set-request with all necessary parameter values and
+          cpeProxyMmRowStatus set to createAndGo(4).
+      Row deletion : A CPE-MM entry shall be deleted by setting
+          the cpeProxyMmRowStatus of the specific entry to destroy(6).
+      Index usage : the index is the IP address and UDP port number.
+        Note that entries will be presented to the SNMP manager in full
+        lexicographical order :  sorted on IP address, then on UDP port number.
+      ALCATEL NOTE:
+          SUPPORT: YES"
+   INDEX { cpeProxyMmIPaddress, cpeProxyMmPortNumber }
+   ::= {cpeProxyMmConfigTable 1}
+
+CpeProxyMmConfigEntry ::= SEQUENCE
+ {
+     cpeProxyMmIPaddress               IpAddress,
+     cpeProxyMmPortNumber              INTEGER (1..65535),
+     cpeProxyMmRowStatus               RowStatus
+ }
+
+cpeProxyMmIPaddress OBJECT-TYPE
+    SYNTAX  IpAddress
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object contains the IP address of a CPE management station.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { cpeProxyMmConfigEntry 1 }
+
+cpeProxyMmPortNumber OBJECT-TYPE
+    SYNTAX INTEGER (1..65535)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The object contains the destination UDP port number to which ISAM
+        sends Trap messages.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { cpeProxyMmConfigEntry 2 }
+
+cpeProxyMmRowStatus  OBJECT-TYPE
+   SYNTAX RowStatus
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "This object is used to create, delete or modify a row in this table.
+      To create a new CPE-MM, this object is initially set to createAndGo(4).
+      ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO          INSRVMOD:    NA
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= {cpeProxyMmConfigEntry 3}
+
+-- **************************************************************************
+-- **         IP Proxy Session Configuration                               **
+-- **************************************************************************
+
+cpeIpProxySessionNextFreeProtocolPort OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "This object returns the next free protocol port.
+         The value 0 indicates that no free port is available.
+        ALCATEL NOTE:
+            ACCESS:      NA              USAGE:       NA
+            PERSIST:     NA              INSRVMOD:    NA
+            RANGE:       0|13410..13457  DEFVALUE:    NA
+            UNITS:       NA              SPARSE:      NA
+            DESCR:       NA"
+::= { cpeMgtStationConfig 4 }
+
+
+cpeIpProxySessionTable   OBJECT-TYPE
+   SYNTAX SEQUENCE OF CpeIpProxySessionEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "This table contains session information.
+      ALCATEL NOTE:
+        SUPPORT: YES
+        TABLESIZE: 48"
+   ::= {cpeMgtStationConfig 5}
+
+cpeIpProxySessionEntry  OBJECT-TYPE
+   SYNTAX CpeIpProxySessionEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Every entry contains a protocol port and CPE identification.
+      Row creation : A session entry shall be created in one step by a
+          set-request with all necessary parameter values and
+          cpeIpProxySessionRowStatus set to createAndGo(4)
+          A row can only be created when the system mode is
+          enable-iprelay (3).
+          The value of the protocol port shall be unique.
+      Row deletion : A session entry shall be deleted by setting
+          the cpeIpProxySessionRowStatus of the specific entry to destroy(6)
+      Index usage : the index is the port number.
+        Note that entries will be presented to the SNMP manager in full
+        lexicographical order :  sorted on port number.
+      ALCATEL NOTE:
+          SUPPORT: YES"
+   INDEX { cpeIpProxySessionPortId }
+   ::= {cpeIpProxySessionTable 1}
+
+CpeIpProxySessionEntry ::= SEQUENCE
+ {
+     cpeIpProxySessionPortId              InterfaceIndex,
+     cpeIpProxySessionProtocolPort        INTEGER,
+     cpeIpProxySessionRowStatus           RowStatus
+ }
+
+cpeIpProxySessionPortId OBJECT-TYPE
+    SYNTAX  InterfaceIndex
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The object contains the ifIndex identifying the port to which the
+        CPE is connected.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { cpeIpProxySessionEntry 1 }
+
+cpeIpProxySessionProtocolPort OBJECT-TYPE
+    SYNTAX  INTEGER (0..65535)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This object contains the protocol port to be used by the
+        CPE manager to communicate with a CPE, identified by
+        cpeIpProxySessionPortId.
+        If 0 is set, the first free protocol port in the range
+        13410-13457 will be allocated. If no free port is available,
+        the request will fail.
+        ALCATEL NOTE:
+            ACCESS:      NA              USAGE:       NA
+            PERSIST:     YES             INSRVMOD:    NO
+            RANGE:       0|13410..13457  DEFVALUE:    NA
+            UNITS:       NA              SPARSE:      NA
+            DESCR:       NA"
+::= { cpeIpProxySessionEntry 2 }
+
+cpeIpProxySessionRowStatus  OBJECT-TYPE
+   SYNTAX RowStatus
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "This object is used to create, delete or modify a row in this table.
+      To create a new session, this object is initially set to createAndGo(4).
+      ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO          INSRVMOD:    NA
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= {cpeIpProxySessionEntry 3}
+
+
+-- **************************************************************************
+-- **      CPE remote management statistical counters per system level     **
+-- **************************************************************************
+
+cpeProxySystemCounter OBJECT IDENTIFIER ::= { cpeProxyMIB 3 }
+
+-- cpeProxySystemInTotal OBJECT-TYPE
+-- ::= { cpeProxySystemCounter 1}
+
+-- cpeProxySystemOutTotal OBJECT-TYPE
+-- ::= { cpeProxySystemCounter 2}
+
+-- cpeProxySystemInDiscard OBJECT-TYPE
+-- ::= { cpeProxySystemCounter 3}
+
+cpeProxySystemCPEDiscard OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of discarded CPE management messages, received from CPE
+         via the basic management channel 0/16.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       SNMP msgs    SPARSE:      NA
+            DESCR:"
+   ::= { cpeProxySystemCounter 4}
+
+cpeIpProxyDiscard OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of discarded packets from either a CPE manager or CPE.
+          These are IP packets which are invalid or could not be matched to
+          a management session.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       packets      SPARSE:      NA
+            DESCR:"
+   ::= { cpeProxySystemCounter 5}
+
+-- **************************************************************************
+-- **      CPE remote management statistical counters                      **
+-- **************************************************************************
+
+cpeProxyMmStats OBJECT IDENTIFIER ::= { cpeProxyMIB 5 }
+
+-- **************************************************************************
+-- **      CPE remote management statistical counters per CPE-MM           **
+-- **************************************************************************
+
+cpeProxyMmStatsTable  OBJECT-TYPE
+   SYNTAX SEQUENCE OF CpeProxyMmStatsEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "This table contains counters information per configured CPE-MM.
+      ALCATEL NOTE:
+        SUPPORT: YES
+        TABLESIZE: 5"
+   ::= {cpeProxyMmStats 1}
+
+cpeProxyMmStatsEntry  OBJECT-TYPE
+   SYNTAX CpeProxyMmStatsEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Every entry contains 3 counters for a CPE-MM.
+      Row creation : An entry is created by the system when a CPE-MM entry
+          is created in the cpeMgtMmStationConfigTable
+      Row deletion : An entry is deleted by the system when a CPE-MM entry
+          is deleted in the cpeMgtMmStationConfigTable
+      Index usage : the index is the IP address and port number.
+        Note that entries will be presented to the SNMP manager in full
+        lexicographical order :  sorted on IP address, then on port number.
+      ALCATEL NOTE:
+          SUPPORT: YES"
+   INDEX { cpeProxyMmIPaddress }
+   ::= {cpeProxyMmStatsTable 1}
+
+CpeProxyMmStatsEntry ::= SEQUENCE
+ {
+     cpeProxyMmInTotal              Counter,
+     cpeProxyMmOutTotal             Counter,
+     cpeProxyMmInDiscard            Counter
+ }
+
+cpeProxyMmInTotal OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of received CPE remote management packets from the
+        CPE management station specified by cpeMgtMmStationIPaddress.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       SNMP msgs    SPARSE:      NA
+            DESCR:       NA"
+::= { cpeProxyMmStatsEntry 1}
+
+cpeProxyMmOutTotal OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of transmitted CPE remote management packets to the
+        CPE management station specified by cpeMgtMmStationIPaddress.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       SNMP msgs    SPARSE:      NA
+            DESCR:       NA"
+::= { cpeProxyMmStatsEntry 2}
+
+cpeProxyMmInDiscard OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of discarded CPE remote management packets from CPE
+        management station specified by cpeMgtMmStationIPaddress.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       SNMP msgs    SPARSE:      NA
+            DESCR:       NA"
+::= { cpeProxyMmStatsEntry 3}
+
+-- **************************************************************************
+-- **      CPE remote management statistical counters per session          **
+-- **************************************************************************
+
+cpeIpProxyStatsTable  OBJECT-TYPE
+   SYNTAX SEQUENCE OF CpeIpProxyStatsEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "This table contains counters information per configured session.
+      ALCATEL NOTE:
+        SUPPORT: YES
+        TABLESIZE: 48"
+   ::= {cpeProxyMmStats 2}
+
+cpeIpProxyStatsEntry  OBJECT-TYPE
+   SYNTAX CpeIpProxyStatsEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Every entry contains 2 counters related to a session.
+      Row creation : An entry is created by the system when a session entry
+          is created in the cpeIpProxySessionTable
+      Row deletion : An entry is deleted by the system when a session entry
+          is deleted in the cpeIpProxySessionTable
+      Index usage : the index is the port ID.
+        Note that entries will be presented to the SNMP manager in full
+        lexicographical order :  sorted on Port ID.
+      ALCATEL NOTE:
+          SUPPORT: YES"
+   INDEX { cpeIpProxySessionPortId }
+   ::= {cpeIpProxyStatsTable 1}
+
+CpeIpProxyStatsEntry ::= SEQUENCE
+ {
+     cpeIpProxyInTotal              Counter,
+     cpeIpProxyOutTotal             Counter
+ }
+
+cpeIpProxyInTotal OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of received packets from the CPE management station
+        for the session identified by ipProxySessionPortId.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       packets      SPARSE:      NA
+            DESCR:       NA"
+::= { cpeIpProxyStatsEntry 1}
+
+cpeIpProxyOutTotal OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of transmitted CPE  management packets to the
+        CPE management station that uses the session identified by
+        ipProxySessionPortId.
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       packets      SPARSE:      NA
+            DESCR:       NA"
+::= { cpeIpProxyStatsEntry 2}
+
+-- **************************************************************************
+-- **      Sysconfig Identification table for Boottrap filtering           **
+-- **************************************************************************
+
+
+-- cpeProxySysConfigIdTable  OBJECT-TYPE
+-- ::= { cpeProxyMIB 4 }
+
+END
+

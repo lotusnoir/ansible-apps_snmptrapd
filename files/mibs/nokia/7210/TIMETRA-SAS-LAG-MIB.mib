@@ -1,0 +1,117 @@
+TIMETRA-SAS-LAG-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Counter32, Unsigned32, Integer32, Gauge32
+        FROM SNMPv2-SMI
+
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+
+    timetraSASObjs, timetraSASModules      
+        FROM TIMETRA-SAS-GLOBAL-MIB
+
+    tLagConfigEntry
+        FROM TIMETRA-LAG-MIB
+    ;
+
+timetraSASLagMIBModule   MODULE-IDENTITY
+        LAST-UPDATED "201501010000Z"
+        ORGANIZATION "Nokia"
+        CONTACT-INFO
+            "Nokia SROS Support
+             Web: http://www.nokia.com"
+        DESCRIPTION
+        "This document is the SNMP MIB module to manage and provision 
+         the IEEE 802.3ad Link Aggregation Group operation on Nokia 
+         SROS systems.
+
+         Copyright 2003-2015 Nokia.  All rights reserved.
+         Reproduction of this document is authorized on the condition that
+         the foregoing copyright notice is included.
+
+         This SNMP MIB module (Specification) embodies Nokia's
+         proprietary intellectual property.  Nokia retains 
+         all title and ownership in the Specification, including any 
+         revisions.
+
+         Nokia grants all interested parties a non-exclusive 
+         license to use and distribute an unmodified copy of this 
+         Specification in connection with management of Nokia 
+         products, and without fee, provided this copyright notice and 
+         license appear on all copies.
+
+         This Specification is supplied 'as is', and Nokia 
+         makes no warranty, either express or implied, as to the use, 
+         operation, condition, or performance of the Specification."
+
+--
+--  Revision History
+--
+        REVISION        "200102090000Z"
+        DESCRIPTION     "Rev 0.1                15 Jun 2016 00:00
+                        Initial version of the TIMETRA-SAS-LAG-MIB."
+
+        ::= { timetraSASModules 75 }
+
+tLagSASObjects                  OBJECT IDENTIFIER ::= { timetraSASObjs 75 }
+
+--
+-- textual conventions
+--
+
+--
+-- mib objects
+--
+
+tLagConfigExtnTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF TLagConfigExtnEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "Configuration information about each Link Aggregation Group."
+    ::= { tLagSASObjects 1 }
+
+tLagConfigExtnEntry OBJECT-TYPE
+    SYNTAX     TLagConfigExtnEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+        "An entry (conceptual row) in the tLagConfigTable.
+        Each entry represents a Link Aggregation Group.
+        Create or destroy rows to add or remove Link Aggregation Groups (LAG).
+
+        After tLagRowStatus is set to active(1), a corresponding
+        entry is created in IEEE8023-LAG-MIB dot3adAggTable.
+
+        The corresponding entry in IEEE8023-LAG-MIB dot3adAggTable is 
+        removed when tLagRowStatus is set to destroy(6).
+        
+        Use ifAdminStatus to set interface up and down for this LAG entry.
+        
+        Use ifAlias for the interface description.
+        "
+    AUGMENTS    { tLagConfigEntry }
+    ::= { tLagConfigExtnTable 1 }
+
+TLagConfigExtnEntry ::= SEQUENCE {
+    tLagLoadBalancing       INTEGER
+    }
+
+tLagLoadBalancing    OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    hash1       (0),
+                    hash2       (1),
+                    default     (2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+                "This MIB supports different hash configuration"
+    DEFVAL      { default }
+    ::= { tLagConfigExtnEntry 1 }
+
+-- 
+-- 
+
+END

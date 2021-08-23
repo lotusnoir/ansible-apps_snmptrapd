@@ -1,0 +1,499 @@
+AOS-CORE-ALARM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+             FROM SNMPv2-CONF
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, Integer32
+             FROM SNMPv2-SMI
+    TimeStamp, DisplayString, TruthValue, RowPointer,
+    TEXTUAL-CONVENTION
+             FROM SNMPv2-TC
+    aosCommon
+             FROM ADVA-MIB;
+
+aosCoreAlarmMIB MODULE-IDENTITY
+    LAST-UPDATED    "201510230000Z"
+    ORGANIZATION    "ADVA Optical Networking"
+    CONTACT-INFO
+                    "ADVA Optical Networking, Inc."
+    DESCRIPTION     "This module defines the Alarm Monitoring MIB definitions
+                     used by the AOS based product lines.
+                     Copyright (C) ADVA Optical Networking."
+    REVISION        "201510230000Z"
+    DESCRIPTION     "Initial release."
+    ::= {aosCommon 1}
+
+--
+-- OID definitions
+--
+alarmObjects             OBJECT IDENTIFIER ::= {aosCoreAlarmMIB 1}
+alarmNotifications       OBJECT IDENTIFIER ::= {aosCoreAlarmMIB 2}
+alarmConformance         OBJECT IDENTIFIER ::= {aosCoreAlarmMIB 3}
+alarmNotificationsPrefix OBJECT IDENTIFIER ::= {alarmNotifications 0}
+--
+-- Textual conventions.
+--
+ServiceEffect ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Indicates whether a condition is service affecting or not."
+    SYNTAX       INTEGER {
+                   none(0),
+                   nonServiceAffecting(1),
+                   serviceAffecting(2)
+                 }
+
+NotificationCode ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Indicates the severity of an alarm/condition."
+    SYNTAX       INTEGER {
+                   critical(1),
+                   major(2),
+                   minor(3),
+                   warning(4),
+                   notAlarmed(5),
+                   notReported(6),
+                   clear(7)
+                 }
+
+Direction ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Specifies the direction associated with the alarm/condition."
+    SYNTAX       INTEGER {
+                   noDirection(1),
+                   transmit(2),
+                   receive(3),
+                   biDirectional(4)
+                 }
+
+Location ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Identifies the location associated with the alarm/condition."
+    SYNTAX       INTEGER {
+                   nearEnd(1),
+                   farEnd(2),
+                   noLocation(3)
+                 }
+
+--
+-- New values may be added to future releases as long as existing
+-- values are preserved.
+--
+ConditionType ::= TEXTUAL-CONVENTION
+    STATUS     current
+    DESCRIPTION
+        "Identifies the type of condition or alarm being reported."
+    SYNTAX     INTEGER {
+                 voltAnr(1),
+                 removed(2),
+                 fault(3),
+                 mea(4),
+                 incompatibleHardware(5),
+                 meaApprove(6),
+                 meaAccept(7),
+                 meaCapability(8),
+                 fwPackageMismatch(9),
+                 fwReboot(10),
+                 backplaneCommFail(11),
+                 meaPhys(12),
+                 meaDiffer(13),
+                 psuRedundancyMismatch(14),
+                 insufficientPower(15),
+                 backplaneEepromCommFail(16),
+                 powerFeedUndervoltage(17),
+                 powerFeedAFail(18),
+                 powerFeedBFail(19),
+                 outPowerFail(20),
+                 tcaOutCurrentHi(21),
+                 tcaPowerConsumptionHi(22),
+                 tcaTempHi(23),
+                 tcaTempLo(24),
+                 lossOfSignal(25),
+                 laserFail(26),
+                 forceLaserOn(27),
+                 forceTransmitShutdown(28),
+                 lossOfClock(29),
+                 lossOfOverhead(30),
+                 lossOfPrbsPattern(31),
+                 laserOnDelay(32),
+                 autoPowerReduction(33),
+                 laserTempHi(34),
+                 supportingEqptFailure(35),
+                 payloadMissingIndication(36),
+                 lossOfSignalPayload(37),
+                 tcaOptRcvPowerHi(38),
+                 tcaOptTrmtPowerHi(39),
+                 tcaOptLaserBiasCurHi(40),
+                 laserTempHi(41),
+                 tcaOptRcvPowerLo(42),
+                 tcaOptTrmtPowerLo(43),
+                 laserTempLo(44),
+                 alarmIndicatorSigDefect(45),
+                 backwardDefectIndicator(46),
+                 backwardDefectIndicatorPayload(47),
+                 backwardDefectIndicatorOverhead(48),
+                 clientSigFail(49),
+                 degradedSig(50),
+                 forwardDefectIndicatorPayload(51),
+                 forwardDefectIndicatorOverhead(52),
+                 incomingAlignError(53),
+                 backwardIncomingAlignError(54),
+                 lossOfFrame(55),
+                 lossOfMultiframe(56),
+                 lossOfFrameAndMultiframe(57),
+                 lockedCondition(58),
+                 lossOfTandemConn(59),
+                 multiplexStructIdentifierMismatch(60),
+                 openConnIndication(61),
+                 payloadMismatch(62),
+                 serverSigFail(63),
+                 serverSigFailPayload(64),
+                 serverSigFailOverhead(65),
+                 trailSigFail(66),
+                 trailSigFailPayload(67),
+                 trailSigFailOverhead(68),
+                 trailTraceIdentifierMismatch(69),
+                 lossOfSignalOverhead(70),
+                 pumpEndOfLife(71),
+                 midstageLossHi(72),
+                 ampControlAbnormal(73),
+                 autoPowerShutdown(74),
+                 voaControlFail(75),
+                 gainControlFail(76),
+                 tiltControlFail(77),
+                 optLimitHt(78),
+                 optLimitHtEx(79),
+                 oscLaserFail(80),
+                 oscPower(81),
+                 lossOfSigMidstage(82),
+                 lossOfOpuMultiframeId(83),
+                 tcaUnavailableSecondsHi(84),
+                 tcaErroredSecondHi(85),
+                 tcaSeverlyErroredSecondHi(86),
+                 tcaBackgroundBlockErrorsHi(87),
+                 tcaOscOptLaserBiasCurHi(88),
+                 tcaOscLaserTempHi(89),
+                 tcaOscOptRcvPowerHi(90),
+                 tcaOscOptTrmtPowerHi(91),
+                 tcaSesPayloadHi(92),
+                 tcaSesOverheadHi(93),
+                 tcaUasPayloadHi(94),
+                 tcaUasOverheadHi(95),
+                 tcaOscLaserTempLo(96),
+                 tcaOscOptRcvPowerLo(97),
+                 tcaOscOptTrmtPowerLo(98),
+                 lossOfModemSync(99),
+                 lossOfCouplingAlignment(100),
+                 autoCdcFail(101),
+                 tcaDiffGroupDelayHi(102),
+                 tcaCdcHi(103),
+                 tcaCarrierFreqOffsetHi(104),
+                 tcaSnrLo(105),
+                 tcaCdcLo(106),
+                 tcaCarrierFreqOffsetLo(107),
+                 lnkFail(108),
+                 lnkCblFault(109),
+                 lnkCblRmv(110),
+                 lnkAutonegFail(111),
+                 lnkNoRootCause(112),
+                 fendDupModeUnknown(113),
+                 jabThldExceed(114),
+                 lossOfSync(115),
+                 rxLocalFault(116),
+                 txLocalFault(117),
+                 lossOfBlockLock(118),
+                 hiBer(119),
+                 autoCdcInProgress(120),
+                 lossOfBlockLockLane(121),
+                 lossOfLaneAlgnMarkLane(122),
+                 lnkDownDeact(123),
+                 negBwExceed(124),
+                 rxSsf(125),
+                 txSsf(126),
+                 outputOvercurrent(127),
+                 tcaOutputPowerHi(128),
+                 lossOfAlignment(129),
+                 ntpServerUnavailable(130),
+                 tunedFrequencyMismatch(131),
+                 temperatureHi(133),
+                 temperatureLo(134),
+                 manifestMismatch(135),
+                 manifestIncomplete(136),
+                 laserBiasCurrentAbnormal(137),
+                 lossOfTrafficAfterFirmwareActivation(138),
+                 softwareVersionMismatch(139),
+                 fanFault(140),
+                 portConfigMismatch(141),
+                 licenseServerDisconnect(142),
+                 hwResourceUnavailableRecoverable(143),
+                 licenseInvalid(144),
+                 ssdWearoutLevelWarning(145),
+                 licenseExpire(146),
+                 databaseMismatch(147),
+                 licenseMissing(148),
+                 licenseOverdraft(149),
+                 cryptoPasswordMissing(150),
+                 vmResumeFailed(151),
+                 keyExchangeAuthMissing(152),
+                 keyLifetimeExpired(153),
+                 tamperDetected(154),
+                 selfTestFailed(155),
+                 cryptoTemporaryLockout(156),
+                 batteryLow(157),
+                 selfTestInProgress(158),
+                 vmCrashed(159),
+                 keyExchangeDegrade(160),
+                 internalEncryptionFailed(161),
+                 keyExchangeInProgress(162),
+                 keyExchangeChannelFail(163),
+                 terminalLoopbackInProgress(164),
+                 localOscBiarCurAbnormal(165),
+                 licenseFileMissing(166),
+                 licenseServerConfigMissing(167),
+                 hardwareBusy(168),
+                 fanFilterReplace(169),
+                 rebootInProgress(170),
+                 prbsDetectionInProgress(171),
+                 tcaOutOfFrameSecondHi(172),
+                 msLineAis(173),
+                 localOscTemperatureLo(174),
+                 localOscTemperatureHi(175),
+                 facilityLoopbackInProgress(176),
+                 prbsGenerationInProgress(177),
+                 transmitSignalFail(178)
+               }
+
+
+ConditionDescr ::= TEXTUAL-CONVENTION
+    STATUS     current
+    DESCRIPTION
+        "A detailed text description of the condition or alarm
+         being reported.  This string may contain any printable
+         ASCII character."
+    SYNTAX     OCTET STRING (SIZE (1..64))
+
+ConditionEntityTranslation ::= TEXTUAL-CONVENTION
+    STATUS     current
+    DESCRIPTION
+        "Identifies the entity type on which condition exists."
+    SYNTAX     OCTET STRING (SIZE (1..255))
+--
+-- Scalar definitions.
+--
+
+--
+-- Table definitions.
+--
+aosCoreAlarmTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AosCoreAlarmEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A list of entries corresponding to the standing conditions
+             that exist as alarms.
+
+             Entries cannot be created in this table by management
+             application action."
+    ::= { alarmObjects 1 }
+
+aosCoreAlarmEntry  OBJECT-TYPE
+    SYNTAX     AosCoreAlarmEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry containing information applicable to a particular
+             condition."
+    INDEX { aosCoreAlarmIndex }
+    ::= { aosCoreAlarmTable 1 }
+
+AosCoreAlarmEntry ::= SEQUENCE {
+    aosCoreAlarmIndex              INTEGER,
+    aosCoreAlarmConditionType      ConditionType,
+    aosCoreAlarmEntityTranslation  ConditionEntityTranslation,
+    aosCoreAlarmEntity             RowPointer,
+    aosCoreAlarmCondDescr          ConditionDescr,
+    aosCoreAlarmTimestamp          DisplayString,
+    aosCoreAlarmDirection          Direction,
+    aosCoreAlarmLocation           Location,
+    aosCoreAlarmSrvEff             ServiceEffect,
+    aosCoreAlarmNotifCode          NotificationCode,
+    aosCoreAlarmNotifTimestamp     DisplayString,
+    aosCoreAlarmAdditionalInfo     DisplayString
+}
+
+aosCoreAlarmIndex OBJECT-TYPE
+    SYNTAX     INTEGER
+    MAX-ACCESS accessible-for-notify
+    STATUS     current
+    DESCRIPTION
+         "This object is an order number of an alarm in aosCoreAlarmTable."
+     ::= { aosCoreAlarmEntry 1 }
+
+aosCoreAlarmConditionType OBJECT-TYPE
+    SYNTAX     ConditionType
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "This object identifies the type of the condition."
+     ::= { aosCoreAlarmEntry 2 }
+
+aosCoreAlarmEntityTranslation OBJECT-TYPE
+    SYNTAX     ConditionEntityTranslation
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "This object translates numerical entity representation aosCoreAlarmEntity
+          into Uniform Resource Identifier (URI)."
+     ::= { aosCoreAlarmEntry 3 }
+
+aosCoreAlarmEntity OBJECT-TYPE
+    SYNTAX     RowPointer
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Pointer to the table that contains definition of the alarmed entity."
+     ::= { aosCoreAlarmEntry 4 }
+
+aosCoreAlarmCondDescr OBJECT-TYPE
+    SYNTAX     ConditionDescr
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "This object contains a text description of the condition."
+     ::= { aosCoreAlarmEntry 5 }
+
+aosCoreAlarmTimestamp OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "This object contains the system time when the condition occurred."
+     ::= { aosCoreAlarmEntry 6 }
+
+aosCoreAlarmDirection OBJECT-TYPE
+    SYNTAX     Direction
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "This object identifies the direction of the condition."
+     ::= { aosCoreAlarmEntry 7 }
+
+aosCoreAlarmLocation OBJECT-TYPE
+    SYNTAX     Location
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "This object identifies the location of the condition."
+     ::= { aosCoreAlarmEntry 8 }
+
+aosCoreAlarmSrvEff OBJECT-TYPE
+    SYNTAX     ServiceEffect
+    MAX-ACCESS read-write
+    STATUS     current
+    DESCRIPTION
+         "This object identifies whether the condition is service affecting
+         or not."
+     ::= { aosCoreAlarmEntry 9 }
+
+aosCoreAlarmNotifCode OBJECT-TYPE
+    SYNTAX     NotificationCode
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "This object identifies the severity of the alarm."
+     ::= { aosCoreAlarmEntry 10 }
+
+aosCoreAlarmNotifTimestamp OBJECT-TYPE
+    SYNTAX     DisplayString
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "This object contains the system time when the alarm notification
+          was raised."
+     ::= { aosCoreAlarmEntry 11 }
+
+aosCoreAlarmAdditionalInfo OBJECT-TYPE
+    SYNTAX     DisplayString (SIZE (0..64))
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "This object provides additional information of the alarm."
+     ::= { aosCoreAlarmEntry 12 }
+
+--
+-- Alarm raise/clear trap.
+--
+aosCoreAlarmTrap  NOTIFICATION-TYPE
+    OBJECTS { aosCoreAlarmIndex,
+              aosCoreAlarmConditionType,
+              aosCoreAlarmEntityTranslation,
+              aosCoreAlarmEntity,
+              aosCoreAlarmCondDescr,
+              aosCoreAlarmTimestamp,
+              aosCoreAlarmDirection,
+              aosCoreAlarmLocation,
+              aosCoreAlarmSrvEff,
+              aosCoreAlarmNotifCode,
+              aosCoreAlarmNotifTimestamp,
+              aosCoreAlarmAdditionalInfo
+            }
+    STATUS  current
+    DESCRIPTION
+            "This trap is sent each time an alarm condition is raised and
+             inserted into to the aosCoreAlarmTable.
+             It is also sent each time an alarm condition is cleared and
+             removed from the aosCoreAlarmTable."
+  ::= { alarmNotificationsPrefix 1 }
+
+--
+-- Conformance
+--
+aosCoreAlarmCompliances OBJECT IDENTIFIER ::= {alarmConformance 1}
+aosCoreAlarmGroups      OBJECT IDENTIFIER ::= {alarmConformance 2}
+
+aosCoreAlarmCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "Describes the requirements for conformance to the Alarm
+             Condition Services."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+              aosCoreAlarmObjectGroup, aosCoreAlarmNotifGroup
+        }
+    ::= { aosCoreAlarmCompliances 1 }
+
+aosCoreAlarmObjectGroup OBJECT-GROUP
+    OBJECTS {
+        aosCoreAlarmIndex,
+        aosCoreAlarmConditionType,
+        aosCoreAlarmEntityTranslation,
+        aosCoreAlarmEntity,
+        aosCoreAlarmCondDescr,
+        aosCoreAlarmTimestamp,
+        aosCoreAlarmDirection,
+        aosCoreAlarmLocation,
+        aosCoreAlarmSrvEff,
+        aosCoreAlarmNotifCode,
+        aosCoreAlarmNotifTimestamp,
+        aosCoreAlarmAdditionalInfo
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects used to manage the Alarm
+             Conditions Services."
+    ::= { aosCoreAlarmGroups 1 }
+
+aosCoreAlarmNotifGroup NOTIFICATION-GROUP
+    NOTIFICATIONS {
+        aosCoreAlarmTrap
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of notifications related to the Alarm
+             Conditions Services."
+    ::= { aosCoreAlarmGroups 2 }
+
+END

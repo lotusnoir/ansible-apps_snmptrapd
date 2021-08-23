@@ -1,0 +1,1067 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V3.00
+-- History:
+-- liu chenglong 2003-04-28 Added IPR Decriptions and updated all MIB version to V3.00
+-- ============================================================================
+	HUAWEI-COMMTEST-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			huaweiUtility			
+				FROM HUAWEI-MIB			
+			ifIndex			
+				FROM IF-MIB			
+			OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE			
+				FROM SNMPv2-SMI			
+			RowStatus			
+				FROM SNMPv2-TC;
+	
+	
+		hwTestCommon MODULE-IDENTITY 
+			LAST-UPDATED "200304280900Z"
+			ORGANIZATION "Fix-Net Dep, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floot 5 ,Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,  P.R.C.
+				http://www.huawei.com
+				Zip:518057"
+			DESCRIPTION "huawei common Test MIB"
+			REVISION "200212280900Z"
+			DESCRIPTION
+				"It initilized by FixNet Mib Group .
+				"
+			::= { hwTest 1 }
+		
+		hwTest OBJECT IDENTIFIER ::= { huaweiUtility 21 }
+		
+		hwTestCommonMib OBJECT IDENTIFIER ::= { hwTestCommon 1 }
+		
+		hwTestCommonMIBObjects OBJECT IDENTIFIER ::= { hwTestCommonMib 1 }
+		
+		hwTestGroupOprTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwTestGroupOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"测试组描述表:
+				描述系统内机框所对应的测试组号，由测试组号唯一标识，多个机框可以共享一块测试板。
+				一个测试组同一块测试板一一对应，且测试组号等于测试板所在的机框号"
+			::= { hwTestCommonMIBObjects 1 }
+		
+		hwTestGroupOprEntry OBJECT-TYPE
+			SYNTAX HwTestGroupOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 " "
+			INDEX { hwTestGroupNo }
+			::= { hwTestGroupOprTable 1 }
+		
+		HwTestGroupOprEntry ::=
+			SEQUENCE { 
+				hwTestGroupNo
+					INTEGER,
+				hwTestBoardIfIndex
+					INTEGER,
+				hwTestGroupAssistIfIndex
+					INTEGER,
+				hwTestGroupAssistTelNo
+					OCTET STRING,
+				hwTestGroupRowStatus
+					RowStatus
+			 }
+
+		hwTestGroupNo OBJECT-TYPE
+			SYNTAX INTEGER (0..240)
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Test Group No
+				测试组号,MD5500支持0~240范围内；MA5100支持0~4范围内；MA5300支持0~63范围内。"
+			::= { hwTestGroupOprEntry 1 }
+		
+		hwTestBoardIfIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"TestBoard IfIndex
+				测试板接口索引"
+			::= { hwTestGroupOprEntry 2 }
+		
+		hwTestGroupAssistIfIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"TestGroupAssist Port IfIndex
+				辅助端口接口索引  "
+			::= { hwTestGroupOprEntry 3 }
+		
+		hwTestGroupAssistTelNo OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..16))
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"assistance telephone number(max length 16)
+				辅助电话号码 （最大长度16位 ）   "
+			::= { hwTestGroupOprEntry 4 }
+		
+		hwTestGroupRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Row status(add(4),delete(6))
+				行状态(增加(4),删除(6))         "
+			::= { hwTestGroupOprEntry 5 }
+		
+		hwLoopLineTestOprTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwLoopLineTestOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"用户外线线路测试操作表:
+				实现系统内模拟用户的外形测试功能。 主要是指对用户环路（外线）的
+				各项性能或指标（如线间电容、电阻等）进行测试，然后和用户外线的线路电压，
+				电阻，电容的经验判据作比较。从而给出结论，判断用户外线情况，如未接话机、
+				未挂机等，或者断线、短路等故障，为用户环路的维护提供参考依据"
+			::= { hwTestCommonMIBObjects 2 }
+		
+		hwLoopLineTestOprEntry OBJECT-TYPE
+			SYNTAX HwLoopLineTestOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 " "
+			INDEX { ifIndex }
+			::= { hwLoopLineTestOprTable 1 }
+		
+		HwLoopLineTestOprEntry ::=
+			SEQUENCE { 
+				hwLoopLineTestOprType
+					INTEGER,
+				hwLoopLineTestVoltage
+					INTEGER,
+				hwLoopLineTestResistance
+					INTEGER,
+				hwLoopLineTestCapacitance
+					INTEGER,
+				hwLoopLineTestLoopResistance
+					INTEGER,
+				hwLoopLineTestPoleResistance
+					INTEGER,
+				hwLoopLineTestBusyProcFlag
+					INTEGER,
+				hwLoopLineTestStatus
+					INTEGER,
+				hwLoopLineTestConclusion
+					INTEGER,
+				hwLoopLineTestACAG
+					INTEGER,
+				hwLoopLineTestACBG
+					INTEGER,
+				hwLoopLineTestACAB
+					INTEGER,
+				hwLoopLineTestDCAG
+					INTEGER,
+				hwLoopLineTestDCBG
+					INTEGER,
+				hwLoopLineTestDCAB
+					INTEGER,
+				hwLoopLineTestRAG
+					INTEGER,
+				hwLoopLineTestRBG
+					INTEGER,
+				hwLoopLineTestRAB
+					INTEGER,
+				hwLoopLineTestCapAG
+					INTEGER,
+				hwLoopLineTestCapBG
+					INTEGER,
+				hwLoopLineTestCapAB
+					INTEGER,
+				hwLoopLineTestLR
+					INTEGER,
+				hwLoopLineTestRABResPole
+					INTEGER,
+				hwLoopLineTestMSocket
+					INTEGER,
+                hwLoopLineTestBtssPowerProcFlag
+					INTEGER
+			 }
+
+		hwLoopLineTestOprType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				stop(1),
+				start(2)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Loop-Line Test-Operation type(enumeration: 1:stop 2:start)
+				操作类型( 枚举：1：停止，2：启动) "
+			::= { hwLoopLineTestOprEntry 1 }
+		
+		hwLoopLineTestVoltage OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				notest(1),
+				test(2)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Loop-Line Test-Voltage(enumeration: 1:don't test 2:test)
+				外线测试-电压( 枚举: 1:不测试, 2:测试 )       "
+			::= { hwLoopLineTestOprEntry 2 }
+		
+		hwLoopLineTestResistance OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				notest(1),
+				test(2)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Loop-Line Test-Resistance(enumeration: 1:don't test 2:test)
+				外线测试-电阻( 枚举: 1:不测试, 2:测试 )        "
+			::= { hwLoopLineTestOprEntry 3 }
+		
+		hwLoopLineTestCapacitance OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				notest(1),
+				test(2)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Loop-Line Test-Capacitance(enumeration: 1:don't test 2:test)
+				外线测试-电容( 枚举: 1:不测试, 2:测试 )        "
+			::= { hwLoopLineTestOprEntry 4 }
+		
+		hwLoopLineTestLoopResistance OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				notest(1),
+				test(2)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Loop-Line Test-Loop resistance(enumeration: 1:don't test 2:test)
+				外线测试-环阻( 枚举: 1:不测试, 2:测试 )        "
+			::= { hwLoopLineTestOprEntry 5 }
+		
+		hwLoopLineTestPoleResistance OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				notest(1),
+				test(2)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Loop-Line Test-Polarity reversal resistance(enumeration: 1:don't test 2:test)
+				外线测试-反极性电阻( 枚举: 1:不测试, 2:测试 )  "
+			::= { hwLoopLineTestOprEntry 6 }
+		
+		hwLoopLineTestBusyProcFlag OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				busyNoTest(1),
+				busyTest(2),
+				busystrenTest(3)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Loop-Line Test-Busy process(enumeration: 1: no test on busy 2: 
+				remedy test on busy 3: forced test on busy )
+				遇忙处理 ( 枚举: 1：遇忙不测, 2：遇忙补测, 3:遇忙强测 ）            "
+			::= { hwLoopLineTestOprEntry 7 }
+		
+		hwLoopLineTestStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				testFail(2),
+				portBusy(3),
+				testOutOfTime(4),
+				testingAbnormal(5),
+				broadbandtesting(6),capturefail(7),notratb(8)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Loop-Line Test-Test state(enumeration: 1: normal 2: abnormal 3: 
+				the port is busy 4: test out of time 5: test abnormal
+				6: broadband testing 7: capture fail 8: relay transfer board not exist)
+				测试状态(枚举：1 ：正常 2 : 异常 3：端口正忙 4：测试超时 
+				5:测试异常终止 6:宽带正在测试 7:抓线失败 8:转接板不在位)  "
+			::= { hwLoopLineTestOprEntry 8 }
+		
+		hwLoopLineTestConclusion OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				meetLine(2),
+				aLineMix(3),
+				bLineMix(4),
+				doubleMix(5),
+				aLineEarth(6),
+				bLineEarth(7),
+				doublelineearth(8),
+				selfMix(9),
+				abLine(10),
+				aLineFree(11),
+				bLineEarthFree(12),
+				doubleLineEarthFree(13),
+				abLineFree(14),
+				killLine(15),
+				noPutDownTele(16),
+				unknow(17),
+				selfMix-inMDF(18),
+				selfMix-outMDF(19),
+				cutLine-inMDF(20),
+				cutLine-outMDF(21),
+				dCvoltagePowerFeed(30),
+				aCvoltageRinging(31),
+				dCvoltageOffhook(32),
+				dCvoltage(33),
+				aCvoltage(34)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Loop-Line Test Conclusion(enumeration:
+				1: normal 2:contact with the power line 3: A line mixed with others 4: B line mixes with others
+				5: mixed with others (two lines) 6: A line grounding 7: B line grounding 8: AB grounding
+				9: self-mixed (small resistance, self-mixed) 10: A-B poor insulation 11: A-ground leakage
+				12: B-ground leakage 13: AB ground leakage 14: A-B leakage 15: phone not connected
+				16: not on-hook 17: unknown  18: self-Mixed(inMDF) 19: self-Mixed(outMDF) 20: cutLine(inMDF) 21: cutLine(outMDF) 
+				22: A-B voltage abnormal 23:lines voltage abnormal 24:lines resistance abnormal 25: A-B resistance abnormal
+				26: self-mixed (small resistance, self-mixed) or not on-hook 27:lines abnormal
+				30: DC voltage(Power feed) 31: AC voltage(Ringing) 
+				32: DC voltage(Offhook) 33: DC voltage 34: AC voltage"
+			::= { hwLoopLineTestOprEntry 9 }
+		
+		hwLoopLineTestACAG OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A->ground AC voltage (unit: millivlot)"
+			::= { hwLoopLineTestOprEntry 10 }
+		
+		hwLoopLineTestACBG OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"B->ground AC voltage(unit: millivlot)"
+			::= { hwLoopLineTestOprEntry 11 }
+		
+		hwLoopLineTestACAB OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A->B AC voltage(unit: millivlot)"
+			::= { hwLoopLineTestOprEntry 12 }
+		
+		hwLoopLineTestDCAG OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A->ground DC voltage(unit: millivlot)"
+			::= { hwLoopLineTestOprEntry 13 }
+		
+		hwLoopLineTestDCBG OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"B->ground DC voltage(unit: millivlot)"
+			::= { hwLoopLineTestOprEntry 14 }
+		
+		hwLoopLineTestDCAB OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A->B  DC voltage(unit: millivlot)"
+			::= { hwLoopLineTestOprEntry 15 }
+		
+		hwLoopLineTestRAG OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A->ground insulation resistance(unit: ohm)
+				A线对地电阻(单位：欧姆)          "
+			::= { hwLoopLineTestOprEntry 16 }
+		
+		hwLoopLineTestRBG OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A->ground insulation resistance(unit: ohm)
+				B线对地电阻(单位：欧姆)           "
+			::= { hwLoopLineTestOprEntry 17 }
+		
+		hwLoopLineTestRAB OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A->B insulation resistance(unit: ohm)
+				AB线电阻(单位：欧姆)              "
+			::= { hwLoopLineTestOprEntry 18 }
+		
+		hwLoopLineTestCapAG OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A->ground capacitance (unit: nanofarad)
+				A线对地电容(单位：纳法)          "
+			::= { hwLoopLineTestOprEntry 19 }
+		
+		hwLoopLineTestCapBG OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"B->ground capacitance(unit: nanofarad)
+				B线对地电容(单位：纳法)          "
+			::= { hwLoopLineTestOprEntry 20 }
+		
+		hwLoopLineTestCapAB OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A->B capacitance(unit: nanofarad)
+				AB线电容(单位：纳法)             "
+			::= { hwLoopLineTestOprEntry 21 }
+		
+		hwLoopLineTestLR OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"loop resistance(unit: ohm)
+				环阻(单位：欧姆)                 "
+			::= { hwLoopLineTestOprEntry 22 }
+		
+		hwLoopLineTestRABResPole OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"A->B polarity reversal resistance(unit: ohm)
+				AB线反极性电阻(单位：欧姆)       "
+			::= { hwLoopLineTestOprEntry 23 }
+		
+		hwLoopLineTestMSocket OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				notconnected(1),
+				connected(2),
+				aBReversed(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Connect M-SOCKET (enumeration: 1: not connected M-SOCKET 
+				2: connected M-SOCKET 3: AB line reversed )
+				是否连接M-SOCKET（枚举：1：未连接M-SOCKET，2：已连接M-SOCKET, 3:AB线接反）    "
+			::= { hwLoopLineTestOprEntry 24 }
+    
+        hwLoopLineTestBtssPowerProcFlag OBJECT-TYPE
+            SYNTAX      INTEGER
+                {
+                noTest(1),
+                test(2)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Loop-Line Test-BTSS line with power process(enumeration: 1: no test 2: test )
+                宽带线路馈电检测处理 ( 枚举: 1：不测线路馈电状况, 2：测试线路馈电状况 ）      "
+            ::= { hwLoopLineTestOprEntry 25 }
+		
+		hwMeterTestOprTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwMeterTestOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 " "
+			::= { hwTestCommonMIBObjects 3 }
+		
+		hwMeterTestOprEntry OBJECT-TYPE
+			SYNTAX HwMeterTestOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"仪表测试操作表:
+				实现系统内仪表测试操作功能。 测试板的仪表测试功能提供了与外部测试仪表（如万用表）的接口"
+			INDEX { ifIndex }
+			::= { hwMeterTestOprTable 1 }
+		
+		HwMeterTestOprEntry ::=
+			SEQUENCE { 
+				hwMeterTestOprType
+					INTEGER,
+				hwMeterTestItem
+					INTEGER,
+				hwMeterTestStatus
+					INTEGER,
+				hwMeterTestBusyFlag
+					INTEGER
+			 }
+
+		hwMeterTestOprType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				stop(1),
+				start(2)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Operation type(enumeration: 1: stop 2:start )
+				操作类型(枚举：1: 停止测试,2:启动测试 ) "
+			::= { hwMeterTestOprEntry 1 }
+		
+		hwMeterTestItem OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				inline(1),
+				outline(2)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Test items (enumeration: 1: in test 2: out test )
+				测试选项 (1：内线测试, 2：外线测试)     "
+			::= { hwMeterTestOprEntry 2 }
+		
+		hwMeterTestStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				success(1),
+				fail(2),
+				portbusy(3),
+				outoftime(4),
+				testingAbnormal(5),
+				broadbandtesting(6),capturefail(7),notratb(8)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"test state (enumeration: 1: no test on busy 
+				2: remedy test on busy 3: forced test on busy 4:test out of time 
+				5: test abnormal 6: broadband testing 7: capture fail 8: relay transfer board not exist)
+				测试状态 (枚举：1：正常 2: 异常 3：端口正忙 4：测试超时 
+				5:测试异常终止 6:宽带正在测试 7:抓线失败 8:转接板不在位) "
+			::= { hwMeterTestOprEntry 3 }
+		
+		hwMeterTestBusyFlag OBJECT-TYPE
+			SYNTAX INTEGER   { busyNoTest(1),busyTest(2),busystrenTest(3) }
+			MAX-ACCESS  read-write
+			STATUS current
+			DESCRIPTION
+				"Meter test busy flag( 1: no test on busy 2: test on busy 3: forced test on busy )
+				仪表测试强制标识 ( 1：遇忙不测, 2：遇忙补测, 3:遇忙强测 ） "
+			::= { hwMeterTestOprEntry 4 }
+
+
+		hwTestBoardDiagnoseTestOprTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwTestBoardDiagnoseTestOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"测试板单板自检测试操作表:
+				实现系统内测试单板自检测试功能。用以确定测试板是否可以正常工作。"
+			::= { hwTestCommonMIBObjects 4 }
+		
+		hwTestBoardDiagnoseTestOprEntry OBJECT-TYPE
+			SYNTAX HwTestBoardDiagnoseTestOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 " "
+			INDEX { ifIndex }
+			::= { hwTestBoardDiagnoseTestOprTable 1 }
+		
+		HwTestBoardDiagnoseTestOprEntry ::=
+			SEQUENCE { 
+				hwTestBoardDiagnoseTestOprType
+					INTEGER,
+				hwTestBoardDiagnoseTestResult
+					INTEGER,
+				hwTestBoardDiagnoseTestRAM
+					INTEGER,
+				hwTestBoardDiagnoseTestVoltage
+					INTEGER,
+				hwTestBoardDiagnoseTestResistance
+					INTEGER,
+				hwTestBoardDiagnoseTestSignal
+					INTEGER,
+				hwTestBoardDiagnoseTestDTMF
+					INTEGER,
+				hwTestBoardDiagnoseTestRing
+					INTEGER,
+				hwTestBoardDiagnoseTestOnOffHook
+					INTEGER,
+				hwTestBoardDiagnoseTestPole
+					INTEGER,
+				hwTestBoardDiagnoseTestISDNU
+					INTEGER,
+				hwTestBoardDiagnoseTestBitErrCode
+					INTEGER,
+			    hwTestBoardDiagnoseTestCapacitance
+			        INTEGER
+			 }
+
+		hwTestBoardDiagnoseTestOprType OBJECT-TYPE
+			SYNTAX INTEGER { start(2) }
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Operation type （enumeration: 2: start ）
+				操作类型(枚举：2:启动自检)   "
+			::= { hwTestBoardDiagnoseTestOprEntry 1 }
+		
+		hwTestBoardDiagnoseTestResult OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				selfTestOver(1),
+				selfTestFail(2),
+				testingAbnormal(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Self-Diagnose result (enumeration: 1: self-diagnose successful 
+				2: self-diagnose complete failure 3: test abnormal )
+				自检结果(枚举：1：自检完成，2：自检失败 3:测试异常终止 )   "
+			::= { hwTestBoardDiagnoseTestOprEntry 2 }
+		
+		hwTestBoardDiagnoseTestRAM OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"System RAMRAM (enumeration: 1: normal 2: abnormal )
+				结果(枚举：1：正常，2：异常)    "
+			::= { hwTestBoardDiagnoseTestOprEntry 3 }
+		
+		hwTestBoardDiagnoseTestVoltage OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Voltage (enumeration: 1: normal 2: abnormal )
+				电压 (枚举：1：正常，2：异常)      "
+			::= { hwTestBoardDiagnoseTestOprEntry 4 }
+		
+		hwTestBoardDiagnoseTestResistance OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"resistance (enumeration: 1: normal 2: abnormal )
+				电阻(枚举：1：正常，2：异常)       "
+			::= { hwTestBoardDiagnoseTestOprEntry 5 }
+		
+		hwTestBoardDiagnoseTestSignal OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"signal circuit (enumeration: 1: normal 2: abnormal )
+				信号音电路(枚举：1：正常，2：异常)  "
+			::= { hwTestBoardDiagnoseTestOprEntry 6 }
+		
+		hwTestBoardDiagnoseTestDTMF OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"DTMF (enumeration: 1: normal 2: abnormal )
+				DTMF(枚举：1：正常，2：异常)       "
+			::= { hwTestBoardDiagnoseTestOprEntry 7 }
+		
+		hwTestBoardDiagnoseTestRing OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Ringing (enumeration: 1: normal 2: abnormal )
+				铃流 (枚举：1：正常，2：异常)      "
+			::= { hwTestBoardDiagnoseTestOprEntry 8 }
+		
+		hwTestBoardDiagnoseTestOnOffHook OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"On off hook (enumeration: 1: normal 2: abnormal )
+				摘挂机(枚举：1：正常，2：异常)     "
+			::= { hwTestBoardDiagnoseTestOprEntry 9 }
+		
+		hwTestBoardDiagnoseTestPole OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Polarity reversal (enumeration: 1: normal 2: abnormal )
+				极性 (枚举：1：正常，2：异常)      "
+			::= { hwTestBoardDiagnoseTestOprEntry 10 }
+		
+		hwTestBoardDiagnoseTestISDNU OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"ISDN U port (enumeration: 1: normal 2: abnormal )
+				ISDN U口(枚举：1：正常，2：异常)   "
+			::= { hwTestBoardDiagnoseTestOprEntry 11 }
+		
+		hwTestBoardDiagnoseTestBitErrCode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Error code test (enumeration: 1: normal 2: abnormal )
+				误码测试(枚举：1：正常，2：异常)   "
+			::= { hwTestBoardDiagnoseTestOprEntry 12 }
+					
+		hwTestBoardDiagnoseTestCapacitance OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				abnormal(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Capacitance (enumeration: 1: normal 2: abnormal )
+				电容 (枚举：1：正常，2：异常)      "
+			::= { hwTestBoardDiagnoseTestOprEntry 13 }
+			
+		hwTestBoardStatusQueryOprTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwTestBoardStatusQueryOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"测试板单板状态查询操作表:
+				实现系统内测试单板状态查询功能。以确定测试板当前的测试状态。"
+			::= { hwTestCommonMIBObjects 5 }
+		
+		hwTestBoardStatusQueryOprEntry OBJECT-TYPE
+			SYNTAX HwTestBoardStatusQueryOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+            DESCRIPTION
+		        "查询测试状态时，索引下传为全F，代表查询无测试板时的测试状态，
+		        否则为对指定测试板的测试状态查询"
+			INDEX { ifIndex }
+			::= { hwTestBoardStatusQueryOprTable 1 }
+		
+		HwTestBoardStatusQueryOprEntry ::=
+			SEQUENCE { 
+				hwTestBoardStatusQueryOprType
+					INTEGER,
+				hwTestBoardStatusQueryResult
+					INTEGER,
+				hwTestBoardStatusQueryVersion
+					INTEGER,
+				hwTestBoardStatusQueryTestItem
+					INTEGER,
+				hwTestBoardStatusTestedBoardIfIndex
+					INTEGER
+			 }
+
+		hwTestBoardStatusQueryOprType OBJECT-TYPE
+			SYNTAX INTEGER { beginQuery(2) }
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Operation type (enumeration: 2: start )
+				操作类型(枚举：2: 启动查询) "
+			::= { hwTestBoardStatusQueryOprEntry 1 }
+		
+		hwTestBoardStatusQueryResult OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				querySuccess(1),
+				queryFail(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Query state (enumeration: 1: Query state successful 2: Query state failure 3: test abnormal )
+				查询结果(枚举：1：查询成功，2：查询失败 3:测试异常终止 ) "
+			::= { hwTestBoardStatusQueryOprEntry 2 }
+		
+		hwTestBoardStatusQueryVersion OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Versiont
+				版本 "
+			::= { hwTestBoardStatusQueryOprEntry 3 }
+		
+		hwTestBoardStatusQueryTestItem OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				testIdle(1),
+				pstnUserInLineTest(2),
+				userLineTest(3),
+				phoneTest(4),
+				manTestOutLine(5),
+				manTestInnerLine(6),
+				halfAutoUserCircuit(7),
+				halfAutoTssPhoneCircuit(8),
+				tssSelfTest(9),
+				testInnerBus(10),
+				testOuterBus(11),
+				digUserOutLineTest(12),
+				digUserInnerLineTest(13),
+				switchToStandIsdnTerminal(14),
+				switchToIsdnSpecialcode(15),
+				testBoarDfault(16),
+				pstnRemoteCallTest(17),  
+				coEmulate(33),
+                cqtTest(34),
+				cqtFRTest(35),
+				cqtTDRTest(36),
+				cqtDMTTest(37),
+				cqtNSETest(38),
+				cqtLBTest(39),
+				cqtLCTest(40),
+                internalcaptureTestedPort(61),
+                externalcaptureTestedPort(62),
+                monitorTest(63),
+                seltTest(64),
+                sendtoneTest(65),
+                checktoneTest(66),
+                anothermainboardistesting(241)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Test item ( enumeration:
+				1: idle 2:pstn inline test 3:loop line test 4:telephone test 5:manual test outline
+				6:manual test inline 7:half auto tss user circuit,meter interface 8:half auto tss telephone circuit,meter interface
+				9:Tss self test 10:test inline bus test 11:test outline bus test 12:isdn outline test 13:isdn inline test
+				14:switch to standard isdn terminal 15:switch to isdn special service telephone number 16:Test board fault
+				17:pstn user remote call test 33:CO simulation test 34: CQT test 35: CQT Frequency Response Measurement 36:CQT Time Domain Reflectometry Measurement 37:CQT Data Rate Prediction Measurement
+				38:CQT Noise Measurement 39:CQT Longitudinal Balance Measurement 40: CQT Load Coil Detection  61: Capture tested port loopline 62: Capture tested port inline
+				63:monitorTest  64:selt Test  65:tone send Test  66:tone check Test  241:another main board is testing) "
+			::= { hwTestBoardStatusQueryOprEntry 4 }
+		
+		hwTestBoardStatusTestedBoardIfIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Tested port IfIndex
+				被测端口接口索引 "
+			::= { hwTestBoardStatusQueryOprEntry 5 }
+		
+		hwTestCommonTraps OBJECT IDENTIFIER ::= { hwTestCommon 2 }
+		
+		hwTestCommonTrapVbOids OBJECT IDENTIFIER ::= { hwTestCommonTraps 1 }
+		
+		hwTestCommonVbOidsReason OBJECT IDENTIFIER ::= { hwTestCommonTrapVbOids 2 }
+		
+		hwTestClearedReason OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				testBoardFail(1),
+				testedBoardFail(2),
+				userCmd(3),
+				switchOver(4),
+				anotherMainBoardIsTesting(5),
+				unknowError(255)
+				}
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"Test be cleared reason define
+				测试清除原因定义 "
+			::= { hwTestCommonVbOidsReason 1 }
+		
+		hwTestRingSrcAlarmReason OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				testRingSrcFail(1),
+				testRingSrcRestore(2)
+				}
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"Ring source alarm defined
+				铃流源告警定义 "
+			::= { hwTestCommonVbOidsReason 2 }
+		
+		hwTestCommonAlarmTraps OBJECT IDENTIFIER ::= { hwTestCommonTraps 2 }
+		
+		hwTestCommonAlarmTrapsOIDs OBJECT IDENTIFIER ::= { hwTestCommonAlarmTraps 0 }
+		
+		hwTestRingSrcFailTrap NOTIFICATION-TYPE
+			OBJECTS { hwTestBoardIfIndex, hwTestRingSrcAlarmReason }
+			STATUS current
+			DESCRIPTION 
+				"The btss ring source failed trap：
+				1:hwTestBoardIfIndex,2:hwTestRingSrcAlarmReason ( 1:the ring source of BTSS doesn't work )
+				The advice: (1)check the btss board;(2)reset the btss board; (3)change the btss board;
+				"
+			::= { hwTestCommonAlarmTrapsOIDs 1 }
+		
+		hwTestRingSrcRestoreTrap NOTIFICATION-TYPE
+			OBJECTS { hwTestBoardIfIndex, hwTestRingSrcAlarmReason }
+			STATUS current
+			DESCRIPTION 
+				"Test ringing source restore trap:
+				1:hwTestBoardIfIndex,2:hwTestRingSrcAlarmReason (1:the ring source of BTSS is normal)
+				The advice: nothing
+				
+				铃流源恢复告警:
+				1:测试板接口索引 2:恢复原因 ( 1:BTSS单板的铃流源恢复正常 )
+				修复建议: 无
+				"
+			::= { hwTestCommonAlarmTrapsOIDs 2 }
+		
+		hwTestAutoClearedTrap NOTIFICATION-TYPE
+			OBJECTS { hwTestBoardIfIndex, hwTestBoardStatusTestedBoardIfIndex, hwTestClearedReason }
+			STATUS current
+			DESCRIPTION 
+				"Test be cleared automaticaly by fault trap:
+				1:hwTestBoardIfIndex,2:hwTestBoardStatusTestedBoardIfIndex,3:hwTestClearedReason
+				
+				测试自动清除告警:
+				1:测试板接口索引 2: 被测试端口接口索引 3:告警清除原因
+				"
+			::= { hwTestCommonAlarmTrapsOIDs 3 }
+		
+		hwTestCommonGeneralTraps OBJECT IDENTIFIER ::= { hwTestCommonTraps 3 }
+		
+		hwTestCommonGeneralTrapsOIDs OBJECT IDENTIFIER ::= { hwTestCommonGeneralTraps 0 }
+		
+		hwLoopLineTestTrap NOTIFICATION-TYPE
+			OBJECTS { hwLoopLineTestStatus, hwLoopLineTestConclusion, hwLoopLineTestACAG, hwLoopLineTestACBG, hwLoopLineTestACAB, 
+				hwLoopLineTestDCAG, hwLoopLineTestDCBG, hwLoopLineTestDCAB, hwLoopLineTestRAG, hwLoopLineTestRBG, 
+				hwLoopLineTestRAB, hwLoopLineTestCapAG, hwLoopLineTestCapBG, hwLoopLineTestCapAB, hwLoopLineTestLR, 
+				hwLoopLineTestRABResPole, hwLoopLineTestMSocket }
+			STATUS current
+			DESCRIPTION 
+				"loop-line test result trap:
+				1:hwLoopLineTestStatus,2:hwLoopLineTestConclusion,3:hwLoopLineTestACAG,4:hwLoopLineTestACBG,
+				5:hwLoopLineTestACAB,6:hwLoopLineTestDCAG,7:hwLoopLineTestDCBG,8:hwLoopLineTestDCAB,
+				9:hwLoopLineTestRAG,10:hwLoopLineTestRBG,11:hwLoopLineTestRAB,12:hwLoopLineTestCapAG,
+				13:hwLoopLineTestCapBG,14:hwLoopLineTestCapAB,15:hwLoopLineTestLR,16:hwLoopLineTestRABResPole,17:hwLoopLineTestMSocket
+				
+				外线测试需要绑定的叶子:
+				1:测试状态,2:外线测试定性结论,3:A线对地交流电压,4:B线对地交流电压,5:AB线交流电压,
+				6:A线对地直流电压,7:B线对地直流电压,8:AB线直流电压,9:A线对地电阻,10:B线对地电阻,11:AB线电阻,
+				12:A线对地电容,13:B线对地电容,14:AB线电容,15:环阻,16:AB线反极性电阻,17:是否连接M-SOCKET
+				"
+			::= { hwTestCommonGeneralTrapsOIDs 1 }
+		
+		hwMeterTestTrap NOTIFICATION-TYPE
+			OBJECTS { hwMeterTestStatus }
+			STATUS current
+			DESCRIPTION 
+				"meter test result trap: 1:hwMeterTestStatus
+				
+				仪表测试需绑定的叶子: 1:测试状态        "
+			::= { hwTestCommonGeneralTrapsOIDs 2 }
+		
+		hwTestBoardDiagnoseTestTrap NOTIFICATION-TYPE
+			OBJECTS { hwTestBoardDiagnoseTestResult, hwTestBoardDiagnoseTestRAM, hwTestBoardDiagnoseTestVoltage, hwTestBoardDiagnoseTestResistance, hwTestBoardDiagnoseTestSignal, 
+				hwTestBoardDiagnoseTestDTMF, hwTestBoardDiagnoseTestRing, hwTestBoardDiagnoseTestOnOffHook, hwTestBoardDiagnoseTestPole, hwTestBoardDiagnoseTestISDNU, 
+				hwTestBoardDiagnoseTestBitErrCode, hwTestBoardDiagnoseTestCapacitance }
+			STATUS current
+			DESCRIPTION 
+				"Test Board self test result trap:
+				1:hwTestBoardDiagnoseTestResult,2:hwTestBoardDiagnoseTestRAM,3:hwTestBoardDiagnoseTestVoltage,
+				4:hwTestBoardDiagnoseTestResistance,
+				5:hwTestBoardDiagnoseTestSignal,6:hwTestBoardDiagnoseTestDTMF,7:hwTestBoardDiagnoseTestRing,
+				8:hwTestBoardDiagnoseTestOnOffHook,
+				9:hwTestBoardDiagnoseTestPole,10:hwTestBoardDiagnoseTestISDNU,11:hwTestBoardDiagnoseTestBitErrCode,
+				12:hwTestBoardDiagnoseTestCapacitance
+				
+				测试板自检测试需绑定的叶子:
+				1:自检结果,2:RAM结果,3:电压,4:电阻,5:信号音电路,6:DTMF,7:铃流,
+				8:摘挂机,9:极性,10:ISDN U口,11:误码测试,12电容测试 "
+			::= { hwTestCommonGeneralTrapsOIDs 3 }
+		
+		hwTestBoardStatusQueryTrap NOTIFICATION-TYPE
+			OBJECTS { hwTestBoardStatusQueryResult, hwTestBoardStatusQueryVersion, 
+					hwTestBoardStatusQueryTestItem, hwTestBoardStatusTestedBoardIfIndex }
+			STATUS current
+			DESCRIPTION 
+				"Test Board state inquire result trap:
+				1:hwTestBoardStatusQueryResult,2:hwTestBoardStatusQueryVersion,3:hwTestBoardStatusQueryTestItem,
+				4:hwTestBoardStatusTestedBoardIfIndex
+				
+				测试板状态查询需绑定的叶子:
+				1:查询结果,2:版本,3:测试项目,4:被测端口接口索引 "
+			::= { hwTestCommonGeneralTrapsOIDs 4 }
+		
+	
+	END
+
+

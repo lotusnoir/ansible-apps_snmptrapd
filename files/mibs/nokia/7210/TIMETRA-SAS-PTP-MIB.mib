@@ -1,0 +1,143 @@
+TIMETRA-SAS-PTP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        NOTIFICATION-TYPE, Unsigned32,
+        Counter32, Integer32                  FROM SNMPv2-SMI
+
+        MODULE-COMPLIANCE, OBJECT-GROUP,
+        NOTIFICATION-GROUP                    FROM SNMPv2-CONF
+
+        TEXTUAL-CONVENTION, RowStatus,
+        TimeStamp, TruthValue, RowPointer,
+        DateAndTime                           FROM SNMPv2-TC
+
+        InetAddressType, InetAddress          FROM INET-ADDRESS-MIB
+
+        timetraSRMIBModules, tmnxSRObjs,
+        tmnxSRNotifyPrefix, tmnxSRConfs       FROM TIMETRA-GLOBAL-MIB
+
+        tmnxChassisNotifyChassisId,
+        tmnxChassisNotifyHwIndex,
+        tmnxCpmCardEntry,
+        tmnxCpmCardOscillatorType             FROM TIMETRA-CHASSIS-MIB
+
+        TmnxAdminState, TmnxOperState,
+        TItemDescription                      FROM TIMETRA-TC-MIB
+
+        vRtrID                                FROM TIMETRA-VRTR-MIB
+
+        TmnxPtpLogInterval           FROM TIMETRA-PTP-MIB
+
+       timetraSASObjs, timetraSASNotifyPrefix, 
+       timetraSASConfs, timetraSASModules      FROM TIMETRA-SAS-GLOBAL-MIB     
+        ;
+
+timetraSASPtpMIBModule          MODULE-IDENTITY
+        LAST-UPDATED "201102010000Z"
+        ORGANIZATION "Nokia"
+        CONTACT-INFO
+            "Nokia SROS Support
+             Web: http://www.nokia.com"
+        DESCRIPTION
+        "This document is the SNMP MIB module to manage and provision the
+        Precision Time Protocol (PTP) components of the Nokia
+        SROS device as defined in the IEEE Standard for a Precision Clock
+        Synchronization Protocol for Networked Measurement and Control Systems
+        (IEEE Std 1588-2008).
+
+        Copyright (c) 2011-2015 Nokia.  All rights reserved.
+        Reproduction of this document is authorized on the condition that
+        the foregoing copyright notice is included.
+
+        This SNMP MIB module (Specification) embodies Nokia's
+        proprietary intellectual property.  Nokia retains
+        all title and ownership in the Specification, including any
+        revisions.
+
+        Nokia grants all interested parties a non-exclusive
+        license to use and distribute an unmodified copy of this
+        Specification in connection with management of Nokia
+        products, and without fee, provided this copyright notice and
+        license appear on all copies.
+
+        This Specification is supplied 'as is', and Nokia
+        makes no warranty, either express or implied, as to the use,
+        operation, condition, or performance of the Specification."
+
+--
+-- Revision History
+--
+        REVISION                 "201102010000Z"
+        DESCRIPTION              "Rev 1.0                29 Oct 2012 00:00
+                                  Initial release of the TIMETRA-SAS-PTP-MIB."
+
+        ::= { timetraSASModules 74 }
+
+tmnxSASPtp1588Objs                  OBJECT IDENTIFIER ::= { timetraSASObjs 74 }
+tmnxSASPtpClockConfig               OBJECT IDENTIFIER ::= { tmnxSASPtp1588Objs 1 }
+tmnxSASPtpToD1PPSConfig             OBJECT IDENTIFIER ::= { tmnxSASPtp1588Objs 2 }
+tmnxSASPtpToD1PPSOper               OBJECT IDENTIFIER ::= { tmnxSASPtp1588Objs 3 }
+
+tmnxPtpLogSyncInterval     OBJECT-TYPE
+    SYNTAX      TmnxPtpLogInterval (-6..-3)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPtpLogSyncInterval specifies the 
+        sync/delay_req packet rates"
+    DEFVAL      { -6 }
+    ::= { tmnxSASPtpClockConfig 1 }
+
+tmnxPtpClockFrequencySource     OBJECT-TYPE
+    SYNTAX  INTEGER { 
+                ptp (1),
+                ssu (2)
+            }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPtpClockFrequencySource specifies the 
+        source of the PTP clock"
+    DEFVAL  { ptp }
+    ::= { tmnxSASPtpClockConfig 2 }
+
+tmnxPtpToD1PPSMessageType     OBJECT-TYPE
+    SYNTAX  INTEGER { 
+                cm (1),
+                ct (2)
+            }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPtpToD1PPSMessageType specifies the signal type"
+    DEFVAL  { cm }
+    ::= { tmnxSASPtpToD1PPSConfig 1 }
+
+tmnxPtpToD1PPSOperMode     OBJECT-TYPE
+    SYNTAX  INTEGER { 
+                off (1),
+                in  (2),
+                out (3)
+            }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPtpToD1PPSOperMode indicates the operational mode"
+    ::= { tmnxSASPtpToD1PPSOper 1 }
+
+tmnxSASPtpGroups      OBJECT IDENTIFIER ::= { timetraSASConfs 74 }
+
+tmnxSASPtpV5v0Group       OBJECT-GROUP
+    OBJECTS {
+                tmnxPtpLogSyncInterval,
+                tmnxPtpClockFrequencySource
+            }                                   
+    STATUS        current
+    DESCRIPTION
+        "The group of objects supporting management of transport and
+         virtual routers on version 5.0 Nokia 7210 SAS series systems."
+    ::= { tmnxSASPtpGroups 1 }
+
+END  
+

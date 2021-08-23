@@ -1,0 +1,2169 @@
+
+-- =========================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance
+--  information contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any
+--  manufacturer to modify or change any of its products, nor does this
+--  document represent any commitment by Alcatel to sell or purchase any
+--  product. Nothing contained herein shall be construed as conferring by
+--  implication, estoppel, or otherwise any license or right under any 
+--  patent, whether or not the use of any information herein necessarily
+--  employs an invention of any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products 
+--  and to withdraw any or all of them at any future time.
+--  Copyright (C) 2004, Alcatel. All Rights Reserved.
+-- ========================================================================
+
+
+
+PPPOX-MIB DEFINITIONS  ::= BEGIN
+
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED 20060522
+--  ORGANIZATION "Alcatel"
+--  CONTACT-INFO
+--
+--          Email:  asam.mibsupport@alcatel.be"
+--
+--  DESCRIPTION "This MIB module describes generic objects for
+--               pppox, pppoe and ppp."
+
+--  
+--  HISTORY
+--  REVISION 20060522
+--  DESCRIPTION
+--        "Version: 3FE22732EAAA_V3.2.0.0.0
+--         Editor: Gerda Mertens
+--         Changes:  add Alcatel notes"
+--  
+--  REVISION 20041111
+--  DESCRIPTION
+--        "Version: 3FE22732AAAA_E1.0.0.3
+--         Editor: Zhang Xiaowei
+--         Changes:  Line up with iSAM 2.0 "
+--  
+--  REVISION 20040916
+--  DESCRIPTION
+--        "Version: 3FE22732AAAA_E1.0.0.1
+--         Editor: Zhang Xiaowei
+--         Changes:  created for iSAM 2.0"
+--  
+--  
+--
+-- ============================================================================= 
+
+   
+
+IMPORTS 
+
+    OBJECT-TYPE
+	    FROM RFC-1212
+    Counter, Gauge
+        FROM RFC1155-SMI
+    InetAddress
+         FROM INET-ADDRESS-MIB 
+    InterfaceIndex 
+         FROM ITF-MIB
+    MacAddress, RowStatus, TimeInterval
+        FROM SNMPv2-TC
+    DisplayString
+        FROM RFC1213-MIB
+    asam 
+        FROM SYSTEM-MIB
+    AsamNextProfileIndex, AsamMaxProfileIndex, AsamProfileIndex,
+    AsamProfileName, AsamProfileScope, AsamProfileRefCount
+        FROM ASAM-TC-MIB
+    IpAddress 
+        FROM RFC1155-SMI;
+	
+    SnmpAdminString ::= OCTET STRING
+   
+pppoxMIB                  OBJECT IDENTIFIER ::= {asam  45 }
+
+pppoeMIB                  OBJECT IDENTIFIER ::= {pppoxMIB  1 }
+pppMIB                    OBJECT IDENTIFIER ::= {pppoxMIB  2 }
+
+
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- PPPOX MIB 
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+--
+-- The PPPoX Interface Table
+--
+-- pppoxIfTable OBJECT-TYPE
+--    SYNTAX SEQUENCE OF PppoxIfEntry
+--    ACCESS  not-accessible
+--    STATUS mandatory
+--    DESCRIPTION
+--        "This table contains the information of the mapping of a PPPoX 
+--	 interface to a bridge port IfIndex. 
+--    ALCATEL NOTE:
+--    SUPPORT: YES
+--    TABLESIZE: DEP [3072 = nbr of boards *  max nbr of pppox interfaces per board ] "
+--    ::= { pppoxMIB 3 }
+--
+--
+-- pppoxIfEntry  OBJECT-TYPE
+--    SYNTAX PppoxIfEntry
+--    ACCESS not-accessible
+--    STATUS mandatory
+--    DESCRIPTION
+--         "An entry in this table identifies a PPPoX interface on a Bridge port 
+--          Index.
+--
+--          Creating an entry in this table causes the creation of an 
+--	  IfIndex for the PPPoX interface in the ifTable. Using pppoxIfIndex 
+--	  as the index, an entry is also created in the pppoxIfConfigTable 
+--	  with default values.
+--
+--          Deleting an entry in this table causes the corresponding entry 
+--	  to be deleted in the pppoxIfConfigTable and the ifTable. 
+--    ALCATEL NOTE:
+--    SUPPORT: YES "
+--	
+-- INDEX  { pppoxLowerLayerIfIndex }
+--    ::= { pppoxIfTable 1 }
+--
+--
+-- PppoxIfEntry ::= 
+--    SEQUENCE {
+--         pppoxLowerLayerIfIndex       InterfaceIndex,
+--         pppoxIfIndex                 InterfaceIndex,
+--         pppoxIfRowStatus             RowStatus
+--      }
+--
+-- pppoxLowerLayerIfIndex OBJECT-TYPE
+--    SYNTAX InterfaceIndex
+--    ACCESS not-accessible
+--    STATUS mandatory
+--    DESCRIPTION
+--        "This object specifies the bridge port on which the PPPoX 
+--	 interface is to be created. 
+--
+--          The value of this object will be equal to the interface index 
+--          of a bridge port. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     YES          INSRVMOD:    NO
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA"
+--    ::= { pppoxIfEntry 1}
+--
+-- pppoxIfIndex OBJECT-TYPE
+--    SYNTAX InterfaceIndex 
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "The IfIndex of the PPPoX interface got from ifTable. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     YES          INSRVMOD:    NO
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--::= { pppoxIfEntry 2}
+--
+--
+-- pppoxIfRowStatus  OBJECT-TYPE
+--    SYNTAX RowStatus
+--    ACCESS read-write
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Controls creation/deletion of entries in this table according to the 
+--         Rowstatus textual convention, constrained not to support the following 
+--         value only:
+--              createAndWait
+-- 
+--         Following condition MUST hold:
+--
+--         The pppoxLowerLayerIfIndex MUST exist.
+--
+--         PPPoX relay should NOT be enabled on the Vlan bridge port   
+--         identified by, pppoxLowerLayerIfIndex. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       MAND
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       1,4,6        DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoxIfEntry 3 }
+--
+--
+--
+--
+--
+-- The PPPoX Interface Configuration Table
+--
+--
+-- pppoxIfConfigTable   OBJECT-TYPE
+--    SYNTAX SEQUENCE OF PppoxIfConfigEntry
+--    ACCESS  not-accessible
+--    STATUS mandatory
+--    DESCRIPTION
+--         "This table contains PPPoX interface configuration parameters. 
+--    ALCATEL NOTE:
+--    SUPPORT: YES
+--    TABLESIZE: DEP [ 3072 = nbr of boards *  max nbr of pppox interfaces per board]  " 
+--    ::= { pppoxMIB 4 }
+--
+-- pppoxIfConfigEntry  OBJECT-TYPE
+--    SYNTAX PppoxIfConfigEntry
+--    ACCESS not-accessible
+--    STATUS mandatory
+--    DESCRIPTION
+--          "An entry in this table represents attributes associated for a PPPoX 
+--           interface. 
+--          
+--           Creation and deletion of an entry in this table is controlled by 
+--           the actions performed in pppoxIfTable. 
+--          
+--           This table is used to configure the attributes associated with a 
+--           PPPoX interface. 
+--    ALCATEL NOTE:
+--    SUPPORT:  YES "
+--	
+--    INDEX  { pppoxIfIndex }
+--    ::= { pppoxIfConfigTable 1 }
+--
+--
+-- PppoxIfConfigEntry ::= SEQUENCE {
+--         pppoxIfConfigMaxNumSessions         INTEGER,
+--         pppoxIfConfigPppProfileIndex        INTEGER
+-- }
+--
+-- pppoxIfConfigMaxNumSessions OBJECT-TYPE
+--    SYNTAX INTEGER (-1..65535)
+--    ACCESS read-write
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Maximum number of PPP Sessions that can be established on PPPoX 
+--         Interface.
+--
+--         For PPPoE interface this object is configured to either -1,0 or a 
+--         value greater than zero.
+--         Configuring this object to -1 means, maximum PPPoE sessions
+--         as allowed by the system can be established. 
+--         Configuring this object to zero means the PPPoE interface is 
+--         administratively down.
+--         It is possible to configure this object to a value greater than the
+--         system capability, in which case the number of sessions established
+--         will be restricted by the system constraints.
+--         By default the value of the object is 4 for a PPPoE interface. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     YES          INSRVMOD:    YES
+--            RANGE:       NA           DEFVALUE:    4
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    DEFVAL  { 4}
+--    ::= { pppoxIfConfigEntry 1 }
+--
+-- pppoxIfConfigPppProfileIndex  OBJECT-TYPE
+--    SYNTAX INTEGER 
+--    ACCESS read-write
+--    STATUS mandatory 
+--    DESCRIPTION
+--        "The identifier of the PPP profile to be used for PPP interface.
+--         Setting this object statically binds the PPP profile with the PPPoX 
+--         interface.
+--         If this object is not set, the default profile index 1 with name
+--	 DefaultPppProfile is attached to this PPPoX interface. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     YES          INSRVMOD:    YES
+--            RANGE:       NA           DEFVALUE:    1
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    DEFVAL  { 1}
+--    ::= { pppoxIfConfigEntry 2 }
+--
+--
+--
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- The PPPoX Interface PPP Statistics Table
+--
+-- /////////////////////////////////////////////////////////////////////////////
+--
+--
+-- pppoxIfPppStatsTable OBJECT-TYPE
+--    SYNTAX      SEQUENCE OF PppoxIfPppStatsEntry
+--    ACCESS      not-accessible
+--    STATUS      mandatory
+--    DESCRIPTION
+--        "The statistics for the PPP on PPPoX interface. 
+--    ALCATEL NOTE:
+--    SUPPORT: YES
+--    TABLESIZE: DEP [ 3072 = nbr of boards *  max nbr of pppox interfaces per board]  "
+--    ::= { pppoxMIB 5 }
+--
+-- pppoxIfPppStatsEntry OBJECT-TYPE
+--    SYNTAX      PppoxIfPppStatsEntry
+--    ACCESS      not-accessible
+--    STATUS      mandatory
+--    DESCRIPTION
+--        "The statistics for a particular PPP Interface.
+--         The index of this table entry is ifIndex and it represents the 
+--         PPPoX interface index
+--    ALCATEL NOTE:
+--    SUPPORT:  YES"
+--    INDEX     { pppoxIfIndex }
+--    ::= { pppoxIfPppStatsTable 1 }
+--
+-- PppoxIfPppStatsEntry ::= 
+--    SEQUENCE {
+--         pppoxIfPppStatsLcpNumOfConnects       Counter,
+--         pppoxIfPppStatsLowerLayerDownEvent    Counter,
+--         pppoxIfPppStatsPapAuthenFailure       Counter,
+--         pppoxIfPppStatsChapAuthenFailure      Counter,
+--         pppoxIfPppStatsNoIpAddress            Counter,
+--         pppoxIfPppStatsLcpNegotiationMismatch  Counter,
+--         pppoxIfPppStatsIpcpNegotiationMismatch Counter,
+--         pppoxIfPppStatsUserTerminates         Counter,
+--         pppoxIfPppStatsSystemTerminates       Counter
+--     }
+--
+--
+-- pppoxIfPppStatsLcpNumOfConnects OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of opened sessions (with LCP UP state). 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoxIfPppStatsEntry 1}
+--
+-- pppoxIfPppStatsLowerLayerDownEvent OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of session terminates due to link down events. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoxIfPppStatsEntry  2}
+--
+-- pppoxIfPppStatsPapAuthenFailure OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PAP authentication failure. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoxIfPppStatsEntry 3 }
+--
+-- pppoxIfPppStatsChapAuthenFailure OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of CHAP authentication failure. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoxIfPppStatsEntry 4 }
+--
+-- pppoxIfPppStatsNoIpAddress OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of failed retrievals for local IP address which is used 
+--         during the IPCP phase. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoxIfPppStatsEntry 5 }
+--
+-- pppoxIfPppStatsLcpNegotiationMismatch OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of negotiation mismatch occurred in LCP phase
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoxIfPppStatsEntry 6 }
+--
+-- pppoxIfPppStatsIpcpNegotiationMismatch OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of negotiation mismatch occurred in IPCP phase
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoxIfPppStatsEntry 7 }
+--
+-- pppoxIfPppStatsUserTerminates OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of user terminate requests received through PADT and LCP 
+--         terminate 
+--
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoxIfPppStatsEntry 8 }
+--
+-- pppoxIfPppStatsSystemTerminates OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of system terminate requests sent through PADT and LCP 
+--         terminate. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoxIfPppStatsEntry 9  }
+--
+--
+--
+--
+--
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- PPPOE MIB 
+--
+-- /////////////////////////////////////////////////////////////////////////////
+--
+--
+
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- PPPoE Server Scalar Objects
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+-- pppoeAcName OBJECT-TYPE
+--     SYNTAX DisplayString (SIZE(1..32))
+--     ACCESS read-write
+--     STATUS mandatory  
+--     DESCRIPTION
+--         "This object uniquely identifies a particular Access Concentrator 
+--          (Server name). This object is used to send AC_NAME tag in PADO 
+--          that is sent to host.
+--          If this object is not set, the default AC name AlcatelPppoeServer 
+-- 	 is set. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       OPT
+--             PERSIST:     YES          INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    AlcatelPppoEServer
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--    ::= { pppoeMIB 1}
+-- 
+-- 
+-- pppoeServerAdminState OBJECT-TYPE
+--     SYNTAX INTEGER {
+--                 enable(1),
+--                 disable(2)
+--                }
+--     ACCESS read-write
+--     STATUS mandatory
+--     DESCRIPTION
+--         "This object facilitates to enable or disable PPPoE server. When 
+-- 	 disabled the PPPoE server is locked and no more new PPPoE sessions 
+-- 	 are established. 
+--          When this object is set to disabled from enabled state,
+-- 	 will not tear down the existing PPPoE sessions. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       OPT
+--             PERSIST:     YES          INSRVMOD:    NA
+--             RANGE:       1,2          DEFVALUE:    2
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     DEFVAL  {2}
+--     ::= { pppoeMIB 2 }
+-- 
+-- 
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- PPPoE Interface Layer
+--
+--  This layer is managed with the following elements:
+--  o Interface Table 
+--  o Interface Configuration Table 
+--  o Statistics Table (PPPoE interface statistics)
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+
+
+
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- The PPPoE Interface Statistics Table
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+-- pppoeIfStatsTable OBJECT-TYPE
+--    SYNTAX      SEQUENCE OF PppoeIfStatsEntry
+--    ACCESS      not-accessible
+--    STATUS      mandatory
+--    DESCRIPTION
+--        "This table contains the statistics for PPPoE interface. 
+--    ALCATEL NOTE:
+--    SUPPORT: YES
+--    TABLESIZE: DEP [ 3072 = nbr of boards *  max nbr of pppox interfaces per board]  "
+--    ::= { pppoeMIB 3 }
+--
+-- pppoeIfStatsEntry OBJECT-TYPE
+--    SYNTAX      PppoeIfStatsEntry
+--    ACCESS      not-accessible
+--    STATUS      mandatory
+--    DESCRIPTION
+--        "Each entry contains the statistics of a  particular PPPoE Interface.
+--
+--         The index of this table entry is pppoxIfIndex and it represents
+--         this PPPoE interface. 
+--    ALCATEL NOTE:
+--    SUPPORT:  YES"
+--    INDEX     { pppoxIfIndex }
+--    ::= { pppoeIfStatsTable 1 }
+--
+-- PppoeIfStatsEntry ::= 
+--    SEQUENCE {
+--         pppoeIfStatsActiveSessions       Gauge,
+--         pppoeIfStatsTotEstabSessions     Counter,
+--         pppoeIfStatsRxInvVersion         Counter,
+--         pppoeIfStatsRxInvType            Counter,
+--         pppoeIfStatsRxInvCode            Counter,
+--         pppoeIfStatsRxInvPADISession     Counter,
+--         pppoeIfStatsRxInvPADRSession     Counter,
+--         pppoeIfStatsRxInvTag             Counter,
+--         pppoeIfStatsRxInvLength          Counter,
+--         pppoeIfStatsTxSystemError        Counter,
+--         pppoeIfStatsRxPADI               Counter,
+--         pppoeIfStatsTxPADO               Counter,
+--         pppoeIfStatsRxPADR               Counter,
+--         pppoeIfStatsTxPADS               Counter,
+--         pppoeIfStatsRxPADT               Counter,
+--         pppoeIfStatsTxPADT               Counter,
+--         pppoeIfStatsRejPADI              Counter,
+--         pppoeIfStatsRejPADR              Counter
+--      }
+--
+-- pppoeIfStatsActiveSessions OBJECT-TYPE
+--    SYNTAX Gauge
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of active PPPoE sessions. This counter gets 
+--         incremented every time a new PPPoE session is created. This counter  
+--         decrements every time a PPPoE session gets deleted. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeIfStatsEntry 1 }
+--
+-- pppoeIfStatsTotEstabSessions OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PPPoE sessions established after the 
+--         system has been reset.
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeIfStatsEntry  2}
+--
+-- pppoeIfStatsRxInvVersion OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PPPoE invalid header packets received. If the version 
+--         field in PPPoE header is not 0x1 in the discovery stage of PPPoE, 
+--	     then this counter is incremented.
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeIfStatsEntry 3 }
+--
+-- pppoeIfStatsRxInvType OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PPPoE invalid type packets received. If the type 
+--     	field of the PPPoE header is not 0x1 in the discovery stage of PPPoE,
+--     	then this counter is incremented. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoeIfStatsEntry  4}
+--
+-- pppoeIfStatsRxInvCode OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PPPoE invalid code packets received. If the code 
+--      	field in PPPoE header is not either PADI, PADO, PADR, PADS, in 
+--     	discovery stage of PPPoE this counter is incremented 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoeIfStatsEntry 5 }
+--
+-- pppoeIfStatsRxInvPADISession OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of invalid session-id received in PADI packets. 
+--         If the Session ID field in the PPPoE header is not 0x000 then this 
+--         counter is incremented. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoeIfStatsEntry 6 }
+--
+-- pppoeIfStatsRxInvPADRSession OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        " Total number of invalid session-id received in PADR packets. 
+--         If the Session ID field in the PPPoE header is not 0x000 then this 
+--         counter is incremented. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoeIfStatsEntry  7}
+--
+-- pppoeIfStatsRxInvTag   OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of invalid tag received in the PPPoE header. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoeIfStatsEntry  8}
+--
+-- pppoeIfStatsRxInvLength   OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number packets received with invalid length in PPPoE header. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoeIfStatsEntry  9}
+--
+-- pppoeIfStatsTxSystemError OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--       "The statistics indicates the number of errors experienced in performing   
+--        the host request. This statistics is counted from session stage in PPPoE. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA " 
+--    ::= { pppoeIfStatsEntry  10}
+--
+-- pppoeIfStatsRxPADI OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PPPoE Active Discovery Initiation (PADI) packets 
+--         received. 
+--         The counter does not get incremented, when the total number of 
+--	     sessions established reaches the maximum number of allowed session. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeIfStatsEntry  11}
+--
+-- pppoeIfStatsTxPADO OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--       "Total number of PPPoE Active Discovery Offer (PADO) packets transmitted. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeIfStatsEntry 12 }
+--
+--
+-- pppoeIfStatsRxPADR OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PPPoE Active Discovery Request (PADR) packets received. 
+--        The counter does not get incremented, when the total number of 
+--     	sessions established reaches the maximum number of allowed session. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeIfStatsEntry 13 }
+--
+-- pppoeIfStatsTxPADS OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PPPoE Active Discovery Session-confirmation (PADS) 
+--         packets transmitted. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeIfStatsEntry 14 }
+-- pppoeIfStatsRxPADT OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PPPoE Active Discovery Terminate (PADT) packets 
+--      	received. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeIfStatsEntry  15}
+--
+-- pppoeIfStatsTxPADT OBJECT-TYPE
+--   SYNTAX Counter
+--   ACCESS read-only
+--   STATUS mandatory
+--   DESCRIPTION
+--        "Total number of PPPoE Active Discovery Terminate (PADT) packets 
+--         transmitted. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--   ::= { pppoeIfStatsEntry 16}
+--
+-- pppoeIfStatsRejPADI OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PPPoE Active Discovery Initiation (PADI) packets that 
+--         were rejected
+--         The counter is incremented at the following instance
+--              o When the Maximum number of sessions has been reached. 
+--              o When the received PADI packet is not a broadcast packet. 
+--              o When the received PADI is having invalid packet length 
+--              o When unable to process PADI request due to unavailability of 
+--                system resources. 
+--              o When the AAA server becomes unavailable. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeIfStatsEntry  17}
+--
+-- pppoeIfStatsRejPADR OBJECT-TYPE
+--    SYNTAX Counter
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Total number of PPPoE Active Discovery Request (PADR) packets that 
+--	 were rejected
+--          The following are the instance at which this counter gets incremented.
+--              o When the Maximum number of sessions has been reached. 
+--              o When unable to process PADI request due to unavailability of 
+--	            system resources. 
+--              o When the AAA server becomes unavailable. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeIfStatsEntry 18 }
+--
+--
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- PPPoE Session interface Layer
+--
+-- This layer is managed with the following element:
+--  o Session If Table (creation/deletion of dynamic PPPoE sessions)
+--  
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+-- pppoeSesIfTable   OBJECT-TYPE
+--    SYNTAX SEQUENCE OF PppoeSesIfEntry
+--    ACCESS  not-accessible
+--    STATUS mandatory
+--    DESCRIPTION
+--        "This table represents the dynamic PPPoE sessions that are established 
+--      	 on this PPPoE interface. 
+--    ALCATEL NOTE:
+--    SUPPORT: YES
+--    TABLESIZE: DEP [value depends on ifindex structure and nbr of bits 
+--                    available to assign an ifindex for the PPPoESession
+--                    in case 6 bits -> 64 sessions per interface
+--                    in case 5 bits -> 32 sessions per interface] "
+--    ::= { pppoeMIB 4}
+--
+-- pppoeSesIfEntry  OBJECT-TYPE
+--    SYNTAX PppoeSesIfEntry
+--    ACCESS not-accessible
+--    STATUS mandatory
+--    DESCRIPTION
+--        "Each entry describes the characteristics of a PPPoE sub interface. 
+--          
+--         The index of this table entry is pppoeSesIfIndex and it represents the 
+--         logical index of a dynamically established PPPoE session.
+--
+--         Creating/deleting entries in this table causes corresponding entries 
+--     	 to be created/deleted in the ifTable. 
+--    ALCATEL NOTE:
+--    SUPPORT: YES "
+--    INDEX  { pppoeSesIfIndex }
+--    ::= { pppoeSesIfTable  1}
+--
+-- PppoeSesIfEntry  ::= SEQUENCE {
+--         pppoeSesIfIndex            InterfaceIndex,
+--         pppoeSesId                 INTEGER,
+--         pppoeSesLowerLayerIfIndex  InterfaceIndex,
+--         pppoeSesLocalMacAddress    MacAddress, 
+--         pppoeSesRemoteMacAddress   MacAddress 
+--     }
+--
+-- pppoeSesIfIndex  OBJECT-TYPE
+--    SYNTAX InterfaceIndex
+--    ACCESS not-accessible
+--    STATUS mandatory
+--    DESCRIPTION
+--        " An index that uniquely identifies the logical index of a dynamically 
+--          established PPPoE session. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       For 4pvc/line, max 64 sessions per pppoe interface. 
+--                         For 8pvc/line, max 32 sessions per pppoe interface. 
+--                         The max nbr of PPPoE sessions per pppoxInterface is 
+--                         configurable via pppoxIfConfigMaxNumSessions, 
+--                         which has default value 4."
+--    ::= { pppoeSesIfEntry 1}
+--
+-- pppoeSesId OBJECT-TYPE
+--    SYNTAX INTEGER
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "The PPPoE session Id associated for a PPP session. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA          SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeSesIfEntry 2}
+--
+-- pppoeSesLowerLayerIfIndex OBJECT-TYPE
+--    SYNTAX  InterfaceIndex
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "The index of the PPPoE interface over which this PPPoE session is 
+--         layered. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeSesIfEntry 3 }
+--
+--
+-- pppoeSesLocalMacAddress OBJECT-TYPE
+--    SYNTAX MacAddress
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "The MAC address of the PPPoE Server on which PPPoE session is 
+--         established. The MAC address will be the address of that Line
+--         Terminal. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeSesIfEntry 4 }
+--
+-- pppoeSesRemoteMacAddress OBJECT-TYPE
+--    SYNTAX MacAddress
+--    ACCESS read-only
+--    STATUS mandatory
+--    DESCRIPTION
+--        "The MAC address of the user who established the PPPoE session. 
+--    ALCATEL NOTE:
+--            ACCESS:      NA           USAGE:       NA
+--            PERSIST:     NO           INSRVMOD:    NA
+--            RANGE:       NA           DEFVALUE:    NA
+--            UNITS:       NA           SPARSE:      NA
+--            DESCR:       NA "
+--    ::= { pppoeSesIfEntry 5 }
+--
+--
+--
+--
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- The PPPoE Client Interface Table
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+pppoeClientTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PppoeClientEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table contains entries of PPPoE client interface information      
+         in the system.
+    ALCATEL NOTE:
+    SUPPORT: YES
+    TABLESIZE: DEP [depends on max pppoe interfaces of the system and 
+                    max PPPoE sessions per pppoe interface.] "
+    ::= { pppoeMIB 5 }
+
+pppoeClientEntry OBJECT-TYPE
+    SYNTAX      PppoeClientEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Each entry describes the configuration information of the session attributes of a 
+      	 PPPoE Client. 
+    ALCATEL NOTE:
+    SUPPORT: YES "
+    INDEX     { pppoeClientLowerLayerIfIndex, pppoeClientId }
+    ::= { pppoeClientTable 1 }
+
+PppoeClientEntry ::= 
+    SEQUENCE {
+         pppoeClientLowerLayerIfIndex   InterfaceIndex,
+         pppoeClientId                  INTEGER,
+         pppoeClientProfileID           AsamProfileIndex,
+         pppoeClientUserName            DisplayString,
+         pppoeClientPassword            DisplayString, 
+         pppoeClientMac                 MacAddress, 
+         pppoeClientPbit                INTEGER,
+         pppoeClientRowStatus           RowStatus
+      }
+
+pppoeClientLowerLayerIfIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+       "This object specifies the VLAN port on which a PPP Client Port is to be created.
+        The value of this object will be equal to the interface index of a VLAN port.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "        
+   ::= { pppoeClientEntry 1}
+                   
+pppoeClientId OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+       "This object is used to identify a PPPoE Client interface on a vlan port.
+		   currently only one PPPoE client can be created per vlan port.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       1            DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "                
+   ::= { pppoeClientEntry 2}
+
+pppoeClientProfileID OBJECT-TYPE
+     SYNTAX AsamProfileIndex
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "The identifier of the PPP profile to be used for PPPoE client interface.
+        Setting this object statically binds the PPP profile with the PPPoE client interface.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       1..32           DEFVALUE:  NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "        
+ ::= { pppoeClientEntry 3 }
+ 
+pppoeClientUserName OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..25)) 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+    " user name for PPP authentication.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "        
+ ::= { pppoeClientEntry 4}
+ 
+pppoeClientPassword OBJECT-TYPE
+    SYNTAX DisplayString(SIZE(0..25)) 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " password for PPP authentication.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= { pppoeClientEntry 5}
+
+pppoeClientMac OBJECT-TYPE
+    SYNTAX MacAddress 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " Specify the client MAC address for PPPoE frame.
+          Default value is all zero. means use the UNI MAC address as the client MAC address.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       NA           DEFVALUE:    all zero
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= { pppoeClientEntry 6}
+
+pppoeClientPbit    OBJECT-TYPE
+    SYNTAX    INTEGER (0..7)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        " Specify the Pbit value for PPPoE frame. Operator must ensure the datapath with this
+         Pbit value has established, otherwise, the PPPoE frame may not be able to pass the system
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       0..7         DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    DEFVAL { 0 }
+    ::= { pppoeClientEntry 7 }
+    
+pppoeClientRowStatus    OBJECT-TYPE
+    SYNTAX    RowStatus
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        " set create-and-go to create a new entry. Set to destroy to delete
+         entry.Other value not supported 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       1,4,6        DEFVALUE:    0
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= { pppoeClientEntry 8 }
+  
+
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- The PPPoE Client Emulation Table
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+pppoeClientEmulationTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PppoeClientEmulationEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table contains entries of PPPoE client emulation information in the system.
+        Operator can start a PPPoE emulation by seting this table, if emulation finished 
+        successfully operator can read get the session information via the pppIfTable.
+        This table automatically created when new entry created in pppoeClientTable.
+    ALCATEL NOTE:
+    SUPPORT: YES
+    TABLESIZE: DEP [depends on the size of pppoeClientTable.] "
+    ::= { pppoeMIB 6 }
+
+pppoeClientEmulationEntry OBJECT-TYPE
+    SYNTAX      PppoeClientEmulationEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Each entry describes a PPPoE emulation at the specified PPPoE client interface.
+         The indexs of PPPoE client interface is the indexs of this table.
+    ALCATEL NOTE:
+    SUPPORT: YES "
+    INDEX     { pppoeClientLowerLayerIfIndex ,pppoeClientId}
+    ::= { pppoeClientEmulationTable 1 }
+
+
+PppoeClientEmulationEntry ::= 
+    SEQUENCE {
+         pppoeClientEmulationCmd           INTEGER,
+         pppoeClientEmulationState         INTEGER,
+         pppoeClientEmulationErrorCode     INTEGER
+      }
+
+-- pppoeClientEmulationIndex OBJECT-TYPE
+--     SYNTAX InterfaceIndex
+--     ACCESS not-accessible
+--     STATUS mandatory
+--     DESCRIPTION
+--        "The identifier of a PPPoE client emulation.
+--          The value of this object will be equal to the index of a PPPoE client interface.
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--    ::= { pppoeClientEmulationEntry 1}
+
+pppoeClientEmulationCmd OBJECT-TYPE
+     SYNTAX INTEGER{
+                none(1),
+                start(2),
+                stop(3)
+              }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "None: The default value when this entry created.
+         Start: Start the PPPoE emulation.
+         Stop: Abort the emulation and terminate the PPPoE session if has established.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    YES
+            RANGE:       1..3           DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "         
+ ::= { pppoeClientEmulationEntry 1 }
+ 
+pppoeClientEmulationState OBJECT-TYPE
+    SYNTAX INTEGER{
+                 inited(1),
+                 ongoing(2), 
+                 failed(3),
+                 successed(4),
+                 stopped(5)
+              } 
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+    "The state of the PPPoE client emulation.
+               inited: PPPoE emulation has never been executed since initialization.
+              ongoing: Emulation is in progress. 
+               failed: Emulation failed.
+            successed: Emulation successed and PPPoE session established.
+              stopped: PPPoE session has been terminated.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "              
+ ::= { pppoeClientEmulationEntry 2}
+ 
+pppoeClientEmulationErrorCode OBJECT-TYPE
+    SYNTAX INTEGER{
+                none(0),
+                portFailure(1),
+                padiTimeout(2),
+                padrTimeout(3),
+                lcpTimeout(4),
+                authenticationTimeout(5),
+                authenticationFailure(6),
+                ncpFailure(7),
+                internal(8),
+                other(9),
+                onuTimeout(21),
+                onuOMCIFailure(22)
+            } 
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Describe the failure reason for failed PPPoE emulation.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "        
+    ::= { pppoeClientEmulationEntry 3}
+
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- PPP MIB 
+--
+-- /////////////////////////////////////////////////////////////////////////////
+--
+--
+
+
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- PPP Profile Scalar objects.
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+
+
+
+pppProfileIndexNext     OBJECT-TYPE
+        SYNTAX          AsamNextProfileIndex
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION     
+        "This object contains an appropriate value to be used for 
+         pppProfileIndex when creating entries in the pppProfileTable. 
+
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the pppProfileIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current value of this object.  After each retrieval, the agent should
+         modify the value to the next unassigned index. 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       1..32        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+::= { pppMIB 1 }
+
+pppProfileMaxIndex  OBJECT-TYPE
+    SYNTAX  AsamMaxProfileIndex
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "This object represents the maximum number of pppProfiles that 
+	      can be created. The object pppProfileIndexNext will have 
+	      values ranging from 1 to the value represented by this object. 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       32           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= { pppMIB 2 }
+
+
+
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- PPP Profile Table.
+--
+--  This table is to support setting of the PPP attributes in a profile entry
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+pppProfileTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PppProfileEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table contains PPP profile and can be associated with the PPPoE 
+         interface. 
+    ALCATEL NOTE:
+    SUPPORT: YES
+    TABLESIZE: 32 "
+    ::= { pppMIB 3 }
+
+pppProfileEntry OBJECT-TYPE
+    SYNTAX PppProfileEntry
+    ACCESS  not-accessible
+    STATUS      mandatory   
+    DESCRIPTION
+        "Each entry describes a PPP profile. A PPP profile is applied to the 
+         PPPoE interface and is used by all the sub-interfaces that are 
+         dynamically created on that PPPoE interface. 
+    ALCATEL NOTE:
+    SUPPORT: YES "
+
+    INDEX     { pppProfileIndex }
+    ::= { pppProfileTable 1 }
+
+PppProfileEntry  ::= 
+    SEQUENCE {
+         pppProfileIndex 			           AsamProfileIndex,
+         pppProfileName 			           AsamProfileName,
+--       pppProfileScope			           AsamProfileScope,
+         pppProfileVersionNbr		         INTEGER,
+         pppProfileUsedStatus            AsamProfileRefCount,
+         pppProfileAuthenType            INTEGER,
+--       pppProfileKeepAliveInterval     INTEGER,
+         pppProfileRowStatus             RowStatus,
+         pppProfileMru                   INTEGER,
+         pppProfileIpMode                INTEGER
+     }
+
+
+pppProfileIndex  OBJECT-TYPE
+	  SYNTAX		AsamProfileIndex
+	  ACCESS		not-accessible
+	  STATUS		mandatory
+	  DESCRIPTION
+        "This object is used to uniquely identify an entry in this table.
+	     The max value of this object is limited to pppProfileMaxIndex value. 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       1..32        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+::= { pppProfileEntry 1 }
+
+
+pppProfileName  OBJECT-TYPE
+    SYNTAX      AsamProfileName 
+    ACCESS      read-write 
+    STATUS      mandatory   
+    DESCRIPTION
+        " A textual name identifying this profile. This name has to be unique
+        within the assigned scope. 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= { pppProfileEntry 2 }
+
+
+-- pppProfileScope OBJECT-TYPE
+--         SYNTAX          AsamProfileScope
+--         ACCESS          read-write
+--         STATUS          mandatory
+--         DESCRIPTION     
+--         "A  profile can be qualified as having a local scope or a network wide 
+--          scope. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       OPT
+--             PERSIST:     YES          INSRVMOD:    NO
+--             RANGE:       NA           DEFVALUE:    1 [local scope]
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       Modifiable for AWS "
+-- ::= {pppProfileEntry 3}
+
+
+   pppProfileVersionNbr OBJECT-TYPE
+           SYNTAX          INTEGER 
+           ACCESS          read-write
+           STATUS          mandatory
+           DESCRIPTION     
+           "The manager can associate a version number to the profile. It is set to
+            1 when the profile is first created and will be incremented by the
+            manager when the profile is modified. 
+       ALCATEL NOTE:
+               ACCESS:      NA           USAGE:       OPT
+               PERSIST:     YES          INSRVMOD:    YES
+               RANGE:       NA           DEFVALUE:    1
+               UNITS:       NA           SPARSE:      NA
+               DESCR:       Modifiable for AWS "
+   ::= {pppProfileEntry 4}
+
+pppProfileUsedStatus OBJECT-TYPE
+    SYNTAX  AsamProfileRefCount
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+           "Indicates the number of entities using this profile. If the
+            reference count is greater than 0, then this profile is 'in use',
+            and may NOT be deleted. If the value is 0, then this profile is
+            'not in use', and can be deleted. 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+::= {pppProfileEntry 5}
+
+
+pppProfileAuthenType OBJECT-TYPE
+    SYNTAX INTEGER {
+                auto(1),
+                chap(2),
+                pap(3)
+               }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Specifies the type of PPP authentication used.
+          Pap         Only PAP negotiation
+          chap        Only CHAP negotiation
+          auto        System auto select  .          
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       1,2,3        DEFVALUE:    1 [auto]
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    DEFVAL { auto }
+    ::= { pppProfileEntry 6 }
+
+-- pppProfileKeepAliveInterval OBJECT-TYPE
+--     SYNTAX INTEGER (0..65535)
+--     ACCESS read-write
+--     STATUS mandatory
+--     DESCRIPTION
+--         "Keepalive timeout value in seconds, after the echo request packet is                       
+--          sent. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       OPT
+--             PERSIST:     YES          INSRVMOD:    YES
+--             RANGE:       NA           DEFVALUE:    30
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     DEFVAL { 30 }
+--     ::= { pppProfileEntry 7 }
+
+
+pppProfileRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Controls creation/deletion of entries in this table according to the 
+         Rowstatus textual convention     
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "      
+    ::= { pppProfileEntry 8}
+
+pppProfileMru    OBJECT-TYPE
+    SYNTAX INTEGER(0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Specifying MRU of PPP.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       0..65535     DEFVALUE:    1500
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "        
+    DEFVAL { 1500 }            
+    ::= { pppProfileEntry 9 }
+
+pppProfileIpMode   OBJECT-TYPE
+    SYNTAX INTEGER{
+                none(1),
+                ipv4(2),
+                dual(3),
+                ipv6(4)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Specifying ip version during NCP phase.
+        none- Without NCP phase, and a entry with default IP address- 0.0.0.0, will be populated
+              into pppIfTable if PPPoE session established successfully.
+        IPv4- Only establish IPv4 connection
+        dual- Establish both IPv4 and IPv6 connection
+        IPv6- Only establish IPv6 connection
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       1,2,3,4      DEFVALUE:     2
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "        
+    DEFVAL { 2 }            
+    ::= { pppProfileEntry 10 }
+
+
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- The PPP Profile Name Mapping table 
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+
+pppProfileMappingTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF PppProfileMappingEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "The (conceptual) table listing the
+	ppp Profile Name to Index mapping. 
+    ALCATEL NOTE:
+    SUPPORT: YES
+    TABLESIZE: 32 "
+    ::= { pppMIB 4 }
+
+pppProfileMappingEntry OBJECT-TYPE
+      SYNTAX     PppProfileMappingEntry
+      ACCESS 	   not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "An entry (conceptual row) representing the PPP Profile 
+	Name to Index mapping. The system automatically creates an entry in this Table 
+    for each corresponding entry (ppp-profile) created in the pppProfileTable.  
+    Similarly, when an ppp-profile is deleted, the corresponding entry in 
+    this table is also automatically deleted by the system. 
+    ALCATEL NOTE:
+    SUPPORT: YES "
+        INDEX { pppProfileMappingName }
+      ::= { pppProfileMappingTable 1 }
+
+PppProfileMappingEntry ::=
+    SEQUENCE {
+      pppProfileMappingName 			    AsamProfileName,
+--    pppProfileMappingScope 			    AsamProfileScope,
+      pppProfileMappingIndex 			    AsamProfileIndex
+    }
+
+pppProfileMappingName  OBJECT-TYPE
+	  SYNTAX		AsamProfileName
+	  ACCESS		not-accessible
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The PPP Profile Name. 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+	  ::= { pppProfileMappingEntry 1 }
+
+-- pppProfileMappingScope OBJECT-TYPE
+--         SYNTAX          AsamProfileScope
+--         ACCESS          not-accessible
+--         STATUS          obsolete
+--         DESCRIPTION     
+--         "A  profile can be qualified as having a local scope or a network wide 
+--          scope. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NA           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       obsolete "
+-- ::= { pppProfileMappingEntry 2 }
+
+pppProfileMappingIndex  OBJECT-TYPE
+	  SYNTAX		AsamProfileIndex
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The PPP Profile index. 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+	  ::= { pppProfileMappingEntry 3 }
+
+-- End of pppProfileMappingTable.
+
+
+
+
+
+-- /////////////////////////////////////////////////////////////////////////////
+--
+-- The PPP Interface Table
+--
+-- /////////////////////////////////////////////////////////////////////////////
+
+pppIfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PppIfEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table contains entries of  PPP interface session information      
+         in the system. 
+    ALCATEL NOTE:
+    SUPPORT: YES
+    TABLESIZE: DEP [depends on max pppoe interfaces of the system and 
+                    max PPPoE sessions per pppoe interface.] "
+    ::= { pppMIB 5 }
+
+pppIfEntry OBJECT-TYPE
+    SYNTAX      PppIfEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Each entry describes the information of the session attributes of a 
+      	 PPP session.
+         The interface index of the PPP session is the index of this table. 
+    ALCATEL NOTE:
+    SUPPORT: YES "
+    INDEX     { pppIfIndex }
+    ::= { pppIfTable 1 }
+
+
+PppIfEntry ::= 
+    SEQUENCE {
+         pppIfIndex                      InterfaceIndex,
+--       pppIfState                      INTEGER,
+--       pppIfUserName                   DisplayString,
+--       pppIfAddrType                   INTEGER,
+--       pppIfLocalIpAddress             InetAddress,
+--       pppIfRemoteIpAddress            InetAddress,
+         pppIfLocalMru                   INTEGER,
+--       pppIfRemoteMru                  INTEGER,
+--       pppIfPrimaryDnsAddress          InetAddress,
+--       pppIfSecondaryDnsAddress        InetAddress,
+--       pppIfPrimaryNbnsAddress         InetAddress,
+--       pppIfSecondaryNbnsAddress       InetAddress,
+--       pppIfQosProfile                 SnmpAdminString,  
+--       pppIfInPackets                  OCTET STRING,
+--       pppIfOutPackets                 OCTET STRING,
+--       pppIfInOctets                   OCTET STRING,
+--       pppIfOutOctets                  OCTET STRING,
+--       pppIfInDroppedPackets           OCTET STRING,
+--       pppIfOutDroppedPackets          OCTET STRING,
+--       pppIfInDroppedOctets            OCTET STRING,
+--       pppIfOutDroppedOctets           OCTET STRING,
+--       pppIfStartTime                  TimeInterval,
+--       pppIfRemainingTime              TimeInterval,
+--       pppIfAccountingInterval         INTEGER,
+--       pppIfVrfIndex                   INTEGER,
+         pppIfLocalIPv4Address           IpAddress,
+         pppIfLocalIPv6Address           InetAddress
+        
+      }
+
+pppIfIndex OBJECT-TYPE
+    SYNTAX InterfaceIndex
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+       "The PPP interface index that uniquely identifies a PPP session. 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+   ::= { pppIfEntry 1}
+
+-- pppIfState OBJECT-TYPE
+--      SYNTAX INTEGER {
+--                     lcp(1),
+--                     authenticating (2),
+--                     ipcp(3),
+--                     up(4),
+--                     down(5)
+--                }
+--     ACCESS read-only
+--     STATUS mandatory
+-- DESCRIPTION
+--     "The current PPP state of the session.
+--      lcp             -  PPP session reaches LCP phase
+--      authenticating  -  PPP session reaches Authentication phase
+--      ipcp            -  PPP session reaches IPCP phase
+--      up              -  PPP session is UP.
+--      down            -  PPP session is down  
+-- ALCATEL NOTE:
+--         ACCESS:      NA           USAGE:       NA
+--         PERSIST:     NA           INSRVMOD:    NA
+--       RANGE:       NA           DEFVALUE:    down
+--          UNITS:       NA           SPARSE:      NA
+--          DESCR:       NA "
+--  DEFVAL { down }
+--  ::= { pppIfEntry 2 }
+ 
+-- pppIfUserName OBJECT-TYPE
+--     SYNTAX DisplayString 
+--  ACCESS read-only
+--  STATUS mandatory
+--  DESCRIPTION
+--     "The name of the user who established the PPPoE session. This string     
+--      contains the user name along with the domain name 
+--  ALCATEL NOTE:
+--          ACCESS:      NA           USAGE:       NA
+--          PERSIST:     NO           INSRVMOD:    NA
+--       RANGE:       NA           DEFVALUE:    NA
+--       UNITS:       NA           SPARSE:      NA
+--          DESCR:       NA "
+--  ::= { pppIfEntry 3}
+ 
+-- pppIfAddrType OBJECT-TYPE
+--      SYNTAX INTEGER {
+--                       ipv4 (1),
+--                       ipv6(2)
+--                     }
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--        "The type of the address used, for the objects pppIfLocalIpAddress, 
+--         pppIfRemoteIpAddress, pppIfPrimaryDnsAddress, pppIfSecondaryDnsAddress,   
+--         pppIfPrimaryNbnsAddress and pppIfSecondaryNbnsAddress
+-- 
+--         The types can be either Ipv4 addressing or Ipv6  addressing.
+-- 
+--         For release R1.1 Ipv4 adderssing is used. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     DEFVAL { ipv4 }
+--     ::= { pppIfEntry 4}
+
+-- pppIfLocalIpAddress OBJECT-TYPE
+--     SYNTAX InetAddress
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "The IP address of the system on which PPPoE session is established. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 5 }
+
+-- pppIfRemoteIpAddress OBJECT-TYPE
+--     SYNTAX InetAddress
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "The IP address of the user who established the PPPoE session. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 6 }
+
+pppIfLocalMru OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The MRU of the system link, on which PPPoE session is established. 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= { pppIfEntry 7 }
+
+-- pppIfRemoteMru OBJECT-TYPE
+--     SYNTAX INTEGER
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "The MRU of the user link, who established the PPPoE session. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 8 }
+ 
+-- pppIfPrimaryDnsAddress OBJECT-TYPE
+--     SYNTAX InetAddress
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "Remote primary DNS IP address, obtained from the authentication service. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+-- 
+--     ::= { pppIfEntry 9 }
+
+-- pppIfSecondaryDnsAddress OBJECT-TYPE
+--     SYNTAX InetAddress
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "Remote secondary DNS IP address, obtained from the authentication 
+-- 	 service. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA " 
+--     ::= { pppIfEntry 10 }
+
+-- pppIfPrimaryNbnsAddress OBJECT-TYPE
+--     SYNTAX InetAddress
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--          "Remote primary NBNS IP address, obtained from the authentication 
+-- 	      service. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 11 }
+
+-- pppIfSecondaryNbnsAddress OBJECT-TYPE
+--     SYNTAX InetAddress
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--          "Remote secondary NBNS IP address, obtained from the authentication 
+--           service. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 12 }
+
+-- pppIfQosProfile OBJECT-TYPE
+--     SYNTAX SnmpAdminString (SIZE(0..255))
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "The dynamic or static (if no dynamic) QOS profile assigned to a PPP
+--          interface. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA " 
+--    ::= { pppIfEntry 13 }
+
+-- pppIfInPackets OBJECT-TYPE
+--     SYNTAX OCTET STRING (SIZE(8))
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "Total Number of packets received in this session. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 14 }
+
+-- pppIfOutPackets OBJECT-TYPE
+--    SYNTAX OCTET STRING (SIZE(8))
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--        "Total Number of packets transmitted in this session. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 15 }
+
+-- pppIfInOctets OBJECT-TYPE
+--     SYNTAX OCTET STRING  (SIZE(8))
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "Total number of octets received in this session. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 16 }
+
+-- pppIfOutOctets OBJECT-TYPE
+--     SYNTAX OCTET STRING  (SIZE(8))
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--        " Total number of octets transmitted in this session. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 17 }
+
+-- pppIfInDroppedPackets OBJECT-TYPE
+--     SYNTAX OCTET STRING (SIZE(8))
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "Total Number of packets dropped in this session during up stream. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 18 }
+
+-- pppIfOutDroppedPackets OBJECT-TYPE
+--    SYNTAX OCTET STRING (SIZE(8))
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--        "Total Number of packets dropped in this session during down stream. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 19 }
+
+-- pppIfInDroppedOctets OBJECT-TYPE
+--     SYNTAX OCTET STRING  (SIZE(8))
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "Total Number of octets dropped in this session during up stream. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "   
+--    ::= { pppIfEntry 20 }
+
+-- pppIfOutDroppedOctets OBJECT-TYPE
+--     SYNTAX OCTET STRING  (SIZE(8))
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--         "Total Number of octets dropped in this session during down stream. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "   
+--     ::= { pppIfEntry 21 }
+
+-- pppIfStartTime OBJECT-TYPE
+--     SYNTAX TimeInterval
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--        "The value of system time when the session is established. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 22 }
+
+-- pppIfRemainingTime OBJECT-TYPE
+--     SYNTAX TimeInterval
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--        "Maximum duration for the session, after which the session is terminated
+--         by the system.If there is no session timeout applicable for this particular 
+--         session, then the value of this object is displayed as zero. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 23 }
+
+-- pppIfAccountingInterval OBJECT-TYPE
+--     SYNTAX INTEGER
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--        "Interval that must elapse between generation of accounting records for 
+--         this session. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 24 }
+
+-- pppIfVrfIndex OBJECT-TYPE
+--     SYNTAX INTEGER
+--     ACCESS read-only
+--     STATUS mandatory
+--     DESCRIPTION
+--        "The identifier of the VRF that this session belongs to. 
+--     ALCATEL NOTE:
+--             ACCESS:      NA           USAGE:       NA
+--             PERSIST:     NO           INSRVMOD:    NA
+--             RANGE:       NA           DEFVALUE:    NA
+--             UNITS:       NA           SPARSE:      NA
+--             DESCR:       NA "
+--     ::= { pppIfEntry 25 }
+
+pppIfLocalIPv4Address OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The IPv4 address of the system on which PPP connection is established. All zero address
+         means not assigned by server. 
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= { pppIfEntry 26 }
+
+pppIfLocalIPv6Address OBJECT-TYPE
+    SYNTAX InetAddress 
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "The IPv6 address of the system on which PPP connection is established. All zero address
+         means not assigned by server.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= { pppIfEntry 27 }
+
+
+
+END
+
+

@@ -1,0 +1,4229 @@
+NG-PON2-MIB DEFINITIONS ::= BEGIN
+
+-- =============================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel-Lucent shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2014, Alcatel-Lucent. All Rights Reserved.
+-- =============================================================================
+--
+--  MODULE-IDENTITY
+--  LAST-UPDATED  May 19, 2015
+--  ORGANIZATION "Alcatel"
+--  CONTACT-INFO
+--
+--          Email:  John.D.Boyle@alcatel-lucent.com
+--
+--  DESCRIPTION "This vendor specific MIB is defined to manage 
+--               the NG-PON2 aspects of the Alcatel-Lucent ISAM converged platform. " 
+--  
+--  REVISION 
+--  DESCRIPTION
+--        "Version: 3HH-12305-EDAA-PBZZA
+
+--         Editor: John Boyle
+--         Changes:  See below "
+--  
+--
+-- =============================================================================
+-- 
+-- NG2-TWDM-MIB HISTORY
+--
+-- Koen Decroix - 11/05/2017
+-- For ISAM 5.6.01
+-- FR ALU02348989: fix for inaccurate fiber distance:
+-- Make the ng2SubChanGrpClosestOntDistance and ng2SubChanGrpReach consistent with the interal functioning.
+-- More specifically, the possible ont distance range is corrected to discrete values 0 and 20km,the diff-reach
+-- is corrected to discrete values 20 and 40km.  Morevover, the description for both attributes is extended with
+-- the contstraint that the maximum ont distance = closest ont distance + diff-reach is maximum 40km.
+--
+--
+-- Patrique Ferreira Silva - 28/03/2017
+-- For ISAM 5.6
+-- for ALU02154260: Extend amount of channel-group to 128 to be able to use fully equiped FX-16 with  8 port LT Card
+--
+--
+-- Erik Duys - 12/10/2016
+-- For ISAM 5.6
+-- for ALU02042523: User Commanded on-the-fly movement on NGPON2
+-- Rename ng2MobilityRoleExchPreferredChannelPair into ng2MobilityChannelPairRoleExch
+-- Add proper actions for ng2MobilityChannelPairRoleExch:
+--   0=no action
+--   1=roleExchPrefToAltPref
+--   2=roleExchPrefToProt 
+--
+-- Kristof Van Eynde - 9/07/2016
+-- For ISAM 5.6
+-- Extend ng2MobilityOntTable with new attributes for ALU02042523: User Commanded on-the-fly movement on NGPON2:
+--  ng2MobilityAltPrefChannelPair
+--  ng2MobilityRoleExchPreferredChannelPair
+--
+--
+-- Udaya Sivadanam - 8/25/2015
+-- For ISAM 5.4
+-- Added new table ng2MobilityOntTable
+-- for Lambda movement feature.
+
+-- Xu Xinde - 01/13/16:
+-- For ISAM5.4.01
+-- ALU02124533 - FWLT-A LOID ONU authentication
+-- For ng2SubChanGrpAuthMethod attribute in ng2SubChanGrpTable, extend the range from 1..1 to 1..5 to support LOID authentication
+
+-- John Boyle - 5/19/15:
+-- For ISAM5.3:
+--
+-- Added new table ng2ChanGrpSubChanGrpBasedOntSwDownldStatusTable
+--
+-- 
+-- John Boyle - 5/7/15:
+-- For ISAM5.2:
+--
+-- For ng2SubChanGrpOntSwDownldStatusTable:
+--
+--	1) Changed support timeframe commentary:
+-- 		FROM >> For NG-PON2 - NOT SUPPORTED as of ISAM5.2
+-- 		TO >> For NG-PON2 - SUPPORTED as of ISAM5.2.01
+--
+--	2) Removed following attributes:
+--		ng2SubChanGrpOntCfgFile1DownldStatus
+--		ng2SubChanGrpOntCfgFile2DownldStatus
+--
+--
+--
+-- John Boyle - 5/5/15:
+-- For ISAM5.2:
+--
+-- For ng2SubChanGrpOntSwDownldStatusTable (and all attributes), changed support timeframe commentary
+-- 	FROM >> For NG-PON2 - SUPPORTED as of ISAM5.2.01 
+-- 	TO >> For NG-PON2 - NOT SUPPORTED as of ISAM5.2
+--  
+--
+--
+-- John Boyle - 3/17/15:
+-- For ISAM5.2:
+--
+-- In intro section of ng2ChannelLambdaProfileTable, changed all 8 default
+-- profile NAMES to the following:
+--	defaultChannel1
+--	defaultChannel2
+--	defaultChannel3
+--	defaultChannel4
+--	defaultChannel5
+--	defaultChannel6
+--	defaultChannel7
+--	defaultChannel8
+--
+--
+-- John Boyle - 3/5/15:
+-- For ISAM5.2:
+--
+-- For following attributes in ng2ChanPairConfigTable:
+--	ng2ChanPairConfigTrafficThresholdUp
+--	ng2ChanPairConfigTrafficThresholdDown
+--		Changed the upper RANGE:
+--		FROM:  	0..40000000
+--		TO:	0..4294967295
+--
+--
+--
+-- John Boyle - 3/3/15:
+-- For ISAM5.2:
+--
+--  For ng2ChanPairConfigAggGemPmCollectInd attribute in ng2ChanPairConfigTable:
+--	Ensured the default equal to 1 (because for similar attribute in 
+--	bponPonConfigTable - bponPonConfigAggGemPmCollectInd the default is 1 = enable).	
+--		DEFVALUE: 1
+--		DEFVAL  { 1 }
+--
+--
+--
+-- John Boyle - 2/18/15:
+-- For ISAM5.2:
+--
+-- Changed upper range of number of channel groups FROM>> 128 TO>> 64
+-- in following:
+--
+-- 	ng2ChanPairConfigAssociatedChannelGroup attribute in ng2ChanPairConfigTable
+--	>> RANGE (0..64)
+--
+--
+--
+-- John Boyle - 2/17/15:
+-- For ISAM5.2:
+--
+-- Changed upper range of number of channel groups FROM>> 128 TO>> 64
+-- in following:
+--
+-- 	TEXTUAL CONVENTION >> ChanGrpIndex ::= INTEGER(1..64)
+-- 	ng2ChanGrpIndex attribute in ng2ChanGrpTable >> RANGE (1..64)
+--
+--
+--
+-- John Boyle - 2/10/15:
+-- For ISAM5.2:
+--
+-- ALU01986788 - Completion of PON Utilization and Threshold (FWLT-A Part)
+--
+--	Commitment of this RCR was recently changed FROM Release 5.2.01 TO Release 5.3.
+--	For following attributes in ng2ChanPairConfigTable:
+--		ng2ChanPairConfigUtilPmCollectInd
+--		ng2ChanPairConfigUtilNumPmIntervals
+--		ng2ChanPairConfigUtilOntDetailSelector
+--		ng2ChanPairConfigUtilOntBulkDetailSelector
+--	Changed commentary as follows:
+--		FROM: As of ISAM5.2.01 release, this attribute is SUPPORTED.
+--		TO: As of ISAM5.2.01 release, this attribute is NOT SUPPORTED.
+--
+--
+-- John Boyle - 2/9/15:
+-- For ISAM5.2:
+--
+-- For following attributes in ng2ChanPairConfigTable: 
+--	ng2ChanPairConfigTrafficThresholdUp
+--	ng2ChanPairConfigTrafficThresholdDn
+-- Changed RANGE in ALCATEL NOTE:
+--	FROM: >>  1..40,000,000
+--	TO:   >>  1..40000000 
+--
+--
+-- John Boyle - 2/5/15:
+-- For ISAM5.2:
+--
+-- For ng2ChanGrpPollingPeriod attribute in ng2ChanGrpTable: 
+--	Changed RANGE in ALCATEL NOTE:
+--		FROM: >>  1..86400
+--		TO:   >>  1..864000    
+--
+--
+-- John Boyle - 12/21/14:
+-- For ISAM5.2:
+--
+-- For ng2SubChanGrpOntSwDownldStatusTable (and all table attributes), 
+--	changed TO >> SUPPORTED as of ISAM5.2.01 (previously had ISAM5.2). 
+--
+-- For following attributes in ng2ChanPairConfigTable, 
+--	changed TO >> NOT SUPPORTED as of ISAM5.2 (meaning not even planned for ISAM5.2.01):
+--		ng2ChanPairConfigRogueTestEnableDisableCmd
+--		ng2ChanPairConfigBkgdRogueTestEnableDisableCmd
+--		ng2ChanPairConfigBkgdRogueTestInterval
+--		ng2ChanPairConfigBkgdStuckLaserTestCmd
+--
+--
+--
+-- John Boyle - 12/17/14:
+-- For ISAM5.2:
+--
+-- For ng2OntsPerChanPairMapRangedStatus attribute in ng2OntsPerChanPairMapTable,
+-- clarified the codepoint meanings as follows:
+--		1 = Channel-pair is preferred and ONT is ranged on it
+--		2 = Channel-pair is preferred and ONT is NOT ranged on it
+--		3 = Channel-pair is NOT preferred and ONT is ranged on it
+--
+--
+--
+-- John Boyle - 12/12/14:
+-- For ISAM5.2:
+--
+-- ALU01986788 - Completion of PON Utilization and Threshold (FWLT-A Part)
+--
+--	Reversed the previous change from 3 days ago.
+-- 	For following attributes in ng2ChanPairConfigTable, 
+-- 	brought back the INHERIT option and changed the DEFAULT value to 3 = INHERIT:
+--		ng2ChanPairConfigUtilPmCollectInd
+--		ng2ChanPairConfigUtilOntDetailSelector
+--	Also noted that the INHERIT option calls into play the applicable BW Utilization
+--	SCALAR attributes from the GPON-MIB.
+--
+--
+-- John Boyle - 12/9/14:
+-- For ISAM5.2:
+--
+-- ALU01986788 - Completion of PON Utilization and Threshold (FWLT-A Part)
+--
+-- 	For following attributes in ng2ChanPairConfigTable, 
+-- 	eliminated the INHERIT option and changed the DEFAULT value to 2 = DISABLE:
+--		ng2ChanPairConfigUtilPmCollectInd
+--		ng2ChanPairConfigUtilOntDetailSelector
+--
+--
+--
+-- John Boyle - 12/4/14:
+-- For ISAM5.2:
+--
+-- Added new group: ng2ScalarsGroup	 OBJECT IDENTIFIER ::= { ng2Group 3 }
+--	Added new scalar to that group: ng2ChanPairTrafficTcaInterval { ng2ScalarsGroup 1 }
+--
+-- For ng2ChanPairConfigPlannedSpeed attribute in ng2ChanPairConfigTable:
+--	Clarified that UNITS are GBits/sec (instead of Ghz)
+--
+--
+--
+-- John Boyle - 11/26/14:
+-- For ISAM5.2:
+--
+-- For ng2ChanGrpRamanReductionInd attribute in ng2ChanGrp:
+--	Ensured that default value = 2 (disable) in both comments and actual MIB.
+--
+-- For ng2ChanPairConfigPlannedSpeed attribute in ng2ChanPairConfigTable:
+--	Changed UNIT from GHz to NA and commented in the enumerations that GHz is implied for options
+--
+-- For ng2ChanPairConfigUtilOntDetailSelector attribute in ng2ChanPairConfigTable:
+--	Added option 3 = Inherit from System-level, and made that the DEFAULT.
+--
+-- For ng2SubChanGrpOntSwDownldStatusTable, clarified the following:
+--	For SubChannelGroups, rows are automatically created/deleted by OLT,  
+--	when corresponding row is created/deleted in ng2SubChanGrpTable (in NG-PON2 MIB).
+--
+--
+--
+-- John Boyle - 11/12/14:
+-- For ISAM5.2:
+--
+-- For ng2SubChanGrpOntSwDownldStatusTable:
+-- 	converted table index from single-index to double-index as follows:	
+--		INDEX	{ ng2ChanGrpIndex, ng2SubChanGrpIndex }
+-- 		>> First index represents Channel Group ID
+-- 		>> Second index represents Sub Channel Group ID
+--
+--
+-- John Boyle - 11/3/14:
+-- For ISAM5.2:
+--
+-- Added ng2SubChanGrpOntSwDownldStatusTable
+-- 
+--
+-- John Boyle - 9/17/14:
+-- For ISAM5.2:
+--
+--	For ng2SubChanGrpDsMulticastEncryptInd attribute in ng2SubChanGrpTable, 
+--	changed to: 'As of ISAM5.2, NOT SUPPORTED'.
+--
+--	For ng2OntsPerChanGroupRangedStatus attribute in ng2OntsPerChanGroupMapTable,
+--	eliminated codepoint 4 = Not Preferred & Not Ranged.
+--
+--	For ng2OntsPerChanPairMapRangedStatus attribute in ng2OntsPerChanPairMapTable
+--	eliminated codepoint 4 = Not Preferred & Not Ranged.
+--
+--
+-- John Boyle - 9/15/14:
+-- For ISAM5.2:
+--
+-- 	Added ng2OntsPerChanGroupOntIfIndex attribute to ng2OntsPerChanGroupTable
+--
+--
+-- John Boyle - 9/8/14:
+-- For ISAM5.2:
+--
+-- 	Added ng2OntsPerChanGroupRangedStatus attribute to ng2OntsPerChanGroupTable
+--
+--
+-- John Boyle - 9/5/14:
+-- For ISAM5.2:
+--
+--	For ng2SubChanGrpAuthMethod attribute in ng2SubChanGrpTable, eliminated all 'LOID options'
+--	and only kept the following single option:
+--
+--	1 = SN and SLID/REGISTRATION ID authentication only (default)
+--
+--	NOTE:  The word 'SLID' is mentioned in order to retain context that the bponOntSubscriberLocId
+--	attribute in the bponOntTable has historically been known as the 12 byte SLID.  And for GPON,
+--	that attribute retains the same meaning.
+--	But, for NG-PON2 ONTs that same attribute has been expanded to 36 bytes to accommodate input of
+--	G989.3 Registration ID authentication.
+--	Even though the attribute has only a single option in ISAM5.2, it is retained here in case 
+--	additional specification methods must be supported in subsequent releases.
+--
+--
+-- John Boyle - 7/8/14:
+-- For ISAM5.2:
+--
+--	Removed 'RULES' section from beginning of table descriptions.  Specifically removed rules and 
+--	validations that are redundant with same mentioned in SCENARIOs section of PBZZA spec.
+--
+--
+-- John Boyle - 6/27/14:
+-- For ISAM5.2:
+--
+--	Added following attribute to ng2SubChanGrpTable (after having
+--	removed their counterparts from the ng2ChanPairConfigTable):
+--		ng2SubChanGrpReach
+--		ng2SubChanGrpClosestOntDistance	
+--
+--
+--
+-- John Boyle - 6/24/14:
+-- For ISAM5.2:
+--
+-- 	In ng2ChannelLambdaProfileTable made following changes:
+--		- Changed name of following attribute 
+--			FROM:	ng2ChannelLambdaProfileChannelId
+--			TO:  	ng2ChannelLambdaProfileUpChannelId (to distinguish Upstream Channel ID)
+--		- Changed name and syntax of following attribute
+--			FROM:	ng2ChannelLambdaProfilePlannedUpLambda (can't plan upstream lamda)
+--			TO:	ng2ChannelLambdaProfileDownChannelId (to distinguish Downstream Channel ID)
+--		- Changed the default values of system-delivered profiles to following:
+--			PROFILE				UP	DOWN	DOWN
+--			INDEX	NAME			CHANID	CHANID	LAMBDA
+--
+--			1	defaultWavelengthPair1	1	1	159634		
+--			2	defaultWavelengthPair2	2	2	159719		
+--			3	defaultWavelengthPair3	3	3	159804		
+--			4	defaultWavelengthPair4	4	4	159889		
+--			5	defaultWavelengthPair5	5	5	159975
+--			6	defaultWavelengthPair6	6	6	160060
+--			7	defaultWavelengthPair7	7	7	160146
+--			8	defaultWavelengthPair8	8	8	160231
+--
+--	In ng2ChanPairConfigTable made following changes:
+--		- Deleted ng2ChanPairConfigPlannedUpLambda attribute (can't plan Upstream lamda)
+--		- Changed name of following attribute:
+--			FROM:	ng2ChanPairConfigPlannedChannelId
+--			TO:	ng2ChanPairConfigPlannedDownChannelId (to distinguish Downstream Channel ID)
+--		- Changed name and syntax of following attribute
+--			FROM:	ng2ChanPairConfigActualUpLambda (can't determine actual upstream lamda)
+--			TO:	ng2ChanPairConfigPlannedUpChannelId (to distinguish Upstream Channel ID)
+--
+--	In ng2OntsPerChanPairMapTable, changed the 2nd index:
+--		FROM: 	ifIndex
+--		TO:	ng2OntsPerChanPairMapOntIndex (ifIndex of ONT)
+--		REASON: Some SNMP MIB compilers do not like using ifIndex multiple times as table index.
+
+---	For ng2ChanPairConfigPonId attribute in ng2ChanPairConfigTable:
+---		Changed size from 7 bytes to 4 bytes, and specified that only the low-order
+---		28 bits are relevant (and low-order 4 bits must be zeroes). 
+---
+--
+-- ALU01862953 - TWDM LT card
+--
+-- John Boyle - 6/6/14:
+-- For ISAM5.2:
+--
+--	Per Rob Peschi recommendation (because of inconsistencies):
+--	Renamed following textual convention names (and all their references):
+--		FROM>> UpPlanLambda  TO>> PlannedUpLambda
+--		FROM>> DownPlanLambda  TO>> PlannedDownLambda
+--		FROM>> UpActualLambda  TO>> ActualUpLambda
+--		FROM>> DownActualLambda  TO>> ActualDownLambda
+--
+-- ALU01848928 - PON Utilization & Thresholds
+--
+--	Added ng2ChanPairConfigUtilOntBulkDetailSelector attribute to ng2ChanPairConfigTable
+--
+--	Also indicated that 'PON Utilization' attributes are not supported
+--	for channel pairs until ISAM5.2.01
+--
+--
+-- John Boyle - 5/23/14:
+-- For ISAM5.2:
+--
+-- ALU01862953 - TWDM LT card
+--
+--	Added following attributes to ng2ChanPairConfigTable:
+--		ng2ChanPairConfigPlannedUpLambda
+--		ng2ChanPairConfigPlannedDownLambda
+--		ng2ChanPairConfigPlannedChannelId
+--	They are same values as configured in ng2ChanLambdaProfileTable.
+--	Replicated as read-only attributes in this table for consolidation
+--	and CLI display efficiency.(and also re-ordered some of the OIDs in the table):
+--
+--	
+--
+-- John Boyle - 5/20/14:
+-- For ISAM5.2:
+--
+-- ALU01862953 - TWDM LT card
+--
+--	Completely changed OIDs, indexes, and attributes of following 2 tables
+--	in order to align with Rob Pechi's CLI proposal in 'Show CLI v3 ONT'
+--		ng2OntsPerChanGroupMapTable
+--		ng2OntsPerChanPairMapTable
+--
+--	Added following attribute to ng2SubChanGrpTable (after having
+--	removed its counterpart from the ng2ChanPairConfigTable):
+--		ng2SubChanGrpFecDownstreamInd
+--
+-- ALU01848928 - PON Utilization & Thresholds
+--
+--	Added following attribute to ng2ChanPairConfigTable:
+--		ng2ChanPairConfigUtilPmCollectInd
+--		ng2ChanPairConfigUtilNumPmIntervals
+--		ng2ChanPairConfigUtilOntDetailSelector	
+--
+--
+--
+--
+--
+-- John Boyle - 5/12/14:
+-- For ISAM5.2
+--
+-- Specified that as of ISAM5.2:
+-- For all attributes/indexes the refer to number of Channel Groups, changed maximum to 128.
+-- For all attributes/indexes the refer to number of Sub-Channel Groups, changed maximum to 1.
+--
+--
+-- John Boyle - 5/9/14:
+-- For ISAM5.2:
+--
+--	Added following attribute to ng2ChanPairConfigTable:
+--		ng2ChanPairConfigFecDownstreamInd
+--	Added ng2OntsPerChanGroupMapTable (as a helper table for 
+--		mapping of the identity of all ONTs associated to a specific
+-- 		ChannelGroup/SubChannelGroup/ChannelPair along with their 
+--		preferred/ranged status)
+--	Commented that ng2OntsPerChanPairMapTable is NOT SUPPORTED
+--
+-- John Boyle - 4/16/14:
+-- For ISAM5.2:
+--
+--	Deleted following attributes from ng2ChanGrpTable:
+--		ng2ChanGrpAdminState
+--		ng2ChanGrpOperState
+--	Deleted following attributes from ng2SubChanGrpTable:
+--		ng2SubChanGrpAdminState
+--		ng2SubChanGrpOperState
+--
+--	Deleted following tables:
+--		ng2ChanGrpNameToIndexMappingTable
+--		ng2SubChanGrpNameToIndexMappingTable
+--
+--
+-- John Boyle - 4/7/14:
+-- For ISAM5.2:
+--
+--	Changed all instances of spelling:
+--		FROM: Lamda
+--		TO" Lambda
+--
+--	For ng2ChanGrpName attribute in ng2ChanGrpTable and 
+--	ng2SubChanGrpName attribute in ng2SubChanGrpTable, added the following RULE:
+-- 		RULE:  If non-null, this name attribute must be unique across all 
+--			other rows in this table.
+--
+--	Added following tables:
+--		ng2ChanGrpNameToIndexMappingTable
+--		ng2SubChanGrpNameToIndexMappingTable
+--		
+--
+-- John Boyle - 3/28/14:
+-- For ISAM5.2:
+--
+-- In ng2ChannelLamdaProfileTable:
+--	Eliminated system-delivered profile SIXTEEN.
+--	Changed names of system-delivere profiles 1..8
+-- For ng2ChanLamdaProfileTable and all of its associaed SCALARs and mapping tables:
+--	Changed FROM Chan TO Channel
+-- Incorporated other comments from local Raleigh Agile Team 5
+--
+--
+--
+-- John Boyle - 3/28/14:
+-- For ISAM5.2:
+--
+-- 	Added th following attributes back to ng2ChanGrpTable
+--		ng2ChanGrpAdminState
+--		ng2ChanGrpOperState
+--
+--	Change range of following TEXTUAL CONVENTION:
+--		FROM: SubChanGrpIndex ::= INTEGER(1..256)
+--		TO: SubChanGrpIndex ::= INTEGER(1..8)
+--
+--
+-- John Boyle - 3/23/14:
+-- For ISAM5.2:
+--
+--	Created the following groupings under ng2Group OID and allocated tables/scalars accordingly:
+--		ng2GroupsAndPairsGroup	 OBJECT IDENTIFIER ::= { ng2Group 1 }
+--		ng2ProfilesGroup	 OBJECT IDENTIFIER ::= { ng2Group 2 }
+
+-- 	Added following TEXTUAL CONVENTIONS:
+--		UpPlanLambda	::= INTEGER(126000..154000)
+--		DownPlanLambda	::= INTEGER(156000..161000)
+--		UpActualLambda	::= INTEGER(0|126000..154000)
+--			0 means UNKNOWN
+--		DownActualLambda	::= INTEGER(0|156000..161000)	
+--			0 means UNKNOWN
+--
+--	Added ng2ChanLamdaProfileTable along with following SCALAR attributes that go with profiles:
+--		ng2ChanLamdaProfileIndexNext and ng2ChanLamdaProfileMaxIndex.
+
+--	Specified that following profiles would be delivered with the system (unchangeable):
+
+-- 	NOTE: Uplink and downlink lamdas unit are hundredths of a nanometer.
+--
+--	NUMBER	NAME	CHANID		UPLAMBDA	DOWNLAMBDA
+--
+--	1	ONE	1		153268		159634
+--	2	TWO	2		153347		159719
+--	3	THREE	3		153425		159804
+--	4	FOUR	4		153504		159889
+--	5	FIVE	5		153582		159975
+--	6	SIX	6		153661		160060
+--	7	SEVEN	7		153740		160146
+--	8	EIGHT	8		153819		160231
+
+--	Added ng2ChanLamdaProfileMappingTable
+-- 
+--	In ng2ChanPairConfigTable, deleted/added the following attributes:
+--		- Deleted ng2ChanPairConfigPlannedChanId
+--		- Deleted ng2ChanPairConfigPlannedChanId
+--		- Added ng2ChanPairConfigPlannedChanIdPointer (profile pointer)
+--		- Added ng2ChanPairConfigActualUpLambda
+--		- Added ng2ChanPairConfigActualDownLambda
+--
+--
+--
+-- John Boyle - 3/7/14:
+-- For ISAM5.2:
+--
+--	Added following attributes to ng2SubChanGrpTable (after having
+--	removed their counterparts from the ng2ChanPairTable):
+--		ng2SubChanGrpDsMulticastEncryptInd
+--
+--	Removed ng2ChanPairConfigFecDownstreamInd attribute from ng2ChanPairConfigTable
+--
+--	
+-- John Boyle - 3/7/14:
+-- For ISAM5.2:
+--
+-- 	Removed following attributes from ng2ChanGrpTable
+--		ng2ChanGrpAdminState
+--		ng2ChanGrpOperState
+--
+-- John Boyle - 3/5/14:
+-- For ISAM5.2:
+--
+--	Added following attributes to ng2ChanPairTable (after having
+--	removed their counterparts from the ng2SubChanGroupTable):
+--		ng2ChanPairConfigPonTag	
+--		ng2ChanPairConfigPonId	
+--		ng2ChanPairConfigFecDownstreamInd
+--
+--
+-- John Boyle - 3/4/14:
+-- For ISAM5.2:
+--
+--	Deleted the ng2OntLinearUniTable (will instead have a generic table in ITF MIB).
+--	Deleted ng2SubChanGrpLinearIndex attribute from ng2SubChanGrpTable (as 
+--		changroup/subchan group portion will no longwer be linearized).
+--	Added ng2SubChanGrpFecDownstreamInd attribute to ng2SubChanGrpTable (forgot to
+--		copy it from bponPonConfigTable - and decided to place it at subchannel
+--		group level - for today...).
+--
+--
+-- John Boyle - 2/27/14:
+-- For ISAM5.2:
+--
+-- 	Added ng2ChanGrpOperState attribute to ng2ChanGrpTable
+-- 	Added following attributes to ng2SubChanGrpTable
+--		ng2SubChanGrpOperState 
+--		ng2SubChanGrpLinearIndex
+--
+--	Deleted following attributes from ng2SubChanGrpTable:
+-- 		ng2SubChanGrpBerCalcPeriod
+--		ng2SubChanGrpSigFailThreshold
+--		ng2SubChanGrpSigDegradeThreshold
+--
+--	Added following table:
+--		ng2OntLinearUniTable
+--	
+--
+-- John Boyle - 2/20/14:
+-- For ISAM5.2:
+--
+--	Added following attributes to ng2SubChanGrpTable (after having
+--	removed their counterparts from the ng2ChanPairConfigTable):
+-- 		ng2SubChanGrpBerCalcPeriod
+--		ng2SubChanGrpSigFailThreshold
+--		ng2SubChanGrpSigDegradeThreshold
+--		ng2SubChanGrpMcastGemPmCollectInd
+--		ng2SubChanGrpMcastGemPmNumPMIntervals
+--		ng2SubChanGrpAuthMethod	
+--		ng2SubChanGrpXgTag
+--		ng2SubChanGrpDsMulticastEncryptInd
+--		ng2SubChanGrpXgId
+--		ng2SubChanGrpAdminState
+--
+--	Added following attribute to ng2ChanGrpTable (after having
+--	removed its counterparts from the ng2ChanPairConfigTable):
+--		ng2ChanGrpRamanReductionInd
+--
+--	Added ng2OntsPerChanPairMapTable (as a helper table for 
+--	mapping of the identity of all ONTs that have a 
+-- 	specific channel pair as their 'preferred channel pair'.
+--
+--
+--
+-- John Boyle - 2/19/14:
+-- For ISAM5.2:
+--
+--	Added following attributes to ng2ChanPairTable:
+--		- ng2ChanPairConfigAssociatedChannelGroup
+--		- ng2ChanPairConfigAssociatedSubChannelGroup
+--
+--
+-- John Boyle - 2/19/14:
+-- For ISAM5.2:
+--
+--	Added DELETION RULES for following tables:
+--			ng2ChanGrpTable
+--			ng2SubChanGrpTable
+--			ng2ChanGrpMemberTable
+--			ng2SubChanGrpMemberTable
+--
+-- John Boyle - 2/18/14:
+-- For ISAM5.2:
+--
+--    	Incorporated 2/17/14 comments from Robert Peschi 
+--	Added ng2ChanPairTable
+--
+--
+--
+-- John Boyle - 2/13/14:
+-- For ISAM5.2:
+-- 
+--	Initial MIB used to supplement the GPON MIB with NG-PON2 specific tables, etc.
+--		Added following tables:
+--			ng2ChanGrpTable
+--			ng2SubChanGrpTable
+--			ng2ChanGrpMemberTable
+--			ng2SubChanGrpMemberTable
+--
+--
+--
+
+
+IMPORTS 
+	OBJECT-TYPE
+		FROM RFC-1212
+	ifIndex , InterfaceIndex, InterfaceIndexOrZero
+		FROM ITF-MIB
+	RowStatus
+            	FROM SNMPv2-TC
+  	Counter, Gauge
+		FROM RFC1155-SMI
+	DisplayString 
+		FROM RFC1213-MIB
+	asam 
+		FROM SYSTEM-MIB
+	AsamProfileName, AsamNextProfileIndex, AsamProfileScope, 
+	AsamProfileRefCount, AsamProfilePointer, AsamProfileIndex,
+	AsamProfileIndexOrZero, AsamMaxProfileIndex,
+	NetworkTimeInSeconds 
+		FROM ASAM-TC-MIB;  
+
+-- MIB Placement
+ 
+apon OBJECT IDENTIFIER ::= { asam 35 }
+  
+	ng2Group     OBJECT IDENTIFIER ::= { apon 60 }
+
+	ng2GroupsAndPairsGroup	 OBJECT IDENTIFIER ::= { ng2Group 1 }
+
+	ng2ProfilesGroup	 OBJECT IDENTIFIER ::= { ng2Group 2 }
+
+	ng2ScalarsGroup	 OBJECT IDENTIFIER ::= { ng2Group 3 }
+
+-- TEXTUAL CONVENTIONS:
+
+-- Administrative State -> 0 = unlock, 1 = lock
+AdminState ::= INTEGER(0..1)
+
+-- Operational State -> 0 = enabled, 1 = disabled,
+--			2 = unknown
+OperState ::= INTEGER (0..2)
+--
+
+-- MORE TEXTUAL CONVENTIONS
+--
+ChanGrpIndex 	::= INTEGER(1..128)
+-- As of ISAM5.6.0.1, system only supports numbers 1..128
+
+SubChanGrpIndex ::= INTEGER(1..1)
+-- As of ISAM5.2, system only suppports number 1
+
+OntAidIndex	::= INTEGER(1..256)
+ChannelId	::= INTEGER(0..16)
+PlannedDownLambda	::= INTEGER(0 | 149000 | 156000..161000)
+--				0 means unplanned
+ActualUpLambda	::= INTEGER(0 | 126000..154000)
+--			0 means UNKNOWN
+ActualDownLambda	::= INTEGER(0 | 149000 | 156000..161000)	
+--			0 means UNKNOWN
+
+IfIndex ::= INTEGER (1..2147483647)
+
+-- OntIndex is the index of the bponOntTable.
+-- its format is identical to that of an ONT ifIndex,
+-- but its value is not guaranteed to be the same
+-- because the ONT ifIndex is undefined at the time
+-- an entry in this table is being created.
+-- The coding semantics are defined in relevant PBZZA spec.
+
+OntIndex ::= INTEGER (1..2147483647)
+
+-- SpIndex is a FTTU definition that allows
+-- indexing deeper into the ONT. As a minimum, it
+-- contains the slot and port within an ONT. The
+-- coding semantics of the 32 bit integer are defined
+-- in the relevant GPON MIB PBZZA Interface Spec.
+
+SpIndex ::= INTEGER (1..2147483647)
+
+Ng2MobilityChannelPairStatus ::= INTEGER 
+                         {
+                          notApplicable (1),   -- Channel Pair is not configured
+                          active (2),          -- This Channel Pair is Active
+                          standbyNotReady (3), -- Standby but not ready to become Active
+                          standbyReady (4)     -- Standby and ready to become Active
+                         }
+Ng2MobilityChannelPairRoleActions ::= INTEGER 
+                         {
+                          noAction (0),   -- no Action
+                          prefWithAltPref (1),          -- Replace the prefChannelPairRole with the altPrefChannelPairRole
+                          prefWithProt (2)  -- Replace the prefChannelPairRole with the protChannelPairRole
+                         }
+
+-- *********************************************
+--
+-- NG PON2 TWDM CHANNEL GROUP TABLE
+--
+-- This table is new beginning with ISAM NG-PON2 phase 1 release
+-- 
+-- This table is used to define characteristics of NG2 Channel Group. 
+--
+-- Rows are created/deleted by the manager.
+--
+-- As of ISAM 5.2 release, this table is SUPPORTED.
+--
+-- 
+-- *********************************************
+
+ng2ChanGrpTable  OBJECT-TYPE
+	SYNTAX SEQUENCE OF Ng2ChanGrpEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	::= { ng2GroupsAndPairsGroup 1 }
+
+ng2ChanGrpEntry  OBJECT-TYPE
+	SYNTAX 	Ng2ChanGrpEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	INDEX	{ ng2ChanGrpIndex }
+	::= { ng2ChanGrpTable 1 }
+
+Ng2ChanGrpEntry ::= SEQUENCE {
+	ng2ChanGrpIndex		ChanGrpIndex,
+	ng2ChanGrpRowStatus	RowStatus,
+	ng2ChanGrpName		DisplayString,
+	ng2ChanGrpPollingPeriod	INTEGER,
+	ng2ChanGrpRamanReductionInd	INTEGER
+}
+
+ng2ChanGrpIndex  OBJECT-TYPE
+	SYNTAX 	ChanGrpIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+        "This object is used to number the channel group.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	NA
+            	RANGE:       	(1..128)         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2ChanGrpEntry 1 }
+
+ng2ChanGrpRowStatus  OBJECT-TYPE
+	SYNTAX 	RowStatus
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+        "This object is used to create a new row or delete an
+        existing row in this table. The possible valid values are:
+            (1) active
+            (4) createdAndGo
+            (6) destroy
+        To create an entry in this table, this object should be set to
+        CreateAndGo. To delete an entry from this table, RowStatus
+        should be set to Destroy value by the SNMP manager.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	YES
+            	RANGE:       	1|4|6         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	::= { ng2ChanGrpEntry 2 }
+
+ng2ChanGrpName  OBJECT-TYPE
+	SYNTAX 	DisplayString (SIZE(0..50))
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+        "This is a optional textual string that can be used to label the Channel Group.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES           
+		INSRVMOD:	YES
+            	RANGE:		0..50 chars        	
+		DEFVALUE:	null string
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	DEFVAL { "" }
+
+	::= { ng2ChanGrpEntry 3 }
+
+
+
+ng2ChanGrpPollingPeriod  OBJECT-TYPE
+	SYNTAX 	INTEGER (1..864000)	
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"The period between two consecutive times the
+		 autodetection procedure on each pair in the group is executed.
+		 Used in NG-PON2 for quiet windo control.	
+		 Value represents tenths of seconds. 
+		 (e.g. 1 = 1 tenth sec, 864000 = 24 hours).
+ 
+        ALCATEL NOTE:
+            	ACCESS:      NA            
+		USAGE:       OPT
+            	PERSIST:     YES           
+		INSRVMOD:    YES
+            	RANGE:       1..864000        
+		DEFVALUE:    100
+            	UNITS:       tenths of secs            
+		SPARSE:      NA
+            	DESCR:       NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED."
+
+       	DEFVAL  { 100 }
+
+	::= { ng2ChanGrpEntry 5 }
+
+
+ng2ChanGrpRamanReductionInd	OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" This indicates whether Raman Reduction code is 
+		   enabled or disabled for this channel group.
+	
+		  1 = enabled
+		  2 = disabled
+
+       	ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	YES            
+		INSRVMOD:    	YES
+            	RANGE:       	1..2         
+		DEFVALUE:    	2
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 2 }
+
+	::= { ng2ChanGrpEntry 6 }
+
+
+
+
+-- *********************************************
+--
+-- NG PON2 TWDM SUBCHANNEL GROUP TABLE
+--
+-- This table is new beginning with ISAM NG-PON2 phase 1 release
+-- 
+-- This table is used to define NG2 SubChannel Groups, and to associate
+-- them with Channel Groups. 
+--
+-- Rows are created/deleted by the manager.
+--
+-- As of ISAM 5.2 release, this table is SUPPORTED.
+--
+-- 
+-- *********************************************
+
+ng2SubChanGrpTable  OBJECT-TYPE
+	SYNTAX SEQUENCE OF Ng2SubChanGrpEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	::= { ng2GroupsAndPairsGroup 2 }
+
+ng2SubChanGrpEntry  OBJECT-TYPE
+	SYNTAX 	Ng2SubChanGrpEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	INDEX	{ ng2ChanGrpIndex, ng2SubChanGrpIndex }
+	::= { ng2SubChanGrpTable 1 }
+
+Ng2SubChanGrpEntry ::= SEQUENCE {
+	ng2SubChanGrpIndex		SubChanGrpIndex,
+	ng2SubChanGrpRowStatus	RowStatus,
+	ng2SubChanGrpName		DisplayString,
+	ng2SubChanGrpAuthMethod		INTEGER,
+	ng2SubChanGrpDsMulticastEncryptInd	INTEGER,
+	ng2SubChanGrpFecDownstreamInd		INTEGER,
+	ng2SubChanGrpReach		INTEGER,
+	ng2SubChanGrpClosestOntDistance		INTEGER
+}
+
+
+ng2SubChanGrpIndex  OBJECT-TYPE
+	SYNTAX 	SubChanGrpIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+        "This object is used to index the subchannel group in the channel group.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	NA
+            	RANGE:       	(1..1)         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA "
+	::= { ng2SubChanGrpEntry 2 }
+
+
+ng2SubChanGrpRowStatus  OBJECT-TYPE
+	SYNTAX 	RowStatus
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+        "This object is used to create a new row or delete an
+        existing row in this table. The possible valid values are:
+            (1) active
+            (4) createdAndGo
+            (6) destroy
+        To create an entry in this table, this object should be set to
+        CreateAndGo. To delete an entry from this table, RowStatus
+        should be set to Destroy value by the SNMP manager.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	YES
+            	RANGE:       	1|4|6         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA "
+	::= { ng2SubChanGrpEntry 3 }
+
+ng2SubChanGrpName  OBJECT-TYPE
+	SYNTAX 	DisplayString (SIZE(0..50))
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+        "This is an optional textual string that can be used to label the SubChannel Group.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES           
+		INSRVMOD:	YES
+            	RANGE:		0..50 chars        	
+		DEFVALUE:	null string
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	DEFVAL { "" }
+	::= { ng2SubChanGrpEntry 4 }
+
+
+
+ng2SubChanGrpAuthMethod  OBJECT-TYPE
+   SYNTAX   INTEGER
+   ACCESS   read-write
+   STATUS   mandatory
+   DESCRIPTION
+      " ONT Authentication mode option for this subchannel group.
+        Supported values are:
+
+        1 = SN and SLID/REGISTRATION ID authentication only
+
+	NOTE:  The word 'SLID' is mentioned in order to retain context that the bponOntSubscriberLocId
+	attribute in the bponOntTable has historically been known as the 12 byte SLID.  And for GPON,
+	that attribute retains the same meaning.
+	But, for NG-PON2 that same attribute has been expanded to 36 bytes to accommodate input of
+	G989.3 Registration ID authentication.
+	Even though the attribute has only a single option in ISAM5.2, it is retained here in case 
+	additional specification methods must be supported in subsequent releases.
+	
+        2 = CT proprietary logical authentication (LOID) only (SUPPORTED as of ISAM5.5, Only MIB ready is for ISAM5.4.01)
+        3 = CT proprietary LOID precedence mix authentication - meaning both CHT LOID and SN  (SUPPORTED as of ISAM5.5, Only MIB ready is for ISAM5.4.01)
+        4 = LoidStd - means 988 standard LOID only - (introduced in ISAM4.5 for mib-readiness. SUPPORTED as of ISAM5.5, Only MIB ready is for ISAM5.4.01)
+        5 = LoidPreStd - 988 standard LOID precedence mix - means both standard LOID and SN - (introduced in ISAM4.5 for mib-readiness.
+		                                                                                           SUPPORTED as of ISAM5.5)
+
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	NO
+            	RANGE:		1..5        	
+		DEFVALUE:	1
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED but only allowed value is the default = 1 
+as of ISAM5.4.01 release, support attribute value 2,3,4,5 also to satisfy chinese operator requirements
+Modification is SUPPORTED, but only if SubChannelGroup is Admin DOWN. "
+
+	DEFVAL { 1 }
+
+   ::= { ng2SubChanGrpEntry 10 }
+
+ng2SubChanGrpDsMulticastEncryptInd  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" This indicates encryption mode for Multicast GEM for this
+		  subchannel group.
+	
+		  1 = AES Encryption enabled
+		  2 = Encryption Disabled
+	
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	NO
+            	RANGE:		NA       	
+		DEFVALUE:	2
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is NOT SUPPORTED. "
+
+	DEFVAL { 2 }
+
+	::= { ng2SubChanGrpEntry 12 }
+
+ng2SubChanGrpFecDownstreamInd  OBJECT-TYPE
+	SYNTAX 	INTEGER {
+		enable(1),
+		disable(2)
+	}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" Used to Enable/Disable use of FEC in Downstream direction
+		   for all OLT transmissions associated with this sub-channel group.
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	YES            
+		INSRVMOD:    	YES
+            	RANGE:       	1..2        
+		DEFVALUE:    	1
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 1 }
+
+	::= { ng2SubChanGrpEntry 14 }
+
+ng2SubChanGrpReach  OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This attribute provides the ability to set the maximum differential
+         logical reach for a SubChanennel Group.
+         (Ranging differential window on associated channel pair interfaces).
+
+         Maximum ont distance = diff-reach + closest ONT distance = 40 km.
+
+         Only allowed values are 20 (km) and 40 (km). Default = 20 km.
+
+        ALCATEL NOTE:
+        ACCESS:     NA
+        USAGE:      OPT
+        PERSIST:    YES
+        INSRVMOD:   NO
+        RANGE:      20|40
+        DEFVALUE:   20
+        UNITS:      kilometers
+        SPARSE:     NA
+        DESCR       NA
+
+    As of ISAM5.2 release, this attribute is SUPPORTED.
+    As of ISAM5.6.01 release, acceptable values are 20 (km) and 40 (km)."
+
+    DEFVAL { 20 }
+
+    ::= { ng2SubChanGrpEntry 15 }
+
+
+
+ng2SubChanGrpClosestOntDistance  OBJECT-TYPE
+    SYNTAX 	INTEGER
+    ACCESS	read-write
+    STATUS	mandatory
+    DESCRIPTION
+		"Setting this attribute establishes the distance
+         (in kms) of the closest ONT on for this SubChannel Group.  This is used
+         by the OLT to determine how to equalize delay between
+         the ONTs.  ONTs are allowed to be within a 20 km band
+         (relative to each other).  The furthest distance an ONT can be in a
+         PON is 40 kms.
+
+         Maximum ont distance = diff-reach + closest ONT distance = 40 km.
+
+         Only allowed values are: 0 (km) and 20 (km). Default = 0 km.
+
+        ALCATEL NOTE:
+                ACCESS:     NA
+                USAGE:      OPT
+                PERSIST:    YES
+                INSRVMOD:   NO
+                RANGE:      0|20
+                DEFVALUE:   0
+                UNITS:      kilometers
+                SPARSE:     NA
+                DESCR       NA
+
+        As of ISAM5.2 release, this attribute is SUPPORTED and can be configured
+                               in the range [0..40] (km).
+        As of ISAM5.6.01 release, acceptable values are 0 (km) and 20 (km)."
+
+      	DEFVAL  { 0 }
+
+	::= { ng2SubChanGrpEntry 16 }
+
+
+
+-- *********************************************
+--
+-- NG PON2 TWDM CHANNEL GROUP MEMBER TABLE
+--
+-- This table is new beginning with ISAM NG-PON2 phase 1 release
+-- 
+-- This table is used to associate a channel pair with a NG2 Channel Group. 
+--
+-- Rows are created/deleted by the manager.
+--
+-- As of ISAM 5.2 release, this table is SUPPORTED.
+--
+-- 
+-- *********************************************
+
+ng2ChanGrpMemberTable  OBJECT-TYPE
+	SYNTAX SEQUENCE OF Ng2ChanGrpMemberEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	::= { ng2GroupsAndPairsGroup 3 }
+
+ng2ChanGrpMemberEntry  OBJECT-TYPE
+	SYNTAX 	Ng2ChanGrpMemberEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	INDEX	{ ng2ChanGrpIndex, ifIndex }
+--		ifIndex is the ifIndex of the channel pair
+	::= { ng2ChanGrpMemberTable 1 }
+
+Ng2ChanGrpMemberEntry ::= SEQUENCE {
+	ng2ChanGrpMemberRowStatus		RowStatus
+		
+}
+
+
+
+ng2ChanGrpMemberRowStatus  OBJECT-TYPE
+	SYNTAX 	RowStatus
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+        "This object is used to create a new row or delete an
+        existing row in this table. The possible valid values are:
+            (1) active
+            (4) createdAndGo
+            (6) destroy
+        To create an entry in this table, this object should be set to
+        CreateAndGo. To delete an entry from this table, RowStatus
+        should be set to Destroy value by the SNMP manager.
+
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	YES
+            	RANGE:       	1|4|6         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA "
+	::= { ng2ChanGrpMemberEntry 2 }
+
+
+
+-- *********************************************
+--
+-- NG PON2 TWDM SUB-CHANNEL GROUP MEMBER TABLE
+--
+-- This table is new beginning with ISAM NG2-TWDM phase 1 release
+-- 
+-- This table is used to associate a channel pair with a NG2 Sub-Channel Group,
+-- which is already associated to a channel group. 
+--
+-- Rows are created/deleted by the manager.
+--
+-- As of ISAM 5.2 release, this table is SUPPORTED.
+--
+-- 
+-- *********************************************
+
+ng2SubChanGrpMemberTable  OBJECT-TYPE
+	SYNTAX SEQUENCE OF Ng2SubChanGrpMemberEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	::= { ng2GroupsAndPairsGroup 4 }
+
+ng2SubChanGrpMemberEntry  OBJECT-TYPE
+	SYNTAX 	Ng2SubChanGrpMemberEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	INDEX	{ ng2ChanGrpIndex, ng2SubChanGrpIndex, ifIndex }
+--		ifIndex is the ifIndex of the channel pair
+	::= { ng2SubChanGrpMemberTable 1 }
+
+Ng2SubChanGrpMemberEntry ::= SEQUENCE {
+	ng2SubChanGrpMemberRowStatus		RowStatus
+		
+}
+
+
+ng2SubChanGrpMemberRowStatus  OBJECT-TYPE
+	SYNTAX 	RowStatus
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+        "This object is used to create a new row or delete an
+        existing row in this table. The possible valid values are:
+            (1) active
+            (4) createdAndGo
+            (6) destroy
+        To create an entry in this table, this object should be set to
+        CreateAndGo. To delete an entry from this table, RowStatus
+        should be set to Destroy value by the SNMP manager.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	YES
+            	RANGE:       	1|4|6         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA "
+	::= { ng2SubChanGrpMemberEntry 3 }
+
+
+
+
+
+-- *********************************************
+--
+-- NG-PON2 TWDM CHANNEL PAIR CONFIGURATION TABLE
+--
+-- This table contains configuration information specific to
+-- OLT control of an NG2 channel pair. An NG2 channel pair is
+-- essentially a physical port on a rack/shelf/LT slot that
+-- has an upstream and downstream wavelength (i.e a channel pair).
+--
+-- Functionally, it is similar to a PON or XG-PON.  Thus, this
+-- table replicates the attributes from the bponPonConfigTable
+-- that are also applicable for an NG-PON2.  It also contains 
+-- attributes that are "specific" only for an NG-PON2 
+
+-- Upon creation of an NG2 LT card, the agent automatically creates
+-- rows in this table (one for each channel pair).
+--
+-- As of ISAM 5.2 release, this table is SUPPORTED.
+--
+-- 
+-- *********************************************
+
+ng2ChanPairConfigTable  OBJECT-TYPE
+	SYNTAX SEQUENCE OF Ng2ChanPairConfigEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	::= { ng2GroupsAndPairsGroup 5 }
+
+ng2ChanPairConfigEntry  OBJECT-TYPE
+	SYNTAX 	Ng2ChanPairConfigEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	INDEX	{ ifIndex }
+--		ifIndex is the ifIndex of the channel pair
+	::= { ng2ChanPairConfigTable 1 }
+
+Ng2ChanPairConfigEntry ::= SEQUENCE {
+	ng2ChanPairConfigPlannedSpeed			INTEGER,
+	ng2ChanPairConfigPlannedLambdaProfileId		AsamProfilePointer,
+	ng2ChanPairConfigPlannedDownLambda		PlannedDownLambda,
+	ng2ChanPairConfigPlannedDownChannelId		ChannelId,	
+	ng2ChanPairConfigPlannedUpChannelId		ChannelId,
+	ng2ChanPairConfigActualDownLambda	ActualDownLambda,
+	ng2ChanPairConfigAssociatedChannelGroup		INTEGER, 
+	ng2ChanPairConfigAssociatedSubChannelGroup	INTEGER,
+	ng2ChanPairConfigMcastGemPmCollectInd		INTEGER,
+	ng2ChanPairConfigMcastGemPmNumPMIntervals	INTEGER,
+	ng2ChanPairConfigPonTag			OCTET STRING,	
+	ng2ChanPairConfigAdminLabel			OCTET STRING,
+	ng2ChanPairConfigAggGemPmCollectInd	INTEGER,
+	ng2ChanPairConfigAggGemPmNumPMIntervals		INTEGER,
+	ng2ChanPairConfigName			DisplayString,
+	ng2ChanPairConfigRogueTestEnableDisableCmd	INTEGER,
+	ng2ChanPairConfigBkgdRogueTestEnableDisableCmd	INTEGER,
+	ng2ChanPairConfigBkgdRogueTestInterval		INTEGER,
+	ng2ChanPairConfigBkgdStuckLaserTestCmd	INTEGER,
+	ng2ChanPairConfigTrafficThresholdUp		Gauge,
+	ng2ChanPairConfigTrafficThresholdDn		Gauge,
+	ng2ChanPairConfigOltsideUpFecPmCollectInd	INTEGER,
+	ng2ChanPairConfigOltsideUpFecPmNumPMIntervals	INTEGER,
+	ng2ChanPairConfigOltsidePhyPmCollectInd	INTEGER,
+	ng2ChanPairConfigOltsidePhyPmNumPMIntervals	INTEGER,
+	ng2ChanPairConfigOltsideXgTcPmCollectInd	INTEGER,
+	ng2ChanPairConfigOltsideXgTcPmNumPMIntervals	INTEGER,
+	ng2ChanPairConfigUtilPmCollectInd		INTEGER,
+	ng2ChanPairConfigUtilNumPmIntervals		INTEGER,
+	ng2ChanPairConfigUtilOntDetailSelector		INTEGER,
+	ng2ChanPairConfigUtilOntBulkDetailSelector	INTEGER,
+	ng2ChanPairConfigMaxRangingOnts                 INTEGER,
+	ng2ChanPairConfigTcontsPerFrame                 INTEGER,
+	ng2ChanPairConfigClearAlmRngMismatch	INTEGER,
+	ng2ChanPairConfigXPonId					OCTET STRING	
+}
+
+ng2ChanPairConfigPlannedSpeed  OBJECT-TYPE
+	SYNTAX 	INTEGER(0..4)
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+       "This object represents the planned upstream/downstream channel pair speed.
+
+        0 = unplanned.
+        1 = 10 down/10 up (in GBits/sec)
+        2 = 10 down/2.5 up (in GBits/sec)
+        3 = 2.5 down/2.5 up (in GBits/sec)
+        4 = 10 down/dual-rate up (in GBits/sec)
+        
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	YES            
+		INSRVMOD:    	NO
+            	RANGE:       	0..4      
+		DEFVALUE:    	0
+           	UNITS:       	GBits/sec (by association with enum)           
+		SPARSE:      	NA
+		DESCR		NA 
+
+RULE: Cannot edit this attribute if any ONT is provisioned with this channel pair as 'preferred pair'.
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 1 }
+
+
+ng2ChanPairConfigPlannedLambdaProfileId  OBJECT-TYPE
+	SYNTAX 	AsamProfilePointer
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+       " This attribute points to a row in ng2ChanLambdaProfileTable
+	 (which contains upstream/downstream wavelength information 
+	 about an assigned Channel ID).
+
+	Value 0 is permitted - meaning Channel ID information is not planned.
+
+		  Default = 0 = Unplanned.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	YES            
+		INSRVMOD:    	NO
+            	RANGE:       	0..34         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 2 }
+
+
+
+ng2ChanPairConfigPlannedDownLambda  OBJECT-TYPE
+	SYNTAX 	PlannedDownLambda
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+       "This object represents the Planned Downstream Lambda for the channel pair.
+        It is the same value as configured in ng2ChanLambdaProfileTable. It is
+	replicated here for consolidation and CLI display efficiency.
+
+		0 means UNKNOWN (i.e. associated ng2ChanLambdaProfileTable
+		has not yet been planned).
+
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	See PlannedDownLambda        
+		DEFVALUE:    	0
+           	UNITS:       	hundreths of nanometer           
+		SPARSE:      	NA
+		DESCR		NA 
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 4 }
+
+ng2ChanPairConfigPlannedDownChannelId  OBJECT-TYPE
+	SYNTAX 	ChannelId
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+       "This object represents the Planned Downstream Channel ID as defined in G989.2 Appendix ?
+        It is the same value as configured in ng2ChanLambdaProfileTable. It is
+	replicated here for consolidation and CLI display efficiency.
+
+		0 means UNKNOWN (i.e. associated ng2ChanLambdaProfileTable
+		has not yet been planned).
+
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	No
+            	RANGE:       	0..16         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED."
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 5 }
+
+
+
+ng2ChanPairConfigPlannedUpChannelId  OBJECT-TYPE
+	SYNTAX 	ChannelId
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+       "This object represents the Planned Upstream Channel ID as defined in G989.2 Appendix ?
+        It is the same value as configured in ng2ChanLambdaProfileTable. It is
+	replicated here for consolidation and CLI display efficiency.
+
+		0 means UNKNOWN (i.e. associated ng2ChanLambdaProfileTable
+		has not yet been planned).
+
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	No
+            	RANGE:       	0..16         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED."
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 6 }
+
+ng2ChanPairConfigActualDownLambda  OBJECT-TYPE
+	SYNTAX 	ActualDownLambda
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+       "This object represents the Actual Downstream Lambda for the channel pair.
+        
+	0 means UNKNOWN (e.g. SFP is not plugged in).
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	See ActualDownLambda         
+		DEFVALUE:    	0
+           	UNITS:       	hundreths of nanometer           
+		SPARSE:      	NA
+		DESCR		NA 
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 7 }
+
+
+
+
+ng2ChanPairConfigAssociatedChannelGroup  OBJECT-TYPE
+	SYNTAX 	INTEGER(0..128)
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+       "This object represents the channel group with which this channel pair
+	is associated
+        
+	0 means Unplanned (i.e. this channel pair has not yet been associated to
+	 a channel group).
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	YES            
+		INSRVMOD:    	NA
+            	RANGE:       	0..128         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA 
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 8 }
+
+ng2ChanPairConfigAssociatedSubChannelGroup  OBJECT-TYPE
+	SYNTAX 	INTEGER(0..1)
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+       "This object represents the sub-channel group with which this channel pair
+	is associated
+        
+	0 means Unplanned (i.e. this channel pair has not yet been associated to
+	 a sub-channel group).
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	YES            
+		INSRVMOD:    	NA
+            	RANGE:       	0..1         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA 
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 9 }
+
+
+ng2ChanPairConfigMcastGemPmCollectInd  OBJECT-TYPE
+   SYNTAX   INTEGER
+   ACCESS   read-write
+   STATUS   mandatory
+   DESCRIPTION
+      " This indicates whether OLT-side Multicast
+         GEM Port Performance Monitors should be collected this channel pair.
+
+        1 = PM collection enabled
+        2 = PM collection disabled
+
+
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	YES
+            	RANGE:		1..2        	
+		DEFVALUE:	2
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	DEFVAL { 2 }
+
+   ::= { ng2ChanPairConfigEntry 10 }
+
+
+ng2ChanPairConfigMcastGemPmNumPMIntervals  OBJECT-TYPE
+   SYNTAX   INTEGER
+   ACCESS   read-only
+   STATUS   mandatory
+   DESCRIPTION
+      " Indicates the number of rows currently present
+        in the gponMulticastServiceOltsideGemIntervalTable (for this channel pair).
+	This is for convenience of the EMS, so that it can
+        quickly determine how many rows should be uploaded. 
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	0..32         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 0 }
+
+   ::= { ng2ChanPairConfigEntry 11 }
+
+ng2ChanPairConfigPonTag  OBJECT-TYPE
+	SYNTAX 	OCTET STRING
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" Used to specify PON-TAG attribute in 989.3 downstream PLOAM messages for this
+		  channel pair.
+
+		 NOTE:  in the actual PLOAM message structure 'on the wire', this field is 8 bytes in length.
+
+		 The 987.3 spec hints (but does not demand) that suggested format is similar to 
+		 an ONT Serial Number, which is:
+			1st 4 bytes are ASCII Vendor ID, and
+			2nd 4 bytes are a 32 bit number
+
+		 For migration purposes, assume this field is 8 bytes in length.
+
+		VALIDATION:  Other than the value 'all zeroes', 
+		the value of this attribute must be UNIQUE among all channel pairs on the shelf.
+
+		 For NG-PON2 LT cards - Default = all zeroes
+	
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	NO
+            	RANGE:		NA       	
+		DEFVALUE:	8 bytes of binary zeroes
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	DEFVAL { '0000000000000000'H  }
+
+
+	::= { ng2ChanPairConfigEntry 12 }
+
+
+
+ng2ChanPairConfigAdminLabel OBJECT-TYPE
+	SYNTAX 	OCTET STRING	
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"In the G.9807.1 specification (section C.10.1.1.1.3):
+		 the PON-ID is a 32-bit field part of the OC Body, static, and provisioned by the OSS/operator. 
+		 It identifies the XGS-PON OLT within a certain domain. 
+		 Since G.9807.1 inherits from the G.989.3 PON-ID definition, it consists of two sub-fields : 
+		 an Administrative Label and a DWLCH ID. 
+		 But for the support of TDMA coexistence with XG-PON ONUs and XGS-PON ONUs on a same XGS-PON OLT port,
+		 the Administrative Label and DWLCH ID must be jointly provisioned by the same way 
+		 as the 32-bit PON-ID field in ITU-T G.987.3 (XG-PON specification). 
+		 Therefore, this 32-bit PON-ID value can only be edited and used when the channel-pair 
+		 is configured in XGS mode (see ng2ChanPairConfigPlannedMode). 
+		 When the channel-pair is configured in TWDM (default) mode, the ng2ChanPairConfigPonId (32bit) 
+		 shall not be used, because when using TWDM the 4 least significant bits are imposed by the DWLCH ID. 
+		 Instead, the Administrative Label (28bit) must be used (see ng2ChanPairConfigAdminLabel). 
+
+		To summarize:		
+		 -In case of ChannelPair-Mode (ng2ChanPairConfigPlannedMode) = XGS:
+		  ng2ChanPairConfigPonId is used to specify a portion of the PON-ID field in 9807.1 downstream 
+		  PLOAM messages for this channel pair.
+ 
+		  This field 4 bytes in length (i.e. 32 bits) is used to send in the OC-body.
+		  Default = all zeroes (4 bytes)
+	
+		-In case of ChannelPair-Mode (ng2ChanPairConfigPlannedMode) = TWDM: 
+		 administrative label (28-bit) + DWLCH UD (4-bit) is used
+			
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	YES            
+		INSRVMOD:    	NO
+            	RANGE:       	NA        
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.5 release, this attribute is SUPPORTED. "		
+
+      	DEFVAL  { '0000000'H }
+	::= { ng2ChanPairConfigEntry 13 }
+
+ng2ChanPairConfigAggGemPmCollectInd  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" This indicates whether OLT-side aggregate
+		  GEM Port Performance Monitors should be collected for	
+		  this channel pair.
+	
+		  1 = PM collection enabled
+		  2 = PM collection disabled
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	YES            
+		INSRVMOD:    	YES
+            	RANGE:       	1..2         
+		DEFVALUE:    	1
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 1 }
+
+	::= { ng2ChanPairConfigEntry 16 }
+
+
+ng2ChanPairConfigAggGemPmNumPMIntervals  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the number of rows currently present
+		  in the gponPonAggGemIntervalTable (for this channel pair).  This
+		  is for convenience of the EMS, so that it can
+		 quickly determine how many rows should be 
+		 uploaded.
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	0..32         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 17 }
+
+
+
+ng2ChanPairConfigName  OBJECT-TYPE
+	SYNTAX 	DisplayString (SIZE(0..80))
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"This is a textual string that can be used
+		 to label the channel pair.
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES           
+		INSRVMOD:	YES
+            	RANGE:		0..80 chars        	
+		DEFVALUE:	null string
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	DEFVAL { "" }
+
+	::= { ng2ChanPairConfigEntry 19 }
+
+ng2ChanPairConfigRogueTestEnableDisableCmd  OBJECT-TYPE
+	SYNTAX 	INTEGER 
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" This attribute allows the manager to manually enable or disable
+		  a channel pair rogue test diagnostic.
+		    
+		   Attribute values are as follows:
+		   1 - Initiate PON Rogue Test
+		   2 - Disable PON Rogue test
+		   3 - Initiate 'PATTERN TEST' PON Rogue Test
+
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	YES
+            	RANGE:		1..3        	
+		DEFVALUE:	2
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA 
+
+As of ISAM5.2 release, this attribute is NOT SUPPORTED. "
+
+	DEFVAL { 2 }
+
+	::= { ng2ChanPairConfigEntry 20 }
+
+
+
+ng2ChanPairConfigBkgdRogueTestEnableDisableCmd  OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                " This attribute allows the manager to manually enable or disable
+                   Background channel pair rogue test diagnostic. 
+
+                   Attribute values are as follows:
+                   1 - Initiate Background 'PATTERN TEST' channel pair Rogue Test
+                   2 - Disable Background 'PATTERN TEST' channel Rogue test
+
+	   	This attribute uses the interval context established by the 
+		ng2ChanPairConfigBkgdRogueTestInterval attribute.
+
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	YES
+            	RANGE:		1..2        	
+		DEFVALUE:	2
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is NOT SUPPORTED. "
+
+	DEFVAL { 2 }
+
+        ::= { ng2ChanPairConfigEntry 30 }
+
+
+
+ng2ChanPairConfigBkgdRogueTestInterval  OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                " This attribute is used in context with the ng2ChanPairConfigBkgdRogueTestEnableDisableCmd.
+                   When background rogue test is enabled for this channle pair, 
+		   this attribute establishes the frequency of test execution.
+
+	     RANGE is 1 hour to 24 hours (in 15 minute intervals).
+	     UNITS of this attribute is minutes (so only numbers divisible by 15 are permitted.
+	     So allowed values are as follows: 60, 75 ... 1425, 1440
+
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	Yes
+            	RANGE:		60|75 ... 1425, 1440       	
+		DEFVALUE:	720
+            	UNITS:		minutes            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is NOT SUPPORTED. "
+
+	DEFVAL { 720 }
+
+        ::= { ng2ChanPairConfigEntry 34 }
+
+
+ng2ChanPairConfigBkgdStuckLaserTestCmd  OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+                " This attribute allows the manager to manually enable or disable
+                   autonomous execution of the test for rogue ONTs with a stuck laser. 	     
+
+                   Attribute values are as follows:
+                   1 - Enable Stuck Laser Test autonomous execution
+                   2 - Disable Stuck Laser Test autonomous execution
+
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	Yes
+            	RANGE:		1..2      	
+		DEFVALUE:	2
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is NOT SUPPORTED. "
+
+	DEFVAL { 2 }
+
+        ::= { ng2ChanPairConfigEntry 35 }
+
+ng2ChanPairConfigTrafficThresholdUp OBJECT-TYPE 
+	SYNTAX Gauge 
+	ACCESS read-write 
+	STATUS mandatory 
+	DESCRIPTION 
+	" This attribute is used to specify the upstream traffic threshold. Unit is kbps.
+	  If current transport rate is higher than this value, channel pair upstream 
+	  traffic TCA will be raised. 
+	This threshold will only take effect in case of channel pair trouble-shooting is enabled. 
+
+	Default = 0, means threshold is disabled. 
+
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	Yes
+            	RANGE:		0..4294967295       	
+		DEFVALUE:	0
+            	UNITS:		kbps            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	DEFVAL { 0 }
+
+::= { ng2ChanPairConfigEntry 36 } 
+
+
+ng2ChanPairConfigTrafficThresholdDn OBJECT-TYPE 
+	SYNTAX Gauge 
+	ACCESS read-write 
+	STATUS mandatory 
+	DESCRIPTION 
+	" This attribute is used to specify the downstream traffic threshold. Unit is kbps.
+	  If current transport rate is  higher than this value, channel pair upstream traffic
+	  TCA will be raised. 
+	This threshold will only take effect in case of channel pair trouble-shooting is enabled. 
+
+	Default = 0, means threshold is disabled. 
+
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	Yes
+            	RANGE:		0..4294967295       	
+		DEFVALUE:	0
+            	UNITS:		kbps            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	DEFVAL { 0 }
+
+::= { ng2ChanPairConfigEntry 37 } 
+
+
+
+ng2ChanPairConfigOltsideUpFecPmCollectInd  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" This indicates whether upstream FEC Performance Monitors 
+		  should be collected for this channel pair (at OLT-side).
+	
+		  1 = PM collection enabled
+		  2 = PM collection disabled
+
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	YES
+            	RANGE:		1..2        	
+		DEFVALUE:	2
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	DEFVAL { 2 }
+
+	::= { ng2ChanPairConfigEntry 40 }
+
+
+ng2ChanPairConfigOltsideUpFecPmNumPMIntervals  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the number of rows currently present
+		  in the gponPonOltsideFecIntervalTable.  This
+		  is for convenience of the EMS, so that it can
+		 quickly determine how many rows should be 
+		 uploaded.
+
+		As of ISAM5.2,  attribute will always be zero, since associated
+		 history table is NOT SUPPORTED.
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	0..32         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is NOT SUPPORTED. "
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 41 }
+
+
+ng2ChanPairConfigOltsidePhyPmCollectInd  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" This indicates whether Physical Layer Performance Monitors should be 
+		collected for this channel pair (at OLT-side).
+	
+		  1 = PM collection enabled
+		  2 = PM collection disabled
+
+		         ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	YES
+            	RANGE:		1..2        	
+		DEFVALUE:	2
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	DEFVAL { 2 }
+
+	::= { ng2ChanPairConfigEntry 42 }
+
+
+ng2ChanPairConfigOltsidePhyPmNumPMIntervals  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the number of rows currently present
+		  in the gponPonOltsidePhyIntervalTable.  This
+		  is for convenience of the EMS, so that it can
+		 quickly determine how many rows should be 
+		 uploaded.
+
+		As of ISAM5.2,  attribute will always be zero, since associated history
+		 table is NOT SUPPORTED. 
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	0..32         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is NOT SUPPORTED. "
+
+      	DEFVAL  { 0 }
+
+	::= { ng2ChanPairConfigEntry 43 }
+
+ng2ChanPairConfigOltsideXgTcPmCollectInd  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" This indicates whether XgTc Performance Monitors should be
+		 collected for this channel pair (at OLT-side).
+	
+		  1 = PM collection enabled
+		  2 = PM collection disabled
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:	YES          
+		INSRVMOD:	YES
+            	RANGE:		1..2        	
+		DEFVALUE:	2
+            	UNITS:		NA            
+		SPARSE:		NA
+		DESCR		NA 
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+	DEFVAL { 2 }
+
+	::= { ng2ChanPairConfigEntry 44 }
+
+
+ng2ChanPairConfigOltsideXgTcPmNumPMIntervals  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the number of rows currently present
+		  in the gponPonOltsideXgTcIntervalTable.  This
+		  is for convenience of the EMS, so that it can
+		 quickly determine how many rows should be 
+		 uploaded.
+
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	0..32         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 0 }
+	::= { ng2ChanPairConfigEntry 45 }
+
+ng2ChanPairConfigUtilPmCollectInd OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" This attribute indicates whether Channel-Pair Utilization 
+           	Performance Monitors should be collected for this Channel-Pair.
+			1 = Enable PM collection 
+			2 = Disable PM collection 
+			3 = INHERIT value from following SCALAR attribute in GPON-MIB:
+			    ( gponSysOltSidePonUtilPmCollectInd )
+
+
+		 Default = 3 = INHERIT
+
+	This attribute affects whether following tables are created/deleted (in GPON MIB)
+		gponOltSidePonUtilPmCurrentIntervalTable
+		gponOltSidePonUtilPmIntervalTable
+		gponOltSidePonUtilTxOntPmCurrentIntervalTable
+		gponOltSidePonUtilTxOntPmIntervalTable
+		gponOltSidePonUtilRxOntPmCurrentIntervalTable
+		gponOltSidePonUtilRxOntPmIntervalTable
+		gponOltSidePonUtilTCAThresholdTable
+		gponOltSidePonUtilStatsResetTable  
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	Yes            
+		INSRVMOD:    	Yes
+            	RANGE:       	1..3         
+		DEFVALUE:    	3
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2.01 release, this attribute is NOT SUPPORTED. "
+
+      	DEFVAL  { 3 }
+	::= { ng2ChanPairConfigEntry 47 }
+
+
+ng2ChanPairConfigUtilNumPmIntervals OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" This attribute indicates the number of rows currently present
+		  in the gponOltSidePonUtilPmIntervalTable.  This
+		  is for convenience of the EMS, so that it can
+		 quickly determine how many rows should be 
+		 uploaded.
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	No            
+		INSRVMOD:    	NA
+            	RANGE:       	0..288         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2.01 release, this attribute is NOT SUPPORTED. "
+
+      	DEFVAL  { 0 }
+	::= { ng2ChanPairConfigEntry 48 }
+
+
+ng2ChanPairConfigUtilOntDetailSelector OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" When ng2ChanPairConfigUtilPmCollectInd is enabled for this channel-pair,
+	   	this attribute specifies whether detailed ONT PMs are
+	   	collected for following tables (in GPON MIB):
+			gponOltSideOntUtilPmCurrentIntervalTable
+			gponOltSideOntUtilPmIntervalTable
+
+		1 = Enable PM collection 
+		2 = Disable PM collection
+		3 = INHERIT value from following SCALAR attribute in GPON-MIB:
+		    ( gponSysOltsidePonUtilOntDetailSelector )
+
+ 
+
+		 Default = 3 = INHERIT
+
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	Yes            
+		INSRVMOD:    	Yes
+            	RANGE:       	1..3         
+		DEFVALUE:    	3
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2.01 release, this attribute is NOT SUPPORTED. "
+
+      	DEFVAL  { 3 }
+	::= { ng2ChanPairConfigEntry 49 }
+
+
+ng2ChanPairConfigUtilOntBulkDetailSelector OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+
+           
+         " When ng2ChanPairConfigPonUtilOntDetailSelector PM collection is enabled for this
+	   channel-pair, this attribute specifies whether bulk detailed ONT PMs are
+	   collected for following tables:
+
+		- gponOltSideOntUtilBulkPmIntervalTable
+
+
+		1 = Enable PM collection 
+		2 = Disable PM collection 
+
+		 Default = 2 = Disable 
+
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	Yes            
+		INSRVMOD:    	Yes
+            	RANGE:       	1..2         
+		DEFVALUE:    	2
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2.01 release, this attribute is NOT SUPPORTED. "
+
+      	DEFVAL  { 2 }
+	::= { ng2ChanPairConfigEntry 50 }
+
+ng2ChanPairConfigMaxRangingOnts OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+
+
+         " This attribute allows the operator to change max onts number in one
+           channel-pair. If set this value to zero, indicates that the bandwidth is
+           calculated by provisioned onts. And if set 1 to 128, means number
+           pre-configured to calculate the bandwidth.
+
+       ALCATEL NOTE:
+            	ACCESS:		NA
+		USAGE:		OPT
+            	PERSIST:     	Yes
+		INSRVMOD:    	Yes
+            	RANGE:       	0..128
+		DEFVALUE:    	128
+           	UNITS:       	NA
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.5 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 128 }
+	::= { ng2ChanPairConfigEntry 51 }
+
+ng2ChanPairConfigTcontsPerFrame OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+
+
+	" This attribute allows the operator to configure the service tconts per frame.
+	It means the max service tconts number to calculate the bandwidth.
+
+       ALCATEL NOTE:
+            	ACCESS:		NA
+		USAGE:		OPT
+            	PERSIST:     	Yes
+		INSRVMOD:    	Yes
+            	RANGE:       	1..16
+		DEFVALUE:    	16
+           	UNITS:       	NA
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.5 release, this attribute is SUPPORTED. "
+
+      	DEFVAL  { 16 }
+	::= { ng2ChanPairConfigEntry 52 }
+	
+	
+ng2ChanPairConfigClearAlmRngMismatch OBJECT-TYPE
+        SYNTAX  INTEGER {
+                            clear(1)
+                        }
+        ACCESS  write-only
+        STATUS  mandatory
+        DESCRIPTION
+                 "Represents the action of clearing the alarm of ranging
+                   number mismatch.
+        ALCATEL NOTE:
+                 ACCESS:	NA
+                 USAGE:	NA
+                 PERSIST:     	NO
+                 INSRVMOD:    	YES
+                 RANGE:       	1..1
+                 DEFVALUE:    	NA
+                 UNITS:       	 NA
+                 SPARSE:      	 NA
+                 DESCR	 NA
+As of ISAM5.5 release, this attribute is SUPPORTED. "
+::= {ng2ChanPairConfigEntry  53 }
+
+	ng2ChanPairConfigXPonId		OBJECT-TYPE
+	SYNTAX 	OCTET STRING
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"In the G.9807.1 specification (section C.10.1.1.1.3):
+		 the PON-ID is a 32-bit field part of the OC Body, static, and provisioned by the OSS/operator. 
+		 It identifies the XGS-PON OLT within a certain domain. 
+		 Since G.9807.1 inherits from the G.989.3 PON-ID definition, it consists of two sub-fields : 
+		 an Administrative Label and a DWLCH ID. 
+		 But for the support of TDMA coexistence with XG-PON ONUs and XGS-PON ONUs on a same XGS-PON OLT port,
+		 the Administrative Label and DWLCH ID must be jointly provisioned by the same way 
+		 as the 32-bit PON-ID field in ITU-T G.987.3 (XG-PON specification). 
+		 Therefore, this 32-bit PON-ID value can only be edited and used when the channel-pair 
+		 is configured in XGS mode (see ng2ChanPairConfigPlannedMode). 
+		 When the channel-pair is configured in TWDM (default) mode, the ng2ChanPairConfigXPonId (32bit) 
+		 shall not be used, because when using TWDM the 4 least significant bits are imposed by the DWLCH ID. 
+		 Instead, the Administrative Label (28bit) must be used (see ng2ChanPairConfigAdminLabel). 
+
+		To summarize:		
+		 -In case of ChannelPair-Mode (ng2ChanPairConfigPlannedMode) = XGS:
+		  ng2ChanPairConfigXPonId is used to specify a portion of the PON-ID field in 9807.1 downstream 
+		  PLOAM messages for this channel pair.
+ 
+		  This field 4 bytes in length (i.e. 32 bits) is used to send in the OC-body.
+		  Default = all zeroes (4 bytes)
+ 	
+		-In case of ChannelPair-Mode (ng2ChanPairConfigPlannedMode) = TWDM: 
+		 administrative label (28-bit) + DWLCH UD (4-bit) is used
+			
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		OPT
+            	PERSIST:     	YES            
+		INSRVMOD:    	NO
+            	RANGE:       	NA        
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.5 release, this attribute is NOT SUPPORTED for NG-PON2.
+As of ISAM5.5.01 release, this attribute is SUPPORTED for XGS-PON."
+		
+      	DEFVAL  { '00000000'H }
+
+	::= { ng2ChanPairConfigEntry 54 }
+-- *********************************************
+--
+-- NG-GPON2 SUB-CHANNEL GROUP ONT SOFTWARE DOWNLOAD TABLE
+--
+-- This is a new table first added in ISAM5.2 MIB, but only SUPPORTED as of ISAM5.2.01.
+--
+-- It is used to retrieve (for ChannelGroup/SubchannelGroup) lump-sum individual ONT fine-grain status 
+-- asssociated with any 'SW download activity'.  This table is primarily
+-- intended as a aide to a management system (EMS) that prefers polling
+-- a status attribute (instead of using the legacy 'alarm processing' mechanism).
+-- NOTE:  The term 'download activity' should be interpreted in the broad sense
+-- of individual steps necessary to perform 'womb-to-tomb' ONT software 
+-- management activity (e.g. retrieval of load from NT file system all the way
+-- through ONT activation).
+--
+-- For SubChannelGroups, rows are automatically created/deleted by OLT,  when corresponding row
+-- is created/deleted in ng2SubChanGrpTable (in NG-PON2 MIB).
+--
+-- For NG-PON2 - SUPPORTED as of ISAM5.2.01 
+--  
+-- *********************************************
+
+ng2SubChanGrpOntSwDownldStatusTable  OBJECT-TYPE
+	SYNTAX SEQUENCE OF Ng2SubChanGrpOntSwDownldStatusEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	::= { ng2GroupsAndPairsGroup 7 }
+
+ng2SubChanGrpOntSwDownldStatusEntry  OBJECT-TYPE
+	SYNTAX 	Ng2SubChanGrpOntSwDownldStatusEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	INDEX	{ ng2ChanGrpIndex, ng2SubChanGrpIndex }
+-- First index represents Channel Group ID
+-- Second index represents Sub Channel Group ID
+	::= { ng2SubChanGrpOntSwDownldStatusTable 1 }
+
+Ng2SubChanGrpOntSwDownldStatusEntry ::= SEQUENCE {
+	ng2SubChanGrpOntSwDownldStatus	OCTET STRING,
+	ng2SubChanGrpOntCfgFile1DownldStatus	OCTET STRING,
+	ng2SubChanGrpOntCfgFile2DownldStatus	OCTET STRING
+}
+
+
+ng2SubChanGrpOntSwDownldStatus  OBJECT-TYPE
+	SYNTAX 	OCTET STRING (SIZE(1024))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+           	" Attribute construction is as follows: 
+		  4 bytes (32 bits) per planned (or potentially plan-able) ONT per SubChannel Group.  
+		  So low-order 4 bytes represent ONT number 1 on SubchannelGroup, and 
+		  	high-order 4 bytes represent ONT number 256 on SubChannelGroup.
+
+		  Each 32-bit ONT chunk is a bit-map of current ONT download status conditions, and multiple
+		  conditions can be simultaneously present.  For example, an ONT may have a Software Version
+		  Mismatch condition concurrent with the File Not Found reason.
+
+           		 In following descriptions, Bit 1 position is defined as the high-order left-most and Bit 32 position is 
+		 defined as  the low-order, right-most. The bit positions and meanings are as follows:
+
+           		 All Bits Zero (OFF) = ONT is Planned, OLT is in-contact with it, no download activity is pending or ongoing,
+				    and system is not in some erroneous state due to download activity.
+		 Bit 1 ON = ONT is NOT Planned.  All other bits are inconsequential when this bit is set (and if set, the 
+		       	    NE should have all other bits set to 0).  
+		 Bit 2 ON =  ONT is INACTIVE (mirrors INACT alarm condition, although OLT may be suppressing
+			      an actual INACT alarm ). 
+		 Bit 3 ON =  Last known Planned Software Version was NOT OK (i.e. Planned did not equal
+			      Active).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 4 ON =  Last known Download Software Version was NOT OK (i.e. Download did not equal
+			      Active or Passive).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 5 ON =  Download activity In-Progress (mirrors current SWDLIP alarm).  
+		 Bit 6 ON =  NT/LT file transfer activity In-Progress. 
+		 Bit 7 ON =  OMCI file transfer activity In-Progress. 
+		 Bit 8 ON =  ONT flash-write activity In-Progress.
+		 Bit 9 ON =  ONT software activation In-Progress.
+		 Bit 10 ON =  NT/LT file transfer failure.
+		 Bit 11 ON =  OMCI file transfer failure.
+		 Bit 12 ON =  ONT flash-write failure.
+		 Bit 13 ON =  ONT software activation failure (mirrors current SWACTFAIL alarm).
+		 Bit 14 ON =  Download File-Not-Found (mirrors current SWDLFILE alarm).
+		 Bit 15 ON =  Entry match not found in ONT Software Version Control Table
+			      (mirrors SWVERCTLERR alarm introduced in FGU4.6).
+		 Bit 16 ON =  Software Version Mismatch (mirrors current SWVER alarm).
+		 Bit 17 ON =  Software Download Failure (mirrors current SWDLFAIL alarm).
+		 Bit 18 ON = DELAYACTIVATE activity is Pending. (Bit SUPPORTED as of ISAM5.0)
+		 Bit 19 ON = Download activity is Pending. (Bit SUPPORTED as of ISAM5.2)
+		 Bits 20 thru 32  = Undefined - Not Supported - and should be zero (OFF).
+
+		 Default = Bit 1 ON (and Bits 2 thru 32 OFF) for each of the 256 ONT 4-byte chunks. 
+			 Meaning that when SubChannelGroup is manually created, there are effectively NO Planned ONTs
+			 on the SubChannelGroup.
+
+    		 SUPPORTED as of ISAM5.2.01 "
+        ::= { ng2SubChanGrpOntSwDownldStatusEntry 1 }
+   
+ng2SubChanGrpOntCfgFile1DownldStatus  OBJECT-TYPE
+	SYNTAX 	OCTET STRING (SIZE(1024))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+           	" Attribute construction is as follows: 
+		  4 bytes (32 bits) per planned (or potentially plan-able) ONT per SubChannel Group.  
+		  So low-order 4 bytes represent ONT number 1 on SubchannelGroup, and 
+		  	high-order 4 bytes represent ONT number 256 on SubChannelGroup.
+
+		  Each 32-bit ONT chunk is a bit-map of current ONT download status conditions, and multiple
+		  conditions can be simultaneously present.  For example, an ONT may have a Software Version
+		  Mismatch condition concurrent with the File Not Found reason.
+
+           		 In following descriptions, Bit 1 position is defined as the high-order left-most and Bit 32 position is 
+		 defined as  the low-order, right-most. The bit positions and meanings are as follows:
+
+           		 All Bits Zero (OFF) = ONT is Planned, OLT is in-contact with it, no download activity is pending or ongoing,
+				    and system is not in some erroneous state due to download activity.
+		 Bit 1 ON = ONT is NOT Planned.  All other bits are inconsequential when this bit is set (and if set, the 
+		       	    NE should have all other bits set to 0).  
+		 Bit 2 ON =  ONT is INACTIVE (mirrors INACT alarm condition, although OLT may be suppressing
+			      an actual INACT alarm ). 
+		 Bit 3 ON =  Last known Planned Software Version was NOT OK (i.e. Planned did not equal
+			      Active).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 4 ON =  Last known Download Software Version was NOT OK (i.e. Download did not equal
+			      Active or Passive).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 5 ON =  Download activity In-Progress (mirrors current SWDLIP alarm).  
+		 Bit 6 ON =  NT/LT file transfer activity In-Progress. 
+		 Bit 7 ON =  OMCI file transfer activity In-Progress. 
+		 Bit 8 ON =  ONT flash-write activity In-Progress.
+		 Bit 9 ON =  ONT software activation In-Progress.
+		 Bit 10 ON =  NT/LT file transfer failure.
+		 Bit 11 ON =  OMCI file transfer failure.
+		 Bit 12 ON =  ONT flash-write failure.
+		 Bit 13 ON =  ONT software activation failure (mirrors current SWACTFAIL alarm).
+		 Bit 14 ON =  Download File-Not-Found (mirrors current SWDLFILE alarm).
+		 Bit 15 ON =  Entry match not found in ONT Software Version Control Table
+			      (mirrors SWVERCTLERR alarm introduced in FGU4.6).
+		 Bit 16 ON =  Software Version Mismatch (mirrors current SWVER alarm).
+		 Bit 17 ON =  Software Download Failure (mirrors current SWDLFAIL alarm).
+		 Bit 18 ON = DELAYACTIVATE activity is Pending. (Bit SUPPORTED as of ISAM5.0)
+		 Bit 19 ON = Download activity is Pending. (Bit SUPPORTED as of ISAM5.2)
+		 Bits 20 thru 32  = Undefined - Not Supported - and should be zero (OFF).
+
+		 Default = Bit 1 ON (and Bits 2 thru 32 OFF) for each of the 256 ONT 4-byte chunks. 
+			 Meaning that when SubChannelGroup is manually created, there are effectively NO Planned ONTs
+			 on the SubChannelGroup.
+                 
+                 Introduced in ISAM5.5 MIB, with targeted implementation in ISAM5.5.01 "
+        ::= { ng2SubChanGrpOntSwDownldStatusEntry 2 }
+   
+ng2SubChanGrpOntCfgFile2DownldStatus  OBJECT-TYPE
+	SYNTAX 	OCTET STRING (SIZE(1024))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+           	" Attribute construction is as follows: 
+		  4 bytes (32 bits) per planned (or potentially plan-able) ONT per SubChannel Group.  
+		  So low-order 4 bytes represent ONT number 1 on SubchannelGroup, and 
+		  	high-order 4 bytes represent ONT number 256 on SubChannelGroup.
+
+		  Each 32-bit ONT chunk is a bit-map of current ONT download status conditions, and multiple
+		  conditions can be simultaneously present.  For example, an ONT may have a Software Version
+		  Mismatch condition concurrent with the File Not Found reason.
+
+           		 In following descriptions, Bit 1 position is defined as the high-order left-most and Bit 32 position is 
+		 defined as  the low-order, right-most. The bit positions and meanings are as follows:
+
+           		 All Bits Zero (OFF) = ONT is Planned, OLT is in-contact with it, no download activity is pending or ongoing,
+				    and system is not in some erroneous state due to download activity.
+		 Bit 1 ON = ONT is NOT Planned.  All other bits are inconsequential when this bit is set (and if set, the 
+		       	    NE should have all other bits set to 0).  
+		 Bit 2 ON =  ONT is INACTIVE (mirrors INACT alarm condition, although OLT may be suppressing
+			      an actual INACT alarm ). 
+		 Bit 3 ON =  Last known Planned Software Version was NOT OK (i.e. Planned did not equal
+			      Active).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 4 ON =  Last known Download Software Version was NOT OK (i.e. Download did not equal
+			      Active or Passive).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 5 ON =  Download activity In-Progress (mirrors current SWDLIP alarm).  
+		 Bit 6 ON =  NT/LT file transfer activity In-Progress. 
+		 Bit 7 ON =  OMCI file transfer activity In-Progress. 
+		 Bit 8 ON =  ONT flash-write activity In-Progress.
+		 Bit 9 ON =  ONT software activation In-Progress.
+		 Bit 10 ON =  NT/LT file transfer failure.
+		 Bit 11 ON =  OMCI file transfer failure.
+		 Bit 12 ON =  ONT flash-write failure.
+		 Bit 13 ON =  ONT software activation failure (mirrors current SWACTFAIL alarm).
+		 Bit 14 ON =  Download File-Not-Found (mirrors current SWDLFILE alarm).
+		 Bit 15 ON =  Entry match not found in ONT Software Version Control Table
+			      (mirrors SWVERCTLERR alarm introduced in FGU4.6).
+		 Bit 16 ON =  Software Version Mismatch (mirrors current SWVER alarm).
+		 Bit 17 ON =  Software Download Failure (mirrors current SWDLFAIL alarm).
+		 Bit 18 ON = DELAYACTIVATE activity is Pending. (Bit SUPPORTED as of ISAM5.0)
+		 Bit 19 ON = Download activity is Pending. (Bit SUPPORTED as of ISAM5.2)
+		 Bits 20 thru 32  = Undefined - Not Supported - and should be zero (OFF).
+
+		 Default = Bit 1 ON (and Bits 2 thru 32 OFF) for each of the 256 ONT 4-byte chunks. 
+			 Meaning that when SubChannelGroup is manually created, there are effectively NO Planned ONTs
+			 on the SubChannelGroup.
+                 
+                 Introduced in ISAM5.5 MIB, with targeted implementation in ISAM5.5.01 "
+        ::= { ng2SubChanGrpOntSwDownldStatusEntry 3 }
+   
+
+
+-- *********************************************
+--
+-- NG-PON2 TWDM ONTS PER CHANNEL GROUP MAPPING TABLE
+--
+-- This table is a helper table.
+--
+-- It contains the mapping of the identity of all ONTs associated to a specific
+-- ChannelGroup/SubChannelGroup/ChannelPair along with their preferred/ranged status.
+--
+--
+-- As of ISAM 5.2 release, this table is SUPPORTED.
+-- 
+-- *********************************************
+
+ng2OntsPerChanGroupMapTable  OBJECT-TYPE
+	SYNTAX SEQUENCE OF Ng2OntsPerChanGroupMapEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	::= { ng2GroupsAndPairsGroup 8 }
+
+ng2OntsPerChanGroupMapEntry  OBJECT-TYPE
+	SYNTAX 	Ng2OntsPerChanGroupMapEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	INDEX	{ ng2ChanGrpIndex, ng2SubChanGrpIndex,
+		ng2OntsPerChanGroupMapOntId }
+-- First index represents Channel Group ID
+-- Second index represents Sub Channel Group ID
+	::= { ng2OntsPerChanGroupMapTable 1 }
+
+Ng2OntsPerChanGroupMapEntry ::= SEQUENCE {
+	ng2OntsPerChanGroupMapOntId		OntAidIndex,
+	ng2OntsPerChanGroupPrefChanPair		InterfaceIndex,
+	ng2OntsPerChanGroupRangedChanPair	InterfaceIndexOrZero,
+	ng2OntsPerChanGroupRangedStatus		INTEGER,
+	ng2OntsPerChanGroupOntIfIndex		InterfaceIndex,
+	ng2OntsPerChanGroupProtChanPair		InterfaceIndex,
+	ng2OntsPerChanGroupBackupChanPairStatus INTEGER,
+	ng2OntsPerChanGroupAltPrefChanPair	InterfaceIndex
+}
+
+
+
+ng2OntsPerChanGroupMapOntId  OBJECT-TYPE
+	SYNTAX 	OntAidIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+        "This object is the ONT ID.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	(1..256)         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+	::= { ng2OntsPerChanGroupMapEntry 1 }
+
+
+ng2OntsPerChanGroupPrefChanPair	OBJECT-TYPE
+	SYNTAX 	InterfaceIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Preferred Channel Pair (for this ONT)
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+	::= { ng2OntsPerChanGroupMapEntry 2 }
+
+ng2OntsPerChanGroupRangedChanPair	OBJECT-TYPE
+	SYNTAX 	InterfaceIndexOrZero
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Channel Pair where this
+		  ONT is actually ranged.
+
+		Value 0 means ONT is currently NOT ranged
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex or 0         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+	::= { ng2OntsPerChanGroupMapEntry 3 }
+
+
+ng2OntsPerChanGroupRangedStatus	OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the combinations of ranged/preferred status.
+
+		  1 = Ranged on Preferred Channel Pair
+		  2 = Ranged on Protection Channel Pair
+		  3 = NOT Ranged
+		  4 = Ranged/parked 
+		  5 = Ranged on Alternative Preferred Channel Pair
+
+
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	1..5         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+	::= { ng2OntsPerChanGroupMapEntry 4 }
+
+ng2OntsPerChanGroupOntIfIndex	OBJECT-TYPE
+	SYNTAX 	InterfaceIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the ONT.
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+	::= { ng2OntsPerChanGroupMapEntry 5 }
+
+ng2OntsPerChanGroupProtChanPair	OBJECT-TYPE
+	SYNTAX 	InterfaceIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Protection Channel Pair (for this ONT)
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.4 release, this attribute is SUPPORTED. "
+	::= { ng2OntsPerChanGroupMapEntry 6 }
+
+ng2OntsPerChanGroupBackupChanPairStatus	OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the backup channel pair status.
+
+		  1 = Preferred Channel Pair ready
+		  2 = Preferred Channel Pair NOT ready
+		  3 = Protection Channel Pair ready
+		  4 = Protection Channel Pair NOT ready
+		  5 = NOT Ready
+		  6 = None
+		  7 = Alternative Preferred Channel Pair ready
+		  8 = Alternative Preferred Channel Pair NOT ready
+
+
+
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	1..8         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.4 release, this attribute is SUPPORTED. "
+	::= { ng2OntsPerChanGroupMapEntry 7 }
+
+ng2OntsPerChanGroupAltPrefChanPair	OBJECT-TYPE
+	SYNTAX 	InterfaceIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Alternative Preferred Channel Pair (for this ONT)
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.6 release, this attribute is SUPPORTED. "
+	::= { ng2OntsPerChanGroupMapEntry 8 }
+
+-- *********************************************
+--
+-- NG-PON2 TWDM ONTS PER CHANNEL PAIR MAPPING TABLE
+--
+-- This table is a helper table.
+--
+-- It contains the mapping of the identity of all ONTs that have a 
+-- specific channel pair as their'preferred channel pair' along
+-- ranging status.
+--
+--
+-- As of ISAM 5.2 release, this table is SUPPORTED.
+-- 
+-- *********************************************
+
+ng2OntsPerChanPairMapTable  OBJECT-TYPE
+	SYNTAX SEQUENCE OF Ng2OntsPerChanPairMapEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	::= { ng2GroupsAndPairsGroup 9 }
+
+ng2OntsPerChanPairMapEntry  OBJECT-TYPE
+	SYNTAX 	Ng2OntsPerChanPairMapEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	INDEX	{ ifIndex, ng2OntsPerChanPairMapOntIndex }
+--		First ifIndex is the ifIndex of the channel pair
+--		Second index is the ifIndex of the ONT
+	::= { ng2OntsPerChanPairMapTable 1 }
+
+Ng2OntsPerChanPairMapEntry ::= SEQUENCE {
+	ng2OntsPerChanPairMapOntIndex		InterfaceIndex,	
+	ng2OntsPerChanPairMapRangedStatus	INTEGER
+}
+
+ng2OntsPerChanPairMapOntIndex	OBJECT-TYPE
+	SYNTAX 	InterfaceIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the ONT
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+	::= { ng2OntsPerChanPairMapEntry 1 }
+
+	
+ng2OntsPerChanPairMapRangedStatus	OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates combinations of preferred/protection/ranged status for channel-pair/ONT table rows
+
+		1 = Channel-pair is preferred and ONT is ranged on it
+		2 = Channel-pair is preferred and ONT is NOT ranged on it, no protection 
+		3 = Channel-pair is preferred and ONT is NOT ranged on it, ready
+		4 = Channel-pair is preferred and ONT is NOT ranged on it, not ready
+		5 = Channel-pair is protection and ONT is ranged on it
+		6 = Channel-pair is protection and ONT is NOT ranged on it, ready
+		7 = Channel-pair is protection and ONT is NOT ranged on it, not ready
+		8 = Channel-pair is NOT preferred, NOT protection and NOT alternative preferred and ONT is ranged on it (parked)
+		9 = Channel-pair is alternative preferred and ONT is ranged on it
+		10 = Channel-pair is alternative preferred and ONT is NOT ranged on it, ready
+		11 = Channel-pair is alternative preferred and ONT is NOT ranged on it, not ready
+
+
+
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	1..11         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+	::= { ng2OntsPerChanPairMapEntry 2 }
+	
+	
+-- *********************************************
+--
+-- NG-GPON2 CHANNEL-GROUP SUB-CHANNEL GROUP BASED ONT SOFTWARE DOWNLOAD TABLE
+--
+-- This is a new table first added in ISAM5.3 MIB.
+--
+-- It is used to retrieve (for ChannelGroup/SubchannelGroup) ONT fine-grain status 
+-- associated with any 'SW download activity'.
+-- NOTE:  The term 'download activity' should be interpreted in the broad sense
+-- of individual steps necessary to perform 'womb-to-tomb' ONT software 
+-- management activity (e.g. retrieval of load from NT file system all the way
+-- through ONT activation).
+--
+--
+-- For NG-PON2 - SUPPORTED as of ISAM5.3 
+--  
+-- *********************************************
+
+ng2ChanGrpSubChanGrpBasedOntSwDownldStatusTable  OBJECT-TYPE
+	SYNTAX SEQUENCE OF Ng2ChanGrpSubChanGrpBasedOntSwDownldStatusEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	::= { ng2GroupsAndPairsGroup 10 }
+
+ng2ChanGrpSubChanGrpBasedOntSwDownldStatusEntry  OBJECT-TYPE
+	SYNTAX 	Ng2ChanGrpSubChanGrpBasedOntSwDownldStatusEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	INDEX	{ ng2ChanGrpIndex, ng2SubChanGrpIndex, ng2OntIndex }
+-- First index represents Channel Group ID
+-- Second index represents Sub Channel Group ID
+-- OntAidIndex represents Ont ID
+	::= { ng2ChanGrpSubChanGrpBasedOntSwDownldStatusTable 1 }
+
+Ng2ChanGrpSubChanGrpBasedOntSwDownldStatusEntry ::= SEQUENCE {
+    ng2OntIndex     OntAidIndex,
+	ng2OntIfIndex   InterfaceIndex,
+	ng2ChanGrpSubChanGrpBasedOntSwDownldStatus	OCTET STRING,
+	ng2ChanGrpSubChanGrpBasedOntCfgFile1DownldStatus OCTET STRING,
+	ng2ChanGrpSubChanGrpBasedOntCfgFile2DownldStatus OCTET STRING
+}
+
+ng2OntIndex  OBJECT-TYPE
+	SYNTAX 	OntAidIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+        "This object is the ONT ID.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	(1..256)         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+
+As of ISAM5.3 release, this attribute is SUPPORTED. "
+	::= { ng2ChanGrpSubChanGrpBasedOntSwDownldStatusEntry 1 }
+
+ng2OntIfIndex	OBJECT-TYPE
+	SYNTAX 	InterfaceIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the ONT
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+         As of ISAM5.3 release, this attribute is SUPPORTED. "
+	::= { ng2ChanGrpSubChanGrpBasedOntSwDownldStatusEntry 2 }
+
+ng2ChanGrpSubChanGrpBasedOntSwDownldStatus  OBJECT-TYPE
+	SYNTAX 	OCTET STRING (SIZE(4))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+         " Attribute construction is as follows: 
+		  4 bytes (32 bits) per planned (or potentially plan-able) ONT per SubChannel Group.  
+
+		  Each 32-bit ONT chunk is a bit-map of current ONT download status conditions, and multiple
+		  conditions can be simultaneously present.  For example, an ONT may have a Software Version
+		  Mismatch condition concurrent with the File Not Found reason.
+
+           		 In following descriptions, Bit 1 position is defined as the high-order left-most and Bit 32 position is 
+		 defined as  the low-order, right-most. The bit positions and meanings are as follows:
+
+           		 All Bits Zero (OFF) = ONT is Planned, OLT is in-contact with it, no download activity is pending or ongoing,
+				    and system is not in some erroneous state due to download activity.
+		 Bit 1 ON = ONT is NOT Planned.  All other bits are inconsequential when this bit is set (and if set, the 
+		       	    NE should have all other bits set to 0).  
+		 Bit 2 ON =  ONT is INACTIVE (mirrors INACT alarm condition, although OLT may be suppressing
+			      an actual INACT alarm ). 
+		 Bit 3 ON =  Last known Planned Software Version was NOT OK (i.e. Planned did not equal
+			      Active).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 4 ON =  Last known Download Software Version was NOT OK (i.e. Download did not equal
+			      Active or Passive).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 5 ON =  Download activity In-Progress (mirrors current SWDLIP alarm).  
+		 Bit 6 ON =  NT/LT file transfer activity In-Progress. 
+		 Bit 7 ON =  OMCI file transfer activity In-Progress. 
+		 Bit 8 ON =  ONT flash-write activity In-Progress.
+		 Bit 9 ON =  ONT software activation In-Progress.
+		 Bit 10 ON =  NT/LT file transfer failure.
+		 Bit 11 ON =  OMCI file transfer failure.
+		 Bit 12 ON =  ONT flash-write failure.
+		 Bit 13 ON =  ONT software activation failure (mirrors current SWACTFAIL alarm).
+		 Bit 14 ON =  Download File-Not-Found (mirrors current SWDLFILE alarm).
+		 Bit 15 ON =  Entry match not found in ONT Software Version Control Table
+			      (mirrors SWVERCTLERR alarm introduced in FGU4.6).
+		 Bit 16 ON =  Software Version Mismatch (mirrors current SWVER alarm).
+		 Bit 17 ON =  Software Download Failure (mirrors current SWDLFAIL alarm).
+		 Bit 18 ON = DELAYACTIVATE activity is Pending. (Bit SUPPORTED as of ISAM5.0)
+		 Bit 19 ON = Download activity is Pending. (Bit SUPPORTED as of ISAM5.2)
+		 Bits 20 thru 32  = Undefined - Not Supported - and should be zero (OFF).
+
+		 Default = Bit 1 ON (and Bits 2 thru 32 OFF) for each of the 256 ONT 4-byte chunks. 
+			 Meaning that when SubChannelGroup is manually created, there are effectively NO Planned ONTs
+			 on the SubChannelGroup. 
+		 As of ISAM5.3 release, this attribute is SUPPORTED. "
+        ::= { ng2ChanGrpSubChanGrpBasedOntSwDownldStatusEntry 3 }
+        
+ng2ChanGrpSubChanGrpBasedOntCfgFile1DownldStatus  OBJECT-TYPE
+	SYNTAX 	OCTET STRING (SIZE(4))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+         " Attribute construction is as follows: 
+		  4 bytes (32 bits) per planned (or potentially plan-able) ONT per SubChannel Group.  
+
+		  Each 32-bit ONT chunk is a bit-map of current ONT download status conditions, and multiple
+		  conditions can be simultaneously present.  For example, an ONT may have a Software Version
+		  Mismatch condition concurrent with the File Not Found reason.
+
+           		 In following descriptions, Bit 1 position is defined as the high-order left-most and Bit 32 position is 
+		 defined as  the low-order, right-most. The bit positions and meanings are as follows:
+
+           		 All Bits Zero (OFF) = ONT is Planned, OLT is in-contact with it, no download activity is pending or ongoing,
+				    and system is not in some erroneous state due to download activity.
+		 Bit 1 ON = ONT is NOT Planned.  All other bits are inconsequential when this bit is set (and if set, the 
+		       	    NE should have all other bits set to 0).  
+		 Bit 2 ON =  ONT is INACTIVE (mirrors INACT alarm condition, although OLT may be suppressing
+			      an actual INACT alarm ). 
+		 Bit 3 ON =  Last known Planned Software Version was NOT OK (i.e. Planned did not equal
+			      Active).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 4 ON =  Last known Download Software Version was NOT OK (i.e. Download did not equal
+			      Active or Passive).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 5 ON =  Download activity In-Progress (mirrors current SWDLIP alarm).  
+		 Bit 6 ON =  NT/LT file transfer activity In-Progress. 
+		 Bit 7 ON =  OMCI file transfer activity In-Progress. 
+		 Bit 8 ON =  ONT flash-write activity In-Progress.
+		 Bit 9 ON =  ONT software activation In-Progress.
+		 Bit 10 ON =  NT/LT file transfer failure.
+		 Bit 11 ON =  OMCI file transfer failure.
+		 Bit 12 ON =  ONT flash-write failure.
+		 Bit 13 ON =  ONT software activation failure (mirrors current SWACTFAIL alarm).
+		 Bit 14 ON =  Download File-Not-Found (mirrors current SWDLFILE alarm).
+		 Bit 15 ON =  Entry match not found in ONT Software Version Control Table
+			      (mirrors SWVERCTLERR alarm introduced in FGU4.6).
+		 Bit 16 ON =  Software Version Mismatch (mirrors current SWVER alarm).
+		 Bit 17 ON =  Software Download Failure (mirrors current SWDLFAIL alarm).
+		 Bit 18 ON = DELAYACTIVATE activity is Pending. (Bit SUPPORTED as of ISAM5.0)
+		 Bit 19 ON = Download activity is Pending. (Bit SUPPORTED as of ISAM5.2)
+		 Bits 20 thru 32  = Undefined - Not Supported - and should be zero (OFF).
+
+		 Default = Bit 1 ON (and Bits 2 thru 32 OFF) for each of the 256 ONT 4-byte chunks. 
+			 Meaning that when SubChannelGroup is manually created, there are effectively NO Planned ONTs
+			 on the SubChannelGroup. 
+
+		 Introduced in ISAM5.5 MIB, with targeted implementation in ISAM5.5.01 "
+        ::= { ng2ChanGrpSubChanGrpBasedOntSwDownldStatusEntry 4 }
+        	
+ng2ChanGrpSubChanGrpBasedOntCfgFile2DownldStatus  OBJECT-TYPE
+	SYNTAX 	OCTET STRING (SIZE(4))
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+         " Attribute construction is as follows: 
+		  4 bytes (32 bits) per planned (or potentially plan-able) ONT per SubChannel Group.  
+
+		  Each 32-bit ONT chunk is a bit-map of current ONT download status conditions, and multiple
+		  conditions can be simultaneously present.  For example, an ONT may have a Software Version
+		  Mismatch condition concurrent with the File Not Found reason.
+
+           		 In following descriptions, Bit 1 position is defined as the high-order left-most and Bit 32 position is 
+		 defined as  the low-order, right-most. The bit positions and meanings are as follows:
+
+           		 All Bits Zero (OFF) = ONT is Planned, OLT is in-contact with it, no download activity is pending or ongoing,
+				    and system is not in some erroneous state due to download activity.
+		 Bit 1 ON = ONT is NOT Planned.  All other bits are inconsequential when this bit is set (and if set, the 
+		       	    NE should have all other bits set to 0).  
+		 Bit 2 ON =  ONT is INACTIVE (mirrors INACT alarm condition, although OLT may be suppressing
+			      an actual INACT alarm ). 
+		 Bit 3 ON =  Last known Planned Software Version was NOT OK (i.e. Planned did not equal
+			      Active).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 4 ON =  Last known Download Software Version was NOT OK (i.e. Download did not equal
+			      Active or Passive).  This bit only has relevance when Bit 2 is ON (i.e. when ONT is inactive).
+		 Bit 5 ON =  Download activity In-Progress (mirrors current SWDLIP alarm).  
+		 Bit 6 ON =  NT/LT file transfer activity In-Progress. 
+		 Bit 7 ON =  OMCI file transfer activity In-Progress. 
+		 Bit 8 ON =  ONT flash-write activity In-Progress.
+		 Bit 9 ON =  ONT software activation In-Progress.
+		 Bit 10 ON =  NT/LT file transfer failure.
+		 Bit 11 ON =  OMCI file transfer failure.
+		 Bit 12 ON =  ONT flash-write failure.
+		 Bit 13 ON =  ONT software activation failure (mirrors current SWACTFAIL alarm).
+		 Bit 14 ON =  Download File-Not-Found (mirrors current SWDLFILE alarm).
+		 Bit 15 ON =  Entry match not found in ONT Software Version Control Table
+			      (mirrors SWVERCTLERR alarm introduced in FGU4.6).
+		 Bit 16 ON =  Software Version Mismatch (mirrors current SWVER alarm).
+		 Bit 17 ON =  Software Download Failure (mirrors current SWDLFAIL alarm).
+		 Bit 18 ON = DELAYACTIVATE activity is Pending. (Bit SUPPORTED as of ISAM5.0)
+		 Bit 19 ON = Download activity is Pending. (Bit SUPPORTED as of ISAM5.2)
+		 Bits 20 thru 32  = Undefined - Not Supported - and should be zero (OFF).
+
+		 Default = Bit 1 ON (and Bits 2 thru 32 OFF) for each of the 256 ONT 4-byte chunks. 
+			 Meaning that when SubChannelGroup is manually created, there are effectively NO Planned ONTs
+			 on the SubChannelGroup. 
+		 Introduced in ISAM5.5 MIB, with targeted implementation in ISAM5.5.01 "
+        ::= { ng2ChanGrpSubChanGrpBasedOntSwDownldStatusEntry 5 }
+        
+-- *********************************************
+--
+-- NG-GPON2 MOBILITY ONT TABLE
+--
+-- This is a new table first added in ISAM5.4 MIB.
+--
+-- It is used store the ONT Mobility Information 
+--
+-- Rows are created/deletd automatically by the sytsem when the 
+-- ONT is created /deleted by the operator.
+--
+-- Operator can edit the rows after the ONT created.
+--
+-- For NG-PON2 - SUPPORTED as of ISAM5.4
+--  
+-- *********************************************
+ng2MobilityOntTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Ng2MobilityOntEntry
+    ACCESS    not-accessible  
+    STATUS    mandatory  
+    DESCRIPTION  
+      "This table is used to configure the ont links with
+       its channel pairs. An entry in this table is
+       auto-created/deleted when an ONT is created/deleted."
+    ::= { ng2GroupsAndPairsGroup 11 }
+
+ng2MobilityOntEntry  OBJECT-TYPE 
+    SYNTAX    Ng2MobilityOntEntry
+    ACCESS    not-accessible
+    STATUS    mandatory
+    DESCRIPTION
+      "This entry allows to configure for an ONT the preferred and
+       protecting channel pairs to which the ONT can tune.
+       These two channel pairs must be in the same subchannelgroup
+       to which the ONT is assigned."
+      INDEX     { ng2MobilityOntIndex}
+    ::= { ng2MobilityOntTable 1 }
+
+Ng2MobilityOntEntry ::= SEQUENCE {         
+      ng2MobilityOntIndex                     OntIndex,
+      ng2MobilityPreferredChannelPair         InterfaceIndexOrZero,
+      ng2MobilityProtectingChannelPair        InterfaceIndexOrZero,
+      ng2MobilityActualChannelPair            InterfaceIndexOrZero,
+      ng2MobilitySwitchCommand                InterfaceIndexOrZero,
+      ng2MobilityLockOnChannelPair            InterfaceIndexOrZero,
+      ng2MobilityLastSwitchReason             INTEGER,
+      ng2MobilityNumberOfSwitchovers          Counter,
+      ng2MobilityPreferredChannelPairStatus   Ng2MobilityChannelPairStatus,
+      ng2MobilityProtectingChannelPairStatus  Ng2MobilityChannelPairStatus,
+      ng2MobilityAltPrefChannelPair           InterfaceIndexOrZero,
+      ng2MobilityAltPrefChannelPairStatus     Ng2MobilityChannelPairStatus,
+      ng2MobilityChannelPairRoleExch          Ng2MobilityChannelPairRoleActions
+}
+
+ng2MobilityOntIndex  OBJECT-TYPE
+	SYNTAX 	OntIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+        "This object is used as index int this table and it is the ONT ifindex.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 1 }
+
+ng2MobilityPreferredChannelPair	OBJECT-TYPE
+	SYNTAX 	InterfaceIndexOrZero
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Preferred Channel Pair for this ONT.
+		
+                  Value 0 means this ONT does not have a preferred Channel Pair
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	YES            
+		INSRVMOD:    	NO
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 2 }
+	
+ng2MobilityProtectingChannelPair	OBJECT-TYPE
+	SYNTAX 	InterfaceIndexOrZero
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Protecting Channel Pair for this ONT.
+		
+                  Value 0 means this ONT does not have a protecting Channel Pair
+                  ng2MobilityAltPrefChannelPair and ng2MobilityProtectingChannelPair are mutually exclusive.
+                  You can only define an non-zero value in one of the two attributes
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	YES            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 3 }
+	
+ng2MobilityActualChannelPair	OBJECT-TYPE
+	SYNTAX 	InterfaceIndexOrZero
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Channel Pair where this
+		  ONT is actually ranged.
+		  
+                  Value 0 means ONT is currently NOT ranged
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 4 }
+	
+ng2MobilitySwitchCommand	OBJECT-TYPE
+	SYNTAX 	InterfaceIndexOrZero
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Channel Pair where this
+		  ONT should be switched to. Operator can write all the values but
+		  he can only read 0 as system views this as a trigger.
+		  Once it is switched over, system writes 0 in this object. 
+		  
+                  Value 0 means no switching.
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 5 }
+	
+ng2MobilityLockOnChannelPair	OBJECT-TYPE
+	SYNTAX 	InterfaceIndexOrZero
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Channel Pair where this
+		  ONT should be switched to and lock switching.
+		  When the switching is locked switchovers won't be allowed. 
+		  
+                  Value 0 means ONT is allowed to switch if possible.
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	YES            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 6 }
+	
+ng2MobilityLastSwitchReason	OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the switchover reason for last switch
+                  
+		  0 = No Switchover - a switchover has yet to occur
+		  1 = Manual Switchover - Switchover caused by command from the operator
+		  2 = Automatic Switchover - Switchover caused by the ONT
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	0..2         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 7 }
+
+ng2MobilityNumberOfSwitchovers	OBJECT-TYPE
+	SYNTAX 	Counter
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Wrap around counter for the number of switchovers being performed by the ONT
+
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	see above         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 8 }
+
+ng2MobilityPreferredChannelPairStatus	OBJECT-TYPE
+        SYNTAX Ng2MobilityChannelPairStatus
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" This attribute represents the status of the Preferred Channel Pair
+
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	see above         
+		DEFVALUE:    	1
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 9 }
+
+ng2MobilityProtectingChannelPairStatus	OBJECT-TYPE
+        SYNTAX Ng2MobilityChannelPairStatus
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" This attribute represents the status of the Protecting Channel Pair
+
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	see above         
+		DEFVALUE:    	1
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 10 }
+
+ng2MobilityAltPrefChannelPair  OBJECT-TYPE
+	SYNTAX 	InterfaceIndexOrZero
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Alternative Preferred Channel Pair for this ONT.
+		  The alternative preferred channel pair is the channel pair to which to ONT is
+                  intended to be moved in a user commanded on-the-fly movement scenario.
+
+                  Value 0 means this ONT does not have an alternative preferred Channel Pair.
+                  ng2MobilityAltPrefChannelPair and ng2MobilityProtectingChannelPair are mutually exclusive.
+                  You can only define an non-zero value in one of the two attributes
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	YES            
+		INSRVMOD:    	NA
+            	RANGE:       	ifIndex         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 11 }
+
+ng2MobilityAltPrefChannelPairStatus	OBJECT-TYPE
+        SYNTAX Ng2MobilityChannelPairStatus
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" This attribute represents the status of the Alternative Preferred Channel Pair
+
+
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	see above         
+		DEFVALUE:    	1
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 12 }
+
+ng2MobilityChannelPairRoleExch OBJECT-TYPE
+	SYNTAX 	Ng2MobilityChannelPairRoleActions
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" Writing this object triggers the system to swap the roles of the channelPairs configured
+          for the ONT.  
+
+          prefWithAltPref means commanding the system to swap the ONT's preferredChannelPair with its altPrefChannelPair.
+          prefWithProt means commanding the system to swap the ONT's preferredChannelPair with its protectingChannelPair.
+          An operator can write a value but can only read 0. The value written acts as a trigger for the system.
+          Once the roles have been exchanged, the system writes 0 into this object. 
+          
+       ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	NA
+            	RANGE:       	See above         
+		DEFVALUE:    	0
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA  "
+	::= { ng2MobilityOntEntry 13 }
+	
+
+-- *********************************************
+--
+-- NG-GPON2 MOBILITY ONT ACTUAL CHANNEL PAIR CHANGE LOG TABLE 
+--
+-- This is a new table first added in ISAM5.4.01 MIB.
+--
+-- It is used to log each time an ONT has changed his Actual
+-- Channel Pair.
+--
+-- The log table wraps around as soon as the maximum numbers of
+-- entries is reached. The current maximum is 2048 entries. 
+--
+-- For NG-PON2 - SUPPORTED as of ISAM5.4.01 
+--  
+-- *********************************************
+ng2MobilityOntActChanPairChangeLogTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF Ng2MobilityOntActChanPairChangeLogEntry
+    ACCESS    not-accessible  
+    STATUS    mandatory  
+    DESCRIPTION  
+      "This table is used to log the events each time an ONT has changed its
+       Actual Channel Pair. The log table is a wrap-around table. When table
+       reached its maximum number of entries the oldest entries are overwritten"
+    ::= { ng2GroupsAndPairsGroup 12 }
+
+ng2MobilityOntActChanPairChangeLogEntry  OBJECT-TYPE 
+    SYNTAX    Ng2MobilityOntActChanPairChangeLogEntry
+    ACCESS    not-accessible
+    STATUS    mandatory
+    DESCRIPTION
+      "This entry logs the event that an ONT has changed its Actual Channel
+       Pair. With the ifIndex of the ONT the Manager can retrieve the details
+       from the ng2MobilityOntTable."
+      INDEX     { ng2MobilityOntActChanPairChangeLogIndex}
+    ::= { ng2MobilityOntActChanPairChangeLogTable 1 }
+
+Ng2MobilityOntActChanPairChangeLogEntry ::= SEQUENCE {         
+      ng2MobilityOntActChanPairChangeLogIndex       Gauge,
+      ng2MobilityOntActChanPairChangeLogOntIndex    OntIndex,
+      ng2MobilityOntActChanPairChangeLogActChanPair InterfaceIndexOrZero,
+      ng2MobilityOntActChanPairChangeLogTime        NetworkTimeInSeconds
+}
+
+ng2MobilityOntActChanPairChangeLogIndex  OBJECT-TYPE
+	SYNTAX 	Gauge (0..4294967295) 
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+        "This object is used as index into this table.
+
+        	ALCATEL NOTE:
+       	ACCESS:		NA            
+		USAGE:		NA
+       	PERSIST:     NO            
+		INSRVMOD:    NA
+       	RANGE:       NA         
+		DEFVALUE:    NA
+        	UNITS:       NA            
+		SPARSE:      NA
+		DESCR		NA  "
+	::= { ng2MobilityOntActChanPairChangeLogEntry 1 }
+
+ng2MobilityOntActChanPairChangeLogOntIndex  OBJECT-TYPE
+	SYNTAX 	OntIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+        "Indicates the ifIndex of the ONT of which the Actual Channel Pair has
+         Changed.
+
+        	ALCATEL NOTE:
+       	ACCESS:		NA            
+		USAGE:		NA
+       	PERSIST:     NO            
+		INSRVMOD:    NA
+       	RANGE:       ifIndex         
+		DEFVALUE:    NA
+        	UNITS:       NA            
+		SPARSE:      NA
+		DESCR		NA  "
+	::= { ng2MobilityOntActChanPairChangeLogEntry 2 }
+
+ng2MobilityOntActChanPairChangeLogActChanPair	OBJECT-TYPE
+	SYNTAX 	InterfaceIndexOrZero
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		" Indicates the ifIndex of the Channel Pair where this
+		  ONT is actually ranged.
+		  
+                  Value 0 means ONT is currently NOT ranged
+
+       	ALCATEL NOTE:
+       	ACCESS:		NA            
+		USAGE:		NA
+        	PERSIST:     NO            
+		INSRVMOD:    NA
+       	RANGE:       ifIndex         
+		DEFVALUE:    0
+       	UNITS:       NA            
+		SPARSE:      NA
+		DESCR		NA  "
+	::= { ng2MobilityOntActChanPairChangeLogEntry 3 }
+	
+ng2MobilityOntActChanPairChangeLogTime  OBJECT-TYPE
+	SYNTAX 	NetworkTimeInSeconds
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+        "Indicates the moment in time that the ONT has changed its Actual
+         Channel Pair.
+
+        	ALCATEL NOTE:
+       	ACCESS:		NA            
+		USAGE:		NA
+       	PERSIST:     NO            
+		INSRVMOD:    NA
+       	RANGE:       seconds         
+		DEFVALUE:    NA
+        	UNITS:       NA            
+		SPARSE:      NA
+		DESCR		NA  "
+	::= { ng2MobilityOntActChanPairChangeLogEntry 4 }
+
+
+
+-- *********************************************
+-- NG-PON2 CHANNEL LAMBDA PROFILE TABLE
+--
+-- This table was first introduced with ISAM5.2 MIB.
+-- The entire table is SUPPORTED beginning with ISAM5.2 release.
+--
+-- This table contains lambda/wavelength information about an ng-pon2 or xgs-pon-channel.
+--
+-- Rows are created by the operator.
+--
+-- NOTE: Profile cannot be deleted if associated with a channel pair
+
+-- Following profiles are delivered with the system, and cannot be created, edited,
+-- or deleted by management system:
+--
+-- NOTE: downlink lambdas unit are hundredths of a nanometer.
+--
+--	PROFILE				UP	DOWN	DOWN
+--	INDEX	NAME			CHANID	CHANID	LAMBDA
+--
+--	1	defaultChannel1		1	1	159634		
+--	2	defaultChannel2		2	2	159719		
+--	3	defaultChannel3		3	3	159804		
+--	4	defaultChannel4		4	4	159889		
+--	5	defaultChannel5		5	5	159975
+--	6	defaultChannel6		6	6	160060
+--	7	defaultChannel7		7	7	160146
+--	8	defaultChannel8		8	8	160231
+--	33	defaultXgsponBasicSet	1	1	157700
+--	34	defaultXgsponOptionalSet	1	1	149000
+--
+--	For GPON - NOT SUPPORTED as of ISAM4.0.10
+--	For XG-PON1 - NOT SUPPORTED as of ISAM4.6.02
+--	For NG-PON2 - SUPPORTED as of ISAM5.2
+
+-- 
+--
+-- *********************************************
+
+ng2ChannelLambdaProfileTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF Ng2ChannelLambdaProfileEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"This object contains a table for creating and storing
+		 channel lambda profile references  "
+::= { ng2ProfilesGroup 1 }
+
+ng2ChannelLambdaProfileEntry OBJECT-TYPE
+	SYNTAX 	Ng2ChannelLambdaProfileEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"Rows of this table contain channel lambda profiles "
+	INDEX {ng2ChannelLambdaProfileIndex }
+::= {ng2ChannelLambdaProfileTable 1}
+
+Ng2ChannelLambdaProfileEntry ::=
+	SEQUENCE { 
+		ng2ChannelLambdaProfileIndex		AsamProfileIndex,
+		ng2ChannelLambdaProfileName		AsamProfileName,
+		ng2ChannelLambdaProfileRefCount		AsamProfileRefCount,
+		ng2ChannelLambdaProfileRowStatus 	RowStatus,
+		ng2ChannelLambdaProfileUpChannelId		ChannelId,
+		ng2ChannelLambdaProfileDownChannelId		ChannelId,
+		ng2ChannelLambdaProfilePlannedDownLambda	PlannedDownLambda
+
+}
+
+ng2ChannelLambdaProfileIndex OBJECT-TYPE 
+	SYNTAX AsamProfileIndex
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+	   
+        "This object is the Lambda Profile ID.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	NA
+            	RANGE:       	(1..34)         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+::= { ng2ChannelLambdaProfileEntry 1}
+
+
+ng2ChannelLambdaProfileName 	OBJECT-TYPE 
+	SYNTAX	AsamProfileName
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+	    "Octet string storing the operator-given name of the profile.
+
+	     Must be supplied by management system.
+	     Cannot be null.
+	     Must be unique accross other profile names within this profile table.
+
+
+     ALCATEL NOTE:
+                 ACCESS:     NA
+		 USAGE:      MAND       
+                 PERSIST:    YES       
+		 INSRVMOD:   NO
+                 RANGE:      NA       
+		 DEFVALUE:   NA
+                 UNITS:      NA       
+		 SPARSE:     NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+::= {ng2ChannelLambdaProfileEntry 2}
+
+ng2ChannelLambdaProfileRefCount OBJECT-TYPE
+	SYNTAX	AsamProfileRefCount
+	ACCESS read-only
+	STATUS	mandatory
+	DESCRIPTION
+		" Indicates the number of entities using this profile. If the
+          		reference count is greater than 0, then this profile is 'in use',
+          		and may NOT be deleted. If the value is 0, then this profile is
+          		'not in use', and can be deleted.
+
+     ALCATEL NOTE:
+                 ACCESS:     NA       
+		 USAGE:      NA
+                 PERSIST:    NO       
+		 INSRVMOD:   NA
+                 RANGE:      NA       
+		 DEFVALUE:   NA
+                 UNITS:      NA       
+		 SPARSE:     NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+::= { ng2ChannelLambdaProfileEntry  3}
+
+
+
+ng2ChannelLambdaProfileRowStatus OBJECT-TYPE 
+	SYNTAX	RowStatus
+	ACCESS	read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"This object is used to create a new row or modify or
+         		delete an existing row in this table. 
+       		     
+		The entry associated with a Profile that is being used may
+             		 not be deleted.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	NO            
+		INSRVMOD:    	YES
+            	RANGE:       	1|4|6         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+::= { ng2ChannelLambdaProfileEntry  5}
+
+ng2ChannelLambdaProfileUpChannelId  OBJECT-TYPE
+	SYNTAX 	ChannelId
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"This attribute represents the Upstream Channel ID as defined in G989.2 Appendix 
+
+		 Modification is NOT permitted.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	No
+            	RANGE:       	1..16         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED."
+	::= { ng2ChannelLambdaProfileEntry  6 }
+
+
+
+ng2ChannelLambdaProfileDownChannelId  OBJECT-TYPE
+	SYNTAX 	ChannelId
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"This attribute represents the Downstream Channel ID as defined in G989.2 Appendix 
+
+		 Modification is NOT permitted.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	No
+            	RANGE:       	1..16         
+		DEFVALUE:    	NA
+           	UNITS:       	NA            
+		SPARSE:      	NA
+		DESCR		NA
+
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+	::= { ng2ChannelLambdaProfileEntry  7 }
+
+
+ng2ChannelLambdaProfilePlannedDownLambda  OBJECT-TYPE
+	SYNTAX 	PlannedDownLambda
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"This attribute represents the planned downstream lambda (wavelength)
+
+		 Units are centi-nanometers. So '156000' means a wavelength of '1560.00 nm'
+		 for the profile.
+
+		 Modification is NOT permitted.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		MAND
+            	PERSIST:     	YES            
+		INSRVMOD:    	No
+            	RANGE:       	See PlannedDownLambda        
+		DEFVALUE:    	NA
+           	UNITS:       	hundreths of nanometers            
+		SPARSE:      	NA
+		DESCR		NA 
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+	::= { ng2ChannelLambdaProfileEntry  8 }
+
+
+ng2ChannelLambdaProfileIndexNextFree        OBJECT-TYPE
+        	SYNTAX          AsamNextProfileIndex
+        	ACCESS          read-only
+        	STATUS          mandatory
+        	DESCRIPTION     
+        	"This object contains an appropriate value to be used for 
+         		ng2ChannelLambdaProfileIndex when creating entries in the
+         		ng2ChannelLambdaProfileTable. 
+         		The value 0 indicates that no unassigned entries are available. To 
+         		obtain the next index value for a new entry, the
+        		 manager issues a management protocol retrieval operation to obtain the
+         		current value of this object.  After each retrieval, the agent should
+        		 modify the value to the next unassigned index.
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	NO            
+		INSRVMOD:    	No
+            	RANGE:       	(1..34)       
+		DEFVALUE:    	NA
+           	UNITS:       	NA         
+		SPARSE:      	NA
+		DESCR		NA 
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+::= { ng2ProfilesGroup 2 }
+
+
+  ng2ChannelLambdaProfileMaxIndex        OBJECT-TYPE
+      	SYNTAX            AsamMaxProfileIndex
+      	ACCESS            read-only
+     	 STATUS            mandatory
+      	DESCRIPTION
+            	"This object represents the maximum number of
+            		 ng2ChannelLambdaProfiles that can be created. The object
+             		 ng2ChannelLambdaProfileIndexNext will have values ranging
+            		 from 0 to the value represented by this object. 
+		 For ISAM5.2, initially set to 32 (which includes system delivered
+				profiles 1..8).
+
+        ALCATEL NOTE:
+            	ACCESS:		NA            
+		USAGE:		NA
+            	PERSIST:     	YES            
+		INSRVMOD:    	No
+            	RANGE:       	34      
+		DEFVALUE:    	NA
+           	UNITS:       	NA         
+		SPARSE:      	NA
+		DESCR		NA 
+
+As of ISAM5.2 release, this attribute is NOT SUPPORTED. "
+::= { ng2ProfilesGroup 3 }
+
+
+-- *********************************************
+-- NG-PON2 CHANNEL LAMBDA PROFILE MAPPING TABLE
+--
+-- This table was first introduced with ISAM5.2 MIB.
+-- The entire table is SUPPORTED beginning with ISAM5.2 release.
+--
+-- For the ng2ChanLambdaProfile, this table provides a reverse mapping
+-- (i.e. profile name to profile index number).
+--
+-- The system automatically creates an entry in this Table when a  corresponding entry
+-- in ng2ChanLambdaProfile is created. 
+-- The system automatically deletes an entry in this Table when a  corresponding entry
+-- in ng2ChanLambdaProfile is deleted.
+--
+--	For GPON - NOT SUPPORTED as of ISAM4.0.10
+--	For XG-PON1 - NOT SUPPORTED as of ISAM4.6.02
+--	For NG-PON2 - SUPPORTED as of ISAM5.2 
+--   
+--
+-- *********************************************
+
+ 
+ng2ChannelLambdaProfileMappingTable OBJECT-TYPE
+   SYNTAX   SEQUENCE OF Ng2ChannelLambdaProfileMappingEntry
+   ACCESS   not-accessible
+   STATUS   mandatory
+   DESCRIPTION
+   "This object contains a table for ng2ChannelLambdaProfile
+name to index mapping"
+::= { ng2ProfilesGroup 4 }
+ 
+ng2ChannelLambdaProfileMappingEntry OBJECT-TYPE
+   SYNTAX   Ng2ChannelLambdaProfileMappingEntry
+   ACCESS   not-accessible
+   STATUS mandatory
+   DESCRIPTION
+   " An entry (conceptual row) representing the ng2ChannelLambdaProfile Name to Index mapping."
+   INDEX {ng2ChannelLambdaProfileMappingName }
+   ::= {ng2ChannelLambdaProfileMappingTable  1}
+ 
+Ng2ChannelLambdaProfileMappingEntry ::=
+   SEQUENCE { 
+	ng2ChannelLambdaProfileMappingName     AsamProfileName,
+      	ng2ChannelLambdaProfileMappingIndex      AsamProfileIndex
+  }
+ 
+ng2ChannelLambdaProfileMappingName OBJECT-TYPE
+   SYNTAX   AsamProfileName
+   ACCESS   not-accessible
+   STATUS  mandatory
+   DESCRIPTION
+      "A text string containing the name of this profile.
+      ALCATEL NOTE:
+                 ACCESS:     NA       
+		 USAGE:      NA
+                 PERSIST:    NO       
+		 INSRVMOD:   NO
+                 RANGE:      1..34       
+		 DEFVALUE:   NA
+                 UNITS:      NA       
+		 SPARSE:     NA
+                 DESCR:      NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+::= { ng2ChannelLambdaProfileMappingEntry 1}
+ 
+ng2ChannelLambdaProfileMappingIndex OBJECT-TYPE
+   SYNTAX   AsamProfileIndex
+   ACCESS   read-only
+   STATUS mandatory
+   DESCRIPTION
+      "This object is the Profile index. 
+     ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    NO       INSRVMOD:   NO
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+::= { ng2ChannelLambdaProfileMappingEntry 2}
+
+
+
+ng2ChanPairTrafficTcaInterval OBJECT-TYPE 
+	SYNTAX Gauge 
+	ACCESS read-write 
+	STATUS mandatory 
+	DESCRIPTION 
+	" Used to specify Channel-Pair traffic threshold detection interval. 
+	Unit is seconds, in range of 60 - 86400 (1 minute - 1 day) 
+	Default = 300 
+
+      ALCATEL NOTE:
+                 ACCESS:     NA       
+		 USAGE:      NA
+                 PERSIST:    YES       
+		 INSRVMOD:   YES
+                 RANGE:      60..86400 (1 minute .. 1 day)       
+		 DEFVALUE:   300
+                 UNITS:      seconds       
+		 SPARSE:     NA
+                 DESCR:      NA
+
+As of ISAM5.2 release, this attribute is SUPPORTED. "
+::= { ng2ScalarsGroup 1}
+
+
+
+ng2MobilityOntActChanPairChangeLogLastIndex OBJECT-TYPE
+      SYNTAX Gauge (0..4294967295)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object specifies the index of the entry last added to
+          the ng2MobilityOntActChanPairChangeLogTable.
+          This object is incremented each time for an ONT the Actual
+          Channel Pair attribute changes and an entry is added in that log table.
+
+      	ALCATEL NOTE:
+       	ACCESS:     NA       
+		USAGE:      NA
+        	PERSIST:    NO       
+		INSRVMOD:   NA
+        	RANGE:      NA
+		DEFVALUE:   0
+        	UNITS:      NA       
+		SPARSE:     NA
+        	DESCR:      NA
+
+As of ISAM5.4.01 release, this attribute is SUPPORTED. "
+::= { ng2ScalarsGroup 2 }
+
+
+END

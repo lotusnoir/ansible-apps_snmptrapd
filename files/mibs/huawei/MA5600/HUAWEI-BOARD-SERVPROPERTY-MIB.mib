@@ -1,0 +1,261 @@
+-- ================================================================================
+-- Copyright (C) 2005 by HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V1.00
+-- History:
+--   1 rht05401 create the file at 2005-10-20
+--   2 y40902 add table: hwBoardStatTable 2006-01
+--   3 x60018373 add table: hwBoardWorkModeTable 2007-06
+--   4 z67444 add table: hwBoardModemLearningTable 2007-07
+--   5 y68272 add leaf: hwBoardTrafficUnicast 2009-04
+-- ================================================================================
+    HUAWEI-BOARD-SERVPROPERTY-MIB DEFINITIONS ::= BEGIN
+
+        IMPORTS 
+            huaweiUtility            
+                FROM HUAWEI-MIB        
+            hwSlotIndex
+                FROM HUAWEI-DEVICE-MIB    
+            hwFrameIndex
+                FROM HUAWEI-DEVICE-MIB                    
+            OBJECT-TYPE, MODULE-IDENTITY
+                FROM SNMPv2-SMI;
+
+        hwBoardServProperty MODULE-IDENTITY
+            LAST-UPDATED "200510101000Z"
+            ORGANIZATION
+                "HAUWEI MIB Standard community
+                固网MIB标准化委员会 "
+            CONTACT-INFO
+                "
+                联系地址：中国广东深圳，华为技术有限公司
+                "
+            DESCRIPTION
+                "200510101000Z    
+                "
+            ::= { huaweiUtility 48 }
+
+    
+---------------------------------------------------------------------------------------------------------------
+-- Node Definitions
+---------------------------------------------------------------------------------------------------------------
+                
+        hwBoardServPropertyTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwBoardServPropertyEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Traffic suppression of upriver broadcast or multicast messages configuration table entity.
+            单板上行广播、多播报文流量抑制配置表实体。"
+            ::= { hwBoardServProperty 1 }
+            
+        hwBoardServPropertyEntry OBJECT-TYPE
+            SYNTAX HwBoardServPropertyEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Traffic suppression of upriver broadcast or multicast messages configuration table entity.
+            单板上行广播、多播报文流量抑制配置表实体。"
+            INDEX { hwFrameIndex,hwSlotIndex }
+            ::= { hwBoardServPropertyTable 1 }
+            
+                HwBoardServPropertyEntry ::=
+            SEQUENCE {
+            hwBoardTrafficSuppressBroadcast    
+                    INTEGER,
+            hwBoardTrafficSuppressMulticast
+                    INTEGER
+                 }
+        hwBoardTrafficSuppressBroadcast OBJECT-TYPE        
+                SYNTAX INTEGER (0..13)                      
+            MAX-ACCESS read-write                              
+            STATUS current                                    
+            DESCRIPTION                                       
+                " The broadcast traffic-suppress of board. Set 0 to close. The default level of broadcast traffic-suppress is 7.
+                单板的广播流量抑制。等级设为0时关闭。默认广播流量抑制等级为7。
+                
+				Traffic suppression ID definition:                                            
+				---------------------------------------------------------------------      						       
+				 NO.  Min bandwidth(kbps)  Max bandwidth(kbps)  Package number(pps)        						       
+				---------------------------------------------------------------------      						       
+				   1                    6                  145                   12        						       
+				   2                   12                  291                   24        						       
+				   3                   24                  582                   48        						       
+				   4                   48                 1153                   95        						       
+				   5                   97                 2319                  191        						       
+				   6                  195                 4639                  382        						       
+				   7                  390                 9265                  763        						       
+				   8                  781                18531                 1526        						       
+				   9                 1562                37063                 3052        						       
+				  10                 3125                74126                 6104        						       
+				  11                 6249               148241                12207        						       
+				  12                12499               296483                24414        						  
+				  13					0      			     0	     	          0      						    
+				---------------------------------------------------------------------      						                
+                "     
+            ::= { hwBoardServPropertyEntry 1 }
+            
+        hwBoardTrafficSuppressMulticast OBJECT-TYPE        
+            SYNTAX INTEGER (0..13)                      
+            MAX-ACCESS read-write                              
+            STATUS current                                    
+            DESCRIPTION                                       
+                " The broadcast traffic-suppress of board.Set 0 to close. The default level of broadcast traffic-suppress is 7.
+                单板的多播流量抑制。等级设为0时关闭。默认多播流量抑制等级为0。
+
+				Traffic suppression ID definition:                                            
+				---------------------------------------------------------------------      						       
+				 NO.  Min bandwidth(kbps)  Max bandwidth(kbps)  Package number(pps)        						       
+				---------------------------------------------------------------------      						       
+				   1                    6                  145                   12        						       
+				   2                   12                  291                   24        						       
+				   3                   24                  582                   48        						       
+				   4                   48                 1153                   95        						       
+				   5                   97                 2319                  191        						       
+				   6                  195                 4639                  382        						       
+				   7                  390                 9265                  763        						       
+				   8                  781                18531                 1526        						       
+				   9                 1562                37063                 3052        						       
+				  10                 3125                74126                 6104        						       
+				  11                 6249               148241                12207        						       
+				  12                12499               296483                24414        						  
+				  13					0      			     0	     	          0      						    
+				---------------------------------------------------------------------
+                " 
+            ::= { hwBoardServPropertyEntry 2 }
+
+---------------------------------------------------------------------------------------------------------------
+        hwBoardStatTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwBoardStatEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Board traffic statistics table"
+            ::= { hwBoardServProperty 2 }
+            
+        hwBoardStatEntry OBJECT-TYPE
+            SYNTAX HwBoardStatEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Board traffic statistics entry"
+            INDEX { hwFrameIndex,hwSlotIndex }
+            ::= { hwBoardStatTable 1 }
+    
+        HwBoardStatEntry ::=
+            SEQUENCE {
+            hwBoardInOcts    
+                    Counter,
+            hwBoardOutOcts
+                    Counter
+                 }
+                 
+        hwBoardInOcts OBJECT-TYPE
+            SYNTAX Counter
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total count of Octets which were recieved by the specified board"     
+            ::= { hwBoardStatEntry 1 }
+            
+        hwBoardOutOcts OBJECT-TYPE        
+            SYNTAX Counter
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The total count of Octets which were sent from the specified board"
+            ::= { hwBoardStatEntry 2 }
+---------------------------------------------------------------------------------------------------------------
+--Eth Borad work mode table 
+---------------------------------------------------------------------------------------------------------------
+     
+        hwBoardWorkModeTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwBoardWorkModeEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Eth Board Work Mode."
+            ::= { hwBoardServProperty 3 }
+            
+        hwBoardWorkModeEntry OBJECT-TYPE
+            SYNTAX HwBoardWorkModeEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Eth Board Work Mode Entry"
+            INDEX { hwFrameIndex,hwSlotIndex }
+            ::= { hwBoardWorkModeTable 1 }
+    
+        HwBoardWorkModeEntry ::=
+            SEQUENCE {
+            hwEthBoardWorkMode    
+                    INTEGER
+                 }
+                 
+        hwEthBoardWorkMode OBJECT-TYPE
+            SYNTAX INTEGER
+            {    
+            	qinq(1),  
+            	normal(2)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                ""     
+            ::= { hwBoardWorkModeEntry 1 }
+            
+---------------------------------------------------------------------------------------------------------------
+-- TR068 Modem Leraning VPI/VCI Table (ADSL board support) 
+---------------------------------------------------------------------------------------------------------------
+        
+        hwBoardModemLearningTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwBoardModemLearningEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "TR068 Modem Leraning VPI/VCI Table."
+            ::= { hwBoardServProperty 4 }
+            
+        hwBoardModemLearningEntry OBJECT-TYPE
+            SYNTAX HwBoardModemLearningEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "TR068 Modem Leraning VPI/VCI Entry"
+            INDEX { hwFrameIndex,hwSlotIndex }
+            ::= { hwBoardModemLearningTable 1 }
+    
+        HwBoardModemLearningEntry ::=
+            SEQUENCE {
+            hwBoardModemLearningEnable    
+                    INTEGER
+                 }
+                   
+        hwBoardModemLearningEnable OBJECT-TYPE
+            SYNTAX INTEGER
+            {    
+            	True(1),  
+            	False(2)
+            }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "TR068 Modem leraning VPI/VCI (ADSL board support)"
+            ::= { hwBoardModemLearningEntry 1 }
+ 
+---------------------------------------------------------------------------------------------------------------
+-- The unicast traffic-suppress of board (XDSL board support) 
+---------------------------------------------------------------------------------------------------------------
+ 	hwBoardTrafficUnicast OBJECT-TYPE
+		SYNTAX INTEGER ( 0..4905 )
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			" 
+			The unicast traffic-suppress of board.	Set 65535 to close. The default value of unicast traffic-suppress is 65535			
+			"
+	               DEFVAL { 65535 }  
+		::= { hwBoardServProperty 5 }	
+  END

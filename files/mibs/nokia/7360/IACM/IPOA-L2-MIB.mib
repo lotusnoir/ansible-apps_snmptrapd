@@ -1,0 +1,450 @@
+-- ===============================================================================
+-- This specification is published by Alcatel under Non-Disclosure
+-- Agreement(s) (NDA) with specific parties and has to be considered as
+-- Confidential Information as defined in such NDA.
+-- Alcatel reserves the right to revise this document for any reason,
+-- including but not limited to conformity with standards promulgated by
+-- various agencies, utilisation of advances in the state of the technical
+-- areas, or the reflection of changes in the design of any equipment,
+-- techniques, or procedures described or referred to herein.
+-- The product specifications and other technical or performance information
+-- contained herein are subject to change without notice.
+-- Updates of this document will be issued under the above NDA's.
+-- Alcatel makes no representation or warranty, expressed or implied, with
+-- respect to the sufficiency, accuracy, or utility of any information or
+-- opinion contained herein. Alcatel expressly advises that any use of for
+-- any purpose or reliance upon this technical reference is at the risk of
+-- the user and that Alcatel shall not be liable for any damage or injury
+-- incurred by any person arising out of the sufficiency, accuracy, or
+-- utility of any information or opinion contained herein.
+-- This document is not to be construed as a suggestion to any manufacturer
+-- to modify or change any of its products, nor does this document represent
+-- any commitment by Alcatel to sell or purchase any product.
+-- Nothing contained herein shall be construed as conferring by implication,
+-- estoppel, or otherwise any license or right under any patent, whether or
+-- not the use of any information herein necessarily employs an invention of
+-- any existing or later issued patent.
+-- Alcatel reserves the right not to offer any or all of these products and
+-- to withdraw any or all of them at any future time.
+-- Copyright (C) 2002, Alcatel. All Rights Reserved.
+-- ================================================================================
+--
+--  MODULE-IDENTITY
+--  LAST-UPDATED   "200605080000Z"
+--  ORGANIZATION   "Alcatel"
+--  CONTACT-INFO
+--
+--          Email:  "asam.mibsupport@alcatel.be"
+--
+--  DESCRIPTION   Alcatel proprietary IPoA cross connect context.
+--  
+--  REVISION 200605080000Z
+--  DESCRIPTION
+--        "Version:  3FE25208EAAA_V3.2.0.0.0
+--         Editor:   Yin Qin
+--         Changes:  Created for open SNMP feature in ISAM R3.2"
+--  
+--  REVISION 200504070000Z
+--  DESCRIPTION
+--        "Version:  3FE25208EAAA_V2.4.0.0.1
+--         Editor:   Yin Qin
+--         Changes:  Created for ISAM R2.4"
+--
+--  DATE   Aug 24, 2007
+--  DESCRIPTION
+--        "Version:  _E3.6.0.0
+--         Editor:   Liu Li
+--         Changes:  Created for ISAM R3.6.            
+--            Add four read-only objects to the for monitor L2 connectivity and 
+--            operational state and failure reason:
+--              ipoaL2OperStatus
+--              ipoaL2DownReason
+--              ipoaL2SrcMacAddress
+--              ipoaL2ErMacAddress  
+--            Add a new configuration table ipoaL2GwVlanTable which allows 
+--            operator to specify the gateway IP @ per VLAN.               
+--  DATE   Nov 21, 2007
+--  DESCRIPTION
+--        "Version:  _E3.6.0.0
+--         Editor:   Liu Li
+--         Changes:  Change one value of ipoaL2DownReason from boardUnreachable to interfaceDown.            
+--                 
+--==================================================================
+IPOA-L2-MIB DEFINITIONS ::= BEGIN
+-- IPOA CC subsystem private defined MIB
+IMPORTS
+		Gauge			FROM RFC1155-SMI
+		OBJECT-TYPE		FROM RFC-1212
+		RowStatus   		FROM SNMPv2-TC
+		ifIndex 		FROM ITF-MIB
+		InetAddress, InetAddressType	FROM INET-ADDRESS-MIB
+		asam			FROM SYSTEM-MIB
+                MacAddress              FROM BRIDGE-MIB
+                dot1qVlanIndex,VlanIndex  FROM Q-BRIDGE-MIB;
+
+
+-- asam OBJECT IDENTIFIER ::= { iso(1) identified-organization(3)
+--                             dod(6) internet(1) private(4)
+--                             enterprises(1) alcatel(637) asd(61)
+--                             asam(1)}
+
+-- ==========================================================================
+-- Object definitions
+-- ==========================================================================
+
+ipoaL2Forward		OBJECT IDENTIFIER ::= { asam 59 }
+
+-- ===========================================================================
+-- The configuration table for the interworking layer port of an IPoA cross connect
+-- ===========================================================================
+
+        ipoaL2InterworkingPortTable	OBJECT-TYPE
+                SYNTAX	SEQUENCE OF IpoaL2InterworkingPortEntry
+                ACCESS	not-accessible
+                STATUS	mandatory
+                DESCRIPTION
+                        "A table containing configuration information 
+                         for each IPoA interworking layer port. 
+
+                         ALCATEL NOTE:
+                              TABLESIZE: DEP (compliant to PVC number)
+                              DESCR:     NA
+                        "
+                ::= { ipoaL2Forward 1 }
+
+        ipoaL2InterworkingPortEntry OBJECT-TYPE
+                SYNTAX	IpoaL2InterworkingPortEntry
+                ACCESS	not-accessible
+                STATUS	mandatory
+                DESCRIPTION
+                        "An entry in the ipoaL2InterworkingPortTable.
+
+                         Row creation: an entry is created by operator.
+                         Row deletion: an entry is deleted by operator.
+                         Index usage: the index is ifIndex.
+                         Note that entries will be presented to the SNMP 
+                         manager in full lexicographical order: sorted 
+                         on ifIndex.
+                        "
+                INDEX	{ ifIndex }
+                ::= { ipoaL2InterworkingPortTable 1 }
+
+        IpoaL2InterworkingPortEntry ::=
+                SEQUENCE   { 
+                                ipoaL2IpAddrType
+                                        InetAddressType,
+                                ipoaL2IpAddressPolicy
+                                        INTEGER,
+                                ipoaL2IpEdgeAddress
+                                        InetAddress,
+                                ipoaL2CpeAddress
+                                        InetAddress,
+                                ipoaL2RowStatus
+                                        RowStatus,
+                                ipoaL2OperStatus 
+                                        INTEGER,
+                                ipoaL2DownReason 
+                                        INTEGER,
+                                ipoaL2SrcMacAddress 
+                                        MacAddress,
+                                ipoaL2ErMacAddress
+                                        MacAddress
+}
+
+        ipoaL2IpAddrType OBJECT-TYPE
+                SYNTAX	InetAddressType
+                ACCESS	read-write
+                STATUS	mandatory
+                DESCRIPTION
+                        "The address type.
+
+                         ALCATEL NOTE:
+                              ACCESS:   NA
+                              USAGE:    OPT
+                              PERSIST:  NO
+                              INSRVMOD: NO
+                              RANGE:    1 (only Ipv4)
+                              DEFVALUE: 1 (only Ipv4)
+                              UNITS:    NA
+                              SPARSE:   NO
+                              DESCR:    NA
+                        "
+                ::= { ipoaL2InterworkingPortEntry 1 }
+
+        ipoaL2IpAddressPolicy OBJECT-TYPE
+                SYNTAX  INTEGER {
+                                 static (1),
+                                 dynamic (2)
+                                }
+                ACCESS	read-write
+                STATUS	mandatory
+                DESCRIPTION
+                        "The IP address policy of the IPoA users, 
+                         indicating how to learn the IP edge and 
+                         CPE IP address.
+                         static:     
+			     IP edge address must be configured on IWL or network vlan. 
+                             CPE address can be configured via ipoaL2CpeAddress. 
+			     If it is not configured,it is assumed that the CPE is in
+                             the same /30 subnet as the IP edge address configured on IWL, 
+			     thus the CPE address is deduced from the configured IP edge address on IWL,
+			     if IP edge address not configured on IWL,CPE address is default value 0.0.0.0.                              
+                         dynamic:
+                              Neither IP edge address nor CPE address 
+                              must be configured. Both of them are 
+                              learnt by snooping DHCP message. But 
+                              in case one of them or both of them 
+                              are configured, we will use the 
+                              configured values.
+
+                         ALCATEL NOTE:
+                              ACCESS:   NA
+                              USAGE:    OPT
+                              PERSIST:  YES
+                              INSRVMOD: NO 
+                              RANGE:    1 (only static)
+                              DEFVALUE: 1 (only static)
+                              UNITS:    NA
+                              SPARSE:   NO
+                              DESCR:    NA
+                        "
+                ::= { ipoaL2InterworkingPortEntry 2 }
+
+        ipoaL2IpEdgeAddress OBJECT-TYPE
+                SYNTAX	InetAddress
+                ACCESS	read-write
+                STATUS	mandatory
+                DESCRIPTION
+                        "The address of IP edge for the IPoA user.
+
+                         ALCATEL NOTE:
+                              ACCESS:   NA
+                              USAGE:    OPT
+                              PERSIST:  YES
+                              INSRVMOD: YES
+                              RANGE:    NA
+                              DEFVALUE: 0.0.0.0
+                              UNITS:    NA
+                              SPARSE:   NO
+                              DESCR:    NA
+                        "
+                ::= { ipoaL2InterworkingPortEntry 3 }
+
+        ipoaL2CpeAddress OBJECT-TYPE
+                SYNTAX	InetAddress
+                ACCESS	read-write
+                STATUS	mandatory
+                DESCRIPTION
+                        "The address of one CPE for the IPoA user.
+                         It is used in upstream as sender IP 
+                         address of the ARP Request message.
+
+                         ALCATEL NOTE:
+                              ACCESS:   NA
+                              USAGE:    OPT
+                              PERSIST:  YES
+                              INSRVMOD: YES
+                              RANGE:    NA
+                              DEFVALUE: 0.0.0.0
+                              UNITS:    NA
+                              SPARSE:   NO
+                              DESCR:    NA
+                        "
+                ::= { ipoaL2InterworkingPortEntry 4 }
+
+        ipoaL2RowStatus OBJECT-TYPE
+                SYNTAX	RowStatus
+                ACCESS	read-write
+                STATUS	mandatory
+                DESCRIPTION
+                        "The status of this conceptual row.
+                         The RowStatus TC requires that this 
+                         DESCRIPTION clause states under which 
+                         circumstances other objects in this row
+                         can be modified.  The value of this 
+                         object has no effect on whether other 
+                         objects in this conceptual row can be
+                         modified.
+                         A conceptual row can always be made active.
+
+                         ALCATEL NOTE:
+                              ACCESS:   NA
+                              USAGE:    MAND
+                              PERSIST:  NO
+                              INSRVMOD: NO
+                              RANGE:    1 | 4 | 6	-- active (1), createAndGo (4), destroy (6)
+                              DEFVALUE: NA
+                              UNITS:    NA
+                              SPARSE:   NO
+                              DESCR:    NA
+                        "
+                ::= { ipoaL2InterworkingPortEntry 5 }
+
+
+      ipoaL2OperStatus OBJECT-TYPE
+	        SYNTAX	INTEGER {
+				up (1),
+				down (2)				
+				}
+		ACCESS	read-only
+		STATUS	mandatory
+		DESCRIPTION
+			"The operational status of the IWL.			
+                         The status will be up only when the data plane is fully ready for forwarding 
+			 (e.g. The network vlan attached and GW MAC address is resolved),otherwise always down.		
+
+                       ALCATEL NOTE:
+                       SUPPORT:  	YES
+                       PERSIST:  	NO
+                       INSRVMOD: 	NO 
+                       RANGE:	up(1), down(2)  
+                       DEFVALUE: 	NA
+                       UNITS:	NA
+   		     "
+		::= { ipoaL2InterworkingPortEntry 6 }
+
+     ipoaL2DownReason OBJECT-TYPE
+	       SYNTAX	INTEGER {
+				noError(1),
+				networkVlanNotAttached(2),
+                                gatewayNotConfigured(3),
+                                gatewayMacAddrNotResolved(4),
+				interfaceDown(5) 
+				}
+	       ACCESS	read-only
+	       STATUS	mandatory
+	       DESCRIPTION
+			"Indicating the down reason of IWL.			
+                         networkVlanNotAttached:   If IWL port not attached to network vlan
+			 gatewayNotConfigured:     The gateway ip address not configured
+                         gatewayMacAddrNotResolved:Don't receive the arp reply for gateway,or arp refresh  failure.      
+                         interfaceDown:         If the operational status of corresponding interface is down.
+                         ALCATEL NOTE:
+                         SUPPORT:  	YES
+                         PERSIST:  	NO
+                         INSRVMOD: 	NO 
+                         RANGE:	noError (1), networkVlanNotAttached(2),gatewayNotConfigured(3),gatewayMacAddrNotResolved(4),interfaceDown(5)
+                         DEFVALUE: NA
+                         UNITS:	NA
+   		     "
+		::= { ipoaL2InterworkingPortEntry 7 }
+
+    ipoaL2SrcMacAddress OBJECT-TYPE
+	     SYNTAX	MacAddress
+	     ACCESS	read-only
+	     STATUS	mandatory
+	     DESCRIPTION
+		    "  source MAC allocated for IWL user.
+
+                        ALCATEL NOTE:
+                        SUPPORT:  	YES
+                        PERSIST:  	NO
+                        INSRVMOD: 	NO 
+                        RANGE:	NA
+                        DEFVALUE: 	NA
+                        UNITS:	NA
+   		     "
+		::= { ipoaL2InterworkingPortEntry 8 }
+
+    ipoaL2ErMacAddress OBJECT-TYPE
+	    SYNTAX	MacAddress
+	    ACCESS	read-only
+	    STATUS	mandatory
+	    DESCRIPTION
+		   " Edger router MAC resloved for IWL user.
+
+                   ALCATEL NOTE:
+                   SUPPORT:  	YES
+                   PERSIST:  	NO
+                   INSRVMOD: 	NO 
+                   RANGE:	NA
+                   DEFVALUE: 	NA
+                   UNITS:	NA
+   		     "
+		::= { ipoaL2InterworkingPortEntry 9 }
+
+-- ==================================================================================
+-- A new configuration table added allows operator to specify the gateway IP per VLAN
+-- ==================================================================================
+   ipoaL2GwVlanTable OBJECT-TYPE
+	   SYNTAX	SEQUENCE OF IpoaL2GwVlanEntry
+	   ACCESS	not-accessible
+    	   STATUS	mandatory
+	   DESCRIPTION
+			"A table containing gateway Ip address for each vlan. "
+		::= { ipoaL2Forward 2 }
+
+   ipoaL2GwVlanEntry OBJECT-TYPE
+	  SYNTAX	IpoaL2GwVlanEntry
+	  ACCESS	not-accessible
+	  STATUS	mandatory
+	  DESCRIPTION
+		"An entry in the ipoaL2GwVlanTable."
+	  INDEX	{dot1qVlanIndex}
+		::= { ipoaL2GwVlanTable 1 }
+
+   IpoaL2GwVlanEntry ::=
+	 SEQUENCE	{ 
+			        ipoaL2GwVlanIpAddrType
+					InetAddressType,				
+				ipoaL2GwVlanIpEdgeAddress
+					InetAddress,			
+				ipoaL2GwVlanRowStatus
+					RowStatus            
+			}
+
+   ipoaL2GwVlanIpAddrType OBJECT-TYPE
+	SYNTAX	InetAddressType
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"The IP address type.
+                 ALCATEL NOTE:
+                 SUPPORT:  	YES
+                 PERSIST:  	NO
+                 INSRVMOD: 	NO 
+                 RANGE:	1  -- only Ipv4
+                 DEFVALUE: 	1 -- only Ipv4
+                 UNITS:	NA
+   		     "
+	 ::= { ipoaL2GwVlanEntry 1 }
+
+   ipoaL2GwVlanIpEdgeAddress OBJECT-TYPE
+	SYNTAX	InetAddress
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"The address of IP edge for the IPoA user.
+
+                ALCATEL NOTE:
+                SUPPORT:  	YES
+                PERSIST:  	YES
+                INSRVMOD: 	NO 
+                RANGE:	NA
+                DEFVALUE: 	NA
+                UNITS:	NA
+   		     "
+	::= { ipoaL2GwVlanEntry 2 }
+
+   ipoaL2GwVlanRowStatus OBJECT-TYPE
+	SYNTAX	RowStatus
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		" The status of this conceptual row.
+                  The RowStatus TC requires that this DESCRIPTION clause
+                  states under which circumstances other objects in this row
+                  can be modified.  The value of this object has no effect on
+                  whether other objects in this conceptual row can be modified.
+                  A conceptual row can always be made active.
+
+                  ALCATEL NOTE:
+                  SUPPORT:  	YES
+                  PERSIST:  	NO
+                  INSRVMOD: 	NA
+                  RANGE:	1 | 4 | 6	-- active (1), createAndGo (4), destroy (6)
+                  DEFVALUE: 	NA
+                  UNITS:	NA
+         "
+	::= { ipoaL2GwVlanEntry 3 }
+END

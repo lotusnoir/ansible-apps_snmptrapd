@@ -1,0 +1,296 @@
+WECU-MIB DEFINITIONS ::= BEGIN
+
+-- ==========================================================================
+--                         IMPORTANT WARNING
+--                         =================
+--
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Copying, or dissemination of information contained herein to parties
+--  not covered under Alcatel NDAs is strictly prohibited.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  (c) Copyright 2006 Alcatel. All Rights Reserved.
+--
+-- ==========================================================================
+-- 
+--  HISTORY
+--  Date: 03-03-2009: Version: 3FEXXXX27923AAAA_V4.1.X.0.0
+--  Editor: Liu Jie A
+--  ==
+-- ==========================================================================
+-- 
+
+   IMPORTS
+           OBJECT-TYPE
+ 			       FROM RFC-1212
+           RowStatus, TruthValue, DisplayString
+      			       FROM SNMPv2-TC
+   	   Counter, enterprises, TimeTicks
+       			       FROM RFC1155-SMI
+    	   ifIndex
+        		       FROM ITF-MIB
+    	   asam
+        	               FROM SYSTEM-MIB;
+
+--  WECUMIB MODULE-IDENTITY
+--
+--     LAST-UPDATED 03-03-2009
+--
+--     ORGANIZATION "Alcatel Telecom"
+--
+--
+--     DESCRIPTION
+--        "This MIB module defines MIB objects for managing wetting current
+--         facilities in the ISAM."
+--         ==
+--     ::= { asam 66 }
+
+
+
+
+
+    wecuMIB OBJECT IDENTIFIER ::= { asam 66 }
+
+-- Groups in WECUMIB
+
+    WettingCurrentConfig ::= INTEGER {
+		enabled(1),
+		disabled(2)
+    }
+
+    WettingCurrentState ::= INTEGER {
+		enabled(1),
+		disabled(2)
+    }
+
+
+ 
+-- wetting Current Table
+
+
+    wettingCurrentTable OBJECT-TYPE
+       SYNTAX  SEQUENCE OF WettingCurrentEntry
+       ACCESS  not-accessible
+       STATUS  mandatory
+       DESCRIPTION
+          "This table supports configuration of wetting current per line."         
+       ::= { wecuMIB 1 }
+
+    wettingCurrentEntry OBJECT-TYPE
+       SYNTAX  WettingCurrentEntry
+       ACCESS  not-accessible
+       STATUS  mandatory
+       DESCRIPTION
+          "An entry in this table corresponds the wetting current
+           configuration and state of a line. This table only suitable for
+           the DSL physical line. 
+           The entry is indexed by the ifIndex."
+        
+       INDEX   { ifIndex }
+       ::= { wettingCurrentTable 1 }
+
+
+    WettingCurrentEntry ::= SEQUENCE {
+       wettingCurrentConfig              WettingCurrentConfig,
+       wettingCurrentState               WettingCurrentState,
+       wettingCurrentPulseDuration	  INTEGER,
+--     wettingCurrentPulseFrequency      INTEGER,
+       wettingCurrentPulseAmplitude      INTEGER,
+--     wettingCurrentForced              INTEGER,
+       wettingCurrentResult              INTEGER,
+       wettingCurrentPulseInterval       INTEGER
+    }
+
+ 
+    wettingCurrentConfig OBJECT-TYPE
+       SYNTAX  WettingCurrentConfig
+       ACCESS  read-write
+       STATUS  mandatory
+       DESCRIPTION
+          "This object configures wetting current on a line. 
+           ALCATEL NOTE:
+              SUPPORT: YES   INSRVMOD: NA   	RANGE: [1,2]
+              PERSIST: YES   DEFVALUE: 2 	UNITS: -"
+       ::= { wettingCurrentEntry 1 }
+
+
+    wettingCurrentState OBJECT-TYPE
+       SYNTAX  WettingCurrentState
+       ACCESS  read-only
+       STATUS  mandatory
+       DESCRIPTION 
+          "This object provides the state of the wetting current on a  line. 
+           ALCATEL NOTE:
+              SUPPORT: YES   INSRVMOD: NA 	RANGE: [1,2]
+              PERSIST: NO    DEFVALUE: 2	UNITS: -"
+       ::= { wettingCurrentEntry 2 }
+ 
+    wettingCurrentPulseDuration OBJECT-TYPE
+       SYNTAX  INTEGER (-1|22..250)
+       ACCESS  read-write
+       STATUS  mandatory
+       DESCRIPTION 
+       	  "This object provides the duration of the pulse in 0.1 second. Valid            values are nonnegative integer and -1. If set to -1, the value                 wettingCurrentDefaultPulseDuration is taken by the system.
+           For any other value, badvalue will be returned.
+           ALCATEL NOTE:
+              SUPPORT: YES   INSRVMOD: YES   	RANGE: [22..250] and -1
+              PERSIST: YES   DEFVALUE: -1      	UNITS: 0.1s"
+       ::= { wettingCurrentEntry 3 }
+ 
+-- wettingCurrentPulseFrequency OBJECT-TYPE
+--    SYNTAX  INTEGER (-1|1..24)
+--    ACCESS  read-write
+--    STATUS  mandatory
+--    DESCRIPTION 
+--       "This object provides the frequency of the pulse in # 
+--        times/day. Valid values are [1..24] and -1. If set to -1, 
+--        the value wettingCurrentDefaultPulseFrequency is taken by
+--        the system. For any other value, badvalue will be returned.
+--
+--        ALCATEL NOTE:
+--           SUPPORT: YES   INSRVMOD: YES   	RANGE: [1..24] and -1
+--           PERSIST: YES   DEFVALUE: -1      	UNITS: #times/day "
+--           ACCESS:  NA
+--    ::= { wettingCurrentEntry 4 }
+-- wettingCurrentForced OBJECT-TYPE
+--    SYNTAX  INTEGER
+--   		{
+--			cleared(0),
+--			enabled(1)
+--		}
+--    ACCESS  read-write
+--    STATUS  mandatory
+--    DESCRIPTION 
+--       "This object will force wetting current on the line.
+--     	  If this object is set to cleared(0), the Response will be BadValue.
+--        ALCATEL NOTE:
+--           SUPPORT: YES   INSRVMOD: NA  	RANGE: [0,1]
+--           PERSIST: NO    DEFVALUE: 0		UNITS: -"
+--    ::= { wettingCurrentEntry 5 }
+
+   wettingCurrentResult OBJECT-TYPE
+      SYNTAX  INTEGER 
+    		{
+			fail(0),
+			success(1),
+			pending(2)
+		}
+      ACCESS  read-only
+      STATUS  mandatory
+      DESCRIPTION 
+         "Stores the result of the last attempt to put wetting current on the 
+          line.
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   	RANGE: [0,1]
+             PERSIST: NO    DEFVALUE:1		UNITS: -"
+      ::= { wettingCurrentEntry 6 }
+
+
+    wettingCurrentPulseAmplitude   OBJECT-TYPE
+       SYNTAX                  INTEGER (-1|1..20)
+       ACCESS                  read-write
+       STATUS                  mandatory
+       DESCRIPTION 
+          "This object indicates the amplitude of the wetting current applied 
+           to the physical Line.
+
+           ALCATEL NOTE: 
+              SUPPORT: YES   INSRVMOD:YES  	RANGE: -1|[1..20]
+              PERSIST: YES   DEFVALUE: -1	UNITS: 0.1mA"
+       ::= { wettingCurrentEntry 7 }
+
+    wettingCurrentPulseInterval   OBJECT-TYPE
+       SYNTAX                  INTEGER (-1|1..24)
+       ACCESS                  read-write
+       STATUS                  mandatory
+       DESCRIPTION 
+          "This object indicates the time interval of the wetting current                 applied to the physical Line.
+
+           ALCATEL NOTE: 
+              SUPPORT: YES   INSRVMOD:YES  	RANGE: -1|[1..24]
+              PERSIST: YES   DEFVALUE: -1	UNITS: 1hour"
+       ::= { wettingCurrentEntry 8 }
+
+
+-- wetting Current System level configuration
+
+
+   wettingCurrentDefaultPulseDuration OBJECT-TYPE
+      SYNTAX  INTEGER (22..250)
+      ACCESS  read-write
+      STATUS  mandatory
+      DESCRIPTION 
+         "This object provides the default duration of the pulse in seconds.             If wettingCurrentPulseDuration is set to -1,                                   the wettingCurrentDefaultPulseDuration is taken.
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   	RANGE: [22..250]
+             PERSIST: YES   DEFVALUE: 40	UNITS: 0.1second"
+         
+      ::= { wecuMIB 2 }
+
+
+-- wettingCurrentDefaultPulseFrequency OBJECT-TYPE
+--    SYNTAX  INTEGER (1..24)
+--    ACCESS  read-write
+--    STATUS  mandatory
+--    DESCRIPTION 
+--	 "This object provides the default frequency of the pulse
+--        in #times/day. If wettingCurrentPulseFrequency is set to
+--        -1, the wettingCurrentDefaultPulseFrequency is taken.
+--
+--        ALCATEL NOTE: 
+--           SUPPORT: YES   INSRVMOD: YES   	RANGE: [1..24]
+--           PERSIST: NO    DEFVALUE: 4		UNITS: 1#times/day "
+--         
+--    ::= { wecuMIB 3 }
+
+   wettingCurrentDefaultPulseAmplitude  OBJECT-TYPE
+      SYNTAX                  INTEGER (1..20)
+      ACCESS                  read-write
+      STATUS                  mandatory
+      DESCRIPTION 
+         "This object provides the default amplitude of the wetting current in           mA.If the wettingCurrentPulseAmplitude is set to -1, the
+          wettingCurrentDefaultPulseAmplitudeis taken.
+
+          ALCATEL NOTE: 
+             SUPPORT: YES   INSRVMOD: YES       RANGE: [1..20]
+             PERSIST: YES   DEFVALUE: 10	UNITS: 0.1mA"
+      ::= { wecuMIB 4 }
+
+   wettingCurrentDefaultPulseInterval   OBJECT-TYPE
+      SYNTAX                  INTEGER (1..24)
+      ACCESS                  read-write
+      STATUS                  mandatory
+      DESCRIPTION 
+         "This object provides the default time interval of the wetting current          in hours. If the wettingCurrentPulseInterval is set to -1, the
+          wettingCurrentDefaultPulseInterval is taken.
+
+          ALCATEL NOTE: 
+             SUPPORT: YES   INSRVMOD: YES   		RANGE: [1..24]
+             PERSIST: YES	   DEFVALUE: 6			UNITS: 1hour"
+      ::= { wecuMIB 5 }
+
+END

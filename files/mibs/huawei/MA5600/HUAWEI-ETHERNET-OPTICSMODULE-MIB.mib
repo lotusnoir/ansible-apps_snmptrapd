@@ -1,0 +1,2090 @@
+	HUAWEI-ETHERNET-OPTICSMODULE-MIB DEFINITIONS ::= BEGIN
+
+		IMPORTS 
+			huaweiMgmt			
+				FROM HUAWEI-MIB			
+			ifIndex, InterfaceIndex
+				FROM IF-MIB					
+			TimeTicks,OBJECT-TYPE
+				FROM SNMPv2-SMI			
+			TruthValue, MacAddress, RowStatus, TEXTUAL-CONVENTION
+				FROM SNMPv2-TC;
+
+		hwEthernet MODULE-IDENTITY
+			LAST-UPDATED "200207080900Z"
+			ORGANIZATION
+				"HAUWEI MIB Standard community
+				固网MIB标准化委员会 "
+			CONTACT-INFO
+				"
+				联系地址：中国广东深圳，华为技术有限公司
+				"
+			DESCRIPTION
+				"V01_01_200207080900	
+				评审专家：zengyonggang 26094/huawei, daiyuehua 20365/huawei, tongjian 28021/huawei, yuanminghui 31133/huawei, 
+					   qizhenglin 27958/huawei, liwei 24366/huawei, zhoushiyong 10726/huawei lichangcai 28618/huawei, 
+					   hebo 16103/huawei, xujinsong 19085/huawei, lvzhenfeng 18230/huawei, fuhongxun 29027/huawei, 
+					   dongqing 18889/huawei,lijin 22251/huawei, zhangshilin 28161/huawei, heqingjian 9730/huawei, 
+				          liuchenglong 25279/huawei			
+			        "
+			::= { huaweiMgmt 14 }
+		
+	
+			PortList ::= TEXTUAL-CONVENTION
+  				STATUS      current
+    				DESCRIPTION
+  				"Each octet within this value specifies a set of eight
+ 				       ports, with the first octet specifying ports 1 through
+				       8, the second octet specifying ports 9 through 16, etc.
+				        Within each octet, the most significant bit represents
+ 				       the lowest numbered port, and the least significant bit
+ 				       represents the highest numbered port.  Thus, each port
+ 				       of the bridge is represented by a single bit within the
+				        value of this object.  If that bit has a value of '1'
+				        then that port is included in the set of ports; the port
+				        is not included if its bit has a value of '0'."
+ 			      SYNTAX      OCTET STRING
+
+                hwOpticsModuleInformation OBJECT IDENTIFIER ::= { hwEthernet 6 }
+			
+		hwOpticsModuleInformationTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwOpticsModuleInformationEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"   "
+			::= { hwOpticsModuleInformation 1 }
+			
+		hwOpticsModuleInformationEntry OBJECT-TYPE
+			SYNTAX HwOpticsModuleInformationEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"    "
+			INDEX { ifIndex }
+			::= { hwOpticsModuleInformationTable 1 }
+			
+                HwOpticsModuleInformationEntry ::=
+			SEQUENCE { 
+				hwOpticsMDIdentifier
+					INTEGER,
+				hwOpticsMDExtID
+					INTEGER,
+				hwOpticsMDConnector
+					INTEGER,
+				hwOpticsMDEncoding
+					INTEGER,
+				hwOpticsMDBrNominal
+					INTEGER,
+				hwOpticsMDLength9Micronkm
+					INTEGER,
+				hwOpticsMDLength9Micron
+					INTEGER,
+				hwOpticsMDLength50Micron
+					INTEGER,
+				hwOpticsMDLength62Micron5
+					INTEGER,
+				hwOpticsMDLengthCopper
+					INTEGER,
+				hwOpticsMDVendorName
+					OCTET STRING,
+				hwOpticsMDVendorOUI
+					INTEGER,
+				hwOpticsMDVendorPN
+					OCTET STRING,
+			    hwOpticsMDVendorRev
+					OCTET STRING,
+		        hwOpticsMDWaveLength
+					INTEGER,
+			    hwOpticsMDCcBase
+					INTEGER,
+			    hwOpticsMDOptions
+					INTEGER,
+				hwOpticsMDBrMax
+					INTEGER,
+				hwOpticsMDBrMin
+					INTEGER,
+				hwOpticsMDVendorSN
+					OCTET STRING,
+				hwOpticsMDDateCode
+					OCTET STRING,
+				hwOpticsMDDiagnosticMonitoringType
+					INTEGER,
+				hwOpticsMDEnhancedOptions
+					INTEGER,
+				hwOpticsMDSFF8472Compliance
+					INTEGER,
+				hwOpticsMDCcExt
+					INTEGER,
+				hwOpticsMDVendorSpecific
+					OCTET STRING
+			 }
+		
+		hwOpticsMDIdentifier OBJECT-TYPE        
+			SYNTAX INTEGER
+				{
+				Unknown(1),
+				GBIC(2),
+				SolderedToMotherboard(3),
+				SFP(4)
+				}			          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" solderedToMotherboard(3):Module/connector soldered to motherboard "     
+			::= { hwOpticsModuleInformationEntry 1 }
+			
+		hwOpticsMDExtID OBJECT-TYPE        
+			SYNTAX INTEGER
+				{
+				NotSpecifiedOrNotCompliant(1),
+				MODDEF1(2),
+				MODDEF2(3),
+				MODDEF3(4),
+				BySerialIDOnly(5),
+				MODDEF5(6),
+				MODDEF6(7),
+				MODDEF7(8)
+				}			          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 1 Not specified or not compliant with a defined
+                                  MOD_DEF. 
+                                  2 GBIC is compliant with MOD_DEF 1
+                                  3 GBIC is compliant with MOD_DEF 2
+                                  4 GBIC is compliant with MOD_DEF 3
+                                  5 GBIC/SFP function is defined by serial ID only
+                                  6 GBIC is compliant with MOD_DEF 5
+                                  7 GBIC is compliant with MOD_DEF 6
+                                  8 GBIC is compliant with MOD_DEF 7
+				 "                   
+			::= { hwOpticsModuleInformationEntry 2 }
+		
+		hwOpticsMDConnector OBJECT-TYPE        
+			SYNTAX INTEGER
+				{
+				Unknown(1),
+				SC(2),
+				CopperConnector1(3),
+				CopperConnector2(4),
+                                BNCTNC(5),
+                                CoaxialHeaders(6),
+                                FiberJack(7),
+                                LC(8),
+                                MTRJ(9),
+                                MU(10),
+                                SG(11),
+                                OpticalPigtail(12),
+                                HSSDCII(13),
+                                CopperPigtail(14),
+                                VendorSpecific(15)
+				}			          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 				
+				1   Unknown
+				2   SC
+				3   Fibre Channel Style 1 copper connector
+				4   Fibre Channel Style 2 copper connector
+                                5   BNC/TNC
+                                6   Fibre Channel coaxial headers
+                                7   FiberJack
+                                8   LC
+                                9   MT-RJ
+                                10   MU
+                                11   SG
+                                12   Optical pigtail
+                                13   HSSDC II
+                                14   Copper Pigtail
+                                15   Vendor specific
+				 "    
+			::= { hwOpticsModuleInformationEntry 3 }
+
+		hwOpticsMDEncoding OBJECT-TYPE        
+			SYNTAX INTEGER
+				{
+				Unspecified(1),
+				EncodingMethod8B10B(2),
+				EncodingMethod4B5B(3),
+				NRZ(4),
+				Manchester(5),
+				SONETScrambled(6)
+				}			          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 	 "           
+			::= { hwOpticsModuleInformationEntry 4 }
+			
+		hwOpticsMDBrNominal OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Nominal bit rate, units of 100 MBits/sec."                   
+			::= { hwOpticsModuleInformationEntry 5 }
+			
+		hwOpticsMDLength9Micronkm OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Link length supported for 9/125 μm fiber, units of km."                   
+			::= { hwOpticsModuleInformationEntry 6 }
+			
+		hwOpticsMDLength9Micron OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Link length supported for 9/125 μm fiber, units of 100 m."                   
+			::= { hwOpticsModuleInformationEntry 7 }
+			
+		hwOpticsMDLength50Micron OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Link length supported for 50/125 μm fiber, units of 10 m."                   
+			::= { hwOpticsModuleInformationEntry 8 }
+			
+		hwOpticsMDLength62Micron5 OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Link length supported for 62.5/125 μm fiber, units of 10 m."                   
+			::= { hwOpticsModuleInformationEntry 9 }
+			
+		hwOpticsMDLengthCopper OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Link length supported for copper, units of meters."                   
+			::= { hwOpticsModuleInformationEntry 10 }
+			
+		hwOpticsMDVendorName OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..17))							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" SFP vendor name (ASCII)."                   
+			::= { hwOpticsModuleInformationEntry 11 }
+			
+		hwOpticsMDVendorOUI OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" SFP vendor IEEE company ID."                   
+			::= { hwOpticsModuleInformationEntry 12 }
+			
+		hwOpticsMDVendorPN OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..17))							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Part number provided by SFP vendor (ASCII)."                   
+			::= { hwOpticsModuleInformationEntry 13 }
+			
+		hwOpticsMDVendorRev OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..5))							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Revision level for part number provided by vendor (ASCII)."  
+			::= { hwOpticsModuleInformationEntry 14 }
+			
+		hwOpticsMDWaveLength OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Laser wavelength."                   
+			::= { hwOpticsModuleInformationEntry 15 }
+			
+		hwOpticsMDCcBase OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Check code for Base ID Fields (one byte)."                   
+			::= { hwOpticsModuleInformationEntry 16 }
+			
+		hwOpticsMDOptions OBJECT-TYPE        
+			SYNTAX INTEGER
+				{
+                                RateSelect(1),
+                                TXDisableAndTheSerialOutputDisabled(2),
+                                TXFault(3),
+                                SignalLossAndInvertedFromStandard(4),
+                                SignalLossAndAsDefined(5)
+				}						          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"                                
+				1 RATE_SELECT is implemented
+                                2 TX_DISABLE is implemented and disables the serial output.
+                                3 TX_FAULT signal implemented. 
+                                4 Loss of Signal implemented, signal inverted from standard
+                                definition in SFP MSA.
+                                5 Loss of Signal implemented, signal as defined in SFP MSA 
+				"        
+			::= { hwOpticsModuleInformationEntry 17 }
+	        
+		hwOpticsMDBrMax OBJECT-TYPE        
+			SYNTAX INTEGER
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Upper bit rate margin, units of % "                   
+			::= { hwOpticsModuleInformationEntry 18 }
+			
+		hwOpticsMDBrMin OBJECT-TYPE        
+			SYNTAX INTEGER
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"  Lower bit rate margin, units of % "                   
+			::= { hwOpticsModuleInformationEntry 19 }
+			
+		hwOpticsMDVendorSN OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..17))
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"  Serial number provided by vendor (ASCII) "                   
+			::= { hwOpticsModuleInformationEntry 20 }
+			
+		hwOpticsMDDateCode OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..9))
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"  Serial number provided by vendor (ASCII) "                   
+			::= { hwOpticsModuleInformationEntry 21 }
+			
+		hwOpticsMDDiagnosticMonitoringType OBJECT-TYPE        
+			SYNTAX INTEGER
+				{
+                                InternallyCalibrated(1),
+                                ExternallyCalibrated(2)
+                                }
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 
+				 "     
+			::= { hwOpticsModuleInformationEntry 22 }
+			
+		hwOpticsMDEnhancedOptions OBJECT-TYPE        
+			SYNTAX INTEGER
+				{
+                                ForAllMonitoredQuantities(1), 
+                                TX_DISABLE(2),
+                                TX_FAULT(3),
+                                RX_LOS(4),
+                                RATE_SELECT(5)
+                                }
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				1 Optional Alarm/warning flags implemented for
+                                all monitored quantities 
+                                2 Optional Soft TX_DISABLE control and
+                                monitoring implemented
+                                3 Optional Soft TX_FAULT monitoring
+                                implemented
+                                4 Optional Soft RX_LOS monitoring
+                                implemented
+                                5 Optional Soft RATE_SELECT control and
+                                monitoring implemented
+				  "      
+			::= { hwOpticsModuleInformationEntry 23 }
+			
+		hwOpticsMDSFF8472Compliance OBJECT-TYPE        
+			SYNTAX INTEGER
+				{
+                                undefined(1), 
+                                IncludesSFF8472(2),
+                                TBD(3)
+                                }
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				1 Not included or undefined.
+                                2 ncludes functionality described in Rev 9.3 SFF-8472.
+                                3 To Be Determined.
+                                	  "
+			::= { hwOpticsModuleInformationEntry 24 }
+			
+		hwOpticsMDCcExt OBJECT-TYPE        
+			SYNTAX INTEGER
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				Check code for the Extended ID Fields (one byte).
+                                	  "
+			::= { hwOpticsModuleInformationEntry 25 }
+			
+		hwOpticsMDVendorSpecific OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..96))
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				32 bytes.
+                                	  "
+			::= { hwOpticsModuleInformationEntry 26 }
+
+		hwOpticsModuleTransceiverTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwOpticsModuleTransceiverEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"   "
+			::= { hwOpticsModuleInformation 2 }
+		
+		hwOpticsModuleTransceiverEntry OBJECT-TYPE
+			SYNTAX HwOpticsModuleTransceiverEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"    "
+			INDEX { ifIndex }
+			::= { hwOpticsModuleTransceiverTable 1 }
+		
+                HwOpticsModuleTransceiverEntry ::=
+			SEQUENCE { 
+				hwOpticsMDInfinibandComplianceCodes
+					INTEGER,
+				hwOpticsMDSONETcomplianceCodes
+					INTEGER,
+				hwOpticsMDGEComplianceCodes
+					INTEGER,
+				hwOpticsMDLinkLength
+					INTEGER,
+				hwOpticsMDTransmitterTechnology
+					INTEGER,
+				hwOpticsMDTransmissionMedia
+					INTEGER,
+				hwOpticsMDSpeed
+					INTEGER
+			 }
+
+		hwOpticsMDInfinibandComplianceCodes OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				SX(1),
+				LX(2),
+				CopperActive(3),
+				CopperPassive(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				1.1XSX
+				2.1XLX
+				3.1XCopperActive
+				4.1XCopperPassive
+     
+				"
+			::= { hwOpticsModuleTransceiverEntry 1 }
+			
+		hwOpticsMDSONETcomplianceCodes OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				OC48LongReach(1),
+				OC48IntermediateReach(2),
+				OC48ShortReach(3),
+				OC12SingleModeLongReach(4),
+				OC12SingleModeIntermediateReach(5),
+				OC12MultiModeShortReach(6),
+				OC3SingleModeLongReach(7),
+				OC3SingleModeIntermediateReach(8),
+				OC3MultiModeShortReach(9)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"     "
+			::= { hwOpticsModuleTransceiverEntry 2 }
+			
+		hwOpticsMDGEComplianceCodes OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				T(1),
+				CX(2),
+				LX(3),
+				SX(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				1.1000BASE-T
+				2.1000BASE-CX
+				3.1000BASE-LX
+				4.1000BASE-SX
+				  "
+			::= { hwOpticsModuleTransceiverEntry 3 }
+			
+		hwOpticsMDLinkLength OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				VeryLongDistance(1),
+				ShortDistance(2),
+				IntermediateDistance(3),
+				LongDistance(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"     "
+			::= { hwOpticsModuleTransceiverEntry 4 }
+
+		hwOpticsMDTransmitterTechnology OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				longwaveLaser(1),
+				electricalInterenclosure(2),
+				shortwaveLaser(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"  
+				1.longwave laser
+				2.electrical inter-enclosure
+				3.shortwave laser 
+				   "
+			::= { hwOpticsModuleTransceiverEntry 5 }
+			
+		hwOpticsMDTransmissionMedia OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				TwinAxialPair(1),
+				ShieldedTwistedPair(2),
+				MiniatureCoax(3),
+				VideoCoax(4),
+				MultiMode62m5(5),
+				MultiMode50m(6),
+				SingleMode(7)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"    
+				1 twin axial pair 
+                                2 shielded twisted pair 
+                                3 miniature coax 
+                                4 video coax 
+                                5 multi-mode, 62.5m 
+                                6 multi-mode, 50 m 
+                                7 single mode 
+				 "
+			::= { hwOpticsModuleTransceiverEntry 6 }
+			
+		hwOpticsMDSpeed OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				Speed400MBytesPerSec(1),
+				Speed200MBytesPerSec(2),
+				Speed100MBytesPerSec(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"     "
+			::= { hwOpticsModuleTransceiverEntry 7 }     
+		
+		hw10GEOpticsModuleInformationTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF Hw10GEOpticsModuleInformationEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"   "
+			::= { hwOpticsModuleInformation 3 }
+		
+		hw10GEOpticsModuleInformationEntry OBJECT-TYPE
+			SYNTAX Hw10GEOpticsModuleInformationEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"    "
+			INDEX { ifIndex }
+			::= { hw10GEOpticsModuleInformationTable 1 }
+		
+                Hw10GEOpticsModuleInformationEntry ::=
+			SEQUENCE {  
+				hw10GEOpticsMDIdentifier
+					INTEGER,
+				hw10GEOpticsMDExtCLEICode
+					INTEGER,
+				hw10GEOpticsMDExtTXRefClock
+					INTEGER,
+				hw10GEOpticsMDExtCDRFunc
+					INTEGER,
+				hw10GEOpticsMDExtPowerLevel
+					INTEGER,
+				hw10GEOpticsMDConnector
+					INTEGER,					 
+				hw10GEOpticsMDEthComplianceBaseEW
+					INTEGER,  
+				hw10GEOpticsMDEthComplianceBaseLW
+					INTEGER,
+				hw10GEOpticsMDEthComplianceBaseSW
+					INTEGER,
+				hw10GEOpticsMDEthComplianceBaseLRM
+					INTEGER,
+				hw10GEOpticsMDEthComplianceBaseER
+					INTEGER,
+				hw10GEOpticsMDEthComplianceBaseLR
+					INTEGER,
+				hw10GEOpticsMDEthComplianceBaseSR
+					INTEGER,
+				hw10GEOpticsMDFibreCompliance
+					INTEGER, 
+				hw10GEOpticsMDLowerSpeedLink
+					INTEGER,	
+				hw10GEOpticsMDSONETSDHCodesI64point5
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesI64point3        	
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesI64point2	
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesI64point2r	
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesI64point1
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesI64point1r
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesS64point5b        
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesS64point5a        
+			        INTEGER,				        
+				hw10GEOpticsMDSONETSDHCodesS64point3b        
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesS64point3a        
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesS64point2b        
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesS64point2a
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesS64point1
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesG959P1L1
+			        INTEGER,
+                hw10GEOpticsMDSONETSDHCodesL64point3
+			        INTEGER,
+                hw10GEOpticsMDSONETSDHCodesL64point2c
+			        INTEGER,
+                hw10GEOpticsMDSONETSDHCodesL64point2b
+			        INTEGER,
+				hw10GEOpticsMDSONETSDHCodesL64point2a
+			        INTEGER,				
+				hw10GEOpticsMDSONETSDHCodesL64point1
+			        INTEGER,				
+				hw10GEOpticsMDSONETSDHCodesV64point3
+			        INTEGER,				
+				hw10GEOpticsMDSONETSDHCodesV64point2b
+			        INTEGER,				
+				hw10GEOpticsMDSONETSDHCodesV64point2a
+			        INTEGER,													
+				hw10GEOpticsMDEncodingRZ
+					INTEGER,
+				hw10GEOpticsMDEncodingNRZ
+					INTEGER,
+				hw10GEOpticsMDEncodingSONET
+					INTEGER,
+				hw10GEOpticsMDEncoding8B10B
+					INTEGER,
+				hw10GEOpticsMDEncoding64B
+					INTEGER, 					
+				hw10GEOpticsMDBrMin
+					INTEGER,   
+				hw10GEOpticsMDBrMax
+					INTEGER,
+				hw10GEOpticsMDSupportLenSMF
+					INTEGER,
+				hw10GEOpticsMDSupportLenE50um
+					INTEGER,
+				hw10GEOpticsMDSupportLen50um
+					INTEGER,
+				hw10GEOpticsMDSupportLen62p5um
+					INTEGER,
+				hw10GEOpticsMDSupportLenCopper
+					INTEGER, 
+				hw10GEOpticsMDTransmitterSupport
+					INTEGER, 
+				hw10GEOpticsMDDetector
+					INTEGER, 
+				hw10GEOpticsMDCooledTransmitterDevice
+ 					INTEGER, 
+				hw10GEOpticsMDWavelengthControl
+					INTEGER, 
+				hw10GEOpticsMDTransmitterTechnologySupport
+					INTEGER, 
+				hw10GEOpticsMDVendorName
+					OCTET STRING, 					
+				hw10GEOpticsMDSupportXFIMode
+					INTEGER,
+				hw10GEOpticsMDSupportLinesideMode
+					INTEGER,				 
+				hw10GEOpticsMDMaxBitRateSupportedByCDR
+					INTEGER, 
+				hw10GEOpticsMDVendorOUI
+					INTEGER,
+				hw10GEOpticsMDVendorPN 
+					OCTET STRING,
+				hw10GEOpticsMDVendorRev
+					OCTET STRING,
+				hw10GEOpticsMDWavelength
+					INTEGER,
+				hw10GEOpticsMDWaveTolerance
+					INTEGER,
+				hw10GEOpticsMDMaxCaseTemperature
+					INTEGER,
+				hw10GEOpticsMDMaxDissipation
+					INTEGER,
+				hw10GEOpticsMDCc_base 
+					INTEGER, 
+				hw10GEOpticsMDMaxDissipationPowerDownMode
+					INTEGER,  
+				hw10GEOpticsMDMaximum5P0VSupply
+  					INTEGER,  
+				hw10GEOpticsMDMaximum3P3VSupply
+					INTEGER,  
+				hw10GEOpticsMDMaximum1P8VSupply
+					INTEGER,  
+				hw10GEOpticsMDMaximum5P2VSupply
+					INTEGER,
+				hw10GEOpticsMDVendorSN 
+					OCTET STRING,
+				hw10GEOpticsMDDateCode
+					OCTET STRING,
+				hw10GEOpticsMDDiagnoMonitorPowerMeasure
+					INTEGER,
+				hw10GEOpticsMDDiagnoMonitorTypeFECBER
+					INTEGER,
+				hw10GEOpticsMDEnhancedOptions
+					INTEGER,
+				hw10GEOpticsMDAuxInputOne
+					INTEGER,
+				hw10GEOpticsMDAuxInputTwo
+					INTEGER, 
+				hw10GEOpticsMDCC_EXT
+					INTEGER,
+				hw10GEOpticsMDVendorSpecific
+					OCTET STRING			
+			 }   
+
+ 		hw10GEOpticsMDIdentifier OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					Unknown(0),
+					GBIC(1),
+					SolderedToMotherBoard(2),  
+					SFP(3),
+					Pin300XBI(4),
+					XENPAK(5),
+					XFP(6), 
+					XFF(7),
+					XFE-P(8), 
+					XPAK(9),
+					X2(10) 
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				1.SolderedToMotherBoard(2):Module/Connector is soldered to motherboard.
+				2.0Ah-7Fh:Reserved
+				3.80h-FFh:Vender specific		 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 1 }  
+ 
+		hw10GEOpticsMDExtCLEICode OBJECT-TYPE
+			SYNTAX INTEGER
+				{   
+					NonExtCLEICode(0),
+					ExtCLEICode(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" 
+				0.No CLEI code present in Table 02h	  
+				1.CLEI code present in Table 02h		 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 2 }  
+			
+		hw10GEOpticsMDExtTXRefClock OBJECT-TYPE
+			SYNTAX INTEGER
+				{    
+					NonExtTXRefClock(0),
+					ExtTXRefClock(1)
+									}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.TX Ref Clock Input Not Required
+				1.TX Ref Clock Input Required			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 3 }  
+			
+		hw10GEOpticsMDExtCDRFunc OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NonExtCDRFunc(0),
+					ExtCDRFunc(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" 
+				0.Non-CDR version of XFP  
+				1.Module with CDR function
+							 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 4 }  
+			
+		hw10GEOpticsMDExtPowerLevel OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					ExtPowerLevel1(0),
+					ExtPowerLevel2(1),
+					ExtPowerLevel3(2),
+					ExtPowerLevel4(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Power Level 1 Module (1.5 W max. power dissipation.)
+				1.Power Level 2 Module (2.5W Max)
+				2.Power Level 3 Module (3.5W max. power dissipation.)
+				3.Power Level 4 Module (>3.5W max. power dissipation.)			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 5 }
+			
+	  	hw10GEOpticsMDConnector	OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					Unknown(0),
+					SC(1),
+					Style1Connector(2),
+					Style2Connector(3),
+					BNC-TNC(4),
+					ChannelCoaxial(5),
+					FiberJack(6),
+					LC(7),
+					MT-RJ(8),
+					MU(9),
+					SG(10),
+					OpticalPigtail(11),
+					HSSDC(20),
+					CopperPigtail(21)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.0Ch-1Fh&22h-7Fh:	Reserved.								 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 6 }
+			  
+		hw10GEOpticsMDEthComplianceBaseEW OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NonEthComplianceBaseEW(0),
+					EthComplianceBaseEW(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Not support 10GBASE-EW
+				1.Support 10GBASE-EW			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 7 }
+			
+		hw10GEOpticsMDEthComplianceBaseLW OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NonEthComplianceBaseLW(0),
+					EthComplianceBaseLW(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Not support 10GBASE-LW
+				1.Support 10GBASE-LW			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 8 }
+		
+		hw10GEOpticsMDEthComplianceBaseSW OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NonEthComplianceBaseSW(0),
+					EthComplianceBaseSW(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Not support 10GBASE-SW
+				1.Support 10GBASE-SW			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 9 }
+		
+		hw10GEOpticsMDEthComplianceBaseLRM OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NonEthComplianceBaseLRM(0),
+					EthComplianceBaseLRM(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Not support 10GBASE-LRM
+				1.Support 10GBASE-LRM			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 10 }
+		
+		hw10GEOpticsMDEthComplianceBaseER OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NonEthComplianceBaseER(0),
+					EthComplianceBaseER(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Not support 10GBASE-ER
+				1.Support 10GBASE-ER			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 11 } 
+			
+		hw10GEOpticsMDEthComplianceBaseLR OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NonEthComplianceBaseLR(0),
+					EthComplianceBaseLR(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Not support 10GBASE-LR
+				1.Support 10GBASE-LR			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 12 }
+			
+		hw10GEOpticsMDEthComplianceBaseSR OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NonEthComplianceBaseSR(0),
+					EthComplianceBaseSR(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Not support 10GBASE-SR
+				1.Support 10GBASE-SR			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 13 }
+			
+		hw10GEOpticsMDFibreCompliance OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					FibreComplianceInter1300FP(16),
+					FibreComplianceExtended1550(32),
+					FibreComplianceSM1200(64),
+					FibreComplianceMX1200(128)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				16.Intermediate Reach 1300 nm FP
+				32.Extended Reach 1550 nm
+				64.1200-SM-LL-L
+				128.1200-MX-SN-I			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 14 }
+			
+		hw10GEOpticsMDLowerSpeedLink OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					LowerSpeedLinkOC48LR(2),
+					LowerSpeedLinkOC48IR(4),
+					LowerSpeedLinkOC48SR(8),
+					LowerSpeedLinkFCSMF(16),
+					LowerSpeedLinkFCMMF(32),
+					LowerSpeedLinkLXSMF(64),
+					LowerSpeedLinkSXMMF(128)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				 2.OC-48-LR
+				 4.OC-48-IR
+				 8.OC 48-SR  
+				16.2xFC SMF
+				32.2xFC MMF
+				64.1000BASE-LX/1xFC SMF
+				128.1000BASE-SX / 1xFC MMF			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 15 }
+					
+		hw10GEOpticsMDSONETSDHCodesI64point5 OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support I-64.5.
+				1.Support I-64.5.									
+				"				
+			::= { hw10GEOpticsModuleInformationEntry 16 }
+
+		hw10GEOpticsMDSONETSDHCodesI64point3 OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support I-64.3.
+				1.Support I-64.3.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 17 }
+
+		hw10GEOpticsMDSONETSDHCodesI64point2 OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support I-64.2.
+				1.Support I-64.2.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 18 }
+
+		hw10GEOpticsMDSONETSDHCodesI64point2r OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support I-64.2r.
+				1.Support I-64.2r.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 19 }
+
+		hw10GEOpticsMDSONETSDHCodesI64point1 OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support I-64.1.
+				1.Support I-64.1.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 20 }
+
+		hw10GEOpticsMDSONETSDHCodesI64point1r OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support I-64.1r.
+				1.Support I-64.1r.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 21 }
+			
+		hw10GEOpticsMDSONETSDHCodesS64point5b OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support S-64.5b.
+				1.Support S-64.5b.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 22 }
+			
+		hw10GEOpticsMDSONETSDHCodesS64point5a OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support S-64.5a.
+				1.Support S-64.5a.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 23 }
+			
+		hw10GEOpticsMDSONETSDHCodesS64point3b OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support S-64.3b.
+				1.Support S-64.3b.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 24 }
+			
+		hw10GEOpticsMDSONETSDHCodesS64point3a OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support S-64.3a.
+				1.Support S-64.3a.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 25 }
+			
+		hw10GEOpticsMDSONETSDHCodesS64point2b OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support S-64.2b.
+				1.Support S-64.2b.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 26 }
+			
+		hw10GEOpticsMDSONETSDHCodesS64point2a OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support S-64.2a.
+				1.Support S-64.2a.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 27 }
+			
+		hw10GEOpticsMDSONETSDHCodesS64point1 OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support S-64.1.
+				1.Support S-64.1.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 28 }
+			
+		hw10GEOpticsMDSONETSDHCodesG959P1L1 OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support G.959.1 P1L1-2D2.
+				1.Support G.959.1 P1L1-2D2.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 29 }
+			
+		hw10GEOpticsMDSONETSDHCodesL64point3 OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support L-64.3.
+				1.Support L-64.3.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 30 }
+			
+		hw10GEOpticsMDSONETSDHCodesL64point2c OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"				
+				0.Not Support L-64.2c.
+				1.Support L-64.2c.									
+				"				
+			::= { hw10GEOpticsModuleInformationEntry 31 }
+			
+		hw10GEOpticsMDSONETSDHCodesL64point2b OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"				
+				0.Not Support L-64.2b.
+				1.Support L-64.2b.									
+				"				
+			::= { hw10GEOpticsModuleInformationEntry 32 }
+			
+		hw10GEOpticsMDSONETSDHCodesL64point2a OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support L-64.2a.
+				1.Support L-64.2a.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 33 }
+			
+		hw10GEOpticsMDSONETSDHCodesL64point1 OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support L-64.1.
+				1.Support L-64.1.									
+				"								
+			::= { hw10GEOpticsModuleInformationEntry 34 }
+	
+		hw10GEOpticsMDSONETSDHCodesV64point3 OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support V-64.3.
+				1.Support V-64.3.									
+				"
+			::= { hw10GEOpticsModuleInformationEntry 35 }
+	
+		hw10GEOpticsMDSONETSDHCodesV64point2b OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support V-64.2b.
+				1.Support V-64.2b.				
+				"
+			::= { hw10GEOpticsModuleInformationEntry 36 }
+	
+		hw10GEOpticsMDSONETSDHCodesV64point2a OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					NotSupport(0),
+					Support(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				0.Not Support V-64.2a.
+				1.Support V-64.2a.
+				"
+			::= { hw10GEOpticsModuleInformationEntry 37 }				
+			
+		hw10GEOpticsMDEncodingRZ OBJECT-TYPE
+			SYNTAX INTEGER    
+				{
+					NonEncodingRZ(0),
+					EncodingRZ(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Encoding Don't Support RZ.
+				1.Encoding Support RZ.			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 38 } 
+			
+		hw10GEOpticsMDEncodingNRZ OBJECT-TYPE
+			SYNTAX INTEGER    
+				{
+					NonEncodingNRZ(0),
+					EncodingNRZ(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Encoding Don't Support NRZ.
+				1.Encoding Support NRZ.			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 39 }
+			
+		hw10GEOpticsMDEncodingSONET OBJECT-TYPE
+			SYNTAX INTEGER    
+				{
+					NonEncodingSONET(0),
+					EncodingSONET(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Encoding Don't Support SONET.
+				1.Encoding Support SONET.			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 40 }
+			
+		hw10GEOpticsMDEncoding8B10B OBJECT-TYPE
+			SYNTAX INTEGER    
+				{
+					NonEncoding8B10B(0),
+					Encoding8B10B(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Encoding Don't Support 8B10B.
+				1.Encoding Support 8B10B.			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 41 }
+			
+		hw10GEOpticsMDEncoding64B OBJECT-TYPE
+			SYNTAX INTEGER    
+				{
+					NonEncoding64B(0),
+					Encoding64B(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Encoding Don't Support 64B/66B.
+				1.Encoding Support 64B/66B.			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 42 } 
+		
+		hw10GEOpticsMDBrMin OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Minimum bit rate, units of 100 MBits/s."                   
+			::= { hw10GEOpticsModuleInformationEntry 43 }  
+			
+		hw10GEOpticsMDBrMax OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Maximum bit rate, units of 100 MBits/s."                   
+			::= { hw10GEOpticsModuleInformationEntry 44 } 
+			
+		hw10GEOpticsMDSupportLenSMF OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Link length supported for SMF fiber in km"                   
+			::= { hw10GEOpticsModuleInformationEntry 45 }
+			
+		hw10GEOpticsMDSupportLenE50um OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Link length supported for EBW 50/125 μm fiber, units of 2 m"                   
+			::= { hw10GEOpticsModuleInformationEntry 46 }
+			
+		hw10GEOpticsMDSupportLen50um OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Link length supported for 50/125 μm fiber, units of 1 m"                 
+			::= { hw10GEOpticsModuleInformationEntry 47 }
+			
+		hw10GEOpticsMDSupportLen62p5um OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Link length supported for 62.5/125 μm fiber, units of 1 m"                 
+			::= { hw10GEOpticsModuleInformationEntry 48 }
+			
+		hw10GEOpticsMDSupportLenCopper OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" Link length supported for copper, units of 1m"                   
+			::= { hw10GEOpticsModuleInformationEntry 49 }
+
+		hw10GEOpticsMDTransmitterSupport OBJECT-TYPE        
+			SYNTAX INTEGER    
+				{
+					NonTunable(0),
+					Tunable(1)
+				}							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				0. Transmitter Not Support Tunable
+				1. Transmitter Support Tunable
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 50 }	
+			
+		hw10GEOpticsMDDetector OBJECT-TYPE        
+			SYNTAX INTEGER    
+				{
+					NonDetector(0),
+					Detector(1)
+				}							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 
+				0. Detector is disable
+				1. Detector is enable
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 51 }	
+			
+		hw10GEOpticsMDCooledTransmitterDevice OBJECT-TYPE        
+			SYNTAX INTEGER    
+				{
+					NonSupport(0),
+					Support(1)
+				}							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 
+				0.Cooled transmitter device NonSupport
+				1.Cooled transmitter device Support
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 52 }	
+			
+		hw10GEOpticsMDWavelengthControl OBJECT-TYPE        
+			SYNTAX INTEGER    
+				{
+					NonSupport(0),
+					Support(1)
+				}							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 
+				0. Wavelength control NonSupport
+				1. Wavelength control Support
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 53 }	
+			
+		hw10GEOpticsMDTransmitterTechnologySupport OBJECT-TYPE        
+			SYNTAX INTEGER    
+				{
+					VCSEL850(0),
+					VCSEL1310(1),
+					VCSEL1550(2),
+					FP1310(3),
+					DFB1310(4),
+					DFB1550(5),
+					EML1310(6),
+					EML1550(7),
+					COPPER(8)
+				}						          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"   
+				Transmitter Technology Support
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 54 }	
+			
+		hw10GEOpticsMDVendorName OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..40))							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 
+				Vendor name
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 55 }				
+		
+		hw10GEOpticsMDSupportXFIMode OBJECT-TYPE
+			SYNTAX INTEGER    
+				{
+					NonSupportXFIMode(0),
+					SupportXFIMode(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Don't Support XFI Loopback Mode 
+				1.XFI Loopback Mode Supported			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 56 }
+
+		hw10GEOpticsMDSupportLinesideMode OBJECT-TYPE
+			SYNTAX INTEGER    
+				{
+					NonSupportLinesideMode(0),
+					SupportLinesideMode(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				0.Don't Support Lineside Loopback Mode 
+				1.Lineside Loopback Mode Supported			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 57 }
+			
+		hw10GEOpticsMDMaxBitRateSupportedByCDR  OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					MaxBitRateSupportedByCDR11p1(1),
+					MaxBitRateSupportedByCDR10p7(3),
+					MaxBitRateSupportedByCDR10p5(7),
+					MaxBitRateSupportedByCDR10p3(15),
+					MaxBitRateSupportedByCDR9p95(31)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				 1.CDR support for 11.1 Gb/s
+				 3.CDR support for 10.7 Gb/s
+				 7.CDR support for 10.5 Gb/s  
+				15.CDR support for 10.3 Gb/s
+				31.CDR support for 9.95 Gb/s			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 58 }
+
+ 		hw10GEOpticsMDVendorOUI OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 
+				Vendor OUI
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 59 }
+
+		hw10GEOpticsMDVendorPN OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..40))							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 
+				Vendor PN
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 60 }
+
+		hw10GEOpticsMDVendorRev OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..40))							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				Vendor rev
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 61 }
+
+		hw10GEOpticsMDWavelength OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 
+				Wavelength
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 62 }
+		
+		hw10GEOpticsMDWaveTolerance OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				" 
+				WaveTolerance
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 63 }
+			
+		hw10GEOpticsMDMaxCaseTemperature OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"Maximum Case Temperature in Degrees C."                   
+			::= { hw10GEOpticsModuleInformationEntry 64 }
+
+		hw10GEOpticsMDCc_base OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				Cc_base
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 65 }
+			
+		hw10GEOpticsMDMaxDissipation OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"Maximum Power Dissipation.
+				Max power is 8 bit value * 20 mW."                   
+			::= { hw10GEOpticsModuleInformationEntry 66 }
+			
+		hw10GEOpticsMDMaxDissipationPowerDownMode OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"Maximum Total Power Dissipation in Power Down Mode.
+				Max Power is 8 bit value * 10 mW."                   
+			::= { hw10GEOpticsModuleInformationEntry 67 }
+
+		hw10GEOpticsMDMaximum5P0VSupply OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				Maximum current required by +5V Supply 
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 68 }
+
+		hw10GEOpticsMDMaximum3P3VSupply OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				Maximum current required by +3.3V Supply
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 69 }
+
+		hw10GEOpticsMDMaximum1P8VSupply OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				Maximum current required by +1.8V Supply
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 70 }
+
+		hw10GEOpticsMDMaximum5P2VSupply OBJECT-TYPE        
+			SYNTAX INTEGER							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				Maximum current required by -5.2V Supply 
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 71 }
+
+ 		hw10GEOpticsMDVendorSN OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..140))							          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				Vendor SN
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 72 }
+
+		hw10GEOpticsMDDateCode OBJECT-TYPE        
+			SYNTAX OCTET STRING (SIZE (0..40))								          
+			MAX-ACCESS read-only                              
+			STATUS current                                    
+			DESCRIPTION                                       
+				"
+				Date code
+				"                   
+			::= { hw10GEOpticsModuleInformationEntry 73 }
+
+		hw10GEOpticsMDDiagnoMonitorPowerMeasure OBJECT-TYPE
+			SYNTAX INTEGER    
+				{
+					SupportOMA(0),
+					SupportAveragePower(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				Received power measurement type
+   				0 = OMA, 1 = Average Power			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 74 }
+		
+		hw10GEOpticsMDDiagnoMonitorTypeFECBER OBJECT-TYPE
+			SYNTAX INTEGER    
+				{
+					NonSupportBER(0),
+					SupportBER(1)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				Module Respond to FEC BER
+				0= No BER Support, 1=BER Support			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 75 } 
+			
+		hw10GEOpticsMDEnhancedOptions OBJECT-TYPE
+			SYNTAX INTEGER    
+				{
+					CMU(0),
+					RATESELECT(2),
+					FEC(4),
+					VPSBY(8),
+					RXLOS(16),
+					TXFAULT(32),
+					TXDISABLE(64),
+					ALARMFLGIM(128)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				Enhanced Options 			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 76 } 
+			
+		hw10GEOpticsMDAuxInputOne OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					AuxInputType1(0),
+					AuxInputType2(1),
+					AuxInputType4(3),
+					AuxInputType5(4),
+					AuxInputType6(5),
+					AuxInputType7(6),
+					AuxInputType8(7),
+					AuxInputType9(8),
+					AuxInputType10(9),
+					AuxInputType11(10),
+					AuxInputType14(13),
+					AuxInputType15(14),
+					AuxInputType16(15)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				 0.Auxiliary monitoring not implemented
+				 1.APD Bias Voltage					
+				 3.TEC Current (mA)					  
+				 4.Laser Temperature					
+				 5.Laser Wavelength					
+				 6.+5V Supply Voltage
+				 7.+3.3V Supply Voltage
+				 8.+1.8V Supply Voltage
+				 9.-5.2V Supply Voltage
+				 10.+5V Supply Current
+				 13.+3.3V Supply Current
+				 14.+1.8V Supply Current
+				 15.-5.2V Supply Current			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 77 }
+			
+		hw10GEOpticsMDAuxInputTwo OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+					AuxInputType1(0),
+					AuxInputType2(1),
+					AuxInputType4(3),
+					AuxInputType5(4),
+					AuxInputType6(5),
+					AuxInputType7(6),
+					AuxInputType8(7),
+					AuxInputType9(8),
+					AuxInputType10(9),
+					AuxInputType11(10),
+					AuxInputType14(13),
+					AuxInputType15(14),
+					AuxInputType16(15)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				 0.Auxiliary monitoring not implemented
+				 1.APD Bias Voltage					
+				 3.TEC Current (mA)					  
+				 4.Laser Temperature					
+				 5.Laser Wavelength					
+				 6.+5V Supply Voltage
+				 7.+3.3V Supply Voltage
+				 8.+1.8V Supply Voltage
+				 9.-5.2V Supply Voltage
+				 10.+5V Supply Current
+				 13.+3.3V Supply Current
+				 14.+1.8V Supply Current
+				 15.-5.2V Supply Current			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 78 }
+		
+		hw10GEOpticsMDCC_EXT OBJECT-TYPE
+			SYNTAX INTEGER    
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				CC_EXT			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 79 } 
+
+		hw10GEOpticsMDVendorSpecific OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..140))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				Vendor specific			 
+				"
+			::= { hw10GEOpticsModuleInformationEntry 80 } 
+
+
+
+		hwOpticsDdmInformationTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwOpticsDdmInformationEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"   "
+			::= { hwOpticsModuleInformation 4 }
+			
+		hwOpticsDdmInformationEntry OBJECT-TYPE
+			SYNTAX HwOpticsDdmInformationEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"    "
+			INDEX { ifIndex }
+			::= { hwOpticsDdmInformationTable 1 }	
+			
+		HwOpticsDdmInformationEntry ::=
+			SEQUENCE {  
+				hwOpticsTemperature
+					Integer32,
+				hwOpticsSupplyVoltage
+					Integer32,
+				hwOpticsTxBiasCurrent
+					Integer32,
+				hwOpticsTxPower
+					Integer32,
+				hwOpticsRxPower
+					Integer32			
+			 } 
+			 
+		 hwOpticsTemperature OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "0.000001C"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				Ddm information parameter, temperature	 
+				"
+			::= { hwOpticsDdmInformationEntry 1 }  
+			
+		hwOpticsSupplyVoltage OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "0.000001V"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				Ddm information parameter, supply voltage	 
+				"
+			::= { hwOpticsDdmInformationEntry 2 } 	
+			
+		hwOpticsTxBiasCurrent OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "0.000001A"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				Ddm information parameter, transmitted bias current	 
+				"
+			::= { hwOpticsDdmInformationEntry 3 }
+			
+		hwOpticsTxPower OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "0.000001dBm"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				Ddm information parameter, transmitted power	 
+				"
+			::= { hwOpticsDdmInformationEntry 4 }
+			
+		hwOpticsRxPower OBJECT-TYPE
+			SYNTAX Integer32
+			UNITS "0.000001dBm"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"   
+				Ddm information parameter, received power	 
+				"
+			::= { hwOpticsDdmInformationEntry 5 }
+			
+			
+		hwOpticsPowerThresholdTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwOpticsPowerThresholdEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"   "
+			::= { hwOpticsModuleInformation 5 }
+			
+		hwOpticsPowerThresholdEntry OBJECT-TYPE
+			SYNTAX HwOpticsPowerThresholdEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"    "
+			INDEX { ifIndex }
+			::= { hwOpticsPowerThresholdTable 1 }	
+			
+		HwOpticsPowerThresholdEntry ::=
+			SEQUENCE {  
+				hwOpticsPowerThresholdValue
+					Integer32,
+				hwOpticsPowerThresholdSwitch
+					INTEGER							
+			 } 
+			 
+		hwOpticsPowerThresholdValue OBJECT-TYPE
+			SYNTAX Integer32 (-25000000..10000000)
+			UNITS "0.000001dBm"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"   
+				TX optical power threshold value	 
+				"
+			::= { hwOpticsPowerThresholdEntry 1 }  	
+			
+		hwOpticsPowerThresholdSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)				
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"   
+				Set or clear TX optical power threshold value	 
+				"
+			DEFVAL { 2 }
+			::= { hwOpticsPowerThresholdEntry 2 } 					
+				
+
+							
+	END

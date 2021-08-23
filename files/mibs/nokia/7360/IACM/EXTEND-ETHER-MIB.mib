@@ -1,0 +1,1874 @@
+EXTEND-ETHER-MIB DEFINITIONS ::= BEGIN
+
+-- ETHER-EXTEND-MIB
+-- ===========================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2004, Alcatel. All Rights Reserved.
+-- ===========================================================================
+--  MODULE-IDENTITY
+--  LAST-UPDATED "201411120000Z"
+--  ORGANIZATION "Alcatel"
+--  CONTACT-INFO
+--          "Email:  asam.mibsupport@alcatel.be"
+--  DESCRIPTION "Ethernet proprietary MIB.
+--               This MIB module contains ethernet interface objects
+--               implemented in Alcatel's ASAM 7301 System Rel 5.1.x and 
+--               Alcatel's ISAM 7302 System from Rel 3.3,
+--               and that are not covered by the standards RFC3635 nor RFC3636."
+--
+--  REVISION "201512220000Z"
+--  DESCRIPTION
+--            Editor:  Li Qing
+--            Changes: Updated for FELT-B DOWNLINK of ISAM R5.4:
+--                     * Added description for the PortType that FELT-B support.
+--
+--  REVISION "201412110000Z"
+--  DESCRIPTION
+--            Editor:  Zhang Haiyan
+--            Changes: Updated for RCR ALU01893816: RELT of ISAM R5.2:
+--                     * Added description for the nodes that RELT support.
+--
+--  REVISION "201411120000Z"
+--  DESCRIPTION
+--            Editor:  Fan Caixia
+--            Changes: Updated for RCR ALU01935180 FELT-B of ISAM R5.2:
+--                     * Added description for the nodes that FELT-B support.
+--
+--  REVISION "201302200000Z"
+--  DESCRIPTION
+--            Editor:  Stefan Sturm
+--            Changes: Updated for RCR ALU01848620 and NRNT-I of ISAM R4.6:
+--                     * Added extra 64 bit PM counters
+--                     * Added new port types.
+
+--  REVISION "201111160000Z"
+--  DESCRIPTION
+--            Editor:  Liu Li
+--            Changes: Updated for RCR ALU00836002 of ISAM R4.4:
+--                     * Support SFP auto-sensing fiber speed feature for NELT-B
+--                     * Add a new object in extendSfpControlTable.
+
+--  REVISION "200912090000Z"
+--  DESCRIPTION
+--           "Version: 3FE23284EAAA_V4.2.0.0.0
+--            Editor:  Zheng Bozhi
+--            Changes: Updated for RCR ANTmt67255/ANTmt52003 of ISAM R4.2:
+--                     * obsolete extendSfpType
+--                     * Support 64 bit conters
+--                     * Support port type(service model): UNI/NNI
+--                     * Support SFP power control
+--
+--  28 Oct. 2006: editorial changes to the ALCATEL NOTE text of following
+--                objects: 
+--                        extendSfpType, 
+--                        extendEtherPortCurrentIntervalTable
+--                        extendEtherPortCurrent1DayTable
+--                        extendEtherPortPreviousIntervalTable
+--                        extendEtherPortPrevious1DayTable
+--                        extendEtherPortTcaThresholdTable
+--
+--  REVISION "200606280000Z"
+--  DESCRIPTION
+--           "Version: 3FE23284AAAA_V6.1.0.0.0
+--            Editor:  Lu Fang
+--            Changes: updated for ISAM R3.3"
+--
+--  8 April 2005: editorial changes to the ALCATEL NOTE text of following
+--                objects:
+--                    extendSfpStatusBits
+--
+--
+--  REVISION "200406170000Z"
+--  DESCRIPTION
+--           "Version: 3FE23284AAAA_V5.1.2.0.0
+--            Editor:  Paul Reynders
+--            Changes: Initial Version"
+-- ===========================================================================
+
+IMPORTS     OBJECT-TYPE                    FROM RFC-1212
+            Counter, Gauge                 FROM RFC1155-SMI
+            ifIndex                        FROM ITF-MIB
+            ifMauIfIndex, ifMauIndex       FROM MAU-MIB
+            asam                           FROM SYSTEM-MIB
+	    TruthValue                     FROM SNMPv2-TC;
+
+
+-- asam OBJECT IDENTIFIER ::= { iso(1) identified-organization(3) dod(6)
+--                              internet(1) private(4) enterprises(1)
+--                              alcatel(637) asd(61) asam(1)}
+
+-- ===========================================================================
+--    O B J E C T     D E F I N I T I O N S                              
+-- ===========================================================================
+
+extendEtherMib                    OBJECT IDENTIFIER ::= { asam 50 }
+
+-- Group in extend 
+-- extendBroadcastControlTable    OBJECT IDENTIFIER ::= { extendEtherMib 2 }
+extendEtherPort                   OBJECT IDENTIFIER ::= { extendEtherMib 3 }
+extendEtherPortTcaThreshold       OBJECT IDENTIFIER ::= { extendEtherMib 4 }
+
+extendEtherPortCurrent            OBJECT IDENTIFIER ::= { extendEtherPort 1 } 
+extendEtherPortPrevious           OBJECT IDENTIFIER ::= { extendEtherPort 2 }
+
+-- ===========================================================================
+--    S Y N T A X     T Y P E     D E F I N I T I O N S                              
+-- ===========================================================================
+
+Counter64bit ::= OCTET STRING (SIZE (8))
+--     "Within octet string, the most significant bit of highest byte 
+--      represents the most significant bit of a 64 bit integer, 
+--      and the least significant bit of lowest byte represents 
+--      the least significant bit of a 64 bit integer. 
+--      The value range is from 0 to 18446744073709551615"
+
+-- ===========================================================================
+--    SFP Control Table                              
+-- ===========================================================================
+
+-- ALCATEL NOTE: the ALCATEL ISAM Ethernet interfaces of IACM do not support
+--     the extendSfpControlTable.
+--     Ethernet interfaces of Ethernet LT support the extendSfpControlTable.
+
+extendSfpControlTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExtendSfpControlEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION "Status objects for the SFP."
+::= { extendEtherMib 1 }
+        
+extendSfpControlEntry    OBJECT-TYPE
+    SYNTAX      ExtendSfpControlEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION "An entry in the table, containing status information 
+                for the SFP."
+    INDEX       { ifMauIfIndex, ifMauIndex }
+::= { extendSfpControlTable 1 }
+
+ExtendSfpControlEntry ::=
+    SEQUENCE {
+        extendSfpStatusBits          INTEGER,
+        extendSfpInventory           OCTET STRING,
+        extendSfpActingBits          INTEGER,
+        extendSfpType                INTEGER,
+        extendSfpPowerCtrl           INTEGER,
+	extendSfpSpeedAutoSense      INTEGER 
+    }
+
+extendSfpStatusBits    OBJECT-TYPE
+    SYNTAX      INTEGER
+--              {
+--                  linkUp(0),         -* SFP operational up
+--                  notPluggedIn(1),   -* SFP presence is not detected
+--                  notAccepted(2),    -* SFP has no Alcatel label
+--                  los(4),            -* Loss Of Signal
+--                  typeMismatch(8),   -* SFP mismatch with configured
+--                  localAutoPowerDown(16),  -* local SFP power off since 
+--                                             temperature over
+--                  brothAutoerPowerDown(32),-* brother SFP power off since
+--                                             temperature over
+--                  activePowerDown(64)-* SFP power down actively by operator
+--              }
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION "A value that uniquely identifies the status of the SFP.
+
+                Bit 0 is set when the presence of the SFP is not detected.
+
+                Bit 1 is set when the EEPROM of the SFP does not contain 
+                'Alcatel' in the Vendor Specific Data field.
+
+                Bit 2 is set when the SFP is in Automatic Laser Shutdown mode.
+                The SFP enters this mode when a loss of signal (LOS) has been
+                detected. In this mode, the laser is powered down, and is
+                periodically powered up for a short test time, till the LOS
+                is not seen anymore.
+                
+                Bit 3 is set when the plugged SFP real type is different with
+                the configured.
+                
+                Bit 4 is set when the SFP is in auto power off mode. The SFP 
+                enters this mode when the power status of the SFP is set to auto
+                and the local channel SFP temperature is over the experience SFP
+                procted temperature.
+                
+                Bit 5 is set when the SFP is in auto power off mode. The SFP
+                enters this mode when the power status of the SFP is set to
+                auto and just the brother channel SFP temperature is over the
+                experience SFP procted temperature. This is only in compact SFP.
+                
+                Bit 6 is set when the SFP power down actively by operator.
+
+                If bit 0 is set, setting of the other status bits makes
+                no sence, e.g. the ISAM cannot check the label of an SFP 
+                that is not present. As such, these are the possible values 
+                of this object:
+                  0 : SFP is operational up;
+                  1 : SFP is not plugged in, interface is down;
+                  2 : SFP is plugged in but in power down because no Alcatel label;
+                  4 : SFP is plugged in but detected LOS;
+                  8 : SFP real type mismatch with configured type;
+                  16: Local channel temperature is over and power down;
+                  32: Brother channel temperatur is over and power down;
+                  64: SFP power down actively by operator.
+         
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : NA                   SPARSE  : NA
+             DESCR  : Ethernet LT NELT-A don't support 16 and 32"                  
+::= { extendSfpControlEntry 1 }
+
+extendSfpInventory    OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE (128))
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION "Content of the SFP EEPROM, up to (and including)
+                the Vendor Specific Data field."
+::= { extendSfpControlEntry 2 }
+
+extendSfpActingBits    OBJECT-TYPE
+    SYNTAX      INTEGER
+--              {
+--                  standbyInternal(0),    *- bit0 = internal/external status
+--                  standbyExternal(1),
+--                  activeInternal(2),     *- bit1 = active/standby status
+--                  activeExternal(3)
+--              }
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION "A value that uniquely identifies the redundancy-related
+                acting mode of the SFP. The acting mode itself cannot be
+                configured. It is the result of configuring the equipment
+                redundancy and administrative state of the interfaces.
+
+                Bit 0 is set when the SFP should be connected to the EMAN 
+                network. This Bit is cleared when the SFP should be connected 
+                to its peer on the other GENT.
+
+                Bit 1 is set when this SFP is the one that is transmitting
+                data. This Bit is cleared when the system does not transmit 
+                traffic on the SFP. When this bit is cleared, but operational
+                state is still up, reception of traffic, if any, is done.
+
+  ALCATEL NOTE: the ALCATEL ISAM do not support this object."
+::= { extendSfpControlEntry 3 }
+
+extendSfpType    OBJECT-TYPE
+    SYNTAX      INTEGER (0..255)
+    ACCESS      read-only
+    STATUS      obsolete
+    DESCRIPTION "This variable indicates the type of the SFP. It is a bitmap
+                represented as a sum, therefore, it can represent multiple types
+                combination of types)simultaneously.The various bit positions are:
+                  bit 0 (1): 1000BASE-SX
+                  bit 1 (2): 1000BASE-LX
+                  bit 2 (4): 1000BASE-CX
+                  bit 3 (8): 1000BASE-T
+                  bit 4 (16): 100BASE-SX
+                  bit 5 (32): 100BASE- LX
+                  bit 6 (64): 100BASE-BX
+                  bit 7 (128):reserved
+                If the extendpSfpType is unknown or not specified, expSfpType = 0.
+  ALCATEL NOTE: From R4.2, this object is obsoleted, for SFP type,
+                refer to ifMauType"
+::= { extendSfpControlEntry 4 }
+
+extendSfpPowerCtrl    OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    up(1),
+                    down(2)
+                }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object identifies the administrative status of SFP power
+         on this interface.
+         up will force the SFP power status to on.
+         down will force the SFP power status to off.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: YES                  INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : NA                   SPARSE  : NA
+             DESCR  : For Ethernet LT NELT-A, don't support write, read always retrieve up,
+                      NELT-B ,FELT-B and RELT support read-write."
+    DEFVAL      { down }
+::= { extendSfpControlEntry 5 }
+
+extendSfpSpeedAutoSense    OBJECT-TYPE
+   SYNTAX      INTEGER {
+                    enabled(1),
+                    disabled(2) 
+                }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This variable allows the manager to enable/disable SFP auto-sensing fiber speed function 
+        on NELT-B , FELT-B .
+	ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: YES                  INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : NA                   SPARSE  : NA
+             DESCR  : For Ethernet LT NELT-A, don't support write, read always retrieve disabled,
+                      NELT-B , FELT-B support read-write."
+    DEFVAL      { disabled }
+ ::= { extendSfpControlEntry 6 }
+
+-- ===========================================================================
+--    Broadcast Control Table                              
+-- ===========================================================================
+
+-- extendBroadcastControlTable    OBJECT-TYPE
+--     SYNTAX      SEQUENCE OF ExtendBroadcastControlEntry
+--     ACCESS      not-accessible
+--     STATUS      mandatory
+--     DESCRIPTION "objects of control parameters for broadcast frame.
+--     
+--     ALCATEL NOTE: the ALCATEL ISAM do not support this object."
+-- ::= { extendEtherMib 2 }
+
+-- extendBroadcastControlEntry    OBJECT-TYPE
+--     SYNTAX      ExtendBroadcastControlEntry
+--     ACCESS      not-accessible
+--     STATUS      mandatory
+--     DESCRIPTION "An entry in this table, containing control
+--                  information for broadcast frame for Ethernet inteface."
+--     INDEX       { ifIndex }
+-- ::= { extendBroadcastControlTable 1 }
+--
+-- ExtendBroadcastControlEntry ::=
+--     SEQUENCE {
+--         extendBroadcastControlRxAverageRate   INTEGER,
+--         extendBroadcastControlRxBurstSize     INTEGER
+--     }
+--
+-- extendBroadcastControlRxAverageRate    OBJECT-TYPE
+--     SYNTAX      INTEGER
+--     ACCESS      read-write
+--     STATUS      mandatory
+--     DESCRIPTION "Object defines the average rate (packets per second) of the 
+--                 receiving broadcast traffic.
+--                 The unit of this object is 10 PPS."
+-- ::= { extendBroadcastControlEntry 1 }
+--
+-- extendBroadcastControlRxBurstSize    OBJECT-TYPE
+--     SYNTAX      INTEGER
+--     ACCESS      read-write
+--     STATUS      mandatory            
+--     DESCRIPTION " object defines the number of broadcasts packets allowed
+--                  to be forwarded within a specified time for the Ethernet port.
+--                  Once the broadcast packet limitatin is reached, broadcast
+--                  packet will be dropped. The number of broadcast packets can be 
+--                  set as 0,it means to turn off the rate limit. "
+-- ::= { extendBroadcastControlEntry 2 }
+
+-- ===========================================================================
+--    Ethernet port PM Control Table:  current 15 minutes                             
+-- ===========================================================================
+
+extendEtherPortCurrentIntervalTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExtendEtherPortCurrentIntervalEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION "The Ethernet port near end current interval table."
+::= { extendEtherPortCurrent 1 }
+        
+extendEtherPortCurrentIntervalEntry    OBJECT-TYPE
+    SYNTAX      ExtendEtherPortCurrentIntervalEntry                    
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION     
+        "An entry in the Ethernet port near end current interval table."
+    INDEX           { ifIndex }
+::= { extendEtherPortCurrentIntervalTable 1 }
+
+ExtendEtherPortCurrentIntervalEntry ::=
+    SEQUENCE {
+        extendEtherPortCurrentIntervalLoSCounter                Counter,
+        extendEtherPortCurrentIntervalFCSCounter                Counter,
+        extendEtherPortCurrentIntervalFrameTooLongCounter       Counter,
+        extendEtherPortCurrentIntervalInternalMacTransmitErrors Counter,
+        extendEtherPortCurrentIntervalInternalMacReceiveErrors  Counter,
+        extendEtherPortCurrentIntervalMeasuredTime              INTEGER,
+        extendEtherPortCurrentIntervalInvalidDataFlag           INTEGER,
+        extendEtherPort15MinValidIntervals                      INTEGER,
+        extendEtherPortCurrentIntervalTransmitOctets            Counter64bit,
+        extendEtherPortCurrentIntervalTransmitPackets           Counter64bit,
+        extendEtherPortCurrentIntervalTransmitErrors            Counter64bit,
+        extendEtherPortCurrentIntervalTransmitDiscards          Counter64bit,
+        extendEtherPortCurrentIntervalTransmitPacketDrops       Counter64bit,
+        extendEtherPortCurrentIntervalReceiveOctets             Counter64bit,
+        extendEtherPortCurrentIntervalReceivePackets            Counter64bit,
+        extendEtherPortCurrentIntervalReceiveErrors             Counter64bit,
+        extendEtherPortCurrentIntervalReceiveDiscards           Counter64bit,
+        extendEtherPortCurrentIntervalReceivePacketDrops        Counter64bit
+    }
+
+extendEtherPortCurrentIntervalLoSCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minute interval the LOS 
+         failure count, which is the number of occurrences of an LOS failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortCurrentIntervalEntry 1 }
+
+extendEtherPortCurrentIntervalFCSCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minute interval the FCS 
+         failure count, which is the number of occurrences of an FCS failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortCurrentIntervalEntry 2 }
+
+extendEtherPortCurrentIntervalFrameTooLongCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minute interval the frame too
+         Long count, which is the number of occurences of a frame too long failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortCurrentIntervalEntry 3 }
+
+extendEtherPortCurrentIntervalInternalMacTransmitErrors    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION " This object represents for the current 15 minutes, A count of 
+        Frames for which transmission on a particular interface fails 
+        Due to an internal MAC sublayer transmit error.
+
+        The precise meaning of the count represented by an instance of this 
+        object is implementation-specific.  In particular, an instance of this
+        object may represent a count of receive errors on a particular 
+        interface that are not otherwise counted."
+::= { extendEtherPortCurrentIntervalEntry 4 }
+
+extendEtherPortCurrentIntervalInternalMacReceiveErrors    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object represents for the current 15 minute , A count of
+         frames for which reception on a particular interface fails due
+         to an internal MAC sublayer receive error. 
+         The precise meaning of the count represented by an instance of 
+         this object is implementation-specific.  In particular, an
+         instance of this bject may represent a count of receive errors
+         on a particular interface that are not otherwise counted."
+::= { extendEtherPortCurrentIntervalEntry 5 }
+
+extendEtherPortCurrentIntervalMeasuredTime    OBJECT-TYPE
+    SYNTAX      INTEGER(0..900)
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "The amount of time, measured in seconds, that statistics for this
+         entry have been counted."
+::= { extendEtherPortCurrentIntervalEntry 6 }
+
+extendEtherPortCurrentIntervalInvalidDataFlag    OBJECT-TYPE
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object indicates the validity of the corresponding PM data.
+         It is set to 1 when the PM data is incomplete or invalid and set to 0
+         when the PM data is complete and valid."
+::= { extendEtherPortCurrentIntervalEntry 7 }
+
+extendEtherPort15MinValidIntervals    OBJECT-TYPE
+    SYNTAX      INTEGER (0..96)
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "The number of previous intervals for which data has been
+         stored. In normal conditions the value of this object equals the
+         maximum number of intervals supported by the system. If the 
+         the relevant device was brought online more recently,
+         the value will be the number of complete 15 minute
+         intervals the device has been online. 
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NO                   INSRVMOD: NA
+             RANGE  : 0..96                DEFVALUE: NA
+             UNITS  : NA                   SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortCurrentIntervalEntry 8 }
+
+extendEtherPortCurrentIntervalTransmitOctets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of octets transmitted on the physical interface."
+::= { extendEtherPortCurrentIntervalEntry 9 }
+
+extendEtherPortCurrentIntervalTransmitPackets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of packets transmitted on the physical interface."
+::= { extendEtherPortCurrentIntervalEntry 10 }
+
+extendEtherPortCurrentIntervalTransmitErrors    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of packets which failed to transmit on the physical interface."
+::= { extendEtherPortCurrentIntervalEntry 11 }
+
+extendEtherPortCurrentIntervalTransmitDiscards    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of packets which were discarded before transmit on the physical
+         interface."
+::= { extendEtherPortCurrentIntervalEntry 12 }
+
+extendEtherPortCurrentIntervalTransmitPacketDrops    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of packets dropped due to discard or error, while transmit on the
+         physical interface."
+::= { extendEtherPortCurrentIntervalEntry 13 }
+
+extendEtherPortCurrentIntervalReceiveOctets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of octets received on the physical interface."
+::= { extendEtherPortCurrentIntervalEntry 14 }
+
+extendEtherPortCurrentIntervalReceivePackets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of packets received on the physical interface."
+::= { extendEtherPortCurrentIntervalEntry 15 }
+
+extendEtherPortCurrentIntervalReceiveErrors    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of errored packets received on the physical interface."
+::= { extendEtherPortCurrentIntervalEntry 16 }
+
+extendEtherPortCurrentIntervalReceiveDiscards    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of discarded packets received on the physical interface."
+::= { extendEtherPortCurrentIntervalEntry 17 }
+
+extendEtherPortCurrentIntervalReceivePacketDrops    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of packets dropped due to discard or error, received on the physical
+         interface."
+::= { extendEtherPortCurrentIntervalEntry 18 }
+
+-- ===========================================================================
+--    Ethernet port PM Control Table:  current 1 day                          
+-- ===========================================================================
+
+extendEtherPortCurrent1DayTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExtendEtherPortCurrent1DayEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION "The Ethernet port near end current 1 day table."
+::= { extendEtherPortCurrent 2 }
+        
+extendEtherPortCurrent1DayEntry    OBJECT-TYPE
+    SYNTAX      ExtendEtherPortCurrent1DayEntry                    
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION     
+        "An entry in the Ethernet port near end current 1 day table."
+    INDEX       { ifIndex }
+::= { extendEtherPortCurrent1DayTable 1 }
+
+ExtendEtherPortCurrent1DayEntry ::=
+    SEQUENCE {
+        extendEtherPortCurrent1DayLoSCounter                    Counter,
+        extendEtherPortCurrent1DayFCSCounter                    Counter,
+        extendEtherPortCurrent1DayFrameTooLongCounter           Counter,
+        extendEtherPortCurrent1DayInternalMacTransmitErrors     Counter,
+        extendEtherPortCurrent1DayInternalMacReceiveErrors      Counter,
+        extendEtherPortCurrent1DayMeasuredTime                  INTEGER,
+        extendEtherPortCurrent1DayInvalidDataFlag               INTEGER,
+        extendEtherPort1DayValidIntervals                       INTEGER,
+        extendEtherPortCurrent1DayTransmitOctets                Counter64bit,
+        extendEtherPortCurrent1DayTransmitPackets               Counter64bit,
+        extendEtherPortCurrent1DayTransmitErrors                Counter64bit,
+        extendEtherPortCurrent1DayTransmitDiscards              Counter64bit,
+        extendEtherPortCurrent1DayTransmitPacketDrops           Counter64bit,
+        extendEtherPortCurrent1DayReceiveOctets                 Counter64bit,
+        extendEtherPortCurrent1DayReceivePackets                Counter64bit,
+        extendEtherPortCurrent1DayReceiveErrors                 Counter64bit,
+        extendEtherPortCurrent1DayReceiveDiscards               Counter64bit,
+        extendEtherPortCurrent1DayReceivePacketDrops            Counter64bit
+    }
+
+extendEtherPortCurrent1DayLoSCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day the LOS 
+         failure count, which is the number of occurrences of an LOS failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortCurrent1DayEntry 1 }
+
+extendEtherPortCurrent1DayFCSCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day the FCS 
+         failure count, which is the number of occurrences of an FCS failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortCurrent1DayEntry 2 }
+
+extendEtherPortCurrent1DayFrameTooLongCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day the frame too
+         Long count, which is the number of occurences of a frame too long failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortCurrent1DayEntry 3 }
+
+extendEtherPortCurrent1DayInternalMacTransmitErrors    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object represents for the current 1 day, A count of frames
+         for which transmission on a particular interface fails due to an 
+         internal MAC sublayer transmit error.
+         
+         The precise meaning of the count represented by an instance of this 
+         object is implementation-specific.  In particular, an instance of this
+         object may represent a count of receive errors on a particular 
+         interface that are not otherwise counted."
+::= { extendEtherPortCurrent1DayEntry 4 }
+
+extendEtherPortCurrent1DayInternalMacReceiveErrors    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object represents for the current 1 day , A count of
+         frames for which reception on a particular interface fails due
+         to an internal MAC sublayer receive error. 
+         The precise meaning of the count represented by an instance of 
+         this object is implementation-specific.  In particular, an
+         instance of this bject may represent a count of receive errors
+         on a particular interface that are not otherwise counted."
+::= { extendEtherPortCurrent1DayEntry 5 }
+
+
+extendEtherPortCurrent1DayMeasuredTime    OBJECT-TYPE
+    SYNTAX      INTEGER(0..86400)
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "The amount of time, measured in seconds, that statistics for this
+         entry have been counted."
+::= { extendEtherPortCurrent1DayEntry 6 }
+
+extendEtherPortCurrent1DayInvalidDataFlag    OBJECT-TYPE
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object indicates the validity of the corresponding PM data.
+         It is set to 1 when the PM data is incomplete or invalid and set to 0
+         when the PM data is complete and valid."
+::= { extendEtherPortCurrent1DayEntry 7 }
+
+extendEtherPort1DayValidIntervals    OBJECT-TYPE
+    SYNTAX      INTEGER (0..30)
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "The number of previous intervals for which data has been
+         stored. In normal conditions the value of this object equals the
+         maximum number of intervals supported by the system. If the 
+         the relevant device was brought online more recently,
+         the value will be the number of complete 1 day
+         intervals the device has been online. 
+        
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NO                   INSRVMOD: NA
+             RANGE  : 0..30                DEFVALUE: NA
+             UNITS  : NA                   SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortCurrent1DayEntry 8 }
+
+extendEtherPortCurrent1DayTransmitOctets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of octets transmitted on the physical interface."
+::= { extendEtherPortCurrent1DayEntry 9 }
+
+extendEtherPortCurrent1DayTransmitPackets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of packets transmitted on the physical interface."
+::= { extendEtherPortCurrent1DayEntry 10 }
+
+extendEtherPortCurrent1DayTransmitErrors    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of packets which failed to transmit on the physical interface."
+::= { extendEtherPortCurrent1DayEntry 11 }
+
+extendEtherPortCurrent1DayTransmitDiscards    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of packets which were discarded before transmit on the physical
+         interface."
+::= { extendEtherPortCurrent1DayEntry 12 }
+
+extendEtherPortCurrent1DayTransmitPacketDrops    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of packets dropped due to discard or error, while transmit on the
+         physical interface."
+::= { extendEtherPortCurrent1DayEntry 13 }
+
+extendEtherPortCurrent1DayReceiveOctets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of octets received on the physical interface."
+::= { extendEtherPortCurrent1DayEntry 14 }
+
+extendEtherPortCurrent1DayReceivePackets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of packets received on the physical interface."
+::= { extendEtherPortCurrent1DayEntry 15 }
+
+extendEtherPortCurrent1DayReceiveErrors    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of errored packets received on the physical interface."
+::= { extendEtherPortCurrent1DayEntry 16 }
+
+extendEtherPortCurrent1DayReceiveDiscards    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of discarded packets received on the physical interface."
+::= { extendEtherPortCurrent1DayEntry 17 }
+
+extendEtherPortCurrent1DayReceivePacketDrops    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of packets dropped due to discard or error, received on the physical
+         interface."
+::= { extendEtherPortCurrent1DayEntry 18 }
+
+-- ===========================================================================
+--    Ethernet port PM Control Table:  previous 15 minutes                             
+-- ===========================================================================
+
+extendEtherPortPreviousIntervalTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExtendEtherPortPreviousIntervalEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION "The Ethernet port near end Previous interval table."
+::= { extendEtherPortPrevious 1 }
+        
+extendEtherPortPreviousIntervalEntry    OBJECT-TYPE
+    SYNTAX      ExtendEtherPortPreviousIntervalEntry  
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION     
+        "An entry in the Ethernet port near end current interval table."
+    INDEX       { ifIndex, extendEtherPort15MinIntervalNumber }
+::= { extendEtherPortPreviousIntervalTable 1 }
+
+ExtendEtherPortPreviousIntervalEntry ::=
+    SEQUENCE {
+        extendEtherPort15MinIntervalNumber                        INTEGER,
+        extendEtherPortPreviousIntervalLoSCounter                 Counter,
+        extendEtherPortPreviousIntervalFCSCounter                 Counter,
+        extendEtherPortPreviousIntervalFrameTooLongCounter        Counter,
+        extendEtherPortPreviousIntervalInternalMacTransmitErrors  Counter,
+        extendEtherPortPreviousIntervalInternalMacReceiveErrors   Counter,
+        extendEtherPortPreviousIntervalMeasuredTime               INTEGER,
+        extendEtherPortPreviousIntervalInvalidDataFlag            INTEGER,
+        extendEtherPortPreviousIntervalTransmitOctets             Counter64bit,
+        extendEtherPortPreviousIntervalTransmitPackets            Counter64bit,
+        extendEtherPortPreviousIntervalTransmitErrors             Counter64bit,
+        extendEtherPortPreviousIntervalTransmitDiscards           Counter64bit,
+        extendEtherPortPreviousIntervalTransmitPacketDrops        Counter64bit,
+        extendEtherPortPreviousIntervalReceiveOctets              Counter64bit,
+        extendEtherPortPreviousIntervalReceivePackets             Counter64bit,
+        extendEtherPortPreviousIntervalReceiveErrors              Counter64bit,
+        extendEtherPortPreviousIntervalReceiveDiscards            Counter64bit,
+        extendEtherPortPreviousIntervalReceivePacketDrops         Counter64bit
+    }
+
+extendEtherPort15MinIntervalNumber    OBJECT-TYPE
+    SYNTAX      INTEGER(1..96)
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Performance Data Interval number. 1 is the the most recent 
+         previous interval; interval 96 is 24 hours ago.
+
+         ALCATEL NOTE: the most recent previous 15 minutes interval 
+             supported in ISAM is 96"
+::= { extendEtherPortPreviousIntervalEntry 1 }
+
+extendEtherPortPreviousIntervalLoSCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the Previous 15 minute interval the LOS 
+         failure count, which is the number of occurrences of an LOS failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortPreviousIntervalEntry 2 }
+
+extendEtherPortPreviousIntervalFCSCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the Previous 15 minute interval the FCS 
+         failure count, which is the number of occurrences of an FCS failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortPreviousIntervalEntry 3 }
+
+extendEtherPortPreviousIntervalFrameTooLongCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the Previous 15 minute interval the frame too 
+         Long count, which is the number of occurences of a frame too long failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortPreviousIntervalEntry 4 }
+
+extendEtherPortPreviousIntervalInternalMacTransmitErrors    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object represents for the Previous 15 minu, A count of frames
+         for which transmission on a particular interface fails due to an 
+         internal MAC sublayer transmit error.
+         
+         The precise meaning of the count represented by an instance of this 
+         object is implementation-specific.  In particular, an instance of this
+         object may represent a count of receive errors on a particular 
+         interface that are not otherwise counted."
+::= { extendEtherPortPreviousIntervalEntry 5 }
+
+extendEtherPortPreviousIntervalInternalMacReceiveErrors    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object represents for the Previous 15 minute, A count of
+         frames for which reception on a particular interface fails due
+         to an internal MAC sublayer receive error. 
+         The precise meaning of the count represented by an instance of 
+         this object is implementation-specific.  In particular, an
+         instance of this object may represent a count of receive errors
+         on a particular interface that are not otherwise counted."
+::= { extendEtherPortPreviousIntervalEntry 6 }
+
+extendEtherPortPreviousIntervalMeasuredTime    OBJECT-TYPE
+    SYNTAX      INTEGER(0..900)
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "The amount of time, measured in seconds, that statistics for this
+         entry have been counted."
+::= { extendEtherPortPreviousIntervalEntry 7 }
+
+extendEtherPortPreviousIntervalInvalidDataFlag    OBJECT-TYPE
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object indicates the validity of the corresponding PM data.
+         It is set to 1 when the PM data is incomplete or invalid and set to 0
+         when the PM data is complete and valid."
+::= { extendEtherPortPreviousIntervalEntry 8 }
+
+extendEtherPortPreviousIntervalTransmitOctets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 15 minutes interval the number
+         of octets transmitted on the physical interface."
+::= { extendEtherPortPreviousIntervalEntry 9 }
+
+extendEtherPortPreviousIntervalTransmitPackets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 15 minutes interval the number
+         of packets transmitted on the physical interface."
+::= { extendEtherPortPreviousIntervalEntry 10 }
+
+extendEtherPortPreviousIntervalTransmitErrors    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 15 minutes interval the number
+         of packets which failed to transmit on the physical interface."
+::= { extendEtherPortPreviousIntervalEntry 11 }
+
+extendEtherPortPreviousIntervalTransmitDiscards    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of packets which were discarded before transmit on the physical
+         interface."
+::= { extendEtherPortPreviousIntervalEntry 12 }
+
+extendEtherPortPreviousIntervalTransmitPacketDrops    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of packets dropped due to discard or error, while transmit on the
+         physical interface."
+::= { extendEtherPortPreviousIntervalEntry 13 }
+
+extendEtherPortPreviousIntervalReceiveOctets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 15 minutes interval the number
+         of octets received on the physical interface."
+::= { extendEtherPortPreviousIntervalEntry 14 }
+
+extendEtherPortPreviousIntervalReceivePackets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 15 minutes interval the number
+         of packets received on the physical interface."
+::= { extendEtherPortPreviousIntervalEntry 15 }
+
+extendEtherPortPreviousIntervalReceiveErrors    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 15 minutes interval the number
+         of errored packets received on the physical interface."
+::= { extendEtherPortPreviousIntervalEntry 16 }
+
+extendEtherPortPreviousIntervalReceiveDiscards    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of discarded packets received on the physical interface."
+::= { extendEtherPortPreviousIntervalEntry 17 }
+
+extendEtherPortPreviousIntervalReceivePacketDrops    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 15 minutes interval the number
+         of packets dropped due to discard or error, received on the physical
+         interface."
+::= { extendEtherPortPreviousIntervalEntry 18 }
+
+-- ===========================================================================
+--    Ethernet port PM Control Table:  previous 1 day                             
+-- ===========================================================================
+
+extendEtherPortPrevious1DayTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExtendEtherPortPrevious1DayEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION "The Ethernet port near end current 1 day table."
+::= { extendEtherPortPrevious 2 }
+        
+extendEtherPortPrevious1DayEntry    OBJECT-TYPE
+    SYNTAX      ExtendEtherPortPrevious1DayEntry                    
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION     
+        "An entry in the Ethernet port near end Previous 1 day table."
+    INDEX       { ifIndex, extendEtherPort1DayIntervalNumber }
+::= { extendEtherPortPrevious1DayTable 1 }
+
+ExtendEtherPortPrevious1DayEntry ::=
+    SEQUENCE {
+        extendEtherPort1DayIntervalNumber                       INTEGER,
+        extendEtherPortPrevious1DayLoSCounter                   Counter,
+        extendEtherPortPrevious1DayFCSCounter                   Counter,
+        extendEtherPortPrevious1DayFrameTooLongCounter          Counter,
+        extendEtherPortPrevious1DayInternalMacTransmitErrors    Counter,
+        extendEtherPortPrevious1DayInternalMacReceiveErrors     Counter,
+        extendEtherPortPrevious1DayMeasuredTime                 INTEGER,
+        extendEtherPortPrevious1DayInvalidDataFlag              INTEGER,
+        extendEtherPortPrevious1DayTransmitOctets               Counter64bit,
+        extendEtherPortPrevious1DayTransmitPackets              Counter64bit,
+        extendEtherPortPrevious1DayTransmitErrors               Counter64bit,
+        extendEtherPortPrevious1DayTransmitDiscards             Counter64bit,
+        extendEtherPortPrevious1DayTransmitPacketDrops          Counter64bit,
+        extendEtherPortPrevious1DayReceiveOctets                Counter64bit,
+        extendEtherPortPrevious1DayReceivePackets               Counter64bit,
+        extendEtherPortPrevious1DayReceiveErrors                Counter64bit,
+        extendEtherPortPrevious1DayReceiveDiscards              Counter64bit,
+        extendEtherPortPrevious1DayReceivePacketDrops           Counter64bit
+    }
+
+extendEtherPort1DayIntervalNumber    OBJECT-TYPE
+    SYNTAX      INTEGER(1..30)
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "History Data Interval number. Interval 1 is the
+         the most recent previous day; interval 30 is 30
+         days ago. Intervals 2..30 are optional.
+     
+         ALCATEL NOTE: Only most recent previous 1-day interval is kept"
+::= { extendEtherPortPrevious1DayEntry 1 }
+
+extendEtherPortPrevious1DayLoSCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object represents for the Previous 1 day the LOS 
+         failure count, which is the number of occurrences of an LOS failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortPrevious1DayEntry 2 }
+
+extendEtherPortPrevious1DayFCSCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the Previous 1 day the FCS 
+         failure count, which is the number of occurrences of an FCS failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortPrevious1DayEntry 3 }
+
+extendEtherPortPrevious1DayFrameTooLongCounter    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the Previous 1 day the frame too
+         Long count, which is the number of occurences of a frame too long failure 
+         event, where a failure event occurs when the failure is declared and 
+         ends when the failure clears."
+::= { extendEtherPortPrevious1DayEntry 4 }
+
+extendEtherPortPrevious1DayInternalMacTransmitErrors    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "This object represents for the Previous 1 day, A count of frames
+         for which transmission on a particular interface fails due to an 
+         internal MAC sublayer transmit error.
+
+         The precise meaning of the count represented by an instance of this 
+         object is implementation-specific.  In particular, an instance of this
+         object may represent a count of receive errors on a particular 
+         interface that are not otherwise counted."
+::= { extendEtherPortPrevious1DayEntry 5 }
+
+extendEtherPortPrevious1DayInternalMacReceiveErrors    OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object represents for the Previous 1 day , A count of
+         frames for which reception on a particular interface fails due
+         to an internal MAC sublayer receive error. 
+         The precise meaning of the count represented by an instance of 
+         this object is implementation-specific.  In particular, an
+         instance of this bject may represent a count of receive errors
+         on a particular interface that are not otherwise counted."
+::= { extendEtherPortPrevious1DayEntry 6 }
+
+extendEtherPortPrevious1DayMeasuredTime    OBJECT-TYPE
+    SYNTAX      INTEGER(0..86400)
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "The amount of time, measured in seconds, that statistics for this
+         entry have been counted."
+::= { extendEtherPortPrevious1DayEntry 7 }
+
+extendEtherPortPrevious1DayInvalidDataFlag    OBJECT-TYPE
+    SYNTAX      INTEGER
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object indicates the validity of the corresponding PM data.
+         It is set to 1 when the PM data is incomplete or invalid and set to 0
+         when the PM data is complete and valid."
+::= { extendEtherPortPrevious1DayEntry 8 }
+
+extendEtherPortPrevious1DayTransmitOctets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 1 day interval the number
+         of octets transmitted on the physical interface."
+::= { extendEtherPortPrevious1DayEntry 9 }
+
+extendEtherPortPrevious1DayTransmitPackets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 1 day interval the number
+         of packets transmitted on the physical interface."
+::= { extendEtherPortPrevious1DayEntry 10 }
+
+extendEtherPortPrevious1DayTransmitErrors    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 1 day interval the number
+         of packets which failed to transmit on the physical interface."
+::= { extendEtherPortPrevious1DayEntry 11 }
+
+extendEtherPortPrevious1DayTransmitDiscards    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of packets which were discarded before transmit on the physical
+         interface."
+::= { extendEtherPortPrevious1DayEntry 12 }
+
+extendEtherPortPrevious1DayTransmitPacketDrops    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of packets dropped due to discard or error, while transmit on the
+         physical interface."
+::= { extendEtherPortPrevious1DayEntry 13 }
+
+extendEtherPortPrevious1DayReceiveOctets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 1 day interval the number
+         of octets received on the physical interface."
+::= { extendEtherPortPrevious1DayEntry 14 }
+
+extendEtherPortPrevious1DayReceivePackets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 1 day interval the number
+         of packets received on the physical interface."
+::= { extendEtherPortPrevious1DayEntry 15 }
+
+extendEtherPortPrevious1DayReceiveErrors    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for a previous 1 day interval the number
+         of errored packets received on the physical interface."
+::= { extendEtherPortPrevious1DayEntry 16 }
+
+extendEtherPortPrevious1DayReceiveDiscards    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of discarded packets received on the physical interface."
+::= { extendEtherPortPrevious1DayEntry 17 }
+
+extendEtherPortPrevious1DayReceivePacketDrops    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION     
+        "This object represents for the current 1 day interval the number
+         of packets dropped due to discard or error, received on the physical
+         interface."
+::= { extendEtherPortPrevious1DayEntry 18 }
+
+-- ===========================================================================
+--    Ethernet port TCA threshold Table
+-- ===========================================================================
+
+extendEtherPortTcaThresholdTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExtendEtherPortTcaThresholdEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "The Ethernet port TCA threshold table, containing the thresholds for
+         the TCA's for the user Ethernet port (only near-end)"
+::= { extendEtherPortTcaThreshold  1 }
+
+extendEtherPortTcaThresholdEntry    OBJECT-TYPE
+    SYNTAX      ExtendEtherPortTcaThresholdEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry in the Ethernet port TCA threshold table."
+    INDEX       { ifIndex }
+::= { extendEtherPortTcaThresholdTable  1 }
+
+ExtendEtherPortTcaThresholdEntry ::=
+    SEQUENCE {
+        extendEtherPortTcaThresholdEnable           INTEGER,
+        extendEtherPortIntervalLosTcaThreshold      Gauge,
+        extendEtherPortIntervalFcsTcaThreshold      Gauge,
+        extendEtherPort1DayLosTcaThreshold          Gauge,
+        extendEtherPort1DayFcsTcaThreshold          Gauge,
+        extendEtherPortIntervalRxOctetTcaThreshold  Gauge,
+        extendEtherPortIntervalTxOctetTcaThreshold  Gauge,
+        extendEtherPort1DayRxOctetTcaThreshold      Gauge,
+        extendEtherPort1DayTxOctetTcaThreshold      Gauge
+    }
+
+extendEtherPortTcaThresholdEnable    OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    enabled(1),
+                    disabled(2)
+                }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This variable allows the manager to enable/disable the reporting of
+        TCA's for this Ethernet port."
+    DEFVAL      { disabled }
+::= { extendEtherPortTcaThresholdEntry 1 }
+
+extendEtherPortIntervalLosTcaThreshold    OBJECT-TYPE
+    SYNTAX      Gauge
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Ethernet port TCA threshold for LOS Error in 15 minutes at the near end. 
+         A value of zero means that the threshold is disabled."
+    DEFVAL      { 0 }
+::= { extendEtherPortTcaThresholdEntry  2 }
+
+extendEtherPortIntervalFcsTcaThreshold    OBJECT-TYPE
+    SYNTAX      Gauge
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Ethernet port TCA threshold for FCS errors in 15 minutes at the near end.
+         A value of zero means that the threshold is disabled."
+    DEFVAL      { 0 }
+::= { extendEtherPortTcaThresholdEntry  3 }
+
+extendEtherPort1DayLosTcaThreshold    OBJECT-TYPE
+    SYNTAX      Gauge
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Ethernet port TCA threshold for LOS Error in 1 day at the near end. 
+         A value of zero means that the threshold is disabled."
+    DEFVAL      { 0 }
+::= { extendEtherPortTcaThresholdEntry  4 }
+
+extendEtherPort1DayFcsTcaThreshold    OBJECT-TYPE
+    SYNTAX      Gauge
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Ethernet port TCA threshold for FCS errors in 1 day at the near end.
+        A value of zero means that the threshold is disabled."
+    DEFVAL      { 0 }
+::= { extendEtherPortTcaThresholdEntry  5 }
+
+extendEtherPortIntervalRxOctetTcaThreshold    OBJECT-TYPE
+    SYNTAX      Gauge
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Ethernet port TCA threshold in MB for received octets in 15 minutes at
+         the near end. A value of zero means that the threshold is disabled."
+    DEFVAL      { 0 }
+::= { extendEtherPortTcaThresholdEntry  6 }
+
+extendEtherPortIntervalTxOctetTcaThreshold    OBJECT-TYPE
+    SYNTAX      Gauge
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Ethernet port TCA threshold in MB for transmitted octets in 15 minutes at
+         the near end. A value of zero means that the threshold is disabled."
+    DEFVAL      { 0 }
+::= { extendEtherPortTcaThresholdEntry  7 }
+
+extendEtherPort1DayRxOctetTcaThreshold    OBJECT-TYPE
+    SYNTAX      Gauge
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Ethernet port TCA threshold in MB for received octets in 1 day at
+         the near end. A value of zero means that the threshold is disabled."
+    DEFVAL      { 0 }
+::= { extendEtherPortTcaThresholdEntry  8 }
+
+extendEtherPort1DayTxOctetTcaThreshold    OBJECT-TYPE
+    SYNTAX      Gauge
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "Ethernet port TCA threshold in MB for transmitted octets in 1 day at
+        the near end. A value of zero means that the threshold is disabled."
+    DEFVAL      { 0 }
+::= { extendEtherPortTcaThresholdEntry  9 }
+
+-- ===========================================================================
+--    Ethernet port auto negotiation Table
+-- ===========================================================================
+
+-- extendEtherAutoNegGroup    OBJECT-TYPE
+--     DESCRIPTION 
+--         "extendEtherGlobalAutoNegStatus(1) INTEGER { enabled(1), disabled(2) }
+--          Used by ISAM7354"
+-- ::= { extendEtherMib 5 }
+
+-- ===========================================================================
+--    Ethernet port 64 Bits counter Table
+-- ===========================================================================
+
+extendEtherPortStatisticsTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExtendEtherportStatisticsEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table to get 64 bits interface counter."
+::= { extendEtherMib 6 }
+
+extendEtherPortStatisticsEntry    OBJECT-TYPE
+    SYNTAX      ExtendEtherportStatisticsEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry appears in this table for 64 bits interface counter."
+    INDEX       { ifIndex }
+::= { extendEtherPortStatisticsTable 1 }
+
+ExtendEtherportStatisticsEntry ::= 
+    SEQUENCE {
+        extendEtherPortStatisticsIfInOctets                Counter64bit,
+        extendEtherPortStatisticsIfInUcastPkts             Counter64bit,
+        extendEtherPortStatisticsIfInNUcastPkts            Counter64bit,
+        extendEtherPortStatisticsIfInDiscards              Counter64bit,
+        extendEtherPortStatisticsIfInErrors                Counter64bit,
+        extendEtherPortStatisticsIfInUnknownProtos         Counter64bit,
+        extendEtherPortStatisticsIfInMulticastPkts         Counter64bit,
+        extendEtherPortStatisticsIfInBroadcastPkts         Counter64bit,
+        extendEtherPortStatisticsIfOutOctets               Counter64bit,
+        extendEtherPortStatisticsIfOutUcastPkts            Counter64bit,
+        extendEtherPortStatisticsIfOutNUcastPkts           Counter64bit,
+        extendEtherPortStatisticsIfOutDiscards             Counter64bit,
+        extendEtherPortStatisticsIfOutErrors               Counter64bit,
+        extendEtherPortStatisticsIfOutMulticastPkts        Counter64bit,
+        extendEtherPortStatisticsIfOutBroadcastPkts        Counter64bit
+    }
+
+extendEtherPortStatisticsIfInOctets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The total number of octets received on the interface,
+         including framing characters.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : octets               SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 1 }
+
+extendEtherPortStatisticsIfInUcastPkts    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to
+         a higher (sub-)layer, which were not addressed to a
+         multicast or broadcast address at this sub-layer.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 2 }
+
+extendEtherPortStatisticsIfInNUcastPkts    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to
+         a higher (sub-)layer, which were addressed to a
+         multicast or broadcast address at this sub-layer.
+         This object is deprecated in favour of
+         ifInMulticastPkts and ifInBroadcastPkts.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 3 }
+
+extendEtherPortStatisticsIfInDiscards    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of inbound packets which were chosen to be
+         discarded even though no errors had been detected to
+         prevent their being deliverable to a higher-layer
+         protocol.  One possible reason for discarding such a
+         packet could be to free up buffer space.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 4 }
+
+extendEtherPortStatisticsIfInErrors    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "For packet-oriented interfaces, the number of inbound
+         packets that contained errors preventing them from
+         being deliverable to a higher-layer protocol.  For
+         character-oriented or fixed-length interfaces, the
+         number of inbound transmission units that contained
+         errors preventing them from being deliverable to a
+         higher-layer protocol.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 5 }
+
+extendEtherPortStatisticsIfInUnknownProtos    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "For packet-oriented interfaces, the number of packets
+         received via the interface which were discarded
+         because of an unknown or unsupported protocol.  For
+         character-oriented or fixed-length interfaces which
+         support protocol multiplexing the number of
+         transmission units received via the interface which
+         were discarded because of an unknown or unsupported
+         protocol.  For any interface which does not support
+         protocol multiplexing, this counter will always be 0.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 6 }
+
+extendEtherPortStatisticsIfInMulticastPkts    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to
+         a higher (sub-)layer, which were addressed to a
+         multicast address at this sub-layer.  For a MAC layer
+         protocol, this includes both Group and Functional
+         addresses.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 7 }
+
+extendEtherPortStatisticsIfInBroadcastPkts    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of packets, delivered by this sub-layer to
+         a higher (sub-)layer, which were addressed to a
+         broadcast address at this sub-layer.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 8 }
+
+extendEtherPortStatisticsIfOutOctets    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The total number of octets transmitted out of the
+         interface, including framing characters.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : octets               SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 9 }
+
+extendEtherPortStatisticsIfOutUcastPkts    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The total number of packets that higher-level
+         protocols requested be transmitted, and which were not
+         addressed to a multicast or broadcast address at this
+         sub-layer, including those that were discarded or not sent.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 10 }
+
+extendEtherPortStatisticsIfOutNUcastPkts    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The total number of packets that higher-level
+         protocols requested be transmitted, and which were
+         addressed to a multicast or broadcast address at this
+         sub-layer, including those that were discarded or not sent.
+     
+         This object is deprecated in favour of
+         ifOutMulticastPkts and ifOutBroadcastPkts.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 11 }
+
+extendEtherPortStatisticsIfOutDiscards    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of outbound packets which were chosen to
+         be discarded even though no errors had been detected
+         to prevent their being transmitted.  One possible
+         reason for discarding such a packet could be to free
+         up buffer space.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 12 }
+
+extendEtherPortStatisticsIfOutErrors    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "For packet-oriented interfaces, the number of
+         outbound packets that could not be transmitted because
+         of errors.  For character-oriented or fixed-length
+         interfaces, the number of outbound transmission units
+         that could not be transmitted because of errors.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 13 }
+
+extendEtherPortStatisticsIfOutMulticastPkts    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The total number of packets that higher-level
+         protocols requested be transmitted, and which were
+         addressed to a multicast address at this sub-layer,
+         including those that were discarded or not sent.  For
+         a MAC layer protocol, this includes both Group and
+         Functional addresses.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 14 }
+
+extendEtherPortStatisticsIfOutBroadcastPkts    OBJECT-TYPE
+    SYNTAX      Counter64bit
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The total number of packets that higher-level
+         protocols requested be transmitted, and which were
+         addressed to a broadcast address at this sub-layer,
+         including those that were discarded or not sent.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: NA                   INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : packets              SPARSE  : NA
+             DESCR  : NA"
+::= { extendEtherPortStatisticsEntry 15 }
+
+-- ===========================================================================
+--    Ethernet port control parameters Table
+-- ===========================================================================
+
+extendEtherPortCtrlTable    OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExtendEtherportCtrlEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "A table to control the port specific parameters of the device like 
+         speed, duplex mode, MTU, auto negotiation, loop back, 
+         pause fream enable, port type."
+::= { extendEtherMib 7 }
+
+extendEtherPortCtrlEntry    OBJECT-TYPE
+    SYNTAX      ExtendEtherportCtrlEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry appears in this table for each Ethernet interface in the system."
+    INDEX       { ifIndex }
+::= { extendEtherPortCtrlTable 1 }
+
+ExtendEtherportCtrlEntry ::= 
+    SEQUENCE {
+        extendEtherPortCtrlPortType         INTEGER,
+	extendEtherPortCtrlStatsClear	    TruthValue
+    }
+
+extendEtherPortCtrlPortType    OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    uni(1),
+                    nni(2),
+                    huni(3),
+                    uplink(4),
+                    lemi(5)
+                }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object identifies the whole network service model based
+         on this interface.
+         User Network Interface (UNI) is an interface which 
+         specifies one untrust subscriber is connected.
+         Network to Network Interface (NNI) is an interface which 
+         specifies one trust networks in connected.
+         Hicap User Network Interface (HUNI) is an interface which 
+         specifies one untrust subscriber is connected, but with hicapacity
+         services.
+         Uplink specifies the interface is at the upside of the ISAM, i.e.
+         connecting the ISAM to the network.
+         Lemi is a local ethernet management interface. It is supported only
+         on a restricted set of systems/cards.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: YES                  INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : NA                   SPARSE  : NA
+             DESCR  : For Ethernet LT NELT-A don't support this object, just
+                      NELT-B support it. 
+                      For Ethernet LT FELT-B don't support write, FELT-B UPLINK read always
+                      retieve uplink(4),FELT-B DOWNLINK read always retieve nni(2)
+                      For Ethernet LT RELT don't support write, read always
+                      retieve uni(1).
+                      On NTs  of 7363 ISAM MX can be configured with UNI, NNI, Uplink. 
+											On NTs  of 7367 ISAM SX can be configured with NNI, Uplink."
+::= { extendEtherPortCtrlEntry 1 }
+
+
+extendEtherPortCtrlStatsClear  OBJECT-TYPE
+	SYNTAX      TruthValue
+    	ACCESS      read-write
+    	STATUS      mandatory
+    	DESCRIPTION
+		"This object governs the clearance of various statistics on the internal ethernet interface,
+		 setting this object will clear counter values of ifInOctets,ifInDiscards,ifoutOctets,ifOutDiscards,
+		 ifInMulticastPkts, ifInBroadcastPkts,ifOutMulticastPkts, ifOutBroadcastPkts, ifHCInUcastPkts, ifHCOutUcastPkts, 
+		 dot3StatsFCSErrors, dot3StatsSymbolErrors, etherStatsOversizePkts, etherStatsUndersizePkts, etherStatsCRCAlignErrors.
+		 This object is reverted back to false once clearing is done.
+
+         ALCATEL NOTE:
+             ACCESS : NA                   USAGE   : NA
+             PERSIST: YES                  INSRVMOD: NA
+             RANGE  : NA                   DEFVALUE: NA
+             UNITS  : NA                   SPARSE  : NA
+             DESCR  :"
+    DEFVAL      { false }
+::= { extendEtherPortCtrlEntry 2 }
+
+END

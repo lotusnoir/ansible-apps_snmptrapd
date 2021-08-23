@@ -1,0 +1,1411 @@
+-- MoCA (Multimedia over COAX) MIB
+-- =============================================================================
+-- This specification is published by Alcatel under Non-Disclosure
+-- Agreement(s) (NDA) with specific parties and has to be considered as
+-- Confidential Information as defined in such NDA.
+-- Alcatel reserves the right to revise this document for any reason,
+-- including but not limited to conformity with standards promulgated by
+-- various agencies, utilization of advances in the state of the technical
+-- areas, or the reflection of changes in the design of any equipment,
+-- techniques, or procedures described or referred to herein.
+-- The product specifications and other technical or performance
+-- information contained herein are subject to change without notice.
+-- Updates of this document will be issued under the above NDA's.
+-- Alcatel makes no representation or warranty, expressed or implied, with
+-- respect to the sufficiency, accuracy, or utility of any information or
+-- opinion contained herein. Alcatel expressly advises that any use of for
+-- any purpose or reliance upon this technical reference is at the risk of
+-- the user and that Alcatel shall not be liable for any damage or injury
+-- incurred by any person arising out of the sufficiency, accuracy, or
+-- utility of any information or opinion contained herein.
+-- This document is not to be construed as a suggestion to any manufacturer
+-- to modify or change any of its products, nor does this document
+-- represent any commitment by Alcatel to sell or purchase any product.
+-- Nothing contained herein shall be construed as conferring by implication,
+-- estoppel, or otherwise any license or right under any patent, whether or
+-- not the use of any information herein necessarily employs an invention
+-- of any existing or later issued patent.
+-- Alcatel reserves the right not to offer any or all of these products and
+-- to withdraw any or all of them at any future time.
+--
+-- Copyright (C) 2006, Alcatel. All Rights Reserved.
+-- =============================================================================
+--
+--
+-- MODULE-IDENTITY
+-- LAST-UPDATED "200904220000Z"
+-- ORGANIZATION "Alcatel"
+-- CONTACT-INFO
+-- "
+-- Co-editor: Rob Parsons
+--            Alcatel USA
+--            Postal:    2301 Sugar Bush Road
+--                       Raleigh, NC 27612
+--                       USA
+--            Email:     Rob.Parsons@alcatel-lucent.com
+--            Phone:     +1 919 850 6044
+--
+-- Co-editor: John Boyle
+--            Alcatel USA
+--            Postal:    2301 Sugar Bush Road
+--                       Raleigh, NC 27612
+--                       USA
+--            Email:     John.D.Boyle@alcatel-lucent.com
+--            Phone:     +1 919 850 6654 
+--
+-- DESCRIPTION
+--
+-- MoCA MIB for 7360 ISAM Platform
+--
+-- The MIB module defines objects for the management of a MoCA
+-- interface supported by an ONT.
+--
+--
+-- ALCATEL NOTE:
+-- This is an Alcatel proprietary MIB. Objects in this MIB
+-- are derived from the MoCA OMCI specification, customer requirements,
+-- MoCA chipset implementations and Alcatel data collection architecture.
+--
+--
+--    MOCA MIB HISTORY
+--
+-- John Boyle - 6/11/13:
+-- For ISAM5.0:
+--
+--  ALU00372328 - 7342 Feature Gap: MoCA Support
+--
+--	Stripped the FTTU4.7 MOCA MIB of all unsupported tables and attributes, and made it compatible with ISAM style of provisioning.
+--
+--
+--
+-- REVISION "200812160000Z"
+-- DESCRIPTION
+--        "Version: 3FE-51297-AYAL-PBZZA_v4.6.0.0.1
+--         Editor:  Rob Parsons
+--         Changes: 1. Changed description on mocaPortOpstatONTMacAddr.
+--
+-- REVISION "200904220000Z"
+-- DESCRIPTION
+--        "Version: 3FE-51754-AYAL-PBZZA_v4.7.0.0.0
+--         Editor:  Rob Parsons
+--         Changes: 1. Updated the DESCRIPTION on mocaPortOpstatONTMacAddr
+--                     and mocaPortOpstatRGWMacAddr. 
+--                  2. Added new read-only object mocaPortOpstatVersion
+--                     to mocaPortOpstatTable.
+--
+-- =============================================================================
+FTTU-MOCA-MIB DEFINITIONS ::= BEGIN 
+
+IMPORTS 
+	OBJECT-TYPE
+		FROM RFC-1212
+	ifIndex , InterfaceIndexOrZero
+		FROM ITF-MIB
+	RowStatus, MacAddress
+            		FROM SNMPv2-TC
+	DisplayString 
+		FROM RFC1213-MIB
+	Counter, TimeTicks,  IpAddress,  Gauge
+		FROM RFC1155-SMI
+	asam 
+		FROM SYSTEM-MIB 
+	AsamProfileName, AsamNextProfileIndex, AsamProfileScope, 
+	AsamProfileRefCount, AsamProfilePointer, AsamProfileIndex,
+	AsamProfileIndexOrZero, AsamMaxProfileIndex 
+		FROM ASAM-TC-MIB; 
+
+ --  DESCRIPTION
+ 
+apon OBJECT IDENTIFIER ::= { asam 35 }
+  mocaMIB     OBJECT IDENTIFIER ::= { apon 23 }
+
+--
+-- textual conventions used in this MIB
+--
+-- IfIndex
+   
+IfIndex ::= INTEGER (1..2147483647) 
+
+
+-- SpIndex is a FTTU definition that allows
+-- indexing deeper into the ONT. The
+-- coding semantics of this 32 bit index is defined
+-- in the GPON management interface (PB) document.
+
+SpIndex ::= INTEGER (1..2147483647)
+
+-- Due to the double indexing scheme introduced this way, the standard IF-tables 
+-- can not be used. Therefore references to those tables and related behaviour
+-- inherited from the base IETF MIB and still contained in the text below
+-- are not valid.
+
+
+-- 0 equals FALSE and 1 equals TRUE
+
+Boolean ::= INTEGER (0..1)
+
+
+-- Threshold for Threshold Crossing Alarms (TCA).
+-- The value 4294967295 means TCA is disabled.
+
+Threshold ::= INTEGER (0..4294967295)
+
+-- =============================================================================
+-- mocaPortTable
+--
+-- For ISAM5.0, this table is being re-used from FTTU4.8. However, for ISAM5.0,
+-- rows are auto-created by agent.  The number of rows auto-created is
+-- determined from the bponOntPlanCardTable.
+--
+-- As of ISAM5.0, this table is SUPPORTED.
+-- =============================================================================
+
+   mocaPortTable OBJECT-TYPE
+       SYNTAX       SEQUENCE OF MocaPortEntry
+       ACCESS       not-accessible
+       STATUS       mandatory
+       DESCRIPTION
+           "This table contains attributes describing an ONT MoCA interface
+            port. "
+
+       ::= { mocaMIB 1 }
+
+   mocaPortEntry OBJECT-TYPE
+       SYNTAX       MocaPortEntry
+       ACCESS       not-accessible
+       STATUS       mandatory
+       DESCRIPTION  "An entry in the mocaPortTable."
+
+       INDEX { mocaPortOntIndex,
+               mocaPortSpIndex }
+
+       ::= { mocaPortTable 1 }
+
+   MocaPortEntry ::=
+       SEQUENCE
+           {
+           mocaPortOntIndex                   IfIndex,
+           mocaPortSpIndex                    SpIndex,
+
+           mocaPortEtherTrafficPmCollectInd   INTEGER, -- PM table in GPON MIB
+           mocaPortEtherTrafficNumPMIntervals INTEGER, 
+
+           mocaPortTxPwr                      INTEGER, -- Vendor OMCI
+           mocaPortNC                         INTEGER, -- Vendor OMCI
+           mocaPortSNRMargin                  INTEGER, -- Vendor OMCI
+
+           mocaPortPassword                   DisplayString, -- OMCI PPTP ME
+           mocaPortPrivacyEnabled             INTEGER, -- OMCI PPTP ME
+           mocaPortMinBWAlarmThreshold        INTEGER, -- OMCI PPTP ME
+           mocaPortAPC                        INTEGER, -- Vendor OMCI
+           mocaPortIfPmCollectInd             INTEGER, -- PM table in this MIB
+           mocaPortIfNumPMIntervals           INTEGER,
+           mocaPortLabel                      OCTET STRING,
+           mocaPortPwrShedOverride            Boolean
+
+           }
+
+   mocaPortOntIndex  OBJECT-TYPE
+	SYNTAX 	IfIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Each row is indexed by the ifIndex of the ONT.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+
+	::= { mocaPortEntry 1 }
+
+   mocaPortSpIndex  OBJECT-TYPE
+	SYNTAX 	SpIndex
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION 
+		"Each row is also indexed by a number that
+		 contains the slot number and port number
+		 within the ONT.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+           
+	::= { mocaPortEntry 2 }
+
+   mocaPortEtherTrafficPmCollectInd  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+                "This indicates whether Ethernet Traffic Performance Monitors
+                 (gponEtherTrafficIntervalTable in the GPON MIB) should be
+                 collected for this MoCA Port.
+
+                  1 = PM collection enabled
+                  2 = PM collection disabled
+
+                  Default = 2 = disabled.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  YES
+           RANGE:     1..2
+           DEFVALUE:  2
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaPortEntry 3 }
+
+   mocaPortEtherTrafficNumPMIntervals  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+               "Indicates the number of rows currently present
+                in the gponEtherTrafficIntervalTable.  This
+                is for convenience of the EMS, so that it can
+                quickly determine how many rows should be 
+                uploaded.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED.  "
+
+	::= { mocaPortEntry 4 }
+
+
+
+   mocaPortTxPwr  OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION 
+		"This attribute indicates what the target transmitter power
+                 level is to be set. Automatic Power Control (APC) supported
+                 by the MoCA interface will attempt to reach this level.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NO
+           RANGE:     -31..0
+           DEFVALUE:  -14
+           UNITS:     dBm
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED.  "
+
+	::= { mocaPortEntry 14 }
+
+   mocaPortNC  OBJECT-TYPE
+	SYNTAX INTEGER
+               {
+               negotiateForNC(1),  -- Negotiate for Network Coordinator
+               alwaysTheNC(2),     -- Always be the Network Coordinator
+               neverTheNC(3)       -- Never be the Network Coordinator
+               }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION 
+		"This attribute indicates whether the MoCA interface should
+                 negotiate with the other MoCA nodes on its network for the
+                 role of Network Coordinator (NC), or always be the network
+                 coordinator on its network or never be the network coordinator
+                 on its network.                 
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NO
+           RANGE:     negotiateForNC(1), alwaysTheNC(2), neverTheNC(3)
+           DEFVALUE:  negotiateForNC(1)
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaPortEntry 15 }
+
+  
+
+   mocaPortSNRMargin  OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION 
+		"This attribute determines how much margin to use above the measured
+                 Rx noise floor to accommodate variations due to return loss.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NO
+           RANGE:     -3..3
+           DEFVALUE:  2
+           UNITS:     dBm
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaPortEntry 17 }
+
+
+   mocaPortPassword  OBJECT-TYPE
+	SYNTAX DisplayString(SIZE (0..17))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION 
+		"This attribute provides the MoCA Encryption Key. It is a
+                 17 ASCII coded decimal digit string.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  YES
+           RANGE:     17 ASCII coded decimal digits
+           DEFVALUE:  NULL
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaPortEntry 25 }
+
+   mocaPortPrivacyEnabled  OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION 
+		"This attribute indicates if the link-layer security is 
+                 deactivated (disabled) or activated (enabled).
+
+                 0=deactivated (default)
+                 1=activated
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  YES
+           RANGE:     0..1
+           DEFVALUE:  0
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaPortEntry 26 }
+
+   mocaPortMinBWAlarmThreshold  OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS optional
+	DESCRIPTION 
+		"This attribute indicates the minimum PHY link bandwidth between
+         two nodes. If less, an alarm is raised indicating the failure.
+
+         Valid values are 0, 57 to 3200 Mbps. The default value is 180Mbps,
+         with a value zero used to disable the threshold.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  YES
+           RANGE:     0, 57..3200
+           DEFVALUE:  180
+           UNITS:     Mbps
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaPortEntry 27 }
+
+
+
+   mocaPortAPC  OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "When APC is ENABLED, automatic power control (APC) is activated
+         and the transmit power level is adjusted to a setting that will
+         achieve the target PHY bitrate of 235Mbits/s. The adjusted setting
+         will be less than or equal to TXPOWER.
+
+         When APC is DISABLED, automatic power control (APC) is deactivated
+         and the transmit power level is set to TXPOWER.
+
+         The default value is ENABLED.
+
+                  0 = Disable APC
+                  1 = Enable APC
+
+                  Default = 1
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NO
+           RANGE:     0..1
+           DEFVALUE:  1
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaPortEntry 29 }
+
+   mocaPortIfPmCollectInd  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+                "Interface PM Collect Indicator
+
+                  This indicates whether Physical Layer Performance Monitors
+                  (mocaIfIntervalTable in this MIB) should be collected
+                  for this MoCA Port.
+
+                  1 = PM collection enabled
+                  2 = PM collection disabled
+
+                  Default = 2 = disabled.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  YES
+           RANGE:     1..2
+           DEFVALUE:  2
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaPortEntry 30 }
+
+   mocaPortIfNumPMIntervals  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+               "Indicates the number of rows currently present
+                in the mocaIfIntervalTable.  This
+                is for convenience of the EMS, so that it can
+                quickly determine how many rows should be 
+                uploaded.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaPortEntry 31 }
+
+   mocaPortLabel  OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (0..80))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+               "This is a textual string that can be used
+                to label the MoCA port.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  YES
+           RANGE:     NA
+           DEFVALUE:  NULL
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaPortEntry 32 }
+
+mocaPortPwrShedOverride OBJECT-TYPE
+SYNTAX Boolean
+ACCESS read-write
+STATUS mandatory
+DESCRIPTION 
+ "Allows setting as follows:
+ 
+  TRUE = 1 = port excluded from data class power shedding
+  FALSE = 0 = port included in data class power shedding
+
+  Default = 0 = FALSE 
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  YES
+           RANGE:     FALSE (0), TRUE (1)
+           DEFVALUE:  FALSE (0)
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+::= { mocaPortEntry 33 }
+
+
+-- =============================================================================
+-- mocaPortOpstatTable
+--
+-- As of ISAM5.0, this table is SUPPORTED.
+-- =============================================================================
+
+   mocaPortOpstatTable  OBJECT-TYPE
+	SYNTAX SEQUENCE OF MocaPortOpstatEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+        DESCRIPTION
+           "This table contains a row for each provisioned MoCA port on a
+            specific ONT.  This table contains status attributes about the MoCA
+            port that must be obtained directly via OMCI get messages.
+            Rows are created automatically by the OLT after the associated row
+            is created in the mocaPortTable.This table contains attributes
+            describing the status of an ONT MoCA interface port.  "
+
+	::= { mocaMIB 2 }
+
+   mocaPortOpstatEntry  OBJECT-TYPE
+	SYNTAX 	MocaPortOpstatEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+
+	INDEX	{ mocaPortOpstatOntIndex,
+		  mocaPortOpstatSpIndex }
+
+	::= { mocaPortOpstatTable 1 }
+
+   MocaPortOpstatEntry ::= 
+       SEQUENCE
+           {
+           mocaPortOpstatOntIndex              IfIndex,
+           mocaPortOpstatSpIndex               SpIndex,
+
+           mocaPortOpstatNetworkStatus         INTEGER, -- OMCI PPTP ME
+           mocaPortOpstatRFChannel             INTEGER, -- OMCI PPTP ME
+           mocaPortOpstatLastOpFreq            INTEGER, -- OMCI PPTP ME
+           mocaPortOpstatLinkStatus            INTEGER, -- OMCI PPTP ME
+           mocaPortOpstatTxPwr                 INTEGER,
+           mocaPortOpstatONTMacAddr            OCTET STRING, -- JPC RFP Req.
+           mocaPortOpstatRGWMacAddr            OCTET STRING,
+
+           mocaPortOpstatPhyTxRate             Gauge,        -- JPC RFP Req.
+
+           mocaPortOpstatPhyRxRate             Gauge,        -- JPC RFP Req.
+           mocaPortOpstatVersion               INTEGER,       -- Vendor OMCI
+           mocaPortOpstatLowPowerState         INTEGER       -- Vendor OMCI
+
+           }
+
+   mocaPortOpstatOntIndex  OBJECT-TYPE
+	SYNTAX 	IfIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Each row is indexed by the ifIndex of the ONT.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+
+	::= { mocaPortOpstatEntry 1 }
+
+   mocaPortOpstatSpIndex  OBJECT-TYPE
+	SYNTAX 	SpIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Each row is also indexed by a number that
+		 contains the MoCA slot number and port number
+ 		 within the ONT.  
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+
+	::= { mocaPortOpstatEntry 2 }
+
+   mocaPortOpstatNetworkStatus  OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION 
+		"This attribute indicates the networking state of the MoCA
+                 interface.  Its value indicates that the interface has not
+                 joined a MoCA network, has joined a MoCA network, or has
+                 joined a MoCA network and is currently the network
+                 coordinator.
+
+               0 = has not joined a MoCA network
+               1 = has joined a MoCA network
+               2 = joined a MoCA network and is NC
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..2
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+	::= { mocaPortOpstatEntry 3 }
+
+   mocaPortOpstatRFChannel  OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION 
+		"This attribute reports the RF frequency to which the MoCA
+                 interface is currently tuned, in MHz.
+
+         Value 0 means no connectivity or link is having connectivity
+         problems.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0 - 1625
+           DEFVALUE:  NA
+           UNITS:     MHz
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+	::= { mocaPortOpstatEntry 4 }
+
+   mocaPortOpstatLastOpFreq  OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION 
+		"This attribute reports the RF frequency to which the MoCA
+                 interface was tuned when last operational, in MHz.
+
+         Value 0 means no connectivity or link is having connectivity
+         problems.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0 - 1625
+           DEFVALUE:  NA
+           UNITS:     MHz
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+	::= { mocaPortOpstatEntry 5 }
+
+    mocaPortOpstatLinkStatus  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"This attribute is used to indicate the link status of the MoCA
+                 interface port between itself and MoCA devices on its network.
+
+		 The agent determines this status from the LOL (Loss of Link)
+                 and LL (Limited Link) alarms associated with the PPTP MoCA
+                 UNI OMCI ME. 
+
+
+		 0 = No carrier detected
+		 1 = Carrier detected
+                 2 = Carrier detected but low bandwidth
+
+		 Default = 0 = No carrier detected
+
+                 The OMCI MoCA PPTP ME will report the following alarm numbers:
+
+                 0 = MoCA-Loss of Link (Loss of link of the MoCA interface)
+                 1 = MoCA-Limited Link (Bandwidth of link between between 2
+                     nodes on the MoCA network is less than specified value.)
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..2
+           DEFVALUE:  0
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+	::= { mocaPortOpstatEntry 6 }
+
+   mocaPortOpstatTxPwr  OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "This attribute indicates what the transmitter power
+                 level is actually set.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  YES
+           RANGE:     0 to -31
+           DEFVALUE:  NA
+           UNITS:     dBm
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+    ::= { mocaPortOpstatEntry 7 }
+
+   mocaPortOpstatONTMacAddr OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE(6))
+       ACCESS        read-only
+       STATUS        mandatory
+       DESCRIPTION
+        "A unique identifier (IEEE 48-bit Extended Unique Identifier)
+                 of a MoCA device (or node) on the MoCA network. This is
+                 the MAC address of the far end MoCA device (BHR, RGW)
+                 which the ONU MoCA UNI has established a link.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	NOTE:  It is recognized that the attribute description does not match well with
+		the attribute name.  This is legacy behavior from FTTU4.7, and so is
+		kept the same with ISAM5.0.
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+    ::= { mocaPortOpstatEntry 8 }
+
+   mocaPortOpstatRGWMacAddr OBJECT-TYPE
+       SYNTAX        OCTET STRING (SIZE(6))
+       ACCESS        read-only
+       STATUS        mandatory
+       DESCRIPTION
+        "A unique identifier (IEEE 48-bit Extended Unique Identifier)
+                 of a MoCA device (or node) on the MoCA network. This is
+                 the MAC address of the near end MoCA device (ONT UNI)
+                 which the ONU MoCA UNI has established a link.
+
+	NOTE:  It is recognized that the attribute description does not match well with
+		the attribute name.  This is legacy behavior from FTTU4.7, and so is
+		kept the same with ISAM5.0.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+       ::= { mocaPortOpstatEntry 9 }
+
+  
+
+   mocaPortOpstatPhyTxRate OBJECT-TYPE
+       SYNTAX        Gauge
+       ACCESS        read-only
+       STATUS        mandatory
+       DESCRIPTION
+		"This attribute is the MoCA PHY unicast transmit rate from
+                 the ONT MoCA interface to the RGW.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..4294967295
+           DEFVALUE:  NA
+           UNITS:     bps
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+       ::= { mocaPortOpstatEntry 11 }
+
+
+
+
+   mocaPortOpstatPhyRxRate OBJECT-TYPE
+       SYNTAX        Gauge
+       ACCESS        read-only
+       STATUS        mandatory
+       DESCRIPTION
+		"This attribute is the MoCA PHY unicast receive rate to
+                 the ONT MoCA interface from the RGW.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..4294967295
+           DEFVALUE:  NA
+           UNITS:     bps
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+       ::= { mocaPortOpstatEntry 13 }
+
+
+   mocaPortOpstatVersion OBJECT-TYPE
+       SYNTAX INTEGER
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+           "The MoCA version that the ONT UNI is operating.
+
+            For OMCI messaging, this attribute is Operating Mode
+            in the MoCA UNI Supplemental 1 ME.
+
+              0=unknown
+              1= MoCA version 1.0
+              2= MoCA version 1.1
+              3= MoCA version 2.0
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..3
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+       DEFVAL  {0}
+
+       ::= { mocaPortOpstatEntry 17 }
+
+   mocaPortOpstatLowPowerState OBJECT-TYPE
+       SYNTAX INTEGER
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+           "Indicates the power state if MoCA entered low power states.
+
+            For OMCI messaging, this attribute is Operating Mode
+            in the MoCA UNI Supplemental 1 ME.
+
+              0 = unknown
+              1 = normal
+              2 = idle
+              3 = standby
+              4 = sleep
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..4
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED."
+
+       DEFVAL  {0}
+
+       ::= { mocaPortOpstatEntry 18 }
+
+
+
+-- =============================================================================
+-- mocaIfCurrTable
+--
+-- As of ISAM5.0, this table is SUPPORTED.
+-- =============================================================================
+
+   mocaIfCurrTable       OBJECT-TYPE
+       SYNTAX       SEQUENCE OF MocaIfCurrEntry 
+       ACCESS       not-accessible
+       STATUS       mandatory
+       DESCRIPTION
+           "This table provides 1 row for each ONT MoCA UNI interface.
+
+            The entry represents current physical layer transmit and receive
+            performance information over the WAN (1000MHz center frequency)
+            between the ONT and the Residential Gateway (RGW) located
+            at the customer premises. "
+
+       ::= { mocaMIB 8 }
+
+   mocaIfCurrEntry OBJECT-TYPE
+       SYNTAX        MocaIfCurrEntry
+       ACCESS        not-accessible
+       STATUS        mandatory
+       DESCRIPTION
+           "An entry in the mocaIfCurrTable."
+
+       INDEX { mocaIfCurrOntIndex,
+               mocaIfCurrSpIndex }
+
+       ::= { mocaIfCurrTable 1 }
+
+   MocaIfCurrEntry ::=
+       SEQUENCE
+           {
+           mocaIfCurrOntIndex                 IfIndex,
+           mocaIfCurrSpIndex                  SpIndex,
+           mocaIfCurrRxPacket                 Counter,   -- JPC RFP Req.
+           mocaIfCurrRxErrored                Counter   -- JPC RFP Req.
+           }
+
+   mocaIfCurrOntIndex  OBJECT-TYPE
+	SYNTAX 	IfIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Each row is indexed by the ifIndex of the ONT.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+
+	::= { mocaIfCurrEntry 1 }
+
+
+   mocaIfCurrSpIndex  OBJECT-TYPE
+    SYNTAX SpIndex
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION 
+        "Each row is also indexed by a number that
+         contains the slot number and port number
+         within the ONT.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+           
+     ::= { mocaIfCurrEntry 2 }
+
+
+   mocaIfCurrRxPacket OBJECT-TYPE
+       SYNTAX        Counter
+       ACCESS        read-only
+       STATUS        mandatory
+       DESCRIPTION
+           "Number of received packets from RGW.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..4294967295
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+       ::= { mocaIfCurrEntry 4 }
+
+
+   mocaIfCurrRxErrored OBJECT-TYPE
+       SYNTAX        Counter
+       ACCESS        read-only
+       STATUS        mandatory
+       DESCRIPTION
+           "Number of received errored packets from RGW.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..4294967295
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+       ::= { mocaIfCurrEntry 6 }
+
+
+-- =============================================================================
+-- mocaIfIntervalTable
+--
+-- As of ISAM5.0, this table is SUPPORTED. 
+-- =============================================================================
+
+   mocaIfIntervalTable       OBJECT-TYPE
+       SYNTAX       SEQUENCE OF MocaIfIntervalEntry 
+       ACCESS       not-accessible
+       STATUS       mandatory
+       DESCRIPTION
+           "This table provides 32 rows, one row for each 15 minute
+            data collection interval over an 8 hour period, for each
+            ONT MoCA interface.
+
+            An entry represents historical physical layer transmit and receive
+            performance information over the WAN (1000MHz center frequency)
+            between the ONT and the Residential Gateway (RGW) located
+            at the customer premises.  "
+
+       ::= { mocaMIB 9 }
+
+   mocaIfIntervalEntry OBJECT-TYPE
+       SYNTAX        MocaIfIntervalEntry
+       ACCESS        not-accessible
+       STATUS        mandatory
+       DESCRIPTION
+           "An entry in the mocaIfIntervalTable."
+
+       INDEX { mocaIfIntervalOntIndex,
+               mocaIfIntervalSpIndex,
+               mocaIfIntervalNumber }
+
+       ::= { mocaIfIntervalTable 1 }
+
+   MocaIfIntervalEntry ::=
+       SEQUENCE
+           {
+           mocaIfIntervalOntIndex                 IfIndex,
+           mocaIfIntervalSpIndex                  SpIndex,
+           mocaIfIntervalNumber                   INTEGER,
+           mocaIfIntervalRxPacket                 Counter,   -- JPC RFP Req.
+           mocaIfIntervalRxErrored                Counter   -- JPC RFP Req.
+           }
+
+   mocaIfIntervalOntIndex  OBJECT-TYPE
+	SYNTAX 	IfIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Each row is indexed by the ifIndex of the ONT.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+
+	::= { mocaIfIntervalEntry 1 }
+
+
+   mocaIfIntervalSpIndex  OBJECT-TYPE
+    SYNTAX SpIndex
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION 
+        "Each row is also indexed by a number that
+         contains the slot number and port number
+         within the ONT.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+           
+     ::= { mocaIfIntervalEntry 2 }
+
+   mocaIfIntervalNumber OBJECT-TYPE
+       SYNTAX        INTEGER (1..32)
+       ACCESS        not-accessible
+       STATUS        mandatory
+       DESCRIPTION
+           "Each row is also indexed by a number between 1 and 32,
+            where 1 is the most recently completed 15 minute interval
+            and 32 is the 15 minute interval completed 7 hours
+            and 45 minutes prior to interval 1.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     1..32
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+
+       ::= { mocaIfIntervalEntry 3 }
+
+
+   mocaIfIntervalRxPacket OBJECT-TYPE
+       SYNTAX        Counter
+       ACCESS        read-only
+       STATUS        mandatory
+       DESCRIPTION
+           "Number of received packets from RGW.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..4294967295
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+       ::= { mocaIfIntervalEntry 5 }
+
+   mocaIfIntervalRxErrored OBJECT-TYPE
+       SYNTAX        Counter
+       ACCESS        read-only
+       STATUS        mandatory
+       DESCRIPTION
+           "Number of received errored packets from RGW.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..4294967295
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+       ::= { mocaIfIntervalEntry 7 }
+
+
+-- =============================================================================
+-- mocaIfTCAThresholdTable
+
+-- As of ISAM5.0, this table is SUPPORTED. 
+-- =============================================================================
+
+   mocaIfTCAThresholdTable  OBJECT-TYPE
+    SYNTAX SEQUENCE OF MocaIfTCAThresholdEntry
+    ACCESS not-accessible
+    STATUS mandatory
+        DESCRIPTION
+            "This TCA threshold table contains physical layer threshold
+             settings for various PMs at an ONT MoCA interface during
+             the current 15 minute interval of operation.
+
+             An instance of this table is auto-created/deleted in accordance
+             with the 'Interface PM Collect Indicator' setting.  "
+
+    ::= { mocaMIB 10 }
+
+   mocaIfTCAThresholdEntry  OBJECT-TYPE
+    SYNTAX 	MocaIfTCAThresholdEntry
+    ACCESS	not-accessible
+    STATUS	mandatory
+    DESCRIPTION 
+       "An entry in the MoCA Interface TCA Threshold
+        Table."
+
+    INDEX { mocaIfTCAThresholdOntIndex,
+            mocaIfTCAThresholdSpIndex }
+
+	::= { mocaIfTCAThresholdTable 1 }
+
+   MocaIfTCAThresholdEntry ::= SEQUENCE {
+    mocaIfTCAThresholdOntIndex                    IfIndex,
+    mocaIfTCAThresholdSpIndex                     SpIndex,
+
+    mocaIfTCAEnable                               INTEGER,
+    mocaIfTCAThresholdRxErrored                   Threshold
+        }
+
+   mocaIfTCAThresholdOntIndex  OBJECT-TYPE
+	SYNTAX 	IfIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Each row is indexed by the ifIndex of the ONT.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+
+	::= { mocaIfTCAThresholdEntry 1 }
+
+   mocaIfTCAThresholdSpIndex  OBJECT-TYPE
+	SYNTAX 	SpIndex
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Each row is also indexed by the slot/port of the physical UNI.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     NA
+           DEFVALUE:  NA
+           UNITS:     NA
+           SPARSE:    NA"
+
+	::= { mocaIfTCAThresholdEntry 2 }
+
+   mocaIfTCAEnable  OBJECT-TYPE
+	SYNTAX 	INTEGER
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"Allows the manager to enable/disable the reporting of
+		 Ethernet traffic TCAs for this physical UNI. 
+
+	
+		  1 = TCA's enabled
+		  2 = TCA's disabled
+
+		 Default = 2 = disabled.
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   YES
+           INSRVMOD:  NA
+           RANGE:     1..2
+           DEFVALUE:  2
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaIfTCAThresholdEntry 3 }
+
+  
+   mocaIfTCAThresholdRxErrored  OBJECT-TYPE
+	SYNTAX 	Threshold
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+           "This attribute is the TCA setting for the number of
+            incoming (upstream) error packets to the MoCA interface.
+
+            A value of 4294967295 means that this threshold is disabled.
+
+            Default = 4294967295
+
+           ALCATEL NOTE:
+           ACCESS:    NA
+           USAGE:     NA
+           PERSIST:   NO
+           INSRVMOD:  NA
+           RANGE:     0..4294967295
+           DEFVALUE:  4294967295
+           UNITS:     NA
+           SPARSE:    NA
+
+	As of ISAM5.0, attribute is SUPPORTED. "
+
+	::= { mocaIfTCAThresholdEntry 5 }
+
+
+   END
+   

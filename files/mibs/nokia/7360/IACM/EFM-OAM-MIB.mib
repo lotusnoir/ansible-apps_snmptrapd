@@ -1,0 +1,1410 @@
+--======================================================================== 
+-- EFM-OAM-MIB
+-- This specification is published by Alcatel under Non-Disclosure
+-- Agreement(s) (NDA) with specific parties and has to be 
+-- considered as Confidential Information as defined in such NDA.
+-- Alcatel reserves the right to revise this document for any reason,
+-- including but not limited to conformity with standards promulgated 
+-- by various agencies, utilisation of advances in the state of the 
+-- technical areas, or the reflection of changes in the design of any 
+-- equipment,techniques, or procedures described or referred to herein.
+-- The product specifications and other technical or performance 
+-- information contained herein are subject to change without notice.
+-- Updates of this document will be issued under the above NDA's.
+-- Alcatel makes no representation or warranty, expressed or implied, 
+-- with respect to the sufficiency, accuracy, or utility of any 
+-- information or opinion contained herein. Alcatel expressly advises 
+-- that any use of for any purpose or reliance upon this technical 
+-- reference is at the risk of the user and that Alcatel shall not be 
+-- liable for any damage or injury incurred by any person arising out of 
+-- the sufficiency, accuracy, or utility of any information or opinion 
+-- contained herein.This document is not to be construed as a suggestion
+-- to any manufacturer to modify or change any of its products, nor does 
+-- this document represent any commitment by Alcatel to sell or purchase 
+-- any product.Nothing contained herein shall be construed as conferring 
+-- byimplication, estoppel, or otherwise any license or right under any 
+-- patent, whether or not the use of any information herein necessarily 
+-- employs an invention of any existing or later issued patent.
+-- Alcatel reserves the right not to offer any or all of these products 
+-- and to withdraw any or all of them at any future time.
+-- Copyright (C) YYYY, Alcatel. All Rights Reserved.
+-- =======================================================================
+--  
+-- MODULE IDENTITY
+-- LAST-UPDATED "201509180000Z"
+-- ORGANIZATION "Alcatel"
+-- CONTACT-INFO "email:asam.mibsupport@alcatel.be"
+-- DESCRIPTION "EFM OAM MIB"
+-- ==========================================================================
+-- REVISION "20161108"
+-- DESCRIPTION
+--       "Version: 3FE29601EGAA_V5.6
+--        Editor:  Siddheswar Bhattacharjee 
+--        Changes: MIB Updated.
+--                 ALU02260922: MIB Readiness for ALU02183319.
+--                 Updated ALCATEL NOTE for the Objects efmOamFramesCheckSequenceErrors,
+--                 efmOamAlignmentErrors, efmOamFramesLostDueToIntMACXmitError,
+--                 efmOamFramesLostDueToIntMACRcvError, efmOamMulticastFramesReceivedOK,
+--                 efmOamBroadcastFramesReceivedOK, efmOamFrameTooLongErrors,  
+-- ==========================================================================
+-- REVISION "20150918"
+-- DESCRIPTION
+--       "Version: 3FE29601EDAA_V5.3
+--        Editor:  Arunkumar Nandakumar 
+--        Changes: MIB Updated for ALU02102958.
+--                 Updated ALCATEL NOTE for the Objects extenddot3OamIntTraffGenState,
+--                 extenddot3OamTransmitLbmLength, extenddot3OamTransmitLbmBitrate,
+--                 extenddot3OamTransmitLbmSourceMAC, extenddot3OamTransmitLbmDestMAC
+-- ==========================================================================
+-- REVISION "20150617"
+-- DESCRIPTION
+--       "Version: 3FE29601EDAA_V5.3
+--        Editor:  Mahammad Jahid Anwar
+--        Changes: MIB Updated for ALU02024629.
+--                 Update range changes to 0..3600 and units changes to SEC for 
+--                 Extenddot3OamLoopbackEntry.
+--                 Add new MIB element  extenddot3OamLoopbackRemainingTimeout." 
+-- ==========================================================================
+-- REVISION "20140805"
+-- DESCRIPTION
+--        "Version: 3FE29601EBAA_V5.1
+--         Editor:  Karthik Chandra Bose S
+--         Changes: MIB Updates for ALU01894700.
+--                  Update description for extenddot3OamLoopbackTable.
+--                  Change type of extenddot3OamLoopbackTimeout to
+--                  INTEGER."
+-- ==========================================================================
+-- REVISION "200612151345Z"
+-- DESCRIPTION
+--        "Version: 3FE29601EAAA_V3.4.0.0.0
+--         Editor:  yogesh thirthappa
+--         Changes: Changes after review"
+-- =======================================================================
+EFM-OAM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    ifIndex, InterfaceIndex
+        FROM ITF-MIB
+    OBJECT-TYPE
+        FROM RFC-1212
+    RowStatus, MacAddress
+        FROM SNMPv2-TC
+    TimeTicks, Counter, Gauge
+        FROM RFC1155-SMI
+    asam
+        FROM SYSTEM-MIB;
+
+-- ===========================================================================
+-- Texual Conventions 
+-- ===========================================================================
+
+      ExtendDot3OamLbmBitrate ::=
+        INTEGER { bitrate100K(1), bitrate1M(2), bitrate10M(3), 
+                  bitrate100M(4), bitrate1G(5), bitrate2G5(6) }
+--      DESCRIPTION
+--        "Indicates the bitrate at which loopback messages will be generated.
+--        The possible values are:
+--          bitrate100K(1)    100K bits per second
+--          bitrate1M(2)        1M bits per second
+--          bitrate10M(3)      10M bits per second
+--          bitrate100M(4)    100M bits per second
+--          bitrate1G(5)        1G bits per second
+--          bitrate2G5(6)     2.5G bits per second
+--        The resulting frame rate can be calculated from the bitrate devided by
+--        the LBM message length in bits.
+      
+
+efmOamMIB            OBJECT IDENTIFIER ::= {asam 75}
+
+
+-- ==========================================================================
+-- Ethernet OAM Table
+-- ===========================================================================
+
+      extenddot3OamTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF Extenddot3OamEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION 
+          "Primary controls and status for the OAM capabilities of an Ethernet
+          like interface. There will be one row in this table for each Ethernet
+          like interface in the system that supports the Ethernet OAM functions
+          defined in [802.3ah]
+        ALCATEL NOTE:
+          TABLESIZE:   0..864" 
+        ::= { efmOamMIB 1 }
+      
+      extenddot3OamEntry OBJECT-TYPE
+        SYNTAX Extenddot3OamEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION 
+          "An entry in the table, containing information on the Ethernet OAM
+          function for a single Ethernet  like interface.
+        ALCATEL NOTE:
+          SUPPORT:      YES
+          TABLE SIZE:   864(48 port x 18 LT, it may change in future)
+          INDEX:        ifIndex refers to Ethernet like interface"
+        INDEX    { ifIndex }
+        ::= { extenddot3OamTable 1 }
+      
+      Extenddot3OamEntry ::=
+        SEQUENCE {
+          extenddot3OamVersion                   INTEGER,
+          extenddot3OamAliveTimeout              TimeTicks,
+          extenddot3OamResponseTimeout           TimeTicks,
+          extenddot3OamTransmitLbmLength         INTEGER,
+          extenddot3OamTransmitLbmBitrate        INTEGER,
+          extenddot3OamTransmitLbmSourceMAC      MacAddress,
+          extenddot3OamTransmitLbmDestMAC        MacAddress,
+          extenddot3OamEnableCriticalLinkEvent   INTEGER,
+          extenddot3OamIntTraffGenState          INTEGER
+          }
+      
+      extenddot3OamVersion OBJECT-TYPE
+        SYNTAX   INTEGER
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION 
+          "The version of the local OAM entity.  
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { extenddot3OamEntry 1 }
+      
+      extenddot3OamAliveTimeout OBJECT-TYPE
+        SYNTAX   TimeTicks
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION 
+          "this value is used to derive the pdu timer and local link 
+          losttimer which will be used after the discovery is compeleted
+          and OAM is enabled on a perticular interface. 
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   YES
+          RANGE:      1..300
+          PERSIST:    YES
+          DEFVALUE:   300
+          UNITS:      SEC
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { extenddot3OamEntry 2 }
+      
+      extenddot3OamResponseTimeout OBJECT-TYPE
+        SYNTAX   TimeTicks
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION
+          " This is the maximum time for which ISAM waits to get the
+          response/responses (in case of bonding group) from CPE for
+          variable request.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   YES
+          RANGE:      2..10
+          PERSIST:    YES
+          DEFVALUE:   5
+          UNITS:      SEC
+          SPARSE:     NO
+          DESCR:      NA
+          "
+          ::= { extenddot3OamEntry 3 } 
+
+
+      extenddot3OamTransmitLbmLength OBJECT-TYPE
+        SYNTAX   INTEGER (1..1500)
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION
+          "This is the length of the datafield of loopback messages when generated 
+          by the ISAM. To this, 14 bytes ethernet header will be added. (VLAN tags 
+          are not applicable to 802.3ah.). Then padding as specified in 802.3 will 
+          be added to bring the total frame length to minimum 64 bytes.
+          When 0, loopback messages are not generated by ISAM itself on 
+          this interface; then traffic from an external source should be used 
+          as loopback messages.
+          The content of loopback messages generated by ISAM is fixed by 
+          implementation.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   YES
+          RANGE:      1..1500
+          PERSIST:    NO
+          DEFVALUE:   10
+          UNITS:      bytes
+          SPARSE:     NO
+          DESCR:      This object is not supported by ISAM 
+          "
+          ::= { extenddot3OamEntry 4 } 
+      
+      extenddot3OamTransmitLbmBitrate OBJECT-TYPE
+        SYNTAX   ExtendDot3OamLbmBitrate
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION
+          "This is the bitrate at which loopback messages will generated 
+          by the ISAM. The operator should not configure a bitrate that is higher 
+          than the actual LT bitrate, or than the actual upstream xDSL bitrate, or 
+          than the actual downstream xDSL bitrate. 
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   YES
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   bitrate100Kbps(1)
+          UNITS:      bits per second
+          SPARSE:     NO
+          DESCR:      This object is not supported by ISAM 
+          "
+          ::= { extenddot3OamEntry 5 } 
+      
+      extenddot3OamTransmitLbmSourceMAC OBJECT-TYPE
+        SYNTAX   MacAddress
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION
+          "This is source MAC address to be used for loopback messages when 
+           generated by the ISAM. 
+           This MAC address shall not be used for MAC address learning nor for 
+           L2 forwarding of ethernet frames.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   YES
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   00:00:01:00:00:01
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      This object is not supported by ISAM 
+          "
+          ::= { extenddot3OamEntry 6 } 
+      
+      extenddot3OamTransmitLbmDestMAC OBJECT-TYPE
+        SYNTAX   MacAddress
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION
+          "This is Destination MAC address to be used for loopback messages when 
+           generated by the ISAM.
+           This MAC address shall not be used for MAC address learning nor for 
+           L2 forwarding of ethernet frames.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   YES
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   00:00:02:00:00:02
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      This object is not supported by ISAM 
+          "
+          ::= { extenddot3OamEntry 7 } 
+      
+      extenddot3OamEnableCriticalLinkEvent OBJECT-TYPE
+        SYNTAX   INTEGER {
+                       enabled(1),
+                       disabled(2)
+                 }
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION
+          "Setting this object to enabled(1) enables the processing of the 
+          Flags bits 2,1,0 in received OAM PDUs on this interface. These Flags 
+          should be set when a critical link event has happened at the OAM peer.
+          
+          This also enables the generation of an ISAM alarm.
+          
+          This also enables the setting of the Flags bits 2,1,0 in OAM PDUs 
+          generated by ISAM to report the happening of a critical link event to 
+          the OAM peer.
+          
+          For definition of these Flags: see REFERENCE   [802.3ah], 57.4.2.1
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   YES
+          RANGE:      NA
+          PERSIST:    YES
+          DEFVALUE:   disabled(2)
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          " 
+          ::= { extenddot3OamEntry 8 } 
+
+      extenddot3OamIntTraffGenState OBJECT-TYPE
+        SYNTAX   INTEGER {
+                       active(1),
+                       notActive(2)
+                 }
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION
+          "Setting this object to active(1) activates the internal traffic generator for the 
+           specified EFM OAM interface.
+           Setting this object to notActive(2) de-activates the internal traffic generator 
+           for that EFM OAM interface.  
+          
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   YES
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   notActive(2)
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      This object is not supported by ISAM 
+          " 
+          ::= { extenddot3OamEntry 9 } 
+
+-- ======================================================================
+-- Ethernet Variable Request Table
+-- ======================================================================
+
+      efmOamVarRequestMacTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF EfmOamVarRequestMacEntry
+        ACCESS   not-accessible
+        STATUS   mandatory 
+        DESCRIPTION
+          "A Table containing information about variable
+          Request intiation.
+        ALCATEL NOTE:
+          TABLESIZE:   1..180 (10 variable request sessions per LT multiplied by
+                                max 18 applicable LTs per system. May change in
+                                future)" 
+        ::= { efmOamMIB 2 }
+      
+      efmOamVarRequestMacEntry OBJECT-TYPE
+        SYNTAX   EfmOamVarRequestMacEntry
+        ACCESS   not-accessible
+        STATUS   mandatory 
+        DESCRIPTION
+          "An entry in the table, containing information of variable request for
+          Mac counters.
+        ALCATEL NOTE:
+          SUPPORT:   YES
+          INDEX:     ifIndex refers to Ethernet like interface
+          "
+        INDEX    { ifIndex } 
+        ::= { efmOamVarRequestMacTable 1 }
+      
+      EfmOamVarRequestMacEntry ::=
+        SEQUENCE {
+          efmOamVarRequestMacRowStatus    RowStatus,
+          efmOamVarRequestMacState        INTEGER,
+          efmOamVarRequestMacAgingTimer   TimeTicks
+          }
+      
+      efmOamVarRequestMacRowStatus OBJECT-TYPE
+        SYNTAX   RowStatus 
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION
+          "efm Oam variable request can be created or
+          deleted  by using this variable .operations 
+          Active,create and go and destroy has been supported
+          for ethernet Oam.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      MAND
+          INSRVMOD:   YES
+          RANGE:      1|4|6
+          PERSIST:    NO
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NA
+          DESCR:      NA
+          "
+        ::= { efmOamVarRequestMacEntry 1 }
+      
+      efmOamVarRequestMacState OBJECT-TYPE
+        SYNTAX   INTEGER {
+                          done (1),
+                          inProgress(2),
+                          failed (3)
+                          }
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "efm Oam variable request state  done, inprogress, or failed .
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamVarRequestMacEntry 2 }
+      
+      efmOamVarRequestMacAgingTimer OBJECT-TYPE
+        SYNTAX   TimeTicks
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "Timer value used to configure the aging  
+          timeout of Mac request row on the iSAM level 
+          for this OAM application. Life time of the request and
+          corresponding response row.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   NO
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   60 (1 minute)
+          UNITS:      SEC
+          SPARSE:     NA
+          DESCR:      NA
+          "
+        ::= { efmOamVarRequestMacEntry 3 }	
+      
+      efmOamVarRequestPmeTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF EfmOamVarRequestPmeEntry
+        ACCESS   not-accessible
+        STATUS   mandatory 
+        DESCRIPTION
+          " A Table containing information about variable Request intiation.
+        ALCATEL NOTE:
+          TABLESIZE:   1..180 (10 variable request  sessions per LT multiplied by 
+                               max 18 applicable LTs per system. 
+                               May change in future)"
+        ::= { efmOamMIB 3 }
+      
+      efmOamVarRequestPmeEntry OBJECT-TYPE
+        SYNTAX   EfmOamVarRequestPmeEntry
+        ACCESS   not-accessible
+        STATUS  mandatory 
+        DESCRIPTION
+          "An entry in the table, containing information
+          of variable request for Pme counters.
+        ALCATEL NOTE:
+          SUPPORT:   YES
+          INDEX:     ifIndex refers to EFM port (includes multi-link and single
+                     link EFM Bonding groups) or single xDSL line. 
+                     Native Ethernet port is excluded."
+        INDEX    { ifIndex } 
+        ::= { efmOamVarRequestPmeTable 1 }
+      
+      EfmOamVarRequestPmeEntry ::=
+        SEQUENCE {
+          efmOamVarRequestPmeRowStatus    RowStatus,
+          efmOamVarRequestPmeState        INTEGER,
+          efmOamVarRequestPmeAgingTimer   TimeTicks
+          }
+      
+      efmOamVarRequestPmeRowStatus OBJECT-TYPE
+        SYNTAX   RowStatus 
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION
+          "efm Oam variable request can be created or
+          deleted  by using this variable .operations 
+          Active,create and go and destroy has been supported
+          for ethernet Oam.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      MAND
+          INSRVMOD:   YES
+          RANGE:      1|4|6
+          PERSIST:    NO
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NA
+          DESCR:      NA
+          "
+        ::= { efmOamVarRequestPmeEntry 1 }
+      
+      efmOamVarRequestPmeState OBJECT-TYPE
+        SYNTAX   INTEGER {
+                          done (1),
+                          inProgress(2),
+                          failed (3)
+                          }
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+          "efm Oam variable request state  done, inprogress or failed .
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamVarRequestPmeEntry 2 }
+      
+      efmOamVarRequestPmeAgingTimer OBJECT-TYPE
+        SYNTAX   TimeTicks
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "Timer value used to configure the aging timeout of Pme request row on 
+          the iSAM level for this OAM application i.e life time of the request and 
+          the corresponding row. 
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   NO
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   60 (1 minute)
+          UNITS:      SEC
+          SPARSE:     NA
+          DESCR:      NA
+          "
+        ::= { efmOamVarRequestPmeEntry 3 }
+
+-- ======================================================================
+-- Ethernet Pme Entity Table
+-- ======================================================================
+
+      efmOamPmeEntityTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF EfmOamPmeEntityEntry
+        ACCESS   not-accessible
+        STATUS   mandatory
+        DESCRIPTION
+          "A table containing  information for PME.
+        ALCATEL NOTE:
+          TABLESIZE:   0.. 864(48 ports x 18 LTs, it may change in future) "
+        ::= { efmOamMIB 4 }
+      
+      efmOamPmeEntityEntry OBJECT-TYPE
+        SYNTAX   EfmOamPmeEntityEntry
+        ACCESS   not-accessible
+        STATUS   mandatory
+        DESCRIPTION
+          "An entry in the efmOamPmeEntityTable.
+          The first index is the reference to the bonding 
+          group to which the PmeEntity belongs.
+          The second index is the reference to the xDSL link
+          of the PmeEntity 
+        ALCATEL NOTE:
+          SUPPORT:    YES
+          INDEX :     efmOamPmeGroupIfIndex refers to EFM port (includes multi-link 
+                      and single link EFM Bonding Groups) or xDSL line. 
+                      efmOamPmeLinkIfIndex refers to single xDSL line. 
+                      Native  Ethernet port is excluded."
+        INDEX    { efmOamPmeGroupIfIndex, efmOamPmeLinkIfIndex } 
+        ::= { efmOamPmeEntityTable 1 }
+      
+      EfmOamPmeEntityEntry ::=
+        SEQUENCE { 
+          efmOamPmeGroupIfIndex             InterfaceIndex,
+          efmOamPmeLinkIfIndex              InterfaceIndex,
+          efmOamPmeTCCodingViolations       Counter,
+          efmOamPmeFECCorrectedBlocks       Counter,
+          efmOamPmeFECUncorrectableBlocks   Counter,
+          efmOamPmeTCCRCErrors              Counter,
+          efmOamPmeStatus                   INTEGER
+          }
+      
+      efmOamPmeGroupIfIndex OBJECT-TYPE
+        SYNTAX   InterfaceIndex
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "A unique value, greater than zero, for each interface.  It is 
+          recommended that values are assigned contiguously starting from 1. 
+          The value for each interface sub-layer must remain constant at least from 
+          one re-initialization of the entity's network management system to the 
+          next re-initialization. 
+          
+          It can be an EFM-port ifIndex or a xDSL ifIndex. 
+          
+          In case the operator has requested the PME data for one link, 
+          efmOamPmeGroupIfIndex is a xDSL ifIndex; in case the operator has 
+          requested the PME data for a bonding group, then efmOamPmeGroupIfIndex is 
+          an EFM-port ifIndex, as expected. 
+          
+          Please note that efmOamPmeEntityEntries and  efmOamMacEntityEntries are 
+          volatile, that there are created indirectly via the Request MIBs, and 
+          that a table walk on these Entity MIBs may give unpredictable results. 
+        ALCATEL NOTE:
+          SUPPORT:    YES
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      see InterfaceIndex
+          PERSIST:    NO
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamPmeEntityEntry 1 }
+      
+      efmOamPmeLinkIfIndex OBJECT-TYPE
+        SYNTAX   InterfaceIndex
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "A unique value, greater than zero, for each
+          interface. It is recommended that values are assigned
+          contiguously starting from 1.  The value for each
+          interface sub-layer must remain constant at least from
+          one re-initialization of the entity's network management
+          system to the next re-initialization.
+        REFERENCE:
+          30.11.2.1.1 aPMEID
+        ALCATEL NOTE:
+          SUPPORT:    YES
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      see InterfaceIndex
+          PERSIST:    NO
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamPmeEntityEntry 2 }
+      
+      efmOamPmeTCCodingViolations OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "A number of 64/65-octet encapsulation errors.This counter
+          is incremented for each 64/65-octet encapsulation error
+          detected by the 64/65-octet receive function. If a Clause
+          45 MDIO Interface to the PME TC is present, then this
+          object maps to the TC coding violations register (see
+          45.2.6.12).
+        REFERENCE
+          30.11.2.1.5 aTCCCodingViolations
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamPmeEntityEntry 3 }
+      
+      efmOamPmeFECCorrectedBlocks OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "A count of received and corrected FEC codewords in
+          10Pass-TSPME. This object maps to aPMEFECCorrectedBlocks
+          attribute inclause 30. If a Clause 45 MDIO Interface to
+          the PMA/PMD is present, then this object maps to the 10P
+          FEC correctable errors register 
+        REFERENCE [802.3ah] 
+          45.2.1.22
+          30.11.2.1.8 aPMEFECCorrectedBlocks
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamPmeEntityEntry 4 }	
+      
+      efmOamPmeFECUncorrectableBlocks OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+         " A count of received FEC codewords in 10Pass-TS PME,
+         which are uncorrectable. This object maps to
+         aPMEFECUncorrectableBlocks attribute in clause 30. If a
+         Clause 45 MDIO Interface to the PMA/PMD is present, then
+         this object maps to the 10P FEC uncorrectable errors
+         register
+        REFERENCE
+          30.11.2.1.9 aPMEFECUncorrectableBlocks
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamPmeEntityEntry 5 }
+      
+      efmOamPmeTCCRCErrors OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "A number of TC-CRC errors. This counter is incremented
+          for each TC-CRC error detected by the 64/65-octet receive 
+          function(see 61.3.3.3 and Figure 61-19).The value of zero 
+          SHALL be returned when PME is down orinitializing.          
+        REFERENCE:
+          30.11.2.1.10 aTCCRCErrors
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamPmeEntityEntry 6 }
+      
+      efmOamPmeStatus OBJECT-TYPE
+        SYNTAX   INTEGER 
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "This field represents the status of each counters.
+          Bit 0 :when this bit set to (value 1), it indicates the 
+          efmOamPmeTCCodingViolations counter contains a value 
+          returned by the peer ethernet OAM entity in a variable 
+          response.
+          Bit 1 : when this bit set to (value 2), it indicates the 
+          efmOamPmeFECCorrectedBlocks counter contains a value 
+          returned by the peer ethernet OAM entity in a variable 
+          response.
+          Bit 2 : when this bit set to (value 4), it indicates the 
+          efmOamPmeFECUncorrectableBlocks counter contains a value 
+          returned by the peer ethernet OAM entity in a variable 
+          response.
+          Bit 3 : when this bit set to (value 8), it indicates the 
+          efmOamPmeTCCRCErrors counter contains a value returned by 
+          the peer ethernet OAM entity in a variable response. 
+          Setting the bit represents the response from CPE.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamPmeEntityEntry 7 }
+
+-- =====================================================================
+-- Ethernet MAC Entity Table
+-- =====================================================================
+
+      efmOamMacEntityTable OBJECT-TYPE
+        SYNTAX   SEQUENCE OF EfmOamMacEntityEntry
+        ACCESS   not-accessible
+        STATUS   mandatory
+        DESCRIPTION
+          "A table containing  information for Mac entity.
+        ALCATEL NOTE:
+          TABLESIZE:   0..180 (10 variable request sessions per LT multiplied by 
+                               max 18 applicable LTs per system. 
+                               May change in future)"
+        ::= { efmOamMIB 5 }
+      
+      efmOamMacEntityEntry OBJECT-TYPE
+        SYNTAX  EfmOamMacEntityEntry
+        ACCESS   not-accessible
+        STATUS   mandatory
+        DESCRIPTION
+          "An entry in the efmOamMacEntityTable.
+          Index is reference to a bonding group or Ethernet Port. 
+          It corresponds to [802.3ah] 30.3.1.1.1 aMACID
+               			 ALCATEL NOTE:
+          SUPPORT:    YES
+          INDEX:      ifIndex refers to Ethernet like interface"
+        INDEX    { ifIndex } 
+        ::= { efmOamMacEntityTable 1 }
+      
+      EfmOamMacEntityEntry ::=
+        SEQUENCE { 
+          efmOamFramesTransmittedOK              Counter,
+          efmOamFramesReceivedOK                 Counter,
+          efmOamFramesCheckSequenceErrors        Counter,
+          efmOamAlignmentErrors                  Counter,
+          efmOamFramesLostDueToIntMACXmitError   Counter,
+          efmOamFramesLostDueToIntMACRcvError    Counter,
+          efmOamMulticastFramesReceivedOK        Counter,
+          efmOamBroadcastFramesReceivedOK        Counter,
+          efmOamInRangeLengthErrors              Counter,
+          efmOamOutOfRangeLengthField            Counter,
+          efmOamFrameTooLongErrors               Counter,
+          efmOamMacStatus                        INTEGER
+          }
+      
+      efmOamFramesTransmittedOK OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "The total number of packets that higher-level protocols 
+          requested be transmitted,which were addressed to multicast 
+          or broadcast address ,which is equivalent to 
+          ifOutUCastPkts +  ifOutMulticastPkts + ifOutBroadcastPkts 
+          of IF-MIB .
+        REFERENCE
+          30.3.1.1.2 aFramesTransmittedOK
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 1 }
+      
+      efmOamFramesReceivedOK OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "The number of packets, delivered by this sub-layer to a 
+          higher (sub-)layer,which were addressed to a multicast 
+          orbraodcast address .which is equivalent to ifInUcastPkts 
+          + ifInMulticastPkts + ifInBroadcastPkts of IF-MIB .
+        REFERENCE
+          30.3.1.1.5 aFramesReceivedOK
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 2 }
+      
+      efmOamFramesCheckSequenceErrors OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "A count of frames received on a particular interface that are an 
+          integral number of octets in length but do not pass the FCS check. 
+          This count does not include frames received with frame-too-long or 
+          frame-too-short error. The count represented by an instance of this 
+          object is incremented when the frameCheckError status is returned by the 
+          MAC service to the LLC (or other MAC user). Received frames for which 
+          multiple error conditions pertain are, according to the conventions of 
+          IEEE 802.3 Layer Management, counted exclusively according to the error 
+          status presented to the LLC. Note:  Coding errors detected by the 
+          physical layer for speeds above 10 Mb/s will cause the frame to fail the 
+          FCS check.
+          
+          For interfaces operating at 10 Gb/s, this counter can roll over in less 
+          than 5 minutes if it is incrementing at its maximum rate.  Since that 
+          amount of time could be less than a management station's poll cycle time, 
+          in order to avoid a loss of information, a management station is advised 
+          to poll the dot3HCStatsFCSErrors object for 10 Gb/s or faster interfaces. 
+          Discontinuities in the value of this counter can occur at 
+          re-initialization of the management system, and at other times as 
+          indicated by the value of ifCounterDiscontinuityTime.
+        REFERENCE
+          30.3.1.1.6 aFrameCheckSequenceErrors
+        ALCATEL NOTE:
+          efmOamFramesCheckSequenceErrors doesn't depend on the value of ifCounterDiscontinuityTime
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 3 }
+      
+      efmOamAlignmentErrors OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "A count of frames received on a particular interface 
+          that are not an integral number of octets in length and 
+          do not pass the FCS check The count represented by an instance 
+          of this object is incremented when the alignmentError status 
+          is returned by the MAC service to the LLC (or other MAC user). 
+          Received frames for which multiple error conditions pertain are, 
+          according to the conventions of IEEE 802.3 Layer Management, 
+          counted exclusively according to the error status presented 
+          to the LLC.
+          
+          This counter does not increment for group encoding schemes 
+          greater than 4 bits per group. For interfaces operating at 
+          10 Gb/s, this counter can roll over in less than 5 minutes 
+          if it is incrementing at its maximum rate.  Since that amount 
+          of time could be less than a management station's poll cycle 
+          time, in order to avoid a loss of information, a management 
+          station is advised to poll the dot3HCStatsAlignmentErrors object 
+          for 10 Gb/s or faster interfaces. 
+          
+          Discontinuities in the value of this counter can occur at 
+          re-initialization of the management system, and at other times 
+          as indicated by the value of ifCounterDiscontinuityTime.
+        REFERENCE
+          30.3.1.1.7 aAlignmentErrors
+        ALCATEL NOTE:
+          efmOamAlignmentErrors doesn't depend on the value of ifCounterDiscontinuityTime
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 4 }
+      
+      efmOamFramesLostDueToIntMACXmitError OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "A count of frames for which transmission on a particular 
+          interface fails due to an internal MAC sublayer transmit error. 
+          A frame is only counted by an instance of this object if it is 
+          not counted by the corresponding instance of either the 
+          dot3StatsLateCollisions object, the dot3StatsExcessiveCollisions 
+          object, or the dot3StatsCarrierSenseErrors object
+          
+          The precise meaning of the count represented by an instance 
+          of this object is implementation-specific. In particular, an 
+          instance of this object may represent a count of transmission 
+          errors on a particular interface that are not otherwise counted.
+          
+          For interfaces operating at 10 Gb/s, this counter can roll over 
+          in less than 5 minutes if it is incrementing at its maximum rate. 
+          Since that amount of time could be less than a management station's 
+          poll cycle time, in order to avoid a loss of information, a management 
+          station is advised to poll the dot3HCStatsInternalMacTransmitErrors 
+          object for 10 Gb/s or faster interfaces.
+          
+          Discontinuities in the value of this counter can occur at 
+          re-initialization of the management system, and at other times as 
+          indicated by the value of ifCounterDiscontinuityTime.
+        REFERENCE
+          30.3.1.1.12 aFramesLostDueToIntMACXmitError
+        ALCATEL NOTE:
+          efmOamFramesLostDueToIntMACXmitError doesn't depend on the value of ifCounterDiscontinuityTime
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 5 }
+      
+      efmOamFramesLostDueToIntMACRcvError OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "A count of frames for which reception on a particular 
+          interface fails due to an internal MAC sublayer receive error. 
+          A frame is only counted by an instance of this object if it is 
+          not counted by the corresponding instance of either the 
+          dot3StatsFrameTooLongs object, the dot3StatsAlignmentErrors 
+          object, or the dot3StatsFCSErrors object. 
+          
+          The precise meaning of the count represented by an instance 
+          of this object is implementation-specific.  In particular, an 
+          instance of this object may represent a count of receive errors 
+          on a particular interface that are not otherwise counted.
+          
+          For interfaces operating at 10 Gb/s, this counter can roll over 
+          in less than 5 minutes if it is incrementing at its maximum rate. 
+          Since that amount of time could be less than a management station's 
+          poll cycle time, in order to avoid a loss of information, a management 
+          station is advised to poll the dot3HCStatsInternalMacReceiveErrors 
+          object for 10 Gb/s or faster interfaces.
+          
+          Discontinuities in the value of this counter can occur at 
+          re-initialization of the management system, and at other times as 
+          indicated by the value of ifCounterDiscontinuityTime.
+        REFERENCE:
+          30.3.1.1.15 aFramesLostDueToIntMACRcvError
+        ALCATEL NOTE:
+          efmOamFramesLostDueToIntMACRcvError doesn't depend on the value of ifCounterDiscontinuityTime
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 6 }
+      
+      efmOamMulticastFramesReceivedOK OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "The total number of packets that highelevel protocols 
+          requested be transmitted, and which were addressed to a multicast 
+          address at this sub-layer, including those thatwere discarded or not 
+          sent.  For a MAC layer protocol, this includes both Group and 
+          Functional addresses.
+          
+          Discontinuities in the value of this counter can occur at 
+          re-initialization of the management system, and at other times as 
+          indicated by the value of ifCounterDiscontinuityTime.
+        REFERENCE:
+          30.3.1.1.21 aMulticastFramesReceivedOK
+        ALCATEL NOTE:
+          efmOamMulticastFramesReceivedOK doesn't depend on the value of ifCounterDiscontinuityTime
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 7 }
+      
+      efmOamBroadcastFramesReceivedOK OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "The total number of packets that higher-level protocols 
+          requested be transmitted, and which were addressed to a broadcast 
+          address at this sub-layer, including those thatwere discarded or not 
+          sent. 
+          
+          Discontinuities in the value of this counter can occur at 
+          re-initialization of the management system, and at other times as 
+          indicated by the value ofifCounterDiscontinuityTime.
+        REFERENCE:
+          30.3.1.1.22 aBroadcastFramesReceivedOK
+        ALCATEL NOTE:
+          efmOamBroadcastFramesReceivedOK doesn't depend on the value of ifCounterDiscontinuityTime
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 8 }
+      
+      efmOamInRangeLengthErrors OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "Packets range received at this sublayer .
+        REFERENCE:
+          30.3.1.1.23 aInRangeLengthErrors
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 9 }
+      
+      efmOamOutOfRangeLengthField OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "counter to track the out of range packets in this ublayer 
+        REFERENCE:
+          30.3.1.1.24 aOutOfRangeLengthField
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 10 }
+      
+      efmOamFrameTooLongErrors OBJECT-TYPE
+        SYNTAX   Counter
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "A count of frames received on a particular interface that exceed 
+          the maximum permitted frame size. The count represented by an instance 
+          of this object is incremented when the frameTooLong status is returned 
+          by the MAC service to the LLC (or other MAC user). Received frames for 
+          which multiple error conditions pertain are, according to the conventions 
+          of IEEE 802.3 Layer Management, counted exclusively according to the 
+          error status presented to the LLC. 
+          
+          For interfaces operating at 10 Gb/s, this counter can roll over in less 
+          than 80 minutes if it is incrementing at its maximum rate.  Since that 
+          amount of time could be less than a management station's poll cycle time, 
+          in order to avoid a loss of information, a management station is advised 
+          to poll the dot3HCStatsFrameTooLongs object for 10 Gb/s or faster 
+          interfaces. Discontinuities in the value of this counter can occur at 
+          re-initialization of the management system, and at other times as 
+          indicated by the value of ifCounterDiscontinuityTime.
+        REFERENCE
+          30.3.1.1.25 aFrameTooLongErrors
+        ALCATEL NOTE:
+          efmOamFrameTooLongErrors doesn't depend on the value of ifCounterDiscontinuityTime
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 11 }
+      
+      efmOamMacStatus OBJECT-TYPE
+        SYNTAX   INTEGER
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+          "This field represents the status of each counters.
+          
+          Bit 0(LSB): When this bit is set (value 1), it  indicate 
+          that the efmOamFramesTransmittedOK counter contains a 
+          value returned by the peer ethernet OAM entity in a 
+          variable response.
+          
+          Bit 1: When this bit is set (value 2), it indicates the 
+          efmOamFramesReceivedOK counter contains a value returned 
+          by the peer ethernet OAM entity in a variable response.
+          
+          Bit 2: When this bit is set(value 4), it indicates the 
+          efmOamFramesCheckSequenceErrors counter contains a value 
+          returned by the peer ethernet OAM entity in a variable 
+          response.
+          
+          Bit 3: When this bit is set (value 8), it indicates the 
+          efmOamAlignmentErrors  counter contains a value returned 
+          by the peer ethernet OAM entity in a variable response.
+          
+          Bit 4: When this bit is set (value 16), it indicates the 
+          efmOamFramesLostDueToIntMACXmitError counter contains a 
+          value returned by the peer ethernet OAM entity in a 
+          variable response.
+          
+          Bit 5: When this bit is set (value 32), it indicates the 
+          efmOamFramesLostDueToIntMACRcvError counter contains a 
+          value returned by the peer ethernet OAM entity in a 
+          variable response.
+          
+          Bit 6: When this bit is set (value 64), it indicates the 
+          efmOamMulticastFramesReceivedOK counter contains a value 
+          returned by the peer ethernet OAM entity in a variable 
+          response.
+          
+          Bit 7: When this bit is set (value 128), it indicates the 
+          efmOamBroadcastFramesReceivedOK counter contains a value 
+          returned by the peer ethernet OAM entity in a variable 
+          response.
+          
+          Bit 8: When this bit is set (value 256), it indicates the 
+          efmOamInRangeLengthErrors counter contains a value 
+          returned by the peer ethernet OAM entity in a variable 
+          response.
+          
+          Bit 9: When this bit is set (value 512), it indicates the 
+          efmOamOutOfRangeLengthField counter contains a value 
+          returned by the peer ethernet OAM entity in a variable 
+          response.
+          
+          Bit 10:When this bit is set (value 1024), it indicates the 
+          efmOamFrameTooLongErrors counter contains a value returned 
+          by the peer ethernet OAM entity in a variable response.
+          
+          Setting the bit represents the response from CPE.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      NA
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { efmOamMacEntityEntry 12 }
+
+-- WARNING : { efmOamMIB 6 } deined in DOT3-OAM-MIB as dot3OamMIB !!!
+
+-- ====================================================================== 
+-- Ethernet OAM Loopback group
+-- ====================================================================== 
+
+      extenddot3OamLoopbackTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF Extenddot3OamLoopbackEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION 
+          "Extensions to the loopback table. It contains an indication if
+           we need to set the parser to discard (default) or forward when
+           enabling the loopback. This allows for operators to use testheads
+           in the network, and forward all looped back cells there.
+           The number of simultaneous loopback sessions per LT is 2.
+        ALCATEL NOTE:
+          TABLESIZE:   0..864"
+        ::= { efmOamMIB 7 }
+
+      extenddot3OamLoopbackEntry OBJECT-TYPE
+        SYNTAX   Extenddot3OamLoopbackEntry
+        ACCESS   not-accessible
+        STATUS   mandatory
+        DESCRIPTION 
+          "An entry in the table, containing information on the loopback
+          status for a single Ethernet like interface.  Entries in the
+          table are automatically created whenever the local OAM entity
+          supports loopback capabilities.  The loopback status on the
+          interface can be determined from the dot3OamLoopbackStatus
+          object. 
+        ALCATEL NOTE:
+          SUPPORT:   YES
+          INDEX:     ifIndex refers to Ethernet like interface"
+        INDEX    { ifIndex }
+        ::= { extenddot3OamLoopbackTable 1 }
+
+      Extenddot3OamLoopbackEntry ::=
+        SEQUENCE {
+          extenddot3OamLoopbackParserDiscard      INTEGER,
+          extenddot3OamLoopbackTimeout            INTEGER,
+          extenddot3OamLoopbackRemainingTimeout   INTEGER
+        }
+
+      extenddot3OamLoopbackParserDiscard OBJECT-TYPE
+        SYNTAX   INTEGER {
+          discard (1),
+          forward (2)
+        }
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION 
+          "If parserDiscard is set (default), the loopback packets are
+           discarded in the local parser. Otherwise packets are forwarded
+           to the network.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   NA
+          RANGE:      NA
+          PERSIST:    NO
+          DEFVALUE:   1
+          UNITS:      NA
+          SPARSE:     NO
+          DESCR:      NA
+          "
+        ::= { extenddot3OamLoopbackEntry 1 }
+
+      extenddot3OamLoopbackTimeout OBJECT-TYPE
+        SYNTAX   INTEGER
+        ACCESS   read-write
+        STATUS   mandatory
+        DESCRIPTION 
+          "This value is used to set a timeout on the loopback.
+           Once this timeout expires, the loopback will be automatically
+           removed. 0 means no timeout.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      OPT
+          INSRVMOD:   YES
+          RANGE:      0..3600
+          PERSIST:    NO
+          DEFVALUE:   0
+          UNITS:      SEC 
+          SPARSE:     NO
+          DESCR:      
+          This object is only supported from R5.3.01 onwards."
+        ::= { extenddot3OamLoopbackEntry 2 }
+
+      extenddot3OamLoopbackRemainingTimeout OBJECT-TYPE
+        SYNTAX   INTEGER
+        ACCESS   read-only
+        STATUS   mandatory
+        DESCRIPTION
+	  "This object indicates the remaining timeout period for the loopback 
+	   operation on this interface. The value will remain 0 when 
+	   extenddot3OamLoopbackTimeout itself is 0.
+        ALCATEL NOTE:
+          ACCESS      NA
+          USAGE:      INSRVMOD 
+          INSRVMOD:   YES
+          RANGE:      0..3600 
+          PERSIST:    NA
+          DEFVALUE:   NA
+          UNITS:      SEC 
+          SPARSE:     NO
+          DESCR:      
+          This object is only supported from R5.3.01 onwards"
+        ::= { extenddot3OamLoopbackEntry 3 }
+END

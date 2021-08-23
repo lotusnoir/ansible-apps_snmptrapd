@@ -1,0 +1,1679 @@
+-- =========================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance
+--  information contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any
+--  manufacturer to modify or change any of its products, nor does this
+--  document represent any commitment by Alcatel to sell or purchase any
+--  product. Nothing contained herein shall be construed as conferring by
+--  implication, estoppel, or otherwise any license or right under any 
+--  patent, whether or not the use of any information herein necessarily
+--  employs an invention of any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products 
+--  and to withdraw any or all of them at any future time.
+--  Copyright (C) 2004, Alcatel. All Rights Reserved.
+-- =========================================================================
+
+DOMAIN-MIB DEFINITIONS ::= BEGIN
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED 20031209
+--  ORGANIZATION "Alcatel"
+
+--  CONTACT-INFO
+--
+--          Email:  asam.mibsupport@alcatel.be"
+--
+--  DESCRIPTION MIB for the domain related data structures
+--  
+--  REVISION 200605310000Z
+--  DESCRIPTION
+--        "Version: 3FE22800EAAA_V3.1.0.0.0
+--         Editor: Katrien SCHARRE
+--         Changes:  Adding ALCATEL NOTE for every object"
+--
+--  REVISION 200603180000Z
+--  DESCRIPTION
+--        "Version: 3FE22800EAAA_V3.0.0.0.1
+--         Editor: Katrien SCHARRE
+--         Changes: updates for ISAM R3.0 "
+--
+--  REVISION 200601180000Z
+--  DESCRIPTION
+--        "Version: 3FE22800EAAA_V2.4.1.0.1
+--         Editor: Katrien SCHARRE
+--         Changes: updates for ISAM R2.4 "
+--
+
+--
+
+
+   IMPORTS
+
+        Gauge
+		      FROM RFC1155-SMI
+        OBJECT-TYPE
+              FROM RFC-1212
+        asam                                            
+              FROM SYSTEM-MIB
+        VrfIndex
+              FROM VRF-MIB
+	RowStatus
+	          FROM SNMPv2-TC
+    	InterfaceIndex, InterfaceIndexOrZero
+   	          FROM ITF-MIB
+--         ipAddressPoolIndex
+--               FROM IP-POOL-MIB
+        DisplayString
+              FROM RFC1213-MIB
+        InetAddress, InetAddressType
+              FROM INET-ADDRESS-MIB
+	TruthValue, MacAddress
+		FROM SNMPv2-TC
+aaaMIB
+ FROM RADIUS-CLIENT-MIB
+        AsamNextProfileIndex, AsamMaxProfileIndex, AsamProfileIndex,
+        AsamProfileName, AsamProfileScope, AsamProfileRefCount
+              FROM ASAM-TC-MIB;
+
+
+domainMIB       OBJECT IDENTIFIER ::= { aaaMIB 2 } 
+
+VlanIndexOrZero ::= Gauge
+-- This type is same as VlanIndex defined in Q-BRIDGE-MIB (RFC 2674), but in addition can
+-- take a value zero also, which is used to specify that this VlanIndex is not
+-- relevant or applicable in this context.
+
+
+-- Start of domainTable
+
+domainGetNextFreeIndex      OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+		"Gives the Next Free Index that can be used
+		 for creating a new entry in the domain Table.
+         This object contains an appropriate value to be used for 
+         domainIndex when creating entries in the. 
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the domainIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current-value of this object. After each retrieval, the agent should
+         modify the value to the next unassigned index.
+          ALCATEL NOTE:
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	RANGE(0..128)
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             DESCR:	NA "
+	  ::= { domainMIB 1 }
+
+domainTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF DomainEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "The (conceptual) table listing the Domain configurable
+             parameters.
+
+			Before a domain can be configured a VRF for the users 
+			has to be defined in the VRF-MIB. 
+
+			Before a domain can be configured a Vlan for the users 
+			has to be defined in the VLAN-MIB. 
+
+			Similarly, before a domain can be configured for a remote authentication,
+			the Radius policy has to be defined.
+            
+            An entry in this table (domain) can be deleted only
+            - When no active user sessions of this domain exists in the system.
+            - when there is no connection profile referring to this domain.
+            
+            If an entry in this table (domain) is deleted then the following 
+            Actions will be taken:
+            - All users configured for this domain will be removed from the
+              domainUserTable.
+- All Domain-To-IpPool associations will be removed removed.
+
+            ALCATEL NOTE :
+              TABLESIZE : 128
+              DESCR : NA "
+      ::= { domainMIB 2 }
+
+domainEntry OBJECT-TYPE
+      SYNTAX     DomainEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "An entry (conceptual row) representing the configuration 
+             of a Domain."
+      INDEX { domainIndex }
+      ::= { domainTable 1 }
+
+DomainEntry ::=
+    SEQUENCE {
+	  domainIndex					INTEGER,
+	  domainName					DisplayString,
+	  domainVrfIndex     		    INTEGER,
+	  domainVlanIndex		    	VlanIndexOrZero,
+      domainAddrType                InetAddressType,
+	  domainDnsIpAddr1				InetAddress,
+	  domainDnsIpAddr2				InetAddress,
+	  domainNbnsIpAddr1				InetAddress,
+	  domainNbnsIpAddr2				InetAddress,
+	  domainSessionTimeout			INTEGER,
+	  domainQosProfileIndex			INTEGER,
+	  domainAuthenticator			INTEGER,
+	  domainRadPolicyIndex			INTEGER,
+	  domainAdminState      		INTEGER,
+	  domainNumActiveSess			Gauge,
+	  domainRowStatus				RowStatus
+    }
+
+domainIndex      OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		not-accessible
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The Index to the table.
+          ALCATEL NOTE
+             ACCESS: NA / INDEX
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	RANGE(1..128)
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainEntry 1 }
+
+domainName      OBJECT-TYPE
+	  SYNTAX		DisplayString (SIZE (1..64))
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The Domain name associated with this entry.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: MAND
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainEntry 2 }
+
+domainVrfIndex   OBJECT-TYPE
+	  SYNTAX		INTEGER (-1..127)
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Vrf associated with this entry(domain). This object
+            points to a VRF instance configured in the VRF-MIB.
+            If the Radius server doesnt return a Vrf, then this value
+            is used. A value of -1 specifies that no default Vrf is associated
+            with this domain. A value of zero is not allowed for this 
+            configuration.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: MAND
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	RANGE(-1..127)
+             DEFVALUE: 	-1
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+      DEFVAL { -1 }
+	  ::= { domainEntry 3 }
+
+domainVlanIndex      OBJECT-TYPE
+	  SYNTAX		VlanIndexOrZero
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			"Indicates the default Vlan ID. This VLAN must be configured as a
+             VLAN of type residential bridge, and may not be a cross-connect VLAN.
+             If the Radius server doesnt return a Vlan, then this value is used. A    
+value zero specify that no default Vlan is associated with this 
+domain.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	RANGE(0..4093)
+             DEFVALUE: 	0
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+      DEFVAL { 0 }
+	  ::= { domainEntry 4 }
+
+domainAddrType OBJECT-TYPE
+	  SYNTAX		InetAddressType
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" A value representing the type of Internet Address of all the
+            InetAddress Variables associated with this Domain.
+          ALCATEL NOTE:
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	NA
+             DEFVALUE: 	1(ipv4)
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainEntry 5 }
+
+domainDnsIpAddr1 OBJECT-TYPE
+	  SYNTAX		InetAddress
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" This is the Primary DNS Server IP address to be given to PPP users
+			during NCP negotiation. If the value is a non-zero value
+			and also the Radius Server does not return a value, then this value
+			is given to PPP.
+            The type of this IpAddress (IPv4/IPv6/..) is determined by the
+            value of the domainAddrType object.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	0.0.0.0
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  DEFVAL {'00000000'H} -- 0.0.0.0
+	  ::= { domainEntry 6 }
+
+domainDnsIpAddr2 OBJECT-TYPE
+	  SYNTAX		InetAddress
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" This is the Secondary DNS server IP address to be given to PPP users 
+			during NCP negotiation. If the value is a non-zero value and
+			also the Radius      
+             Server does not return a value  then this value is given to PPP.
+            The type of this IpAddress (IPv4/IPv6/..) is determined by the
+            value of the domainAddrType object.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	0.0.0.0
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  DEFVAL {'00000000'H} -- 0.0.0.0
+	  ::= { domainEntry 7 }
+
+domainNbnsIpAddr1        OBJECT-TYPE
+	  SYNTAX		InetAddress
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" This is the Primary NBNS server IP address to be given to PPP users
+			during NCP negotiation. If the value is a non-zero value
+			and also the Radius      
+            Server does not return a value  then this value is given to PPP.
+            The type of this IpAddress (IPv4/IPv6/..) is determined by the
+            value of the domainAddrType object.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	0.0.0.0
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  DEFVAL {'00000000'H} -- 0.0.0.0
+	  ::= { domainEntry 8 }
+
+domainNbnsIpAddr2        OBJECT-TYPE
+	  SYNTAX		InetAddress
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" This is the Secondary NBNS server IP address to be given to PPP 
+			users during NCP negotiation. If the value is a non-zero value
+			and also the Radius Server does not return a value  then this value is given to PPP.
+            The type of this IpAddress (IPv4/IPv6/..) is determined by the
+            value of the domainAddrType object.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	0.0.0.0
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  DEFVAL {'00000000'H} -- 0.0.0.0
+	  ::= { domainEntry 9 }
+
+domainSessionTimeout        OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The maximum lifetime of a session (PPP or 802.1x). If the value is 
+			zero, then no session timeout is used. This configuration, including 
+			the value zero can be overwritten by the session-timeout attribute 
+			coming from the Radius server.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	0
+             UNITS:	time in seconds 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  DEFVAL {0}
+	  ::= { domainEntry 10 }
+
+domainQosProfileIndex        OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" Gives the Qos policy that must be applied to this domain. 
+			This configuration can be overwritten by the Radius server.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	0
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  DEFVAL {0}
+	  ::= { domainEntry 11 }
+
+domainAuthenticator        OBJECT-TYPE
+	  SYNTAX		INTEGER	
+					{
+						local (1),
+						radius (2)
+					}
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			"Indicates how the authentication of a user for this domain is done.
+			If set to local(1) then the authentication is done locally using the 
+			information defined in the userTable. If set to radius(2) then 
+			the authentication is done using a Radius server.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: MAND
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainEntry 12 }
+
+domainRadPolicyIndex        OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" This points to the Radius Policy associated for this Domain Entry.
+ 
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	RANGE(0..128)
+             DEFVALUE: 	0
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  DEFVAL {0}
+	  ::= { domainEntry 13 }
+
+domainAdminState    OBJECT-TYPE
+	  SYNTAX		INTEGER {
+                    up(1),
+                    down(2)
+                    }
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" This gives the administrative state of this domain entry and is used                             
+             for locking or unlocking a domain.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	up
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+      DEFVAL {up}
+	  ::= { domainEntry 14 }
+
+domainNumActiveSess    OBJECT-TYPE
+	  SYNTAX		Gauge
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			" This gives the number of active sessions of this domain.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	RANGE(0..1600)
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainEntry 15 }
+
+domainRowStatus  OBJECT-TYPE
+	  SYNTAX		RowStatus
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" This is used for Creation/Deletion of Entries in this Table.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: MAND
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	1,4,6
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainEntry 16 }
+
+-- Start of domainMappingTable
+
+domainMappingTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF DomainMappingEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "The (conceptual) table listing the Domain Name to Domain Index Mapping.
+
+            ALCATEL NOTE :
+              TABLESIZE : DEP on number of rows in the domainTable
+              DESCR : NA " 
+      ::= { domainMIB 3 }
+
+domainMappingEntry OBJECT-TYPE
+      SYNTAX     DomainMappingEntry
+      ACCESS 	not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "An entry (conceptual row) representing the Domain Name to Index Mapping"
+      INDEX { domainMappingName }
+      ::= { domainMappingTable 1 }
+
+DomainMappingEntry ::=
+    SEQUENCE {
+	  domainMappingName			DisplayString,
+	  domainMappingIndex			    INTEGER
+    }
+
+domainMappingName      OBJECT-TYPE
+	  SYNTAX		DisplayString (SIZE (1..64))
+	  ACCESS		not-accessible
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The Domain name.
+          ALCATEL NOTE
+             ACCESS: NA / INDEX
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainMappingEntry 1 }
+
+domainMappingIndex      OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Index to the corresponding domain Name.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainMappingEntry 2 }
+
+-- End of domainTable.
+
+
+-- Start of domainIpPoolTable
+
+-- domainIpPoolTable OBJECT-TYPE
+--      SYNTAX     SEQUENCE OF DomainIpPoolEntry
+--      ACCESS 	 not-accessible
+--      STATUS     obsolete
+--      DESCRIPTION
+--             "The (conceptual) table listing the Ip Pool associated with a
+--              specified Domain.
+-- 
+--             ALCATEL NOTE :
+--               TABLESIZE : DEP on the number of rows in the domainTable and the ipPoolTable
+--               DESCR : This object is not supported. "
+--       ::= { domainMIB 4 }
+
+-- domainIpPoolEntry OBJECT-TYPE
+--       SYNTAX     DomainIpPoolEntry
+--       ACCESS 	 not-accessible
+--       STATUS     obsolete
+--       DESCRIPTION
+--             "An entry (conceptual row) representing the configuration 
+--              of a IP Pool."
+--       INDEX { domainIndex, ipAddressPoolIndex }
+--       ::= { domainIpPoolTable 1 }
+
+-- DomainIpPoolEntry ::=
+--     SEQUENCE {
+-- 	  domainIpPoolPriority			INTEGER,
+-- 	  domainIpPoolRowStatus			RowStatus
+--     }
+
+
+-- domainIpPoolPriority OBJECT-TYPE
+-- 	  SYNTAX		INTEGER
+-- 	  ACCESS		read-write
+-- 	  STATUS		obsolete
+-- 		  DESCRIPTION
+-- 				" The priority associated with this IP pool.
+-- 	          ALCATEL NOTE
+-- 	             ACCESS: NA
+-- 	             USAGE: MAND
+-- 	             PERSIST:  	YES
+-- 	             INSRVMOD: 	YES
+-- 	             RANGE:	NA
+-- 	             DEFVALUE: 	NA
+-- 	             UNITS:	NA 
+-- 	             SPARSE:	NO 
+-- 	             DESCR:	This object is not supported. "
+-- 		  ::= { domainIpPoolEntry 1 }
+
+-- domainIpPoolRowStatus OBJECT-TYPE
+-- 	  SYNTAX		RowStatus
+-- 	  ACCESS		read-write
+-- 	  STATUS		obsolete
+-- 	  DESCRIPTION
+-- 			" Used for Creation/Deletion of Entries in this Table.
+--           ALCATEL NOTE
+--              ACCESS: NA
+--              USAGE: MAND
+--              PERSIST:  	YES
+--              INSRVMOD: 	YES
+--              RANGE:	1,4,6
+--              DEFVALUE: 	NA
+--              UNITS:	NA 
+--              SPARSE:	NO 
+--             DESCR:	This object is not supported. "
+-- 	  ::= { domainIpPoolEntry 2 }
+
+-- End of domainIpPoolTable.
+
+
+-- Start of domainUserTable
+
+-- domainUserTable OBJECT-TYPE
+--       SYNTAX     SEQUENCE OF DomainUserEntry
+--       ACCESS     not-accessible
+--       STATUS     mandatory
+--       DESCRIPTION
+--             "The (conceptual) table listing the
+--              configurable parameters for a user of a particular Domain.
+--              This table will be used for authenticating users locally.
+           
+--              If a domain is deleted from the domainTable, then all the users of
+--              that domain will be deleted from this table.
+
+--             ALCATEL NOTE :
+--               TABLESIZE : 3072 
+--               DESCR : NA"
+--       ::= { domainMIB 5 }
+
+-- domainUserEntry OBJECT-TYPE
+--       SYNTAX     DomainUserEntry
+--       ACCESS 	 not-accessible
+--       STATUS     mandatory
+--       DESCRIPTION
+--             "An entry (conceptual row) representing the user configuration 
+--              of a particular Domain."
+--         INDEX { domainIndex, domainUserName }
+--       ::= { domainUserTable 1 }
+
+-- DomainUserEntry ::=
+--     SEQUENCE {
+-- 	  domainUserName					DisplayString,
+-- 	  domainUserPassword				DisplayString,
+-- 	  domainUserRowStatus			    RowStatus
+--       }
+
+-- domainUserName  OBJECT-TYPE
+-- 	  SYNTAX		DisplayString (SIZE (1..64)) 
+--       ACCESS		not-accessible
+-- 	  STATUS		mandatory
+-- 	  DESCRIPTION
+-- 			" Username - Index to the userTable.
+          
+--              ACCESS: NA / INDEX
+--              USAGE: NA
+--              PERSIST:  	YES
+--              INSRVMOD: 	NA
+--              RANGE:	NA
+--              DEFVALUE: 	NA
+--              UNITS:	NA 
+--              SPARSE:	NO 
+--              DESCR:	NA "
+-- 	  ::= { domainUserEntry 1 }
+
+-- domainUserPassword      OBJECT-TYPE
+-- 	  SYNTAX		DisplayString (SIZE (6..64))
+-- 	  ACCESS		read-write
+-- 	  STATUS		mandatory
+-- 	  DESCRIPTION
+-- 			" The password for this user entry.
+--             For security reasons the password wont be displayed to the users.
+--           ALCATEL NOTE
+--              ACCESS: NA
+--              USAGE: MAND
+--              PERSIST:  	YES
+--              INSRVMOD: 	YES
+--              RANGE:	NA
+--              DEFVALUE: 	NA
+--              UNITS:	NA             SPARSE:	NO 
+--              DESCR:	NA "
+-- 	  ::= { domainUserEntry 2 }
+
+-- domainUserRowStatus     OBJECT-TYPE
+-- 	  SYNTAX		RowStatus
+-- 	  ACCESS		read-write
+-- 	  STATUS		mandatory
+-- 	  DESCRIPTION
+-- 			" Used for creation/deletion of an entry in this Table.
+--           ALCATEL NOTE
+--              ACCESS: NA
+--              USAGE: MAND
+--              PERSIST:  	YES
+--              INSRVMOD: 	YES
+--              RANGE:	1,4,6
+--              DEFVALUE: 	NA
+--              UNITS:	NA 
+--              SPARSE:	NO 
+--              DESCR:	NA "
+-- 	  ::= { domainUserEntry 3 }
+
+-- End of domainUserTable.
+
+
+-- Start of connPolicyTable
+
+connPolicyTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF ConnPolicyEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "The (conceptual) table listing the
+             connnection policy associated with an Interface.
+
+            ALCATEL NOTE :
+              TABLESIZE : 1 
+              DESCR : NA"
+      ::= { domainMIB 6 }
+
+connPolicyEntry OBJECT-TYPE
+      SYNTAX     ConnPolicyEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "An entry (conceptual row) representing the connection Policy
+             of a Interface."
+        INDEX { connPolicyIfIndex }
+      ::= { connPolicyTable 1 }
+
+ConnPolicyEntry ::=
+    SEQUENCE {
+	  connPolicyIfIndex		    InterfaceIndexOrZero,
+	  connPolicyProfileIndex	AsamNextProfileIndex,
+	  connPolicyRowStatus		RowStatus
+    }
+
+connPolicyIfIndex  OBJECT-TYPE
+	  SYNTAX		InterfaceIndexOrZero
+	  ACCESS		not-accessible
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The IfIndex for which this Connection Policy will be applied.
+          ALCATEL NOTE
+             ACCESS: NA / INDEX
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	0
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { connPolicyEntry 1 }
+
+connPolicyProfileIndex      OBJECT-TYPE
+	  SYNTAX		AsamNextProfileIndex
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The connection profile associated with this policy.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: MAND
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	RANGE(1..50)
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { connPolicyEntry 2 }
+
+connPolicyRowStatus     OBJECT-TYPE
+	  SYNTAX		RowStatus
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" Used for creation/deletion of an entry in this Table.
+          
+             ACCESS: NA
+             USAGE: MAND
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	1,4,6
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { connPolicyEntry 3 }
+
+-- End of connPolicyTable.
+
+
+-- Start of connProfileTable
+
+
+connProfileIndexNext        OBJECT-TYPE
+        SYNTAX          AsamNextProfileIndex
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION     
+        "This object contains an appropriate value to be used for 
+         connProfileIndex when creating entries in the
+         connProfileTable. 
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the connProfileIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current value of this object.  After each retrieval, the agent should
+         modify the value to the next unassigned index.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             DESCR:	NA "
+::= { domainMIB 7 }
+
+connProfileMaxIndex        OBJECT-TYPE
+    SYNTAX  AsamMaxProfileIndex
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+            "This object represents the maximum number of
+             connProfiles that can be created. The object
+             connProfileIndexNext will have values ranging
+             from 1 to the value represented by this object.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             DESCR:	NA "
+    ::= {domainMIB 8}
+
+
+connProfileTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF ConnProfileEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "The (conceptual) table listing the
+             connnection profile that can be associated with a connection
+             Policy.
+
+            ALCATEL NOTE :
+              TABLESIZE : 50 
+              DESCR : NA"
+      ::= { domainMIB 9 }
+
+connProfileEntry OBJECT-TYPE
+      SYNTAX     ConnProfileEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "An entry (conceptual row) representing the connection Profile."
+        INDEX { connProfileIndex }
+      ::= { connProfileTable 1 }
+
+ConnProfileEntry ::=
+    SEQUENCE {
+      connProfileIndex 			    AsamProfileIndex,
+      connProfileName 			    AsamProfileName,
+      connProfileScope			    AsamProfileScope,
+      connProfileVersionNbr		    INTEGER,
+      connProfileUsedStatus		    AsamProfileRefCount,
+      connProfileNoDomAct   	    INTEGER,
+      connProfileInvalidDomAct  	INTEGER,
+      connProfileDomainIndex		INTEGER,
+      connProfileRowStatus		    RowStatus
+    }
+
+connProfileIndex  OBJECT-TYPE
+	  SYNTAX		AsamProfileIndex
+	  ACCESS		not-accessible
+	  STATUS		mandatory
+	  DESCRIPTION
+        "This object is used to uniquely identify an entry in this table.
+	 The max value of this object is limited to
+         connProfileMaxIndex value.
+          ALCATEL NOTE
+             ACCESS: NA / INDEX
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	RANGE(1..50)
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+::= { connProfileEntry 1 }
+
+connProfileName  OBJECT-TYPE
+	  SYNTAX		AsamProfileName
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+        "A textual name identifying this profile. This name has to be unique
+        within the assigned scope.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: MAND
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+::= { connProfileEntry 2 }
+
+connProfileScope OBJECT-TYPE
+        SYNTAX          AsamProfileScope
+        ACCESS          read-write
+        STATUS          obsolete
+        DESCRIPTION     
+        "A  profile can be qualified as having a local scope or a network wide 
+         scope.
+          ALCATEL NOTE
+             ACCESS: NOT-USED
+             USAGE: OBSOLETE
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+::= {connProfileEntry 3}
+
+connProfileVersionNbr OBJECT-TYPE
+        SYNTAX          INTEGER
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION     
+        "The manager can associate a version number to the profile. It is set to
+         1 when the profile is first created and will be incremented by the
+         manager when the profile is modified.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	1
+             UNITS:	NA
+             SPARSE:	NO 
+             DESCR:	NA "
+::= {connProfileEntry 4}
+
+connProfileUsedStatus OBJECT-TYPE
+    SYNTAX  AsamProfileRefCount
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+           "Indicates the number of entities using this profile. If the
+            reference count is greater than 0, then this profile is 'in use',
+            and may NOT be deleted. If the value is 0, then this profile is
+            'not in use', and can be deleted.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+::= {connProfileEntry 5}
+
+connProfileNoDomAct      OBJECT-TYPE
+	  SYNTAX		INTEGER {
+                            accept(1),
+                            reject(2)
+                            }
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" Flag to say whether to accept/reject a user session
+            authentication request with no domain name sepcified.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	accept
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA " 
+	  DEFVAL {accept}
+::= { connProfileEntry 6 }
+
+connProfileInvalidDomAct     OBJECT-TYPE
+	  SYNTAX		INTEGER {
+                            accept(1),
+                            reject(2)
+                            }
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" Flag to say whether to accept/reject a user session
+            authentication request with an Invalid domain name sepcified.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	accept
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA " 
+	  DEFVAL {accept}
+::= { connProfileEntry 7 }
+
+connProfileDomainIndex  OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The Default domain that should be used if accepting an
+            authentication request with No/Invalid domain Name. This 
+            domain should have an entry in the domainTable.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: MAND
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	RANGE(1..128)
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+::= { connProfileEntry 8 }
+
+connProfileRowStatus     OBJECT-TYPE
+	  SYNTAX		RowStatus
+	  ACCESS		read-write
+	  STATUS		mandatory
+	  DESCRIPTION
+			" Used for creation/deletion of an entry in this Table.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: MAND
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	1,4,6
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+::= { connProfileEntry 9 }
+
+
+connProfileMappingTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF ConnProfileMappingEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "The (conceptual) table listing the
+	connection Profile Name to Index mapping.
+
+            ALCATEL NOTE :
+              TABLESIZE : DEP on the number of rows in the connProfileTable
+              DESCR : NA "
+      ::= { domainMIB 10 }
+
+connProfileMappingEntry OBJECT-TYPE
+      SYNTAX     ConnProfileMappingEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "An entry (conceptual row) representing the connection Profile 
+	Name to Index mapping."
+        INDEX { connProfileMappingName }
+      ::= { connProfileMappingTable 1 }
+
+ConnProfileMappingEntry ::=
+    SEQUENCE {
+      connProfileMappingName 			    AsamProfileName,
+      connProfileMappingScope 			    AsamProfileScope,
+      connProfileMappingIndex 			    AsamProfileIndex
+    }
+
+connProfileMappingName  OBJECT-TYPE
+	  SYNTAX		AsamProfileName
+	  ACCESS		not-accessible
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The Connection Profile Name.
+          ALCATEL NOTE
+             ACCESS: NA / INDEX
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { connProfileMappingEntry 1 }
+
+connProfileMappingScope OBJECT-TYPE
+        SYNTAX          AsamProfileScope
+        ACCESS          not-accessible
+        STATUS          obsolete
+        DESCRIPTION     
+        "A  profile can be qualified as having a local scope or a network wide 
+         scope.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: OBSOLETE
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+::= { connProfileMappingEntry 2 }
+
+connProfileMappingIndex  OBJECT-TYPE
+	  SYNTAX		AsamProfileIndex
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			" The Connection Profile index.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NO
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { connProfileMappingEntry 3 }
+
+-- End of connProfileMappingTable.
+
+
+-- Start of domainUserSessTable
+
+domainUserSessTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF DomainUserSessEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "The (conceptual) table displaying the configuration of a particular 
+			user that has been authenticated. 
+
+            ALCATEL NOTE :
+              TABLESIZE : 1600 
+              DESCR : NA"
+      ::= { domainMIB 11 }
+
+domainUserSessEntry OBJECT-TYPE
+      SYNTAX 	DomainUserSessEntry
+      ACCESS 	not-accessible
+      STATUS    mandatory
+      DESCRIPTION
+            "An entry (conceptual row) displaying the configuration of a particular 
+			user that has been authenticated."
+        INDEX { domainUserSessDomainName, domainUserSessUserName, domainUserSessIndex }
+      ::= { domainUserSessTable 1 }
+
+DomainUserSessEntry ::=
+    SEQUENCE {
+      domainUserSessDomainName          DisplayString,
+	  domainUserSessUserName		    DisplayString,
+	  domainUserSessIndex	    		INTEGER,
+	  domainUserSessIfIndex             InterfaceIndex,
+	  domainUserSessProtocol	    	INTEGER,
+      domainUserSessAuthType            INTEGER,
+      domainUserSessRadPolicyIndex     	INTEGER,
+	  domainUserSessRadAuthServerIndex 	INTEGER,
+	  domainUserSessRadAccServerIndex   INTEGER,
+	  domainUserSessRadAccSesId	        DisplayString,
+	  domainUserSessVrfIndex            VrfIndex,
+	  domainUserSessIpAddrPoolIndex		INTEGER,
+      domainUserSessIpAddrType          InetAddressType,
+	  domainUserSessIpAddress		    InetAddress
+    }
+
+domainUserSessDomainName OBJECT-TYPE
+	  SYNTAX		DisplayString (SIZE (1..64))
+	  ACCESS		not-accessible
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Domain to which the user belongs.
+          ALCATEL NOTE
+             ACCESS: NA / INDEX
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 1 }
+
+domainUserSessUserName OBJECT-TYPE
+	  SYNTAX		DisplayString (SIZE (1..64))
+	  ACCESS		not-accessible
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The user name of the user.
+          ALCATEL NOTE
+             ACCESS: NA / INDEX
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 2 }
+
+domainUserSessIndex OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		not-accessible
+	  STATUS		mandatory
+	  DESCRIPTION
+			"An index uniquely identifying a particular session of a particular 
+			user.
+          ALCATEL NOTE
+             ACCESS: NA / INDEX
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 3 }
+
+domainUserSessIfIndex OBJECT-TYPE
+	  SYNTAX		InterfaceIndex
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The IfIndex of the Interface on which this session is
+            established.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA " 
+	  ::= { domainUserSessEntry 4 }
+
+domainUserSessProtocol OBJECT-TYPE
+	  SYNTAX		INTEGER
+					{
+						ppp (1),
+						dot1x (2)
+					}
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The protocol at user side that was used to establish this user 
+			session. Value 1 indicates PPP and 2 indicates 802.1x.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 5 }
+
+domainUserSessAuthType OBJECT-TYPE
+	  SYNTAX		INTEGER
+					{
+						local (1),
+						radius (2)
+					}
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Authentication type used for establishing this user session. 
+            It can be either Remote (RADIUS) or Local.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 6 }
+
+domainUserSessRadPolicyIndex OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Radius Policy used for authenticating this user session.
+            It will be zero in case local authentication is used.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 7 }
+
+domainUserSessRadAuthServerIndex OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Index of the Radius Authentication server used for authenticating this
+            user session. It will be 0 in case local authentication is
+            used.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 8 }
+
+domainUserSessRadAccServerIndex OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Index of the Radius Accounting server used for accounting  
+            this user session. It will be 0 in case no accounting is done for
+            this user session.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 9 }
+
+domainUserSessRadAccSesId OBJECT-TYPE
+	  SYNTAX		DisplayString
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Accounting Id that is sent to the Radius Accounting server for 
+            this user session. It will be NULL in case of no accounting.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 10 }
+
+domainUserSessVrfIndex OBJECT-TYPE
+	  SYNTAX		VrfIndex
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Vrf to which the IpAddress of this user session belongs.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 11 }
+
+domainUserSessIpAddrPoolIndex OBJECT-TYPE
+	  SYNTAX		INTEGER
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Ip Pool in the Local IpAddress Pool Management, that was used
+            for allocating an IpAddress to the user session. It will be zero
+            in case a Radius server or Dhcp server (in case of 802.1x) has 
+            allocated the IpAddress directly.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 12 }
+
+domainUserSessIpAddrType OBJECT-TYPE
+	  SYNTAX		InetAddressType
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The Type of IpAddress allocated to the user session.
+          ALCATEL NOTE:
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 13 }
+
+
+domainUserSessIpAddress OBJECT-TYPE
+	  SYNTAX		InetAddress
+	  ACCESS		read-only
+	  STATUS		mandatory
+	  DESCRIPTION
+			"The IpAddress allocated to the user session. The type of this
+            IpAddress is determined by the value of the
+            domainUserSessIpAddrType object.
+          ALCATEL NOTE
+             ACCESS: NA
+             USAGE: NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA "
+	  ::= { domainUserSessEntry 14 }
+
+-- End of domainUserSessTable.
+
+domainRadiusPolicyIdForOperator OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS   read-write
+      STATUS     mandatory
+      DESCRIPTION
+           "The Radius Policy index to be used when both TL1 and CLI operators need                 to be authenticated via Radius. The Radius Policy Index has to exist in the radPolicyTable defined in the RADIUS_MIB.  The row in the radPolicyTable can only be deleted if the id of the row doesn't equals this id or if the object value equals 0.
+     ALCATEL NOTE:
+              ACCESS: NA
+              USAGE: NA
+
+              PERSIST: YES
+     INSRVMOD: NA
+     RANGE: 0..128
+     DEFVALUE: {0}
+     UNITS: NA
+              DESCR : NA"
+      ::= { domainMIB 12 }
+
+-- select Tacacs+ policy id
+domainTacacsPlusPolicyIdForOperator OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS     read-write
+      STATUS     mandatory
+      DESCRIPTION
+           "The Tacacs+ Policy index to be used when both TL1 and CLI operators
+           need to be authenticated via Tacacs+. The Tacacs+ Policy Index has to 
+           exist in the tacPolicyTable defined in the TACACS_MIB.  The row in 
+           the tacPolicyTable can only be deleted if the id of the row doesn't 
+           equals this id or if the object value equals 0.
+           
+           In case of Radius servers indicating by domainRadiusPolicyIdForOperator
+           available, the system assumes Radius policy takes higher precedence.
+     ALCATEL NOTE:
+           ACCESS: NA
+           USAGE: NA
+           PERSIST: YES
+     INSRVMOD: NA
+     RANGE: 0..128
+     DEFVALUE: {0}
+     UNITS: NA
+           DESCR : NA"
+      ::= { domainMIB 13 }
+
+domainAAAPolicyPriorityForOperator OBJECT-TYPE
+      SYNTAX     INTEGER {
+                    rrn (1),
+                    ttt (2),
+                    rrt (3)
+                 }   
+      ACCESS     read-write
+      STATUS     mandatory
+      DESCRIPTION
+           "Three characters are combined to identify which kind of AAA server to be 
+           used per each functionality aspect. The first character indicates 
+           'authentication'. The middle character indicates 'authorization' while the
+           last one refers to 'accounting'. 
+           
+           When operator attempts to login, the system will choose AAA servers upon
+           this object. 'r' means Radius while 't' as Tacacs+. The 'n' indicates 
+           no AAA to be applied. E.g, 'rrn' indicates the system will try to 
+           authenticate and authorize the operator using Radius without accounting. 
+           
+           Currently no switch between Radius and Tacacs+ as attempting failed. But 
+           switch among multiple Radius servers or between primary and secondary 
+           Tacacs+ servers is still allowed.
+           
+           In the future, the object will be enhanced to support 'precedence' meaning. 
+           E.g, the 'rrn' means that Radius has higher precedence than Tacacs+ for 
+           authentication and authorization. The system will try Radius as authentication 
+           and authorization server at first. If these servers are unavailable, the system 
+           will switch to Tacacs+ server in turn.      
+     ALCATEL NOTE:
+           ACCESS: NA
+           USAGE: NA
+           PERSIST: YES
+     INSRVMOD: NA
+     DEFVALUE: { rrn (1) }
+     UNITS: NA
+           DESCR : NA"
+      ::= { domainMIB 14 }
+
+-- **************************************************************************
+-- **   D O T 1 X     TRAP     T A B L E                                   **
+-- **                                                                      **
+-- **   domainMacAuthFailure::= { domainMIB 15 }                         **
+-- **************************************************************************
+  domainMacAuthFailure OBJECT IDENTIFIER 
+  ::= { domainMIB 15}
+  
+    domainTrapMacAddress OBJECT-TYPE
+	SYNTAX MacAddress 
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Conflict Mac Address which Radius Server distribute 
+	     Mac based authentication on System level."
+    ::= { domainMacAuthFailure 1}
+
+    domainTrapIfIndex OBJECT-TYPE
+	SYNTAX InterfaceIndex 
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The IfIndex of a user interface with Mac address
+             to identify the mac based authentication session."
+    ::= { domainMacAuthFailure 2}
+
+    domainTrapDynAssignVlanId OBJECT-TYPE
+	SYNTAX Gauge
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            " Dynamic Assignment of Forwarder ID for a
+	      mac based authentication session."
+    ::= { domainMacAuthFailure 3}
+
+    domainTrapQoSProfName OBJECT-TYPE
+	SYNTAX OCTET STRING (SIZE(0..32))
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            " Dynamic Qos Profile Name for a mac based 
+	      authentication session."
+    ::= { domainMacAuthFailure 4}
+
+    domainTrapMacAuthFailureReason OBJECT-TYPE
+	SYNTAX INTEGER 
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The reason for dhcp session preemption.
+             1.Invalid Dynamic VLAN Assignment Failure: VLAN returned
+	       from RADIUS server is invalid: not configured locally, 
+	       or mismatched before and after re-auth or occupied.
+             2.Static Mac Exist Failure: request mac address is already
+	       configured as static mac.
+	     3.Bridge Port Not Exist Failure: Bridge Port not exist.
+	     4.Invalid Dynamic QoS Profile Assignment Failure:  
+	       QoS profile returned from RADIUS server is 
+	       not configured locally, or mismatched before and after
+	       re-auth.
+	     5.Invailed RADIUS VSA infomation
+	     6.No vailed vlan information from RADIUS
+	     7.Mac based Authentication Attache failed"
+    ::= { domainMacAuthFailure 5}
+ 
+END

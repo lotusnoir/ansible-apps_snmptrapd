@@ -1,0 +1,2423 @@
+PPP-CC-MIB DEFINITIONS ::= BEGIN
+-- =============================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2007, Alcatel. All Rights Reserved.
+-- =============================================================================
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED "2007-09-13"
+--  ORGANIZATION "Alcatel"
+--  CONTACT-INFO
+--
+--          "Email:  asam.mibsupport@alcatel.be"
+--
+--  DESCRIPTION "MIB for the PPP Cross-connect Engine"
+--
+-- =============================================================================
+--  
+-- HISTORY:
+--
+--  DATE: 08/07/03
+--  DESCRIPTION:
+--        "Version: 3FE23869EAAA_E3.6.0.2
+--         Editor:  Bakri Aboukarr
+--         Changes: modify the range of pppCcClientPortDefaultPriority to include
+--        the value 8 instead of -1 to indicate that there is not default priority"
+--  DATE: 08/05/08
+--  DESCRIPTION:
+--        "Version: 3FE23869EAAA_E3.6.0.1
+--         Editor:  Bakri Aboukarr
+--         Changes: update the range of pppCcClientPortDefaultPriority to include
+--         the value -1 to indicate that there is not default priority"
+--  DATE: 07/09/13
+--  DESCRIPTION:
+--        "Version: 3FE23869EAAA_E3.5.0.1
+--         Editor:  Bakri Aboukarr
+--         Changes: Update description of pppCcPortMaxNumPppCc, and 
+--                  pppCcEngineDslfIwfTag"
+--  DATE: 07/05/15
+--  DESCRIPTION:
+--        "Version: 3FE23869EAAA_E3.5.0.0
+--         Editor:  Tony Ottaviani
+--         Changes: Added pppCcEngineMacAddrConc, pppCcEngineDslfIwfTag,
+--         pppCcPortCurrentNumPppCc, pppCcPortUpFwdFrameCnt, pppCcPortDnFwdFrameCnt,
+--         pppCcPortUpDiscFrameCnt, pppCcPortDnDiscFrameCnt,
+--         pppOutOfPortCcContextCnt, pppOutOfLineCcContextCnt, 
+--         pppOutOfBoardCcContextCnt"
+--
+--  DATE: 07/02/28
+--  DESCRIPTION
+--        "Version: 3FE23869EAAA_E3.4.0.0
+--         Editor:  Yao Yifeng
+--         Changes: change the range of PPPoA timeout (PppCcMaxAge) range from
+--         (300..3000) to (10..3000)."
+
+--  DATE: 07/01/22
+--  DESCRIPTION
+--        "Version: 3FE23869EAAA_E3.3.0.0
+--         Editor:  Bo Liu
+--         Changes: change the dimension from 3648 to 4480 to support 1024 
+--                  PPP CC sessions on IWSM-A."
+
+--  DATE: 06/05/11
+--  DESCRIPTION
+--        "Version: 3FE23869EAAA_V3.1.0.0.0
+--         Editor:  Kishore Kumar
+--         Changes: Insertion of Arberg tag (pppCcEngineInsertMaxPayloadSize)
+
+--
+--  DATE: 06/03/02
+--  DESCRIPTION
+--        "Version: 3FE23869EAAA_E3.0.0.0
+--         Editor:  Lucien Marcotte
+--         Changes: change the dimension from 3072 to 3648 to support 19 slots."
+
+
+--  DATE: 05/01/11
+--  DESCRIPTION
+--        "Version: 3FE23869EAAA_E1.0.0.4
+--         Editor:  Zhang Weihua
+--         Changes: modify AsamProfileIndex to AsamProfileIndexOrZero
+--
+--  DATE: 04/12/22  
+--  DESCRIPTION
+--        "Version: 3FE23869EAAA_E1.0.0.3
+--         Editor:  Zhang Weihua
+--         Changes: (1) remove pppCcEngineNameTable
+--                  (2) change the dimension of pppCcEngine2ClientPortAssocTable 
+--                      from 16351 to 3072"
+--
+--  DATE: 04/12/01  
+--  DESCRIPTION
+--        "Version: 3FE23869EAAA_E1.0.0.2
+--         Editor:  Zhang Weihua
+--         Changes: the dimension of Engine table is changed from 64 to 255.
+--                  update description of some objects."
+
+--  DATE: 04/11/17  
+--  DESCRIPTION
+--        "Version: 3FE23869AAAA_E1.0.0.1
+--         Editor:  Zhang Weihua
+--         Changes: pppCcVlanIdTable is added."
+
+--  DATE: 04/11/04  
+--  DESCRIPTION
+--        "Version: 3FE23869AAAA_E1.0.0.0
+--         Editor:  Zhu Weihua
+--         Changes:  Initial creation."
+--  DATE: 12/08/16
+--  DESCRIPTION
+--        "Version: 
+--         Editor : Raviwada,Svetlana Rao;Shanmugham,Sangeetha 
+--         Changes:  Handle MIB impact for ALU01526020 "
+-- =============================================================================
+
+IMPORTS
+	OBJECT-TYPE
+					FROM RFC-1212
+RowStatus, MacAddress	
+				FROM SNMPv2-TC
+	Counter
+					FROM RFC1155-SMI
+	DisplayString
+					FROM RFC1213-MIB
+	asam	
+					FROM SYSTEM-MIB
+	AsamProfileIndexOrZero
+       				FROM ASAM-TC-MIB;
+
+-- ***********************************************************
+-- ***        T E X T U A L   C O N V E N T I O N S        ***
+-- ***********************************************************
+
+-- The InterfaceIndex is inspired on the definition from RFC2233:
+--
+-- The InterfaceIndex contains the semantics of ifIndex and
+-- should be used for any objects defined on other mib
+-- modules that need these semantics.
+--
+-- InterfaceIndex ::= TEXTUAL-CONVENTION
+--    DISPLAY-HINT "d"
+--    STATUS       current
+--    DESCRIPTION
+--            "A unique value, greater than zero, for each interface or
+--            interface sub-layer in the managed system.  It is
+--            recommended that values are assigned contiguously starting
+--            from 1.  The value for each interface sub-layer must remain
+--            constant at least from one re-initialization of the entity's
+--            network management system to the next re-initialization."
+--    SYNTAX       Integer32 (1..2147483647)
+--
+InterfaceIndex ::= INTEGER (1..2147483647)
+
+-- The EngineIndex must allow for the maximum number of PPP CC Engines in 
+-- the system.  To include some margin, the upper bound of 4095 is chosen as 
+-- this corresponds to the maximum number of unstacked VLANs.
+EngineIndex ::= INTEGER (0 .. 32768)
+
+
+-- ***********************************************************
+-- ***        O B J E C T   D E F I N I T I O N S          ***
+-- ***********************************************************
+
+pppoxrelayMIB			OBJECT IDENTIFIER ::= {asam 52}
+
+pppCcMIB			OBJECT IDENTIFIER ::= {pppoxrelayMIB 1}
+
+
+-- ***************************************************************
+-- ***        P P P   C C   S Y S T E M   O B J E C T S        ***
+-- ***************************************************************
+
+pppCcSystemObjects OBJECT IDENTIFIER ::= {pppCcMIB 1}
+
+initialPadOTimeOut OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"If the system acts as a PPPoE client: the initial time-out value in 
+seconds for the reception of a PAD-O after the generation of a PAD-I 
+message.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		1 .. 60 
+DEFVALUE:	3
+UNITS:		second"
+	::= {pppCcSystemObjects 1}
+
+
+initialPadSTimeOut OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"If the system acts as a PPPoE client: the initial time-out value in 
+seconds for the reception of a PAD-S after the generation of a PAD-R 
+message.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		1 .. 60 
+DEFVALUE:	3
+UNITS:		second"
+	::= {pppCcSystemObjects 2}
+
+
+maxNumPadRRetrials OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"If the system acts as a PPPoE client: the maximum number of PAD-R
+messages(first message plus retrials) allowed for setting up a PPPoE session.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		1 .. 16
+DEFVALUE:	10
+UNITS:		NA"
+	::= {pppCcSystemObjects 3}
+
+
+pppTransactionMaxAge OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"The time-out value associated with the autonomous release of a PPP 
+transaction record that did not have any activity for a given period 
+of time.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		1 .. 300
+DEFVALUE:	300
+UNITS:		second"
+	::= {pppCcSystemObjects 4}
+
+
+pppCcMaxAge OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"The time-out value associated with the autonomous release of a PPP 
+cross-connection that did not have carried traffic for a given period 
+of time.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		10 .. 3000
+DEFVALUE:	300
+UNITS:		second"
+	::= {pppCcSystemObjects 5}
+
+
+outOfPppTransContextCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of abortions of a PPP CC set-up process because there was 
+no free transaction left. 
+ALCATEL NOTE:
+SUPPORT:		NO
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcSystemObjects 6}
+
+
+outOfSystemPppCcContextCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of events where a PPP CC cannot be established within the 
+system because the maximum number of PPP CCs supported by the system 
+is reached.
+ALCATEL NOTE:
+SUPPORT:		NO
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcSystemObjects 7}
+
+pppCcEngineIndexNext OBJECT-TYPE
+	SYNTAX EngineIndex
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The next available pppCcEngineIndex to be used when creating entries
+in the pppCcEngineTable.  The value 0 indicates that no unassigned 
+entries are available.  To obtain the pppCcEngineIndex value for a
+new entry, the Manager issues a management protocol retrieval
+operation to obtain the current value of this object.  After each 
+retrieval, the Agent should modify the value to the next unassigned
+index.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcSystemObjects 8}
+
+
+-- ***************************************************************
+-- ***         P P P   C C   E N G I N E   T A B L E           ***
+-- ***************************************************************
+
+pppCcEngineTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PppCcEngineEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"A table allowing to maintain PPP CC Engines.
+ALCATEL NOTE:
+SUPPORT:		YES
+TABLESIZE:	0 .. 32768"
+	::= {pppCcMIB 2}
+
+
+pppCcEngineEntry OBJECT-TYPE
+	SYNTAX PppCcEngineEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"An entry in the pppCcEngineTable.
+Row creation: by the manager using the pppCcEngineRowStatus.
+Row deletion: by the manager using the pppCcEngineRowStatus.
+ALCATEL NOTE:
+SUPPORT:		YES"
+	INDEX { pppCcEngineIndex }
+	::= {pppCcEngineTable 1}
+
+
+PppCcEngineEntry ::= SEQUENCE
+ {
+	pppCcEngineIndex					EngineIndex,
+	pppCcEngineRowStatus				RowStatus,
+	pppCcEngineName					DisplayString,
+	pppCcEngineVersionNbr			INTEGER,
+	pppCcEngineCtlPlaneAdminState		INTEGER,
+	pppCcEnginePppoaServiceName		DisplayString,
+	pppCcEngineMaxNumPppCc			INTEGER,
+	pppCcEngineCurrentNumPppCc		INTEGER,
+	pppCcEngineTotalInCtlFrameCnt		Counter,
+	pppCcEngineSummaryCtlErrorCnt		Counter,
+	pppCcEngineRemoveAllPorts			INTEGER,
+	pppCcEngineTotalEgCtlFrameCnt		Counter,
+	pppCcEngineVlanId				INTEGER,
+	pppCcEngineInsertMaxPayloadSize	INTEGER,
+        pppCcEngineMacAddrConc			INTEGER, 
+        pppCcEngineDslfIwfTag			INTEGER,
+	pppCcEngineTcaEnable 			INTEGER,
+	pppTransAgedOutCnt15MinTCA		INTEGER,
+	pppSessionAgedOutCnt15MinTCA		INTEGER,
+	pppTransAgedOutCnt1DayTCA		INTEGER,
+	pppSessionAgedOutCnt1DayTCA             INTEGER
+ }
+
+pppCcEngineIndex OBJECT-TYPE
+	SYNTAX EngineIndex
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"A number that uniquely identifies a PPP CC Engine in the system.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineEntry 1}
+
+
+pppCcEngineRowStatus OBJECT-TYPE
+	SYNTAX RowStatus
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"This object indicates the status of this entry.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		active | createAndGo | destroy
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineEntry 2}
+
+
+pppCcEngineName OBJECT-TYPE
+	SYNTAX DisplayString (SIZE(0..32))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"An administratively assigned string, which may be used to identify 
+the PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	DEFVAL { "" }
+	::= {pppCcEngineEntry 3}
+
+
+pppCcEngineVersionNbr OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"The manager can associate a version number to the PPP CC Engine data. 
+It is set to 1 when the PPP CC Engine is created and may be incremented
+by the Manager when the PPP CC Engine data is modified.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	DEFVAL { 1 }
+	::= {pppCcEngineEntry 4}
+
+
+pppCcEngineCtlPlaneAdminState OBJECT-TYPE
+	SYNTAX INTEGER
+           {
+			unlock (1),
+			lock (2)
+           }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"This object allows to administratively lock or unlock the Control Plane 
+of the PPP CC Engine.  
+When locked, no new PPP cross-connections can be established but the 
+existing ones remain until they are released by the PPP Server and/or 
+Client.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	DEFVAL { unlock }
+	::= {pppCcEngineEntry 5}
+
+
+pppCcEnginePppoaServiceName OBJECT-TYPE
+	SYNTAX DisplayString (SIZE(0..32))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"The Service Name string that will be included in any PAD-I discovery
+message issued by the PPP CC Engine acting as PPPoE client.  If this 
+string remains empty, no service discrimination is performed and the 
+first server that responds will be selected.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	DEFVAL { "" }
+	::= {pppCcEngineEntry 6}
+
+
+pppCcEngineMaxNumPppCc OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"The maximum number of PPP cross-connections that can be associated
+to this PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		NO
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		0 .. 4480
+DEFVALUE:	4480
+UNITS:		NA"
+	::= {pppCcEngineEntry 7}
+
+
+pppCcEngineCurrentNumPppCc OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of PPP cross-connections that is currently in use by 
+this PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineEntry 8}
+
+
+pppCcEngineTotalInCtlFrameCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The total number of ingress control messages (Discovery and LCP
+messages handled by the system's control plane) exchanged between
+the system and the servers for this PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineEntry 9}
+
+
+pppCcEngineSummaryCtlErrorCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The total number of errored upstream and downstream control messages
+exchanged with the servers for this PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineEntry 10}
+
+
+pppCcEngineRemoveAllPorts OBJECT-TYPE
+	SYNTAX INTEGER
+           {
+			noAction (1),
+			removeAllPorts (2)
+           }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"Writing the value removeAllPorts to this object causes the system to
+remove all PPP CC Client Ports from this PPP CC Engine.
+As the semantics of this object is not designed for read-purposes, 
+reading this object only returns the value noAction.
+Writing the value noAction to this object will cause no effect to the 
+system.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	YES
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	DEFVAL { noAction }
+	::= {pppCcEngineEntry 11}
+
+pppCcEngineTotalEgCtlFrameCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The total number of egress control messages exchanged between the
+system and the servers for this PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineEntry 12}
+
+pppCcEngineVlanId OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"The manager must set PPP CC Engine related VLAN Id when creating a new PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineEntry 13}
+
+pppCcEngineInsertMaxPayloadSize OBJECT-TYPE
+	SYNTAX INTEGER
+	{
+		insert	(1),
+		noinsert	(2)
+	}
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+" When set to insert,the PPPoAoERelay will insert the PPPoE tag,PPP-Max-Payload in the PADI & PADR packet
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		insert/noinsert
+DEFVALUE:	noinsert
+UNITS:		NA"
+	::= {pppCcEngineEntry 14} 
+
+pppCcEngineMacAddrConc OBJECT-TYPE
+	SYNTAX INTEGER
+           {
+			enabled (1),
+			disabled (2)
+           }
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"When set to enabled, MAC address concentration is enabled.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	NO
+RANGE:		enabled/disabled
+DEFVALUE:	disabled
+UNITS:		NA"
+	::= {pppCcEngineEntry 16}
+
+pppCcEngineDslfIwfTag OBJECT-TYPE
+	SYNTAX INTEGER
+	{
+		insert	(1),
+		noinsert	(2)
+	}
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+" When set to insert, the DSLF IWF Tag is inserted into PPPoE Discovery packets, otherwise it does nothing. 
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		insert/noinsert
+DEFVALUE:	noinsert
+UNITS:		NA"
+	::= {pppCcEngineEntry 17}
+
+pppCcEngineTcaEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	{
+		enable	(1),
+		noenable	(2)
+	}
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"When set to enable, TCA is enabled for this PPP CC Engine and the pppCcEngineTransAgedOutCur15MinCnt, pppCcEngineSessionAgedOutCur15MinCnt, pppCcEngineTransAgedOutCur1DayCnt,   pppCcEngineSessionAgedOutCur1DayCnt values are compared with the corresponding TCA values. Alarm will be raised when the above counter values are greater than the configured TCA. When set to no enable all pending alarm related to pppCcEngineTransAgedOutCur15MinCnt, pppCcEngineSessionAgedOutCur15MinCnt, pppCcEngineTransAgedOutCur1DayCnt and   pppCcEngineSessionAgedOutCur1DayCnt will be cleared”.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		enable/noenable
+DEFVALUE:	noenable
+UNITS:		NA
+DESCR:      Supported from ISR4.5.02 onwards"
+	::= {pppCcEngineEntry 18}
+	
+pppTransAgedOutCnt15MinTCA OBJECT-TYPE
+	SYNTAX INTEGER(0..65535)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"Configurable threshold for the number of events where a PPP CC session cannot be established within the engine because of transaction time out in a 15 minutes interval. A Value of 0 means that pppTransAgedOutCnt15MinTCA is disabled. When the TCA is configured, pppCcEngineTransAgedOutCur15MinCnt is compared with the TCA value. If the pppCcEngineTransAgedOutCur15MinCnt is greater than the configured TCA then the alarm is raised. If the pppCcEngineTransAgedOutCur15MinCnt is lesser than the TCA the alarm is cleared”.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	NA
+RANGE:		0 .. 65535
+DEFVALUE:	0
+UNITS:		NA
+DESCR:      Supported from ISR4.5.02 onwards "
+	::= {pppCcEngineEntry 19}
+	
+pppSessionAgedOutCnt15MinTCA OBJECT-TYPE
+	SYNTAX INTEGER(0..65535)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"Configurable threshold for the number of events where a PPP CC session failed within the engine because of session time out in a 15 minutes interval. A Value of 0 means that pppSessionAgedOutCnt15MinTCA is disabled. When the TCA is configured, pppCcEngineSessionAgedOutCur15MinCnt is compared with the TCA value. If the pppCcEngineSessionAgedOutCur15MinCnt is greater than the configured TCA then the alarm is raised. If the pppCcEngineSessionAgedOutCur15MinCnt is lesser than the TCA the alarm is cleared.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	NA
+RANGE:		0 .. 65535
+DEFVALUE:	0
+UNITS:		NA
+DESCR:      Supported from ISR4.5.02 onwards "
+	::= {pppCcEngineEntry 20}
+	
+pppTransAgedOutCnt1DayTCA OBJECT-TYPE
+	SYNTAX INTEGER(0..65535)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"Configurable threshold for the number of events where a PPP CC session cannot be established within the engine because of transaction time out in a 24 hours interval. A Value of 0 means that pppTransAgedOutCnt1DayTCA is disabled. When the TCA is configured, pppCcEngineTransAgedOutCur1DayCnt is compared with the TCA value. If the pppCcEngineTransAgedOutCur1DayCnt is greater than the configured TCA then the alarm is raised. If the pppCcEngineTransAgedOutCur1DayCnt is lesser than the TCA the alarm is cleared
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	NA
+RANGE:		0 .. 65535
+DEFVALUE:	0
+UNITS:		NA
+DESCR:      Supported from ISR4.5.02 onwards "
+	::= {pppCcEngineEntry 21}
+	
+pppSessionAgedOutCnt1DayTCA OBJECT-TYPE
+	SYNTAX INTEGER(0..65535)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"Configurable threshold for the number of events where a PPP CC session failed within the engine because of session time out in a 24 hours interval. A Value of 0 means that pppSessionAgedOutCnt1DayTCA is disabled. When the TCA is configured, pppCcEngineSessionAgedOutCur1DayCnt is compared with the TCA value. If the pppCcEngineSessionAgedOutCur1DayCnt is greater than the configured TCA then the alarm is raised. If the pppCcEngineSessionAgedOutCur1DayCnt is lesser than the TCA the alarm is cleared
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	NA
+RANGE:		0 .. 65535
+DEFVALUE:	0
+UNITS:		NA
+DESCR:      Supported from ISR4.5.02 onwards "
+	::= {pppCcEngineEntry 22}
+
+
+-- ******************************************************************
+-- ***      P P P   C C   E N G I N E   N A M E   T A B L E       ***
+-- ******************************************************************
+
+pppCcEngineNameTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PppCcEngineNameEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"A table allowing to find the pppCcEngineIndexes starting from the
+name of the PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		NO
+TABLESIZE:	0 .. 32768"
+	::= {pppCcMIB 3}
+
+
+pppCcEngineNameEntry OBJECT-TYPE
+	SYNTAX PppCcEngineNameEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"One PPP CC Engine Name - PPP CC Engine Index relationship.
+Row creation: by the system upon creation of a new pppCcEngineEntry.
+Row deletion: by the system upon deletion of a pppCcEngineEntry.
+ALCATEL NOTE:
+SUPPORT:		NO"
+	INDEX { pppCcEngineNameEngineName, pppCcEngineNameEngineIndex }
+	::= {pppCcEngineNameTable 1}
+
+
+PppCcEngineNameEntry ::= SEQUENCE
+ {
+	pppCcEngineNameEngineName			DisplayString,
+	pppCcEngineNameEngineIndex		EngineIndex
+ }
+
+pppCcEngineNameEngineName OBJECT-TYPE
+	SYNTAX DisplayString
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"An administratively assigned string, which may be used to identify 
+the PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		NO
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineNameEntry 1}
+
+
+pppCcEngineNameEngineIndex OBJECT-TYPE
+	SYNTAX EngineIndex
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"A number that uniquely identifies a PPP CC Engine in the system.
+ALCATEL NOTE:
+SUPPORT:		NO
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineNameEntry 2}
+
+
+-- ********************************************************************
+-- ***    P P P   C C   E N G I N E   M O N I T O R   T A B L E     ***
+-- ********************************************************************
+
+pppCcEngineMonitorTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PppCcEngineMonitorEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"A table containing the exception events counters for the PPP CC Engines.
+ALCATEL NOTE:
+SUPPORT:		YES
+TABLESIZE:	0 .. 32768"
+	::= {pppCcMIB 4}
+
+
+pppCcEngineMonitorEntry OBJECT-TYPE
+	SYNTAX PppCcEngineMonitorEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"One entry in the pppCcEngineMonitorTable.  One entry contains the 
+exception events counters for one PPP CC Engine.
+Row creation: by the manager using the pppCcEngineMonitorRowStatus.
+Row deletion: by the manager using the pppCcEngineMonitorRowStatus.
+ALCATEL NOTE:
+SUPPORT:		YES"
+	INDEX { pppCcEngineIndex }
+	::= {pppCcEngineMonitorTable 1}
+
+
+PppCcEngineMonitorEntry ::= SEQUENCE
+ {
+	pppCcEngineMonitorRowStatus		RowStatus,
+	outOfPppCcContextCnt				Counter,
+	pppGenericErrorCnt				Counter,
+	pppInvalidServiceNameCnt			Counter
+ }
+
+pppCcEngineMonitorRowStatus OBJECT-TYPE
+	SYNTAX RowStatus
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"This object indicates the status of this entry.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		active | createAndGo | destroy
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineMonitorEntry 1}
+
+
+outOfPppCcContextCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of events where a PPP CC set-up process has been aborted
+because the maximum number of PPP cross-connections for this PPP CC
+Engine, as defined in pppCcEngineMaxNumPppCc, has been reached.
+ALCATEL NOTE:
+SUPPORT:		NO
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineMonitorEntry 2}
+
+
+pppGenericErrorCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of Discovery messages that carried the Generic Error tag. 
+This counter is only relevant for PPPoA clients: in case of a PPPoE 
+client, the system does not interpret this tag and the message is 
+passed through the system. 
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineMonitorEntry 3}
+
+
+pppInvalidServiceNameCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of PAD-S messages that contained a Service-Name-Error tag
+that led to the abortion of the transaction.  This counter is only 
+relevant for PPPoA clients.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineMonitorEntry 4}
+
+
+-- ************************************************************
+-- ***          P P P   C C   P O R T   T A B L E           ***
+-- ************************************************************
+
+pppCcPortTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PppCcPortEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"A table allowing to maintain PPP CC Ports.
+A PPP CC Client port can be configured on top of a VlanPort, a PVC, EFM or Ethernet Phy port.
+- a PPP CC Client port configured on top of a PVC, EFM or Ethernet Phy port is exclusively intended to handle untagged PPPoE subscriber traffic (and possibly PPPoA traffic in case of PVC)
+- a PPP CC Client port configured on top of a Vlanport is exclusively intended to handle PPPoE traffic explicitly tagged by the  subscriber.
+PVID, Protocol Defaults Vlans and Vlanport tagging mode are not applicable to PPP Clientports and have no effect on PPP CC forwarding. 
+
+Note: GPON makes an exception to this rule. In GPON, a Clientport can only be configured on top of a VlanPort. 
+When a PVID is configured on an ONT Bridgport, PPPoE Untagged traffic will be passing through the Client port
+configured on top of the PVID_VlanPort, together with the traffic genuinely tagged by the subscriber
+
+ALCATEL NOTE:
+SUPPORT:		YES
+TABLESIZE:	0 .. 32768"
+	::= {pppCcMIB 5}
+
+
+pppCcPortEntry OBJECT-TYPE
+	SYNTAX PppCcPortEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"An entry in the pppCcPortTable.
+Row creation: by the manager using the pppCcPortRowStatus.
+Row deletion: by the manager using the pppCcPortRowStatus.
+ALCATEL NOTE:
+SUPPORT:		YES"
+	INDEX { pppCcPortIfIndex }
+	::= {pppCcPortTable 1}
+
+
+PppCcPortEntry ::= SEQUENCE
+ {
+	pppCcPortIfIndex					InterfaceIndex,
+	pppCcPortRowStatus				RowStatus,
+	pppCcPortEngineIndex				EngineIndex,
+	pppCcPortMaxNumPppCc				INTEGER,
+	pppCcPortTotalInCtlFrameCnt		Counter,
+	pppCcPortTotalOutCtlFrameCnt		Counter,
+	pppCcPortSummaryCtlErrorCnt		Counter,
+pppCcPortQosProfileId			AsamProfileIndexOrZero,
+pppCcClientPortDefaultPriority    INTEGER,
+pppCcPortCurrentNumPppCc			INTEGER,
+pppCcPortUpFwdFrameCnt			Counter, 
+pppCcPortDnFwdFrameCnt			Counter, 
+pppCcPortUpDiscFrameCnt			Counter, 
+pppCcPortDnDiscFrameCnt			Counter
+ }
+
+pppCcPortIfIndex OBJECT-TYPE
+	SYNTAX InterfaceIndex
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"This object specifies the PVC, EFM, Ethernet, or VLAN port on which a PPP CC Client Port is to be created.
+The value of this object will be equal to the interface index of a PVC, EFM, Ethernet, or VLAN port.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 1}
+
+
+pppCcPortRowStatus OBJECT-TYPE
+	SYNTAX RowStatus
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"This object indicates the status of this entry.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		DEP 
+		for PPP CC Client Ports: active | createAndGo | destroy
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 2}
+
+
+pppCcPortEngineIndex OBJECT-TYPE
+	SYNTAX EngineIndex
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"The value of this object is equal to the pppCcEngineIndex of the 
+containing PPP CC Engine.
+The value of this object can only be written when the corresponding row 
+is created.  It can not be modified while the row is already existing.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	NO
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 3}
+
+
+pppCcPortMaxNumPppCc OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"The maximum number of PPP cross-connections that can be associated
+to this PPP CC Port.  This object applies only to PPP CC Client Ports.  
+With MAC address concentration disabled on the PPP CC Engine, this value is used only when autodetectPPP is configured on the PVC. It 
+is used to control the maximum number of MAC addresses on the auto-created bridge port. In this case, the valid range is 1 to 64.With MAC address concentration enabled on the PPP CC Engine, this value is used to control the maximum number of PPP cross-connections on the PPP CC Client Port. In this case, the valid range is 1 to 8.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		1 .. 64
+DEFVALUE:	64
+UNITS:		NA"
+	::= {pppCcPortEntry 4}
+
+
+pppCcPortTotalInCtlFrameCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The total number of ingress control messages (all Discovery and some
+LCP messages) exchanged between the system control plane and the PPP CC 
+Port. 
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 5}
+
+
+pppCcPortTotalOutCtlFrameCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The total number of egress control messages (all Discovery and some
+LCP messages) exchanged between the system control plane and the PPP CC 
+Port. 
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 6}
+
+
+pppCcPortSummaryCtlErrorCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The total number of errored control messages exchanged through the PPP CC 
+Port. 
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 7}
+
+pppCcPortQosProfileId OBJECT-TYPE
+	SYNTAX AsamProfileIndexOrZero
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+" Refers to object qosSessionProfileIndex  from QOS-MIB which is related to of pppCc client port. 
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	DEFVAL { 0 } 
+	::= {pppCcPortEntry 8}
+
+
+pppCcClientPortDefaultPriority OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"This object indicates the p-bit of pppCc client port. P bit value from 0 to 7 are valid p-bits, p-bit 8 implies that there is no p bit defined at the client port. 
+
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	NA
+RANGE:		0 .. 8
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 9}
+
+
+pppCcPortCurrentNumPppCc OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of PPP cross-connections that is currently in use by 
+this client port.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 10}
+
+
+pppCcPortUpFwdFrameCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The total number of upstream PPP frames forwarded on this client port. 
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 11}
+
+
+pppCcPortDnFwdFrameCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The total number of downstream PPP frames forwarded on this client port. 
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 12}
+
+
+pppCcPortUpDiscFrameCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The total number of upstream PPP frames discarded on this client port. 
+ALCATEL NOTE:	
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 13}
+
+
+pppCcPortDnDiscFrameCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The total number of downstream PPP frames discarded on this client port. 
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortEntry 14}
+
+
+-- ********************************************************************
+-- ***      P P P   C C   P O R T   M O N I T O R   T A B L E       ***
+-- ********************************************************************
+
+pppCcPortMonitorTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PppCcPortMonitorEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"A table containing the exception events counters for the PPP CC Ports.
+ALCATEL NOTE:
+SUPPORT:		YES
+TABLESIZE:	DEP 
+			for PPP CC Client Ports: 0 .. 32768 "
+	::= {pppCcMIB 6}
+
+
+pppCcPortMonitorEntry OBJECT-TYPE
+	SYNTAX PppCcPortMonitorEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"One entry in the pppCcPortMonitorTable.  One entry contains the 
+exception events counters for one PPP CC Port.
+Row creation: by the manager using the pppCcPortMonitorRowStatus.
+Row deletion: by the manager using the pppCcPortMonitorRowStatus.
+ALCATEL NOTE:
+SUPPORT:		YES"
+	INDEX { pppCcPortIfIndex }
+	::= {pppCcPortMonitorTable 1}
+
+
+PppCcPortMonitorEntry ::= SEQUENCE
+ {
+	pppCcPortMonitorRowStatus		RowStatus,
+	pppUnexpectedCtlMsgCnt		Counter,
+	pppUnexpectedDataPktCnt		Counter,
+	pppPortMtuErrorCnt			Counter,
+	pppTransAgedOutCnt			Counter,
+	pppSessionAgedOutCnt			Counter,
+    	pppPortMruErrorCnt            Counter,
+pppOutOfPortCcContextCnt		Counter,
+pppOutOfLineCcContextCnt		Counter, 
+pppOutOfBoardCcContextCnt	Counter
+ }
+
+pppCcPortMonitorRowStatus OBJECT-TYPE
+	SYNTAX RowStatus
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"This object indicates the status of this entry.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		YES
+INSRVMOD:	YES
+RANGE:		active | createAndGo | destroy
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortMonitorEntry 1}
+
+
+pppUnexpectedCtlMsgCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of control messages arrived on this port that are discarded
+because they are not expected (i.e. no transaction record available to 
+process them, or received at the wrong state, etc.).
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortMonitorEntry 2}
+
+
+pppUnexpectedDataPktCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of data packets arrived on this port that are discarded
+because they are received while there is no PPP CC established to
+forward them.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortMonitorEntry 3}
+
+
+pppPortMtuErrorCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of Discovery messages arrived on this port that are discarded
+because they are too long compared with the port MTU size.  This object is 
+only applicable to PPP CC Client Ports.
+ALCATEL NOTE:
+SUPPORT:		No
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortMonitorEntry 4}
+
+
+pppTransAgedOutCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of events where a PPP transaction has been cleared for 
+this port because the transaction timed out.
+This counter is only meaningful for the PPP CC Client Ports.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortMonitorEntry 5}
+
+
+pppSessionAgedOutCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of events where a PPP session has been timed out for 
+this port.
+This counter is only meaningful for the PPP CC Client Ports.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortMonitorEntry 6}
+
+pppPortMruErrorCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of  messages arrived on this port that are discarded
+because they are too long compared with the port MRU size(1500 bytes).  This object is 
+only applicable to PPP CC Client Ports.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortMonitorEntry 7}
+
+pppOutOfPortCcContextCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of events where a PPP CC set-up process has been aborted
+because the maximum number of PPP cross-connections for this PPP CC
+Port, as defined in pppCcPortMaxNumPppCc, has been reached.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortMonitorEntry 8}
+
+pppOutOfLineCcContextCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of events where a PPP CC set-up process has been aborted
+because the maximum number of PPP cross-connections supported by the
+Line is reached.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortMonitorEntry 9}
+
+pppOutOfBoardCcContextCnt OBJECT-TYPE
+	SYNTAX Counter
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The number of events where a PPP CC set-up process has been aborted
+because the maximum number of PPP cross-connections supported by the
+Board is reached.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortMonitorEntry 10}
+
+
+-- *******************************************************************************
+-- *** P P P   C C   E N G I N E 2 S E R V E R P O R T   A S S O C   T A B L E ***
+-- *******************************************************************************
+
+pppCcEngine2ServerPortAssocTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PppCcEngine2ServerPortAssocEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"A table allowing to find the PPP CC Server Port for a given
+PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		NO
+TABLESIZE:	0 .. 255"
+	::= {pppCcMIB 7}
+
+
+pppCcEngine2ServerPortAssocEntry OBJECT-TYPE
+	SYNTAX PppCcEngine2ServerPortAssocEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"One PPP CC Engine Index - PPP CC Server Port IfIndex relationship.
+Row creation: by the system upon creation of a new pppCcPortEntry for
+a PPP CC Server Port.
+Row deletion: by the system upon deletion of a pppCcPortEntry of a PPP
+CC Server Port.
+ALCATEL NOTE:
+SUPPORT:		NO"
+	INDEX { pppCcEngineIndex }
+	::= {pppCcEngine2ServerPortAssocTable 1}
+
+
+PppCcEngine2ServerPortAssocEntry ::= SEQUENCE
+ {
+	pppCcServerPortIfIndex		InterfaceIndex
+ }
+
+pppCcServerPortIfIndex OBJECT-TYPE
+	SYNTAX InterfaceIndex
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The value of the pppCcPortIfIndex of the PPP CC Server Port associated
+to this PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		NO
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngine2ServerPortAssocEntry 1}
+
+
+-- *******************************************************************************
+-- *** P P P   C C   E N G I N E 2 C L I E N T P O R T   A S S O C   T A B L E ***
+-- *******************************************************************************
+
+pppCcEngine2ClientPortAssocTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PppCcEngine2ClientPortAssocEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"A table allowing to find the PPP CC Client Port(s) for a given
+PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		YES
+TABLESIZE:	0 .. 32768"
+	::= {pppCcMIB 8}
+
+
+pppCcEngine2ClientPortAssocEntry OBJECT-TYPE
+	SYNTAX PppCcEngine2ClientPortAssocEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"One PPP CC Engine Index - PPP CC Client Port IfIndex relationship.
+Row creation: by the system upon creation of a new pppCcPortEntry for
+a PPP CC Client Port.
+Row deletion: by the system upon deletion of a pppCcPortEntry of a PPP
+CC Client Port.
+ALCATEL NOTE:
+SUPPORT:		YES"
+	INDEX { pppCcEngineIndex, pppCcClientPortIfIndex }
+	::= {pppCcEngine2ClientPortAssocTable 1}
+
+
+PppCcEngine2ClientPortAssocEntry ::= SEQUENCE
+ {
+	pppCcClientPortIfIndex		InterfaceIndex
+ }
+
+pppCcClientPortIfIndex OBJECT-TYPE
+	SYNTAX InterfaceIndex
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The value of the pppCcPortIfIndex of the PPP CC Client Port associated
+to this PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngine2ClientPortAssocEntry 1}
+
+
+-- *******************************************************************
+-- ***    P P P   C C   E N G I N E   S E S S I O N   T A B L E    ***
+-- *******************************************************************
+
+pppCcEngineSessionTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PppCcEngineSessionEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"A table allowing to find the PPP cross-connections for a given
+PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		YES
+TABLESIZE:	0 .. 32768"
+	::= {pppCcMIB 9}
+
+
+pppCcEngineSessionEntry OBJECT-TYPE
+	SYNTAX PppCcEngineSessionEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"One PPP cross-connection for a given PPP CC Engine.
+Row creation: by the system upon the autonomous creation of a PPP 
+cross-connection.
+Row deletion: by the system upon the autonomous deletion of a PPP 
+cross-connection.
+ALCATEL NOTE:
+SUPPORT:		YES"
+	INDEX { pppCcEngineIndex, pppCcEngineSessionIntSessionId }
+	::= {pppCcEngineSessionTable 1}
+
+
+PppCcEngineSessionEntry ::= SEQUENCE
+ {
+	pppCcEngineSessionIntSessionId	INTEGER,
+	pppCcEngineSessionServerMacAddress	MacAddress,
+	pppCcEngineSessionExtSessionId			INTEGER,
+	pppCcEngineSessionClientPortIfIndex	InterfaceIndex,
+	pppCcEngineSessionClientMacAddress	MacAddress
+
+}
+
+pppCcEngineSessionIntSessionId OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"An index that is used internally in the system to uniquely indicate 
+a PPP cross-connection.
+
+The values of this pppCcEngineSessionIntSessionId are equal to the 
+values of the pppCcPortSessionIntSessionId but their order of 
+appearance in this pppCcEngineSessionTable is different compared to 
+the pppCcPortSessionTable.
+
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineSessionEntry 1}
+
+
+pppCcEngineSessionServerMacAddress OBJECT-TYPE
+	SYNTAX MacAddress
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The MAC-address of the PPPoE Server of this PPP cross-connection.  This 
+object together with the pppCcEngineSessionExtSessionId uniquely identifies 
+the PPP cross-connection.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineSessionEntry 2}
+
+
+pppCcEngineSessionExtSessionId OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The PPPoE Session ID of this PPP cross-connection.  This object 
+together with the pppCcEngineSessionServerMacAddress uniquely 
+identifies the PPP cross-connection as known in the network..
+ALCATEL NOTE: 
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineSessionEntry 3}
+
+
+pppCcEngineSessionClientPortIfIndex OBJECT-TYPE
+	SYNTAX InterfaceIndex
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The pppCcPortIfIndex of the PPP CC Client Port to which the PPPoE client
+(CPE or PC) of this PPP cross-connection is directly associated.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineSessionEntry 4}
+
+
+pppCcEngineSessionClientMacAddress OBJECT-TYPE
+	SYNTAX MacAddress
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The MAC-address of the PPP CC Client Port to which the PPPoE client
+(CPE or PC) of this PPP cross-connection is directly associated.  This 
+object is only relevant for a Forwarding Port supporting the 
+LLC encapsulation for Bridged Ethernet/802.3 (RFC2684).  
+Its value is 0 for PPP CC Client Ports using PPPoA (RFC2364).
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcEngineSessionEntry 5}
+
+
+-- *******************************************************************
+-- ***      P P P   C C   P O R T   S E S S I O N   T A B L E      ***
+-- *******************************************************************
+
+pppCcPortSessionTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PppCcPortSessionEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"A table allowing to find the PPP cross-connections for a given
+PPP CC Port.
+ALCATEL NOTE:
+SUPPORT:		YES
+TABLESIZE:	0 .. 32768"
+	::= {pppCcMIB 10}
+
+
+pppCcPortSessionEntry OBJECT-TYPE
+	SYNTAX PppCcPortSessionEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"One PPP cross-connection for a given PPP CC Port.
+Row creation: by the system upon the autonomous creation of a PPP 
+cross-connection.
+Row deletion: by the system upon the autonomous deletion of a PPP 
+cross-connection.
+ALCATEL NOTE:
+SUPPORT:		YES"
+	INDEX { pppCcPortIfIndex, pppCcPortSessionIntSessionId }
+	::= {pppCcPortSessionTable 1}
+
+
+PppCcPortSessionEntry ::= SEQUENCE
+ {
+	pppCcPortSessionIntSessionId		INTEGER,
+	pppCcPortSessionClientMacAddress		MacAddress,
+	pppCcPortSessionEngineIndex			EngineIndex,
+	pppCcPortSessionServerMacAddress		MacAddress,
+	pppCcPortSessionExtSessionId				INTEGER
+ }
+
+pppCcPortSessionIntSessionId OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"An index that is used internally in the system to uniquely indicate 
+a PPP cross-connection.
+
+The values of this pppCcPortSessionIntSessionId are equal to the 
+values of the pppCcEngineSessionIntSessionId but their order of 
+appearance in this pppCcPortSessionTable is different compared to 
+the pppCcEngineSessionTable.
+
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortSessionEntry 1}
+
+
+pppCcPortSessionClientMacAddress OBJECT-TYPE
+	SYNTAX MacAddress
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The MAC-address of the PPP CC Client Port to which the PPPoE client
+(CPE or PC) of this PPP cross-connection is directly associated.  This 
+object is only relevant for a Forwarding Port supporting the 
+llcBridgedEthernet8023 encapsulation type.  Its value is 0 for PPP CC
+Client Ports using PPPoA.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortSessionEntry 2}
+
+
+pppCcPortSessionEngineIndex OBJECT-TYPE
+	SYNTAX EngineIndex
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The pppCcEngineIndex of the PPP CC Engine whereto this PPP 
+cross-connection belongs.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortSessionEntry 3}
+
+
+pppCcPortSessionServerMacAddress OBJECT-TYPE
+	SYNTAX MacAddress
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The MAC-address of the PPPoE Server of this PPP cross-connection.  This 
+object together with the pppCcPortSessionExtSessionId uniquely identifies 
+the PPP cross-connection.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortSessionEntry 4}
+
+
+pppCcPortSessionExtSessionId OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The PPPoE Session ID of this PPP cross-connection.  This object 
+together with the pppCcPortSessionServerMacAddress uniquely 
+identifies the PPP cross-connection as known in the network.
+ALCATEL NOTE: 
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcPortSessionEntry 5}
+
+
+-- ********************************************************************
+-- ***   P P P   C C   S E S S I O N   I D   C O N V E R S I O N    ***
+-- ********************************************************************
+
+pppCcSessionIdConversion OBJECT IDENTIFIER ::= {pppCcMIB 11}
+
+-- The objects under the branch pppCcSessionIdConversion allow for a translation
+-- between the network defined PPPoE Session ID and the internally used Session 
+-- ID.
+--
+-- Notice that this MIB always uses the internal Session ID as 
+-- a table index, instead of the PPPoE session ID.  The reason of this choice
+-- is to avoid complexity in the lexicographical ordering: it is easier to order
+-- the sessions based on an internal ID instead of on the network imposed ID.
+--
+-- Usage:
+-- The triplet (pppCcSnapshotEngineIndex, pppCcSnapshotServerMacAddress, 
+-- pppCcSnapshotExtSessionId)is written with the values known from the network, 
+-- for example known from the PPPoE server.  Once the values of this triplet 
+-- are given, the corresponding internally used pppCcSnapshotIntSessionId 
+-- is returned.  
+
+pppCcSnapshotEngineIndex OBJECT-TYPE
+	SYNTAX EngineIndex
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"This object together with the pppCcSnapshotServerMacAddress and 
+together with the pppCcSnapshotExtSessionId uniquely defines a PPP 
+cross-connection wherefore the pppCcSnapshotIntSessionId object 
+returns the index that is used internally in the system.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	YES
+RANGE:		1 .. 255
+DEFVALUE:	1
+UNITS:		NA"
+	::= {pppCcSessionIdConversion 1}
+
+
+pppCcSnapshotServerMacAddress OBJECT-TYPE
+	SYNTAX MacAddress
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"This object together with the pppCcSnapshotEngineIndex and 
+together with the pppCcSnapshotExtSessionId uniquely defines a PPP 
+cross-connection wherefore the pppCcSnapshotIntSessionId object 
+returns the index that is used internally in the system.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	YES
+RANGE:		NA
+DEFVALUE:	00-00-00-00-00-00
+UNITS:		NA"
+	::= {pppCcSessionIdConversion 2}
+
+
+pppCcSnapshotExtSessionId OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+"This object together with the pppCcSnapshotEngineIndex and 
+together with the pppCcSnapshotServerMacAddress uniquely defines a PPP 
+cross-connection wherefore the pppCcSnapshotIntSessionId object 
+returns the index that is used internally in the system.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		NO
+INSRVMOD:	YES
+RANGE:		0 .. 65534
+DEFVALUE:	0
+UNITS:		NA"
+	::= {pppCcSessionIdConversion 3}
+
+
+pppCcSnapshotIntSessionId OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"The index that is used internally in the system to uniquely indicate 
+the PPP cross-connection defined by the triplet (pppCcSnapshotEngineIndex, 
+pppCcSnapshotServerMacAddress, pppCcSnapshotIntSessionId).  
+In case a PPP cross-connection does not exist in the system for the given 
+triplet, this object returns the value -1.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcSessionIdConversion 4}
+
+-- ******************************************************************
+-- ***      P P P   C C   V L A N I D    T A B L E       ***
+-- ******************************************************************
+
+pppCcVlanIdTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PppCcVlanIdEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"A table allowing to find the corresponding pppCcEngineIndex starting from the
+Vlan Id of the PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:	YES
+TABLESIZE:	0 .. 32768"      
+	::= {pppCcMIB 12}   
+	
+pppCcVlanIdEntry OBJECT-TYPE    
+	SYNTAX PppCcVlanIdEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION
+"One PPP CC Vlan Id - PPP CC Engine Index relationship.
+Row creation: by the system upon creation of a new pppCcEngineEntry.
+Row deletion: by the system upon deletion of a pppCcEngineEntry.
+ALCATEL NOTE:
+SUPPORT:		YES"
+	INDEX { pppCcVlanIdVlanId }
+	::= {pppCcVlanIdTable 1}
+
+
+
+PppCcVlanIdEntry ::= SEQUENCE
+ {
+	pppCcVlanIdVlanId		INTEGER,
+	pppCcVlanIdEngineIndex		EngineIndex
+ }
+
+pppCcVlanIdVlanId OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"A VLAN Id which is used to identify the PPP CC Engine.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcVlanIdEntry 1}
+
+
+pppCcVlanIdEngineIndex OBJECT-TYPE
+	SYNTAX EngineIndex
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+"A number that uniquely identifies a PPP CC Engine in the system.
+ALCATEL NOTE:
+SUPPORT:		YES
+PERSIST:		No
+INSRVMOD:	NA
+RANGE:		NA
+DEFVALUE:	NA
+UNITS:		NA"
+	::= {pppCcVlanIdEntry  2}
+	
+	
+-- ********************************************************************************************
+-- ***      P P P   C C   E N G I N E  Current 15 Minute TimeOut Counter Table      ***
+-- ********************************************************************************************
+
+pppCcEngineTimeOutCur15MinTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF PppCcEngineTimeOutCur15MinEntry
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+        "pppCcEngineTimeOutCur15MinTable contains the current 15 minutes interval transaction ageout and session ageout counters per engine
+    ALCATEL NOTE:
+    SUPPORT:		YES
+    TABLESIZE:	0 .. 32768 
+    DESCR:      Supported from ISR4.5.02 onwards"
+        ::= { pppCcMIB 13 }
+
+pppCcEngineTimeOutCur15MinEntry OBJECT-TYPE
+    SYNTAX     PppCcEngineTimeOutCur15MinEntry
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+        "Table entry for the current 15 minutes interval statistics per engine.
+    Row creation: An entry is created by the system upon creation of new pppCcEngineEntry.
+    Row deletion: An entry is deleted by the system upon deletion of a pppCcEngineEntry"
+    INDEX { pppCcEngineIndex }
+    ::= { pppCcEngineTimeOutCur15MinTable 1 }
+
+PppCcEngineTimeOutCur15MinEntry ::= SEQUENCE {
+    pppCcEngineTransAgedOutCur15MinCnt                Counter,
+    pppCcEngineSessionAgedOutCur15MinCnt              Counter,
+    pppCcEngineTimeOutCur15MinMeasuredTime            INTEGER,
+    pppCcEngineTimeOutCur15MinInvalidDataFlag         INTEGER
+   }
+
+pppCcEngineTransAgedOutCur15MinCnt OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  	read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of transaction timeouts occurred on the engine since the beginning of the current 15 minutes interval."
+    ::= { pppCcEngineTimeOutCur15MinEntry 1 }
+    
+pppCcEngineSessionAgedOutCur15MinCnt OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  	read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of session timeouts occurred on the engine since the beginning of the current 15 minutes interval."
+    ::= { pppCcEngineTimeOutCur15MinEntry 2 }
+  
+   
+    pppCcEngineTimeOutCur15MinMeasuredTime OBJECT-TYPE
+    SYNTAX       INTEGER (0..900)
+    ACCESS       read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "The amount of time in the 15 min interval over which
+        the counter statistics information is actually
+        counted.  This value will be the same as the interval
+        duration except in a situation where data could not be 
+        collected for any reason. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..900     DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { pppCcEngineTimeOutCur15MinEntry 3}
+
+
+pppCcEngineTimeOutCur15MinInvalidDataFlag   OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding counter statistics data.
+It is set to 1 when the data is incomplete or invalid and set to 0 when the data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (900 seconds for a 15 minutes interval), or 
+- the data is incomplete in the accumulation period 
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { pppCcEngineTimeOutCur15MinEntry 4}
+
+
+
+-- ********************************************************************************************
+-- ***      P P P   C C   E N G I N E  Current 1 Day TimeOut Counter Table      ***
+-- ********************************************************************************************
+
+pppCcEngineTimeOutCur1DayTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF PppCcEngineTimeOutCur1DayEntry
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+        "pppCcEngineTimeOutCur1DayTable contains the current 24 hours interval transaction ageout and session ageout counters per engine
+        ALCATEL NOTE:
+        SUPPORT:		YES
+        TABLESIZE:	        0 ..32768 
+        DESCR:      Supported from ISR4.5.02 onwards"
+    ::= { pppCcMIB 14 }
+
+pppCcEngineTimeOutCur1DayEntry OBJECT-TYPE
+    SYNTAX     PppCcEngineTimeOutCur1DayEntry
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+        "Table entry for the current 24 hours interval statistics per engine.
+    Row creation: An entry is created by the system upon creation of a new pppCcEngineEntry.
+    Row deletion: An entry is deleted by the system upon deletion of a pppCcEngineEntry."
+    INDEX { pppCcEngineIndex }
+    ::= { pppCcEngineTimeOutCur1DayTable 1 }
+
+PppCcEngineTimeOutCur1DayEntry ::= SEQUENCE {
+    pppCcEngineTransAgedOutCur1DayCnt                Counter,
+    pppCcEngineSessionAgedOutCur1DayCnt              Counter,
+    pppCcEngineTimeOutCur1DayMeasuredTime            INTEGER,
+    pppCcEngineTimeOutCur1DayInvalidDataFlag         INTEGER
+    
+   }
+
+pppCcEngineTransAgedOutCur1DayCnt OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  	read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of transaction timeouts occurred on the engine since the beginning of the current 24 hours interval."
+    ::= { pppCcEngineTimeOutCur1DayEntry 1 }
+    
+pppCcEngineSessionAgedOutCur1DayCnt OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  	read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of session timeouts occurred on the engine since the beginning of the current 24 hours  interval."
+    ::= { pppCcEngineTimeOutCur1DayEntry 2 }
+    
+pppCcEngineTimeOutCur1DayMeasuredTime OBJECT-TYPE
+    SYNTAX       INTEGER (0..86400)
+    ACCESS       read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "The amount of time in the 1 Day interval over which
+        the counter statistics information is actually
+        counted.  This value will be the same as the interval
+        duration except in a situation where data could not be 
+        collected for any reason. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..86400     DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { pppCcEngineTimeOutCur1DayEntry 3 }
+
+
+pppCcEngineTimeOutCur1DayInvalidDataFlag   OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding counter statistics data.
+It is set to 1 when the data is incomplete or invalid and set to 0 when the data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (86400 seconds for a 24 hour interval), or 
+- the data is incomplete in the accumulation period 
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { pppCcEngineTimeOutCur1DayEntry 4}
+
+    
+ 
+ -- ********************************************************************************************
+ -- ***      P P P   C C   E N G I N E  Previous 15 Minute TimeOut Counter Table      ***
+ -- ********************************************************************************************
+ 
+ pppCcEngineTimeOutPrev15MinTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF PppCcEngineTimeOutPrev15MinEntry
+     ACCESS 	not-accessible
+     STATUS     mandatory
+     DESCRIPTION
+         "pppCcEngineTimeOutPrev15MinTable contains the previous 15 minutes interval transaction ageout and session ageout counters per engine
+     ALCATEL NOTE:
+     SUPPORT:		YES
+     TABLESIZE:	DEP [number of PPP CC Engine created * 
+                             number of 15 minute intervals (1..96)]                  
+     DESCR:      Supported from ISR4.5.02 onwards"
+     ::= { pppCcMIB 15 }
+ 
+ pppCcEngineTimeOutPrev15MinEntry OBJECT-TYPE
+     SYNTAX     PppCcEngineTimeOutPrev15MinEntry
+     ACCESS 	not-accessible
+     STATUS     mandatory
+     DESCRIPTION
+         "Table entry for the specified previous 15 minutes interval statistics per engine.
+     Row creation: An entry is created upon creation of a new pppCcEngineEntry and another 15 minutes has elapsed.
+     Row deletion: An entry is deleted upon deletion of a pppCcEngineEntry."
+     INDEX { pppCcEngineIndex, pppCcEngineTimeOutPrev15MinIntervalNumber }
+     ::= { pppCcEngineTimeOutPrev15MinTable 1 }
+ 
+ PppCcEngineTimeOutPrev15MinEntry ::= SEQUENCE {
+     pppCcEngineTimeOutPrev15MinIntervalNumber          INTEGER,
+     pppCcEngineTransAgedOutPrev15MinCnt                Counter,
+     pppCcEngineSessionAgedOutPrev15MinCnt              Counter,
+     pppCcEngineTimeOutPrev15MinMeasuredTime		INTEGER,
+     pppCcEngineTimeOutPrev15MinInvalidDataFlag         INTEGER 
+    }
+ 
+ 
+ pppCcEngineTimeOutPrev15MinIntervalNumber OBJECT-TYPE
+     SYNTAX      INTEGER(1..32)
+     ACCESS  	 read-only
+     STATUS      mandatory
+ 
+     DESCRIPTION
+         " A number between 1 and 32, which identifies the interval for which 
+ the timeout statistics is requested. The interval identified by 1 is the most recently completed 15 minute interval, and the interval identified by N is the interval immediately preceding the one identified by N-1."
+     ::= {pppCcEngineTimeOutPrev15MinEntry 1}
+ 
+ pppCcEngineTransAgedOutPrev15MinCnt OBJECT-TYPE
+     SYNTAX      Counter
+     ACCESS  	 read-only
+     STATUS      mandatory
+     DESCRIPTION
+         "The number of transaction timeouts occurred on the engine for the specified previous 15 miniutes interval."
+     ::= { pppCcEngineTimeOutPrev15MinEntry 2 }
+     
+ pppCcEngineSessionAgedOutPrev15MinCnt OBJECT-TYPE
+     SYNTAX      Counter
+     ACCESS  	 read-only
+     STATUS      mandatory
+     DESCRIPTION
+         "The number of session timeouts occurred on the engine for the specified previous 15 minutes interval."
+     ::= { pppCcEngineTimeOutPrev15MinEntry 3 }
+     
+ pppCcEngineTimeOutPrev15MinMeasuredTime OBJECT-TYPE
+    SYNTAX       INTEGER (0..900)
+    ACCESS       read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "The amount of time in the 15-Min interval over which
+        the counter statistics information is actually
+        counted.  This value will be the same as the interval
+        duration except in a situation where data could not be 
+        collected for any reason. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..900     DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { pppCcEngineTimeOutPrev15MinEntry 4 }
+
+
+pppCcEngineTimeOutPrev15MinInvalidDataFlag   OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding counter statistics data.
+It is set to 1 when the data is incomplete or invalid and set to 0 when the data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (900 seconds for a 15 minutes interval), or 
+- the data is incomplete in the accumulation period 
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { pppCcEngineTimeOutPrev15MinEntry 5}
+     
+
+-- ********************************************************************************************
+-- ***      P P P   C C   E N G I N E  Previous 1 Day TimeOut Counter Table      ***
+-- ********************************************************************************************
+
+pppCcEngineTimeOutPrev1DayTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF PppCcEngineTimeOutPrev1DayEntry
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+        "pppCcEngineTimeOutPrev1DayTable contains the previous 24 hours interval transaction ageout and session ageout counters per engine
+    ALCATEL NOTE:
+    SUPPORT:		YES
+    TABLESIZE:	DEP [number of PPP CC Engine created * number of 1 Day intervals (1..30)]                  
+    DESCR:      Supported from ISR4.5.02 onwards"
+    ::= { pppCcMIB 16 }
+
+pppCcEngineTimeOutPrev1DayEntry OBJECT-TYPE
+    SYNTAX     PppCcEngineTimeOutPrev1DayEntry
+    ACCESS     not-accessible
+    STATUS     mandatory
+    DESCRIPTION
+        "Table entry for the specified previous 24 hours interval statistics per engine.
+    Row creation: An entry is created upon creation of a new pppCcEngineEntry and another 1 Day has elapsed.
+    Row deletion: An entry is deleted upon deletion of a pppCcEngineEntry"
+    INDEX { pppCcEngineIndex, pppCcEngineTimeOutPrev1DayIntervalNumber }
+    ::= { pppCcEngineTimeOutPrev1DayTable 1 }
+
+PppCcEngineTimeOutPrev1DayEntry ::= SEQUENCE {
+    pppCcEngineTimeOutPrev1DayIntervalNumber          INTEGER,
+    pppCcEngineTransAgedOutPrev1DayCnt                Counter,
+    pppCcEngineSessionAgedOutPrev1DayCnt              Counter,
+    pppCcEngineTimeOutPrev1DayMeasuredTime	      INTEGER,
+    pppCcEngineTimeOutPrev1DayInvalidDataFlag	      INTEGER
+   }
+
+
+ pppCcEngineTimeOutPrev1DayIntervalNumber OBJECT-TYPE
+     SYNTAX      INTEGER(1..7)
+     ACCESS  	 read-only
+     STATUS      mandatory
+ 
+     DESCRIPTION
+         " A number between 1 and 7 which identifies the interval for which 
+ the timeout statistics is requested. The interval identified by 1 is the most recently completed 24 hours, and the interval identified by N is the interval immediately preceding the one identified by N-1."
+     ::= {pppCcEngineTimeOutPrev1DayEntry 1}
+
+pppCcEngineTransAgedOutPrev1DayCnt OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS  	read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of transaction timeouts occurred on the engine for the specified previous 24 hours interval."
+    ::= { pppCcEngineTimeOutPrev1DayEntry 2 }
+    
+pppCcEngineSessionAgedOutPrev1DayCnt OBJECT-TYPE
+    SYNTAX      Counter
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "The number of session timeouts occurred on the engine for the specified previous 24 hours interval."
+    ::= { pppCcEngineTimeOutPrev1DayEntry 3 }
+    
+pppCcEngineTimeOutPrev1DayMeasuredTime OBJECT-TYPE
+    SYNTAX       INTEGER (0..86400)
+    ACCESS       read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "The amount of time in the 1 Day interval over which
+        the counter statistics information is actually
+        counted.  This value will be the same as the interval
+        duration except in a situation where data could not be 
+        collected for any reason. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..86400     DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { pppCcEngineTimeOutPrev1DayEntry 4 }
+
+
+pppCcEngineTimeOutPrev1DayInvalidDataFlag   OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding counter statistics data.
+It is set to 1 when the data is incomplete or invalid and set to 0 when the data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (86400 seconds for a 24 hour interval), or 
+- the data is incomplete in the accumulation period 
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { pppCcEngineTimeOutPrev1DayEntry 5}
+
+END

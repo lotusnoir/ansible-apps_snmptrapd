@@ -1,0 +1,182 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V1.02
+-- History: Drafted by mozengning  2005-05-13
+--          Modified by daixinning 2007-03-27
+-- ============================================================================
+    HUAWEI-IPDSLAM-VMACPOOL-MIB DEFINITIONS ::= BEGIN
+        IMPORTS 
+            ifIndex         
+                FROM IF-MIB         
+            OBJECT-TYPE, MODULE-IDENTITY, Integer32     
+                FROM SNMPv2-SMI        
+            PhysAddress ,RowStatus                              
+                FROM SNMPv2-TC
+            huaweiUtility           
+                FROM HUAWEI-MIB;
+
+hwIpDslamVmac MODULE-IDENTITY
+    LAST-UPDATED "200602050900Z"
+    ORGANIZATION "Fix-Net Dept, Huawei Technologies Co.,Ltd."
+    CONTACT-INFO 
+        "Floor 5 ,Block 4, R&D Building,
+        Huawei Longgang Production Base,
+        Shenzhen,   P.R.C.
+        http://www.huawei.com
+        Zip:518057
+        "
+    DESCRIPTION 
+        "huawei IPDSLAM Vmac mib "
+    ::= { huaweiUtility 110}
+        
+    
+       EnabledStatus ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "A simple status value for the object."
+            SYNTAX INTEGER
+                {
+                MacpoolMode(1),
+                disabled(2),
+                DslamIdMode(3)
+                }   
+        
+        
+        hwIpDslamVmacStatus OBJECT-TYPE
+                SYNTAX EnabledStatus
+            MAX-ACCESS read-write
+            STATUS current
+                DESCRIPTION
+                    "The global switch of vmac."     
+                DEFVAL { 2 }     
+                ::= { hwIpDslamVmac 1 }
+          
+        hwIpDslamVmacPortVmacNum OBJECT-TYPE
+                SYNTAX INTEGER(1..32)
+            MAX-ACCESS read-write
+            STATUS current
+                DESCRIPTION
+                    "VMAC address num per port."     
+                DEFVAL { 32 }     
+                ::= { hwIpDslamVmac 2 }
+
+
+        hwIpDslamVmacAllocationTable OBJECT-TYPE
+                SYNTAX      SEQUENCE OF HwIpDslamVmacAllocationEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION
+                    "VMAC allocation mapping table."
+                ::= { hwIpDslamVmac 3 }                 
+        
+        hwIpDslamVmacAllocationEntry OBJECT-TYPE
+            SYNTAX HwIpDslamVmacAllocationEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "VMAC allocation mapping table entry"
+            INDEX { hwIpDslamVmacAllocationIfIndex }
+            ::= { hwIpDslamVmacAllocationTable 1 }
+            
+        
+        HwIpDslamVmacAllocationEntry ::=
+            SEQUENCE { 
+                hwIpDslamVmacAllocationIfIndex
+                    INTEGER,
+                hwIpDslamVmacAllocationStartmac
+                    PhysAddress,
+                hwIpDslamVmacAllocationScope
+                    INTEGER
+             }
+
+        hwIpDslamVmacAllocationIfIndex OBJECT-TYPE
+            SYNTAX INTEGER
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The value of this object uniquely identifies this VMAC allocation mapping table entry."
+            ::= { hwIpDslamVmacAllocationEntry 1 }
+
+            hwIpDslamVmacAllocationStartmac OBJECT-TYPE
+            SYNTAX PhysAddress
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The start MAC of VMAC allocation mapping table."
+            ::= { hwIpDslamVmacAllocationEntry 2 }
+
+            hwIpDslamVmacAllocationScope OBJECT-TYPE
+            SYNTAX INTEGER
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The scope of VMAC allocation mapping table."
+            ::= { hwIpDslamVmacAllocationEntry 3 }
+
+
+        hwIpDslamVmacUmacMappingTable OBJECT-TYPE
+                SYNTAX      SEQUENCE OF HwIpDslamVmacUmacMappingEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION
+                    "VMAC-UMAC mapping table."
+                ::= { hwIpDslamVmac 4 }                 
+        
+        hwIpDslamVmacUmacMappingEntry OBJECT-TYPE
+            SYNTAX HwIpDslamVmacUmacMappingEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Source MAC address filtering table entry."
+            INDEX { hwIpDslamVmacUmacMappingIfIndex }
+            ::= { hwIpDslamVmacUmacMappingTable 1 }
+            
+        
+        HwIpDslamVmacUmacMappingEntry ::=
+            SEQUENCE { 
+                hwIpDslamVmacUmacMappingIfIndex
+                    INTEGER,
+                hwIpDslamVmacUmacMappingVmacAddress
+                    OCTET STRING,
+                hwIpDslamVmacUmacMappingUmacAddress
+                    OCTET STRING 
+             }
+
+        hwIpDslamVmacUmacMappingIfIndex OBJECT-TYPE
+            SYNTAX INTEGER
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The value of this object uniquely identifies this Soure MAC address filtering entry."
+            ::= { hwIpDslamVmacUmacMappingEntry 1 }
+
+            hwIpDslamVmacUmacMappingVmacAddress OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (0..48))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "VMAC of VMAC-UMAC mapping table."
+            ::= { hwIpDslamVmacUmacMappingEntry 2 }
+
+            hwIpDslamVmacUmacMappingUmacAddress OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (0..48))
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "UMAC of VMAC-UMAC mapping table entry."
+            ::= { hwIpDslamVmacUmacMappingEntry 3 }
+
+        hwIpDslamVmacDslamId OBJECT-TYPE
+                SYNTAX INTEGER(1..65535)
+            MAX-ACCESS read-write
+            STATUS current
+                DESCRIPTION
+                    "VMAC DslamId.
+                     Notice: DslamId is the high 16 bits of vmac address, and the vmac address must 
+                     be uni-cast, so (DslamId & 0x0100) should equal 0."    
+                ::= { hwIpDslamVmac 5 }          
+
+    END

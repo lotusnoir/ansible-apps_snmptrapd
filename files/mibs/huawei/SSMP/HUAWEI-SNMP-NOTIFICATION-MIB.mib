@@ -1,0 +1,1026 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V1.05
+-- History:
+-- liu chenglong, 2005-01-28 , initialized this MIB
+-- zhao wangsheng, 2005-10-20, Add rtu trap restrain nodes, hwRtuTrapRestrain
+-- ============================================================================
+	HUAWEI-SNMP-NOTIFICATION-MIB  DEFINITIONS ::= BEGIN
+		IMPORTS 
+			hwAlarmSn, hwTrapType
+				FROM  HUAWEI-TC-MIB
+			huaweiUtility 
+				FROM HUAWEI-MIB
+			ifIndex			
+				FROM IF-MIB
+			Unsigned32, Counter32, OBJECT-TYPE, MODULE-IDENTITY
+				FROM SNMPv2-SMI			
+			TruthValue, DateAndTime, RowStatus
+				FROM SNMPv2-TC;
+
+		hwNotification  MODULE-IDENTITY
+			LAST-UPDATED "200501280900Z"
+			ORGANIZATION "Fix-Net Dep, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floot 5 ,Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,  P.R.C.
+				http://www.huawei.com
+				Zip:518057
+				"
+			DESCRIPTION 
+				" Reattaining notification (traps) by this mib	"
+			::= { huaweiUtility 30}
+	
+
+	    EventType ::= TEXTUAL-CONVENTION
+	    STATUS       current
+	    DESCRIPTION
+			 "In ITU-T X.733:
+				每 communications alarm type: An alarm of this type is principally associated with the procedures and/or
+				processes required to convey information from one point to another;
+				每 quality of service alarm type: An alarm of this type is principally associated with a degradation in the
+				quality of a service;
+				每 processing error alarm type: An alarm of this type is principally associated with a software or processing
+				fault;
+				每 equipment alarm type: An alarm of this type is principally associated with an equipment fault;
+				每 environmental alarm type: An alarm of this type is principally associated with a condition relating to an
+				enclosure in which the equipment resides.
+			 "
+	    SYNTAX       INTEGER {
+						conmmunication(1),
+						servicequality(2),
+						processerror(3),
+						equipment(4),
+						environmental(5)
+	                 }
+
+	    SeverityLevel ::= TEXTUAL-CONVENTION
+	    STATUS       current
+	    DESCRIPTION
+			 "In ITU-T X.733:
+				每 critical: The Critical severity level indicates that a service affecting condition has occurred and an
+				immediate corrective action is required. Such a severity can be reported, for example, when a managed
+				object becomes totally out of service and its capability must be restored.
+				每 major: The Major severity level indicates that a service affecting condition has developed and an urgent
+				corrective action is required. Such a severity can be reported, for example, when there is a severe
+				degradation in the capability of the managed object and its full capability must be restored.
+				每 minor: The Minor severity level indicates the existence of a non-service affecting fault condition and that
+				corrective action should be taken in order to prevent a more serious (for example, service affecting) fault.
+				Such a severity can be reported, for example, when the detected alarm condition is not currently
+				degrading the capacity of the managed object.
+				每 warning: The Warning severity level indicates the detection of a potential or impending service affecting
+				fault, before any significant effects have been felt. Action should be taken to further diagnose (if
+				necessary) and correct the problem in order to prevent it from becoming a more serious service affecting
+				fault.
+				每 cleared: The Cleared severity level indicates the clearing of one or more previously reported alarms. This
+				alarm clears all alarms for this managed object that have the same Alarm type, Probable cause and
+				Specific problems (if given). Multiple associated notifications may be cleared by using the Correlated
+				notifications parameter (defined below).
+				This Recommendation | International Standard does not require that the clearing of previously reported
+				alarms be reported. Therefore, a managing system cannot assume that the absence of an alarm with the
+				Cleared severity level means that the condition that caused the generation of previous alarms is still
+				present. Managed object definers shall state if, and under which conditions, the Cleared severity level is
+				used.
+				每 indeterminate: The Indeterminate severity level indicates that the severity level cannot be determined.
+			 "
+	    SYNTAX       INTEGER {
+						critical(1),
+						major(2),
+						minor(3),
+						warning(4),
+						cleared(5),
+						indeterminate(6)
+	                 }
+
+
+		hwAlarmSynObjects OBJECT IDENTIFIER ::= { hwNotification  1 }
+		
+		hwAlarmBufferMinSn OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" The first available trap which stored on the host. 
+				
+				"
+			::= { hwAlarmSynObjects 1}
+    
+		hwAlarmBufferMaxSn OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" the last available successive trap which stored on the host. 
+				"
+			::= { hwAlarmSynObjects 2}
+
+		hwAlarmSynBeginSn OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" The first trap that NMS hopes to get.
+				
+				"
+			::= { hwAlarmSynObjects 3}
+    
+		hwAlarmSynEndSn OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" The last  trap that NMS hopes to get.
+				"
+			::= { hwAlarmSynObjects 4 }
+
+    
+
+		hwAlarmSynAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  other(1),     	
+				  stop(2),    	
+				  interval(3), 
+				  all(4) 		
+				}
+
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" The synchronizing administration .
+				 The host should send all the traps  between  hwNmsGetTrapFirst 
+				 and hwNmsGetTrapLast while hwSynTrapAdminStatus is 3.
+				 Otherwise,it sends all trap that fault existing  to NMS while hwSynTrapAdminStatus is 4.
+				"
+			::= { hwAlarmSynObjects  5 }
+	
+		hwAlarmSendTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwAlarmSendEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				 Table of notifications controlling for xDSL Ports 
+				"
+			::= { hwAlarmSynObjects  7 }
+		
+		hwAlarmSendEntry OBJECT-TYPE
+			SYNTAX HwAlarmSendEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				A entry of the table of traps controlling. 
+				"
+			INDEX {  hwAlarmIndex }
+			::= { hwAlarmSendTable 1 }
+		
+		HwAlarmSendEntry ::=
+			SEQUENCE { 
+				hwAlarmIndex
+					INTEGER,
+				hwAlarmSendSwitch 
+				        INTEGER
+				}
+		hwAlarmIndex  OBJECT-TYPE
+			SYNTAX INTEGER			        
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				alarms id 
+				"
+			::= { hwAlarmSendEntry 1 }
+			
+		hwAlarmSendSwitch  OBJECT-TYPE
+			SYNTAX INTEGER
+			        {
+				  on(1),     	
+				  off(2)		
+				}
+ 			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Alarm trap enable or not
+				"
+			::= { hwAlarmSendEntry   2 }
+
+		hwMaintainSendTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwMaintainSendEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				 Table of notifications controlling for xDSL Ports 
+				"
+			::= { hwAlarmSynObjects  8 }
+		
+		hwMaintainSendEntry OBJECT-TYPE
+			SYNTAX HwMaintainSendEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				A entry of the table of maintain traps controlling. 
+				"
+			INDEX {  hwMaintainIndex }
+			::= { hwMaintainSendTable 1 }
+		
+		HwMaintainSendEntry ::=
+			SEQUENCE { 
+				hwMaintainIndex
+					INTEGER,
+				hwMaintainSendSwitch 
+				        INTEGER
+				}
+		hwMaintainIndex  OBJECT-TYPE
+			SYNTAX INTEGER			        
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				Maintain trap id 
+				"
+			::= { hwMaintainSendEntry 1 }
+			
+		hwMaintainSendSwitch  OBJECT-TYPE
+			SYNTAX INTEGER
+			        {
+				  on(1),     	
+				  off(2)		
+		                }
+ 			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Maintain trap send enable or not
+				"
+			::= { hwMaintainSendEntry   2 }
+
+
+		hwSynMibTrap OBJECT IDENTIFIER ::= { hwNotification  2 }
+		hwSynTrapOid      OBJECT IDENTIFIER    ::= { hwSynMibTrap  1 }
+		hwSynTrapsDefine  OBJECT IDENTIFIER    ::= { hwSynMibTrap  2 }
+		hwSynTraps        OBJECT IDENTIFIER    ::= { hwSynTrapsDefine  0 }
+	      
+		hwSynAlarm NOTIFICATION-TYPE
+		      OBJECTS { hwSynTrapAdminStatus,hwAlarmSn ,hwTrapType }
+			STATUS current
+			DESCRIPTION
+				"The host sends initiating trap before sending the synchronizing alarm trap.
+				and  sends completed trap  after sending.
+
+				"
+			::= { hwSynTraps 1 }
+	
+		
+
+---	----------------------------------------------------------------------
+--------------------------------------------------------------------------
+
+        hwRtuTrapRestrain OBJECT IDENTIFIER ::= { hwNotification  3 }
+
+        hwRtuTrapRestrainSwitch  OBJECT-TYPE
+			SYNTAX INTEGER {
+			    enable(1),
+			    disable(2)
+			} 
+			MAX-ACCESS  read-write
+			STATUS current
+			DESCRIPTION
+			    "
+			    Rtu trap restrain switch status.
+			    "
+			::= { hwRtuTrapRestrain 1 }
+
+		hwRtuResetAllConfigID  OBJECT-TYPE
+			SYNTAX INTEGER {
+			    unknown(1),
+			    administrable(2)
+			}
+			MAX-ACCESS  read-write
+			STATUS current
+			DESCRIPTION
+			    "
+			    Set operation used to reset all Rtu's configID.
+			    1 means don't known if rtu is administrable, setting all configID to '-1'.
+			    2 means rtu is administrable, setting all configID to '0'.
+			    Get operation is useless.
+			    "
+			::= { hwRtuTrapRestrain 2 }
+
+        hwRtuConfigIDTable OBJECT-TYPE
+		    SYNTAX SEQUENCE OF HwRtuConfigIDEntry
+		    MAX-ACCESS not-accessible
+		    STATUS current
+		    DESCRIPTION
+		    	"
+			    Rtu ConfigID table.
+			    "
+		    ::= { hwRtuTrapRestrain 11 }
+	
+	    hwRtuConfigIDEntry OBJECT-TYPE
+		    SYNTAX HwRtuConfigIDEntry
+		    MAX-ACCESS not-accessible
+		    STATUS current
+		    DESCRIPTION
+			    "
+			    Rtu ConfigID table Entry.
+			    "
+		    INDEX { ifIndex }
+		    ::= { hwRtuConfigIDTable 1 }
+	
+	    HwRtuConfigIDEntry ::=
+		    SEQUENCE
+    		    {
+	    		    hwRtuConfigID    OCTET STRING
+		        }
+		 
+	    hwRtuConfigID OBJECT-TYPE
+		    SYNTAX OCTET STRING (SIZE (16))
+		    MAX-ACCESS read-write
+		    STATUS current
+		    DESCRIPTION
+			    "     
+			    The ConfigID of rtu.
+			    "
+		    ::= { hwRtuConfigIDEntry 1 } 
+		hwAlarm OBJECT IDENTIFIER ::= { hwNotification 4 }
+					
+		hwAlarmStatPeriod OBJECT-TYPE
+			SYNTAX INTEGER (1..8760)
+			UNITS "hour"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Alarm stat period"
+			DEFVAL {24}
+			::= { hwAlarm 2 }
+		
+		hwAlarmStatSave OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				save(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Save alarm stat information."
+			::= { hwAlarm 3 }
+					
+		hwAlarmStatCurPeriodStartTime OBJECT-TYPE
+			SYNTAX DateAndTime
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Alarm stat current period start time"
+			::= { hwAlarm 4 }
+								
+		hwAlarmStatInfoTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwAlarmStatInfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The table set the operation of alarm. "
+			::= { hwAlarm 6 }
+		
+		hwAlarmStatInfoEntry OBJECT-TYPE
+			SYNTAX HwAlarmStatInfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Alarm oper table entry."
+			INDEX { hwAlarmStatID }
+			::= { hwAlarmStatInfoTable 1 }
+		
+		HwAlarmStatInfoEntry ::=
+			SEQUENCE { 
+				hwAlarmStatID
+					Integer32,
+				hwAlarmStatCurrentNum
+				        Counter32,
+				hwAlarmStatLastNum
+				        Counter32
+			 }
+
+		hwAlarmStatID OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Alarm ID."
+			::= { hwAlarmStatInfoEntry 1 }
+					
+		hwAlarmStatCurrentNum OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Alarm stat current number"
+			::= { hwAlarmStatInfoEntry 2 }
+			
+		hwAlarmStatLastNum OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Alarm stat last number"
+			::= { hwAlarmStatInfoEntry 3 }						
+
+		hwSyslogOutput OBJECT IDENTIFIER ::= { hwNotification  5 }
+
+		hwSyslogOutputTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwSyslogOutputEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"				
+				Syslog output description table,describe syslog output by level.
+				"
+			::= { hwSyslogOutput 1 }		
+			
+		hwSyslogOutputEntry OBJECT-TYPE
+			SYNTAX HwSyslogOutputEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"				
+				Syslog output description table entity.
+				"
+			INDEX { hwSyslogLevelIndex }
+			::= { hwSyslogOutputTable 1 }			
+
+		HwSyslogOutputEntry ::=
+			SEQUENCE { 
+				hwSyslogLevelIndex
+					INTEGER,
+				hwSyslogOutputOperStatus
+					INTEGER
+			 }	
+			 	
+		hwSyslogLevelIndex OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  emergency(1),     	
+				  alert(2),    	
+				  critical(3), 	
+				  error(4), 		
+				  warning(5), 		
+				  notice(6), 		
+				  informational(7), 		
+				  debug(8) 
+				}		
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"				
+				Syslog level Index,the number of the level in the syslog.
+				"
+			::= { hwSyslogOutputEntry 1 }
+			
+		hwSyslogOutputOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				unoutput(1),
+				output(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"				
+				Syslog output status. 
+				
+				1:unoutput
+				2:output
+				"
+			::= { hwSyslogOutputEntry 2 }
+		
+		hwEventCtrl OBJECT IDENTIFIER ::= { hwNotification 6 }
+		
+		hwEventCtrlTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwEventCtrlEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The table contain control infomation of event."
+			::= { hwEventCtrl 1 }
+		
+		hwEventCtrlEntry OBJECT-TYPE
+			SYNTAX HwEventCtrlEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Event control infomation table entry."
+			INDEX { hwEventID }
+			::= { hwEventCtrlTable 1 }
+		
+		HwEventCtrlEntry ::=
+			SEQUENCE 
+			{ 
+				hwEventID
+					Integer32,
+				hwEventName
+					OCTET STRING,
+				hwEventClass
+					INTEGER,
+				hwEventLevel
+					SeverityLevel,
+				hwEventDefaultLevel
+					SeverityLevel,
+				hwEventType
+					EventType,
+				hwEventStatCurrNum
+					Counter32,
+				hwEventStatPrevNum
+					Counter32,
+				hwEventAdminStatus
+					INTEGER
+			 }
+
+		hwEventID OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Event ID."
+			::= { hwEventCtrlEntry 1 }
+		
+		hwEventName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (32))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Event name."
+			::= { hwEventCtrlEntry 2 }
+		
+		hwEventClass OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  running(1),
+				  security(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Event class."
+			::= { hwEventCtrlEntry 3 }
+		
+		hwEventLevel OBJECT-TYPE
+			SYNTAX SeverityLevel
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Event level."
+			::= { hwEventCtrlEntry 4 }
+		
+		hwEventDefaultLevel OBJECT-TYPE
+			SYNTAX SeverityLevel
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Event default level."
+			::= { hwEventCtrlEntry 5 }
+
+		hwEventType OBJECT-TYPE
+			SYNTAX EventType
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Event type."
+			::= { hwEventCtrlEntry 6 }
+
+		hwEventStatCurrNum OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwEventCtrlEntry 7 }
+
+		hwEventStatPrevNum OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwEventCtrlEntry 8 }
+
+		hwEventAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  init(1),
+				  conversion(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwEventCtrlEntry 9 }
+		
+		hwAlarmCtrl OBJECT IDENTIFIER ::= { hwNotification 7 }
+
+		hwAlarmCtrlTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwAlarmCtrlEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The table contain control infomation of alarm."
+			::= { hwAlarmCtrl 1 }
+		
+		hwAlarmCtrlEntry OBJECT-TYPE
+			SYNTAX HwAlarmCtrlEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Alarm control infomation table entry."
+			INDEX { hwAlarmID }
+			::= { hwAlarmCtrlTable 1 }
+		
+		HwAlarmCtrlEntry ::=
+			SEQUENCE 
+			{ 
+				hwAlarmID
+					Integer32,
+				hwAlarmName
+					OCTET STRING,
+				hwAlarmClass
+					INTEGER,
+				hwAlarmLevel
+					SeverityLevel,
+				hwAlarmDefaultLevel
+					SeverityLevel,
+				hwAlarmType
+					EventType,
+				hwAlarmStatCurrNum
+					Counter32,
+				hwAlarmStatPrevNum
+					Counter32,
+				hwAlarmAdminStatus
+					INTEGER
+			 }
+
+		hwAlarmID OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Alarm ID."
+			::= { hwAlarmCtrlEntry 1 }
+		
+		hwAlarmName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (32))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Alarm name."
+			::= { hwAlarmCtrlEntry 2 }
+		
+		hwAlarmClass OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  faultalarm(1),
+				  restorealarm(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Alarm class."
+			::= { hwAlarmCtrlEntry 3 }
+		
+		hwAlarmLevel OBJECT-TYPE
+			SYNTAX SeverityLevel
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Alarm level."
+			::= { hwAlarmCtrlEntry 4 }
+		
+		hwAlarmDefaultLevel OBJECT-TYPE
+			SYNTAX SeverityLevel
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Alarm default level."
+			::= { hwAlarmCtrlEntry 5 }
+
+		hwAlarmType OBJECT-TYPE
+			SYNTAX EventType
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Alarm type."
+			::= { hwAlarmCtrlEntry 6 }
+		
+		hwAlarmStatCurrNum OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwAlarmCtrlEntry 7 }
+
+		hwAlarmStatPrevNum OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwAlarmCtrlEntry 8 }
+
+		hwAlarmAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  init(1),
+				  conversion(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwAlarmCtrlEntry 9 }	
+
+		hwAlarmRecordClear OBJECT IDENTIFIER ::= { hwNotification 8 }
+
+		hwAlarmRecordClearTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwAlarmRecordClearEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwAlarmRecordClear 1 }
+		
+		hwAlarmRecordClearEntry OBJECT-TYPE
+			SYNTAX HwAlarmRecordClearEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			INDEX { hwAlarmRecordSn }
+			::= { hwAlarmRecordClearTable 1 }
+		
+		HwAlarmRecordClearEntry ::=
+			SEQUENCE 
+			 { 
+				hwAlarmRecordSn
+					Integer32,
+				hwAlarmRecordAdminStatus
+					INTEGER
+			 }
+
+		hwAlarmRecordSn OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwAlarmRecordClearEntry 1 }
+		
+		hwAlarmRecordAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  clear(1)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"trap sequence number"
+			::= { hwAlarmRecordClearEntry 2 }
+
+
+		hwNotifyFilter OBJECT IDENTIFIER ::= { hwNotification 9 }
+
+		hwNotifyFilterTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwNotifyFilterEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwNotifyFilter 1 }
+		
+		hwNotifyFilterEntry OBJECT-TYPE
+			SYNTAX HwNotifyFilterEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			INDEX { hwNotifyFilterObject, hwNotifyFilterType, hwNotifyFilterCondition }
+			::= { hwNotifyFilterTable 1 }
+		
+		HwNotifyFilterEntry ::=
+			SEQUENCE 
+			{ 
+				hwNotifyFilterObject
+					INTEGER,
+				hwNotifyFilterType
+					INTEGER,
+				hwNotifyFilterCondition
+					Integer32,
+				hwNotifyFilterRowStatus
+					RowStatus
+			 }
+
+		hwNotifyFilterObject OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  event(1),
+				  alarm(2),
+				  maintain(3),
+				  snmpstd(4),
+				  topo(5),
+				  test(6),
+				  datachange(15)
+				}
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwNotifyFilterEntry 1 }
+		
+		hwNotifyFilterType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  system(1),
+				  level(2),
+				  type(3),
+				  id(4),
+				  parameter(5)
+				}
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwNotifyFilterEntry 2 }
+		
+		hwNotifyFilterCondition OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwNotifyFilterEntry 3 }
+
+		hwNotifyFilterRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwNotifyFilterEntry 4 }
+
+		hwAlarmJitterProof OBJECT IDENTIFIER ::= { hwNotifyFilter 10 }
+
+		hwAlarmJitterProofSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  on(1),
+				  off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Alarm jitter-proof switch."
+			::= { hwAlarmJitterProof 1}
+
+		hwAlarmJitterProofInterval OBJECT-TYPE
+			SYNTAX INTEGER(1..60)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Alarm jitter-proof interval."
+			::= { hwAlarmJitterProof 2}
+
+		hwTrapFlowCtrl OBJECT IDENTIFIER ::= { hwNotification 10 }
+
+		hwTrapFlowCtrlSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  on(1),
+				  off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Trap flow-control switch."
+			::= { hwTrapFlowCtrl 1}
+
+		hwTrapSyn OBJECT IDENTIFIER ::= { hwNotification 11 }
+
+		hwTrapSynTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwTrapSynEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwTrapSyn 1 }
+	        
+	        hwTrapTypeSynSwitch OBJECT-TYPE
+			SYNTAX BITS
+				{
+				event(0),
+                                alarm(1),
+                                maintain(2),
+                                topo(4),
+                                test(5),
+                                datachange(6)
+                                }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" The switch of all types of info for trap synchronization.
+				"
+			::= { hwTrapSyn 2 }
+		
+		hwTrapSynEntry OBJECT-TYPE
+			SYNTAX HwTrapSynEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			INDEX { hwTrapSynType }
+			::= { hwTrapSynTable 1 }
+		
+		HwTrapSynEntry ::=
+			SEQUENCE 
+			{ 
+				hwTrapSynType
+					INTEGER,
+				hwTrapBufferMinSn
+					Integer32,
+				hwTrapBufferMaxSn
+					Integer32,
+				hwTrapSynBeginSn
+					Integer32,
+				hwTrapSynEndSn
+					Integer32,
+				hwTrapSynAdminStatus
+					INTEGER
+			 }
+
+		hwTrapSynType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  trap(1),
+				  alarm(2)
+				}
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwTrapSynEntry 1 }
+		
+		hwTrapBufferMinSn OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"trap sequence number"
+			::= { hwTrapSynEntry 2 }
+		
+		hwTrapBufferMaxSn OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"trap sequence number"
+			::= { hwTrapSynEntry 3 }
+
+		hwTrapSynBeginSn OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwTrapSynEntry 4 }
+
+		hwTrapSynEndSn OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwTrapSynEntry 5 }
+
+		hwTrapSynAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				  other(1),     	
+				  stop(2),    	
+				  interval(3), 
+				  all(4),
+				  intervalsynfile(5),
+				  allsynfile(6) 		
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwTrapSynEntry 6 }
+
+		
+	END
+

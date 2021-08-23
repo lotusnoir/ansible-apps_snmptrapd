@@ -1,0 +1,175 @@
+--FTTU ATM MIB
+
+-- ============================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel will not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein will be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2006, Alcatel. All Rights Reserved.
+-- =============================================================================== ==
+--
+-- MODULE-IDENTITY
+-- LAST-UPDATED "20101229000000Z"
+-- ORGANIZATION "Alcatel"
+-- CONTACT-INFO
+--
+--         Email: asam.mibsupport@alcatel.be
+-- DESCRIPTION:
+--    This is the MIB Module for ATM objects used for
+--    managing ATM configurations on xDSL Lines
+--    in GPON ONT.
+--    Alcatel specific behavior is indicated by comments
+--    labeled 'ALCATEL NOTE'
+--
+--
+--  REVISION "20101215000000Z"
+--  DESCRIPTION
+--        "Version:
+--         Editor: Pankaj Verma/Madhusudanan Subramanian
+--         Newly Added:  gATM support in xDSL for ISAM4.3"
+--
+-- ATM Interface Virtual Channel Link (VCL) Table
+--
+-- This table contains Vpi and Vci value of a xDSL Line in GPON ONT.
+-- This table can be used to create, delete or modify
+-- a VCL that is terminated in an xDSL Line.
+--
+--  The ATM Interface VCL Table
+
+
+FTTU-ATM-MIB DEFINITIONS ::= BEGIN
+ IMPORTS
+        OBJECT-TYPE
+        FROM RFC-1212
+
+        asam
+        FROM SYSTEM-MIB
+
+        IfIndex
+        FROM FTTU-XDSL-MIB
+
+        SpIndex
+        FROM FTTU-XDSL-MIB
+;
+
+--ISR4.3: ADDING THE gATM MIB UNDER AN APON BRANCH
+   apon                     OBJECT IDENTIFIER ::= { asam 35 }
+   gatmMIB                  OBJECT IDENTIFIER ::= { apon 32 }
+
+gatmVclTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF GatmVclEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "The Virtual Channel Link (VCL) table.
+            This table is used to maintain the ATM configurations
+            for xDSL Lines in GPON ONT.
+            ALCATEL NOTE : NA
+            TABLESIZE : 11007
+            DESCR : NA"
+    ::= { gatmMIB  1 }
+
+gatmVclEntry OBJECT-TYPE
+    SYNTAX  GatmVclEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           " An entry in VCL table represents the ATM configuration 
+             associated with the GPON ONT xDSL Line.
+
+             Row creation: An entry is auto created when the corresponding GPON XDSL Line is created.
+                           Index & SpIndex takes same value as the GPON XDSL Line.
+                           VPI & VCI takes default values.
+             Row deletion: An entry is auto deleted when the corresponding GPON XDSL Line is deleted. "
+
+	INDEX  	{gatmOntIndex, gatmOntSpIndex}
+
+    ::= { gatmVclTable  1 }
+
+GatmVclEntry ::=
+    SEQUENCE {
+        gatmOntIndex    IfIndex,
+        gatmOntSpIndex  SpIndex,
+        gatmVclVpi	INTEGER,
+	gatmVclVci      INTEGER      
+    		}
+
+gatmOntIndex   OBJECT-TYPE
+        SYNTAX          IfIndex
+        ACCESS          not-accessible 
+        STATUS          mandatory
+        DESCRIPTION
+        "Interface Index of the GPON ONT. 
+         This is unique and has to conform to 
+         the format specified by ITFM, for the ONT level.
+        "
+        ::= { gatmVclEntry 1 }
+
+gatmOntSpIndex  OBJECT-TYPE
+        SYNTAX  SpIndex
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+                "Each row is also indexed by a number that
+                 contains the slot number and port number
+                 within the ONT.
+
+             ALCATEL NOTE: THIS OBJECT IS ADDED TO THE gATM MIB DUE TO THE
+                           DOUBLE INDEXING SCHEME THAT DOES NOT ALLOW THE USE
+                           OF STANDARD IF-TABLES TO FULL EXTENT "
+        ::= { gatmVclEntry 2 }
+
+gatmVclVpi OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+           "The VPI value of the VCL.
+         ALCATEL NOTE:
+             ACCESS:   NA                  USAGE:    NA
+             PERSIST:  YES                 INSRVMOD: NA
+             RANGE:    0..225              DEFVALUE: 8
+             UNITS:    NA                  SPARSE:   NA
+             DESCR:    NA
+          "
+    ::= { gatmVclEntry  3 }
+
+gatmVclVci OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+           "The VCI value of the VCL.
+         ALCATEL NOTE:
+             ACCESS:   NA                  USAGE:    NA
+             PERSIST:  YES                 INSRVMOD: NA
+             RANGE:    32..65535           DEFVALUE: 35
+             UNITS:    NA                  SPARSE:   NA
+           "
+    ::= { gatmVclEntry  4 }
+
+
+END

@@ -1,0 +1,1092 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V3.00
+-- History:
+-- liu chenglong 2003-04-28 Added IPR Decriptions and updated all MIB version to V3.00
+-- 2006-02-21 ,Added by l52111 for Suboption90
+-- 2006-06-2 , Added by h26960 for option82 statistics
+-- 2006-7-21, Added by 60006531 for dhcp server
+-- 2006-08-31 ,Modified by l42644 for BT模式中增加CID (0x81-0x8e)选项:添加 hwDhcpSuboptionTable 表
+-- ============================================================================
+	HUAWEI-DHCP-PROXY-MIB DEFINITIONS ::= BEGIN
+
+		IMPORTS 
+			huaweiMgmt			
+				FROM HUAWEI-MIB			
+			IpAddress, OBJECT-TYPE, MODULE-IDENTITY			
+				FROM SNMPv2-SMI			
+			RowStatus, MacAddress, TruthValue			
+				FROM SNMPv2-TC
+			ifIndex         
+                FROM IF-MIB
+		    hwAdsllinePvcVpi, hwAdslLinePvcVci			
+			    FROM HUAWEI-ADSL-MIB;
+	
+	
+		hwDhcpProxy MODULE-IDENTITY
+			LAST-UPDATED "200304280900Z"
+			ORGANIZATION "Fix-Net Dept, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floor 5, Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,  P.R.C.
+				http://www.huawei.com
+				Zip:518057
+				"
+			DESCRIPTION 
+				"huawei CES  mib.
+				"
+			REVISION "200211290900Z"
+			DESCRIPTION
+				"
+				V2.00	
+				reunification version based on the  Fix-Net MIBs baseline by the 
+				MIB Standard community.
+				"
+			::= { huaweiMgmt 18 }
+		
+	
+	    DisplayString ::= OCTET STRING
+
+	
+		hwDhcpMibObject OBJECT IDENTIFIER ::= { hwDhcpProxy 1 }
+		
+   -- -------------------------------------------------------------------------   
+   --        DHCP Server Management Table
+   -- -------------------------------------------------------------------------  
+		hwDhcpGroupTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDhcpGroupEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+			   "Configuring Corresponding IP Address of DHCP Server to DHCP Server Group.
+				Dhcp server group configuration table, used to create, delete, modify and query the Dhcp server group.
+				20 Dhcp server groups can be created for a device. Its value range of index is 0..19.
+				This table entry indicates a certain Dhcp service group, whose ID is the index.
+			   "
+			::= { hwDhcpMibObject 1 }
+		
+		hwDhcpGroupEntry OBJECT-TYPE
+			SYNTAX HwDhcpGroupEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+			   "
+			   Configuring Corresponding IP Address of DHCP Server to DHCP Server Group.
+			   "
+			INDEX { hwDhcpGroupID }
+			::= { hwDhcpGroupTable 1 }
+		
+		HwDhcpGroupEntry ::=
+			SEQUENCE { 
+				hwDhcpGroupID
+					INTEGER,
+				hwIpDhcpServerAddress1
+					IpAddress,
+				hwIpDhcpServerAddress2
+					IpAddress,    			
+				hwDhcpRowStatus
+					RowStatus,
+				hwIpDhcpServerAddress3
+					IpAddress
+			 }
+
+		hwDhcpGroupID OBJECT-TYPE
+			SYNTAX INTEGER (0..19)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+			   "
+			   DHCP group id.
+               "
+			::= { hwDhcpGroupEntry 1 }
+		
+		hwIpDhcpServerAddress1 OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			   "
+			   the IP address of DHCP group's dominical DHCP server. The default value is 0.0.0.0
+               "
+			::= { hwDhcpGroupEntry 2 }
+		
+		hwIpDhcpServerAddress2 OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the IP address of DHCP group's second DHCP server. The default value is 0.0.0.0
+				"
+			::= { hwDhcpGroupEntry 3 }     
+					
+		hwDhcpRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+			   "
+			   status of this table's entry.
+               "
+			::= { hwDhcpGroupEntry 4 }
+	     
+	    hwIpDhcpServerAddress3 OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the IP address of DHCP group's current DHCP server. The default value is 0.0.0.0
+				"
+			::= { hwDhcpGroupEntry 5 }   
+   
+   -- -------------------------------------------------------------------------   
+   --        DHCP Security Management Table
+   -- -------------------------------------------------------------------------  	
+		hwDhcpSecurityTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDhcpSecurityEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+			   "
+			   A table containing the information of dhcp security, used add/delete table item of the 
+				user address. IP addess is the index.
+               "
+			::= { hwDhcpMibObject 2 }
+		
+		hwDhcpSecurityEntry OBJECT-TYPE
+			SYNTAX HwDhcpSecurityEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+			   "
+			   A table containing the information of dhcp security.
+			   If security feature is supported by DHCP, add/delete table item of the user address, 
+			   whose IP is the index.
+			   dhcp relay records in the table the IP address and MAC address of the legal user who 
+			   acquire the IP address through relay. Through this table, the information of legal 
+			   users can be queried. Moreover, in order to meet the needs of users to configure fixed 
+			   IP address. This table enables the information configuration of the legal user with a 
+			   fixed IP address. Specify the IP address, MAC address and the property of the static/dynamic 
+			   address to implement the create operation.
+			   "
+			INDEX { hwDhcpClientIpAddress }
+			::= { hwDhcpSecurityTable 1 }
+		
+		HwDhcpSecurityEntry ::=
+			SEQUENCE { 
+				hwDhcpClientIpAddress
+					IpAddress,
+				hwDhcpClientMacAddress
+					MacAddress,
+				hwDhcpClientProperty
+					INTEGER,
+				hwDhcpClientRowStatus
+					RowStatus
+			 }
+
+		hwDhcpClientIpAddress OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+			   "
+			   The client IP address.
+			   "
+			::= { hwDhcpSecurityEntry 1 }
+		
+		hwDhcpClientMacAddress OBJECT-TYPE
+			SYNTAX MacAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The client MAC address.
+				"
+			::= { hwDhcpSecurityEntry 2 }
+		
+		hwDhcpClientProperty OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				static(1),
+				dynamic(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			   "
+			   Property of client. 
+			   "
+			::= { hwDhcpSecurityEntry 3 }
+		
+		hwDhcpClientRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+			   "
+			   status of this table's entry.
+			   "
+			::= { hwDhcpSecurityEntry 4 }
+	
+	
+   -- -------------------------------------------------------------------------   
+   --        DHCP L3If Management Table
+   -- -------------------------------------------------------------------------  	
+		hwDhcpToL3IfTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDhcpToL3IfEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+			   "
+			   A table configing dhcp for layer 3 interface.
+			   The configuration table of the relation between Vlan interface and the Dhcp service group.
+			   This table connects VLAN virtual interface and Dhcp service group.
+			   The index of this table is VLAN interface.
+			   "
+			::= { hwDhcpMibObject 3 }
+		
+		hwDhcpToL3IfEntry OBJECT-TYPE
+			SYNTAX HwDhcpToL3IfEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+			    "
+			    A table configing dhcp for layer 3 interface. 
+				The configuration table of the  relation between Vlan interface and the Dhcp service group.
+				This table connects VLAN interface and Dhcp service group.
+				The index of this table is VLAN interface.
+				"
+			INDEX { hwDhcpToL3VlanIfIndex }
+			::= { hwDhcpToL3IfTable 1 }
+		
+		HwDhcpToL3IfEntry ::=
+			SEQUENCE { 
+				hwDhcpToL3VlanIfIndex
+					INTEGER,
+				hwDhcpToL3GroupId
+					INTEGER,
+				hwDhcpToL3AddressCheck
+					INTEGER,
+				hwDhcpToL3RowStatus
+					RowStatus
+			 }
+
+		hwDhcpToL3VlanIfIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+			   "
+			   vlan virtual interface index. 
+			   "
+			::= { hwDhcpToL3IfEntry 1 }
+		
+		hwDhcpToL3GroupId OBJECT-TYPE
+			SYNTAX INTEGER (0..20)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			   "
+			   DHCP group id for this vlan virtual interface.
+               "
+			::= { hwDhcpToL3IfEntry 2 }
+		
+		hwDhcpToL3AddressCheck OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			   "
+			   If dhcp security check enabled for this vlan virtual interface.
+				By default, it is disabled.
+			   "
+			::= { hwDhcpToL3IfEntry 3 }
+		
+		hwDhcpToL3RowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+			   "
+			   status of this table's entry.
+			   "
+			::= { hwDhcpToL3IfEntry 4 }
+		
+	
+    
+   
+   -- -------------------------------------------------------------------------   
+   --        Port/Pvc Management Table
+   -- -------------------------------------------------------------------------       
+    hwDhcpPortPvcTable    OBJECT-TYPE
+        SYNTAX          SEQUENCE OF  HwDhcpPortPvcEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "
+            DHCP pvc supported port management table.
+            "
+    ::= { hwDhcpMibObject 4 }
+    
+    hwDhcpPortPvcEntry    OBJECT-TYPE
+        SYNTAX          HwDhcpPortPvcEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "
+            DHCP pvc supported port management entry.
+            "
+    INDEX   { 
+               ifIndex, hwAdsllinePvcVpi, hwAdslLinePvcVci
+            }
+    ::= { hwDhcpPortPvcTable  1 }
+
+   HwDhcpPortPvcEntry    ::= SEQUENCE  {
+            hwDhcpPortPvcOption82AdminStatus TruthValue,
+            hwDhcpPortPvcIPBindAdminStatus   TruthValue,
+            hwDhcpPortPvcRowStatus           RowStatus
+          }
+                            
+    hwDhcpPortPvcOption82AdminStatus        OBJECT-TYPE
+           SYNTAX       TruthValue
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              DHCP Option82 on pvc of port administer state: true(enable)/false(disable),the default is false.
+              "
+           DEFVAL { false }
+    ::= { hwDhcpPortPvcEntry 1}
+    
+    hwDhcpPortPvcIPBindAdminStatus        OBJECT-TYPE
+           SYNTAX       TruthValue
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              IP Binding on pvc of port administer state: true(enable)/false(disable),the default is false.
+              "
+           DEFVAL { false }
+    ::= { hwDhcpPortPvcEntry 2}  
+    
+    hwDhcpPortPvcRowStatus      OBJECT-TYPE
+           SYNTAX       RowStatus
+           MAX-ACCESS   read-create
+           STATUS       current
+           DESCRIPTION
+              "
+              Row status.
+               Add or delete a table item.
+              "
+    ::= { hwDhcpPortPvcEntry 3}
+  
+  
+  
+   -- -------------------------------------------------------------------------   
+   --        Port Management Table
+   -- -------------------------------------------------------------------------       
+    hwDhcpPortTable    OBJECT-TYPE
+        SYNTAX          SEQUENCE OF  HwDhcpPortEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "
+            DHCP port management table.
+            "
+    ::= { hwDhcpMibObject 5 }
+    
+    hwDhcpPortEntry    OBJECT-TYPE
+        SYNTAX          HwDhcpPortEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "
+            DHCP port management entry.
+            "
+    INDEX   { 
+               ifIndex
+            }
+    ::= { hwDhcpPortTable  1 }
+
+   HwDhcpPortEntry    ::= SEQUENCE  {
+            hwDhcpPortOption82AdminStatus TruthValue,
+            hwDhcpPortUpLinkStatus        TruthValue,
+            hwDhcpPortRowStatus           RowStatus
+          }
+                            
+    hwDhcpPortOption82AdminStatus        OBJECT-TYPE
+           SYNTAX       TruthValue
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              DHCP Option82 on port administer state: true(enable)/false(disable),the default is false.
+              "
+           DEFVAL { false }
+    ::= { hwDhcpPortEntry 1}
+        
+    hwDhcpPortUpLinkStatus        OBJECT-TYPE
+           SYNTAX       TruthValue
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              Up-link administer state,only a port on main board can be a up-link;
+               true(yes)/false(no),the default is true.
+              "
+           
+    ::= { hwDhcpPortEntry 2}   
+    
+    hwDhcpPortRowStatus      OBJECT-TYPE
+           SYNTAX       RowStatus
+           MAX-ACCESS   read-create
+           STATUS       current
+           DESCRIPTION
+              "Row status.
+               Add or delete a table item.
+              "
+    ::= { hwDhcpPortEntry 3}
+   
+    
+   -- -------------------------------------------------------------------------   
+   --        Domain Management Table
+   -- -------------------------------------------------------------------------       
+    hwDhcpDomainTable    OBJECT-TYPE
+        SYNTAX          SEQUENCE OF HwDhcpDomainEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "DHCP domain management table.
+             "
+    ::= { hwDhcpMibObject 6 }
+    
+    hwDhcpDomainEntry    OBJECT-TYPE
+        SYNTAX          HwDhcpDomainEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "DHCP domain management entry.
+            "
+    INDEX   { 
+               hwDhcpDomainName
+            }
+    ::= { hwDhcpDomainTable  1 }
+
+   HwDhcpDomainEntry    ::= SEQUENCE  {
+            hwDhcpDomainName                 DisplayString,       
+            hwDhcpDomainGroupId   	         INTEGER,
+            hwDhcpDomainRowStatus            RowStatus        
+          }  
+                        
+    hwDhcpDomainName        OBJECT-TYPE
+           SYNTAX       DisplayString (SIZE (0..32))
+           MAX-ACCESS   read-only
+           STATUS       current
+           DESCRIPTION
+              "DHCP domain name.
+               "
+    ::= { hwDhcpDomainEntry 1}
+
+    hwDhcpDomainGroupId OBJECT-TYPE
+	   SYNTAX INTEGER (0..20)
+	   MAX-ACCESS read-write
+	   STATUS current
+	   DESCRIPTION
+	   "
+	   DHCP group id for this domain.
+	   "
+    ::= { hwDhcpDomainEntry 2 }
+   
+    hwDhcpDomainRowStatus      OBJECT-TYPE
+           SYNTAX       RowStatus
+           MAX-ACCESS   read-create
+           STATUS       current
+           DESCRIPTION
+              "Row status.
+               Add or delete a table item.
+              "
+    ::= { hwDhcpDomainEntry 3}
+
+   
+    -- -------------------------------------------------------------------------   
+   --        Mac-range Management Table
+   -- -------------------------------------------------------------------------       
+    hwDhcpMacRangeTable    OBJECT-TYPE
+        SYNTAX          SEQUENCE OF HwDhcpMacRangeEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "DHCP Mac-range management table.
+            "
+    ::= { hwDhcpMibObject 7 }
+    
+    hwDhcpMacRangeEntry    OBJECT-TYPE
+        SYNTAX          HwDhcpMacRangeEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "DHCP Mac-range management entry.
+            "
+    INDEX   { 
+               hwDhcpMacRangeName
+            }
+    ::= { hwDhcpMacRangeTable  1 }
+
+   HwDhcpMacRangeEntry    ::= SEQUENCE  {   
+            hwDhcpMacRangeName                 DisplayString,
+            hwDhcpMacRangeStart                MacAddress,
+            hwDhcpMacRangeEnd                  MacAddress,
+            hwDhcpMacRangeGroupId   	       INTEGER,
+            hwDhcpMacRangeRowStatus            RowStatus        
+          }
+                 
+    hwDhcpMacRangeName        OBJECT-TYPE
+           SYNTAX       DisplayString (SIZE (0..32))
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "DHCP Mac-range name.
+              "
+    ::= { hwDhcpMacRangeEntry 1}
+
+    hwDhcpMacRangeStart OBJECT-TYPE
+	   SYNTAX       MacAddress
+	   MAX-ACCESS   read-write
+	   STATUS       current
+	   DESCRIPTION
+	   "
+	   The start MAC address of Mac-range.
+       "
+    ::= { hwDhcpMacRangeEntry 2 }
+
+    hwDhcpMacRangeEnd OBJECT-TYPE
+	   SYNTAX       MacAddress
+	   MAX-ACCESS   read-write
+	   STATUS       current
+	   DESCRIPTION
+	       "
+	       The end MAC address of Mac-range.
+		   "
+    ::= { hwDhcpMacRangeEntry 3 }
+
+    hwDhcpMacRangeGroupId OBJECT-TYPE
+	   SYNTAX       INTEGER (0..20)
+	   MAX-ACCESS   read-write
+	   STATUS       current
+	   DESCRIPTION
+	   "
+	   DHCP group id for this Mac-range.
+       "
+    ::= { hwDhcpMacRangeEntry 4 }
+    
+    hwDhcpMacRangeRowStatus      OBJECT-TYPE
+           SYNTAX       RowStatus
+           MAX-ACCESS   read-create
+           STATUS       current
+           DESCRIPTION
+              "Row status.
+               Add or delete a table item.
+               "
+    ::= { hwDhcpMacRangeEntry 5}
+
+   
+   -- -------------------------------------------------------------------------   
+   --        DHCP Domain-gateway Management Table
+   -- -------------------------------------------------------------------------  	
+    hwDhcpDomainGatewayTable    OBJECT-TYPE
+        SYNTAX          SEQUENCE OF HwDhcpDomainGatewayEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "
+            DHCP Domain-gateway management table.
+            "
+    ::= { hwDhcpMibObject 8 }
+    
+    hwDhcpDomainGatewayEntry    OBJECT-TYPE
+        SYNTAX          HwDhcpDomainGatewayEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "
+            DHCP Domain-gateway management entry.
+            "
+    INDEX   { 
+               hwDhcpDomainGatewayVlanIfIndex, hwDhcpDomainGatewayDmName
+            }
+    ::= { hwDhcpDomainGatewayTable  1 }
+
+   HwDhcpDomainGatewayEntry    ::= SEQUENCE  {
+            hwDhcpDomainGatewayVlanIfIndex     INTEGER,
+            hwDhcpDomainGatewayDmName          DisplayString,
+            hwDhcpDomainGateway                IpAddress,
+            hwDhcpDomainGatewayRowStatus       RowStatus      
+          }
+   
+   hwDhcpDomainGatewayVlanIfIndex OBJECT-TYPE
+			SYNTAX      INTEGER
+			MAX-ACCESS  read-only
+			STATUS      current
+			DESCRIPTION
+			   "
+			   vlan virtual interface index. 
+			   "
+			::= { hwDhcpDomainGatewayEntry 1 }
+   
+   hwDhcpDomainGatewayDmName        OBJECT-TYPE
+           SYNTAX       DisplayString (SIZE (0..32))
+           MAX-ACCESS   read-only
+           STATUS       current
+           DESCRIPTION
+              "
+              DHCP domain name.
+              "
+    ::= { hwDhcpDomainGatewayEntry 2}
+      
+    hwDhcpDomainGateway        OBJECT-TYPE
+           SYNTAX       IpAddress
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              Gateway IP address of DHCP domain.This IP address should be configured with the interface of VLAN.
+              "
+    ::= { hwDhcpDomainGatewayEntry 3 }
+    
+    hwDhcpDomainGatewayRowStatus      OBJECT-TYPE
+           SYNTAX       RowStatus
+           MAX-ACCESS   read-create
+           STATUS       current
+           DESCRIPTION
+              "
+              Row status.
+              Add or delete a table item.
+              "
+    ::= { hwDhcpDomainGatewayEntry 4 }
+  
+
+ 
+   -- -------------------------------------------------------------------------   
+   --        DHCP Mac-range-gateway Management Table
+   -- -------------------------------------------------------------------------  	
+    hwDhcpMacGatewayTable    OBJECT-TYPE
+        SYNTAX          SEQUENCE OF HwDhcpMacGatewayEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "
+            DHCP Mac-range-gateway management table.
+            "
+    ::= { hwDhcpMibObject 9 }
+    
+    hwDhcpMacGatewayEntry    OBJECT-TYPE
+        SYNTAX          HwDhcpMacGatewayEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "
+            DHCP Mac-range-gateway management entry.
+            "
+    INDEX   { 
+               hwDhcpMacGatewayVlanIfIndex, hwDhcpMacGatewayMacName
+            }
+    ::= { hwDhcpMacGatewayTable  1 }
+
+   HwDhcpMacGatewayEntry    ::= SEQUENCE  { 
+            hwDhcpMacGatewayVlanIfIndex          INTEGER,
+            hwDhcpMacGatewayMacName              DisplayString,
+            hwDhcpMacGateway                     IpAddress,
+            hwDhcpMacGatewayRowStatus            RowStatus      
+          }
+   
+   hwDhcpMacGatewayVlanIfIndex OBJECT-TYPE
+			SYNTAX      INTEGER
+			MAX-ACCESS  read-only
+			STATUS      current
+			DESCRIPTION
+			   "
+			   vlan virtual interface index. 		
+                           "
+			::= { hwDhcpMacGatewayEntry 1 }
+   
+   hwDhcpMacGatewayMacName        OBJECT-TYPE
+           SYNTAX       DisplayString (SIZE (0..32))
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              DHCP Mac-range name.
+              "
+    ::= { hwDhcpMacGatewayEntry 2}
+       
+    hwDhcpMacGateway        OBJECT-TYPE
+           SYNTAX       IpAddress
+           MAX-ACCESS   read-write
+           STATUS       current
+           DESCRIPTION
+              "
+              Gateway IP address of DHCP Mac-range.This IP address should be configured with the interface of VLAN.
+              "
+    ::= { hwDhcpMacGatewayEntry 3 }
+    
+    hwDhcpMacGatewayRowStatus      OBJECT-TYPE
+           SYNTAX       RowStatus
+           MAX-ACCESS   read-create
+           STATUS       current
+           DESCRIPTION
+              "
+              Row status.
+               Add or delete a table item.
+              "
+    ::= { hwDhcpMacGatewayEntry 4 }
+
+   -- -------------------------------------------------------------------------   
+   --        DHCP Option82 packets statistics Table
+   -- -------------------------------------------------------------------------  	
+    hwDhcpOption82StatisticsTable    OBJECT-TYPE
+        SYNTAX          SEQUENCE OF HwDhcpOption82StatisticsEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "
+            DHCP Option82 packets statistics table.
+            "
+    ::= { hwDhcpMibObject 10 }
+
+    hwDhcpOption82StatisticsEntry    OBJECT-TYPE
+        SYNTAX          HwDhcpOption82StatisticsEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "
+            DHCP Option82 packets statistics entry.
+            "
+    INDEX   { 
+               ifIndex
+            }
+    ::= { hwDhcpOption82StatisticsTable  1 }
+
+   HwDhcpOption82StatisticsEntry    ::= SEQUENCE  { 
+              hwDhcpOption82ReceiveUntrust Counter32,
+              hwDhcpOption82ReceiveOverLenght Counter32,
+              hwDhcpOption82ReceiveDiscover Counter32,
+              hwDhcpOption82ReceiveOffer Counter32,
+              hwDhcpOption82ReceiveRequest Counter32,
+              hwDhcpOption82ReceiveDecline Counter32,
+              hwDhcpOption82ReceiveAck Counter32,
+              hwDhcpOption82ReceiveNak Counter32,
+              hwDhcpOption82ReceiveRelease Counter32,
+              hwDhcpOption82ReceiveInform Counter32,
+              hwDhcpOption82StatisticsClear INTEGER
+            }
+   
+   hwDhcpOption82ReceiveUntrust   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The number of DHCP option82 packets with untrusted option82."
+   ::= { hwDhcpOption82StatisticsEntry 1 }
+
+   hwDhcpOption82ReceiveOverLenght   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The number of DHCP option82 packets exceed the maximum size
+            after appending option82."
+   ::= { hwDhcpOption82StatisticsEntry 2 }
+
+   hwDhcpOption82ReceiveDiscover   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The number of DHCP DISCOVER."
+   ::= { hwDhcpOption82StatisticsEntry 3 }
+
+   hwDhcpOption82ReceiveOffer   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The number of DHCP OFFER."
+   ::= { hwDhcpOption82StatisticsEntry 4 }
+
+   hwDhcpOption82ReceiveRequest   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The number of DHCP REQUEST."
+   ::= { hwDhcpOption82StatisticsEntry 5 }
+
+   hwDhcpOption82ReceiveDecline   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The number of DHCP DECLINE."
+   ::= { hwDhcpOption82StatisticsEntry 6 }
+
+   hwDhcpOption82ReceiveAck   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The number of DHCP ACK."
+   ::= { hwDhcpOption82StatisticsEntry 7 }
+
+   hwDhcpOption82ReceiveNak   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The number of DHCP NAK."
+   ::= { hwDhcpOption82StatisticsEntry 8 }
+
+   hwDhcpOption82ReceiveRelease   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The number of DHCP RELEASE."
+   ::= { hwDhcpOption82StatisticsEntry 9 }
+
+   hwDhcpOption82ReceiveInform   OBJECT-TYPE
+       SYNTAX       Counter32
+       MAX-ACCESS   read-only
+       STATUS       current
+       DESCRIPTION
+            "The number of DHCP INFORM."
+   ::= { hwDhcpOption82StatisticsEntry 10 }
+
+   hwDhcpOption82StatisticsClear   OBJECT-TYPE
+       SYNTAX       INTEGER{ clear(1) }
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+            "1:Clear all DHCP option82 statistics."
+   ::= { hwDhcpOption82StatisticsEntry 11 }
+   
+   
+    -- ------------------------------------------------------------------------
+    --       System Management Parameter
+    -- ------------------------------------------------------------------------ 
+   hwDhcpOption82Status   OBJECT-TYPE
+       SYNTAX       INTEGER{enable(1), disable(2), forward(3)}
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "
+          DHCP Option82 global administer state: enable/disable/forward,the default is disable.
+          "
+       DEFVAL { disable }
+   ::= { hwDhcpMibObject 16 }
+   
+   
+   hwDhcpRelayMode   OBJECT-TYPE
+       SYNTAX       INTEGER{
+                        layer-2(3),
+		                layer-3(1)
+		               }
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "
+          DHCP relay mode.
+          "
+       DEFVAL { layer-2 }
+   ::= { hwDhcpMibObject 17 }
+  
+   
+   hwDhcpServerSelectMode   OBJECT-TYPE
+       SYNTAX       INTEGER{
+                        standard(1),
+		                option-60(2),
+		                mac-range(3)
+		               }
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "
+          DHCP server select mode.
+          In mac-range mode, select DHCP server according to MAC range.
+          In option-60 mode, select DHCP server according to option60 domain.
+          In standard mode, select DHCP server according to interface.
+          "
+       DEFVAL { standard }
+   ::= { hwDhcpMibObject 18 }    
+
+   
+   hwDhcpMaxLenAppendOp82   OBJECT-TYPE
+       SYNTAX       Integer32(500..1500)
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "
+          The max-length allowed of DHCP packet after appending option82.
+          "
+       DEFVAL { 1500 }
+   ::= { hwDhcpMibObject 19 }
+   
+   
+   hwDhcpCIDState   OBJECT-TYPE
+       SYNTAX       TruthValue
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "
+          Circuit-id writing state,true(writing to DHCP packet)/false(not writing to DHCP packet).
+          "
+       DEFVAL { true }
+   ::= { hwDhcpMibObject 20 }
+   
+   
+   hwDhcpRIDState   OBJECT-TYPE
+       SYNTAX       TruthValue
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "
+          Remote-id writing state,true(writing to DHCP packet)/false(not writing to DHCP packet).
+          "
+       DEFVAL { true }
+   ::= { hwDhcpMibObject 21 }
+   
+    -- ------------------------------------------------------------------------
+    --       DHCP Suboption 90
+    -- ------------------------------------------------------------------------ 
+   hwDhcpSuboption90Status   OBJECT-TYPE
+       SYNTAX       TruthValue
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "
+          DHCP Suboption90 global administer state: true(enable)/false(disable),the default is false.
+          "
+       DEFVAL { false }
+   ::= { hwDhcpMibObject 22 }
+   
+   
+    -- ------------------------------------------------------------------------
+    --       DHCP Server
+    -- ------------------------------------------------------------------------    
+      hwDhcpRelayServerMode   OBJECT-TYPE
+       SYNTAX       INTEGER{
+                        shareload(1),
+		                backup(2)
+		               }
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "
+          DHCP server mode.
+          "
+       DEFVAL { shareload }
+   ::= { hwDhcpMibObject 23 }
+  
+   
+   hwDhcpServerReplyMaxTime   OBJECT-TYPE
+       SYNTAX       Integer32(1..60)
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "
+          In dhcp server backup mode,the longest time allowed of DHCP server reply.
+          "
+       DEFVAL { 1 }
+   ::= { hwDhcpMibObject 24 }
+    
+     hwDhcpServerReplyOvertimeMaxTimes   OBJECT-TYPE
+       SYNTAX       Integer32(1..255)
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "
+          In dhcp server backup mode,the max times allowed of DHCP server reply timeout.
+          "
+       DEFVAL { 1 }
+   ::= { hwDhcpMibObject 25 }
+
+   --  -------------------------------------------------------------------------   
+   -- DHCP Pmode Suboption 81-8e, 90选项
+   -- -------------------------------------------------------------------------       
+   hwDhcpSuboptionTable OBJECT-TYPE
+   	SYNTAX SEQUENCE OF HwDhcpSuboptionEntry
+   	MAX-ACCESS not-accessible
+   	STATUS current
+   	DESCRIPTION
+   		"
+   		DHCP suboption table.
+   	        "
+   	::= { hwDhcpMibObject 26 }
+   
+   hwDhcpSuboptionEntry OBJECT-TYPE
+   	SYNTAX HwDhcpSuboptionEntry
+   	MAX-ACCESS not-accessible
+   	STATUS current
+   	DESCRIPTION
+   		"
+   		DHCP suboption entry.
+   		"
+   	INDEX { hwDhcpSuboptionIndex }
+   	::= { hwDhcpSuboptionTable 1 }
+   
+   HwDhcpSuboptionEntry ::=
+   	SEQUENCE { 
+   		hwDhcpSuboptionIndex
+   			Integer32,
+   		hwDhcpSuboptionStatus
+   			TruthValue
+   	 }
+   
+   hwDhcpSuboptionIndex OBJECT-TYPE
+   	SYNTAX Integer32 (1..15)
+   	MAX-ACCESS read-only
+   	STATUS current
+   	DESCRIPTION
+   		"
+   		the index of DHCP suboption:
+   		    ——index 1 stand for suboption 0x81;
+   		    ——index 2 stand for suboption 0x82;
+   		    ——index 3 stand for suboption 0x83;
+   		    ——index 4 stand for suboption 0x84;
+   		    ——index 5 stand for suboption 0x85;
+   		    ——index 6 stand for suboption 0x86;
+   		    ——index 7 stand for suboption 0x87;
+   		    ——index 8 stand for suboption 0x88;
+   		    ——index 9 stand for suboption 0x89;
+   		    ——index 10 stand for suboption 0x8a;
+   		    ——index 11 stand for suboption 0x8b;
+   		    ——index 12 stand for suboption 0x8c;
+   		    ——index 13 stand for suboption 0x8d;
+   		    ——index 14 stand for suboption 0x8e;
+   		    ——index 15 stand for suboption 0x90;
+   		"
+   	DEFVAL { 1 }
+   	::= { hwDhcpSuboptionEntry 1 }
+   
+   hwDhcpSuboptionStatus OBJECT-TYPE
+   	SYNTAX TruthValue
+   	MAX-ACCESS read-write
+   	STATUS current
+   	DESCRIPTION
+   		"
+   		the configuration of DHCP suboption: true(enable)/false(disable),the default is false..
+   		"
+           DEFVAL { 1 }
+   	::= { hwDhcpSuboptionEntry 2 }
+   
+   
+	END
+

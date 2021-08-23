@@ -1,0 +1,9 @@
+---
+- name: restart snmptrapd
+  service:
+    name: snmptrapd
+    state: restarted
+
+- name: reload daemon
+  service:
+    daemon_reload: true

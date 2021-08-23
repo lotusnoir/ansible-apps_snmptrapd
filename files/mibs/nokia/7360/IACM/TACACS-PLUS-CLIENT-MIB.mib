@@ -1,0 +1,2448 @@
+-- =========================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance
+--  information contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any
+--  manufacturer to modify or change any of its products, nor does this
+--  document represent any commitment by Alcatel to sell or purchase any
+--  product. Nothing contained herein shall be construed as conferring by
+--  implication, estoppel, or otherwise any license or right under any 
+--  patent, whether or not the use of any information herein necessarily
+--  employs an invention of any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products 
+--  and to withdraw any or all of them at any future time.
+--  Copyright (C) 2004, Alcatel. All Rights Reserved.
+-- =========================================================================
+
+TACACS-PLUS-CLIENT-MIB DEFINITIONS ::= BEGIN
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED 20140710
+--  ORGANIZATION "Alcatel-Lucent"
+--  CONTACT-INFO
+--
+--          Email:  asam.mibsupport@alcatel-lucent.com"
+--
+--  DESCRIPTION  MIB of TACACS+ Client engine
+--  
+--  REVISION 2014071010000Z
+--  DESCRIPTION
+--         Rersion 
+--         Editor: YIJUN XU
+--         Changes:  
+--
+-- =========================================================================
+
+IMPORTS
+
+    TimeTicks, Counter, Gauge
+        FROM RFC1155-SMI
+    OBJECT-TYPE
+        FROM RFC-1212
+    asam
+        FROM SYSTEM-MIB
+    RowStatus, TruthValue
+	FROM SNMPv2-TC
+    InetAddress, InetAddressType, InetPortNumber
+        FROM INET-ADDRESS-MIB
+    DisplayString
+        FROM RFC1213-MIB;
+
+aaaMIB  OBJECT IDENTIFIER ::= { asam 42 }
+
+tacacsPlusClientMIB   OBJECT IDENTIFIER ::= { aaaMIB 4 }
+
+-- Textual conventions
+
+TacacsPlusTimeout   ::= INTEGER (1..2147483647)
+
+TacacsPlusDeadInterval   ::= INTEGER (0..2147483647)
+
+TacacsRouterIndex   ::= INTEGER (0..2147483647)
+
+tacAuthenServerGetNextFreeIndex  OBJECT-TYPE
+      SYNTAX  INTEGER
+      ACCESS  read-only
+      STATUS  mandatory
+      DESCRIPTION
+         "The next Free Index value that can be used for creating
+         a new entry in the TACACS+ Authentication Server Table.
+         This object contains an appropriate value to be used for 
+         tacAuthenServerIndex when creating entries in the tacAuthenServerTable. 
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the tacAuthenServerIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current-value of this object. After each retrieval, the agent should
+         modify the value to the next unassigned index.
+         Introduced in ISR5.2, to be supported in ISR5.2.01.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	RANGE(0..256)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            DESCR:	NA"
+    ::= { tacacsPlusClientMIB 1 }
+
+tacAuthorServerGetNextFreeIndex  OBJECT-TYPE
+      SYNTAX  INTEGER
+      ACCESS  read-only
+      STATUS  mandatory
+      DESCRIPTION
+         "The next Free Index value that can be used for creating
+         a new entry in the TACACS+ Authorization Server Table.
+         This object contains an appropriate value to be used for 
+         tacAuthorServerIndex when creating entries in the tacAuthorServerTable. 
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the tacAuthorServerIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current-value of this object. After each retrieval, the agent should
+         modify the value to the next unassigned index.
+         Introduced in ISR5.2, to be supported in ISR5.2.01.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	RANGE(0..256)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            DESCR:	NA"
+      ::= { tacacsPlusClientMIB 2 }
+
+tacAccServerGetNextFreeIndex  OBJECT-TYPE
+      SYNTAX  INTEGER
+      ACCESS  read-only
+      STATUS  mandatory
+      DESCRIPTION
+         "The next Free Index value that can be used for creating
+         a new entry in the TACACS+ Accounting Server Table.
+         This object contains an appropriate value to be used for 
+         tacAccServerIndex when creating entries in the tacAccServerTable. 
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the tacAccServerIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current-value of this object. After each retrieval, the agent should
+         modify the value to the next unassigned index.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	RANGE(0..256)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            DESCR:	NA"
+      ::= { tacacsPlusClientMIB 3 }  
+      
+tacPolicyGetNextFreeIndex OBJECT-TYPE
+      SYNTAX    INTEGER
+      ACCESS    read-only
+      STATUS    mandatory
+      DESCRIPTION
+         "The next Free Index value that can be used for creating
+	 a new entry in the TACACS+ Policy Table.
+         This object contains an appropriate value to be used for 
+         tacPolicyIndex when creating entries in the tacPolicyTable. 
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the tacPolicyIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current-value of this object. After each retrieval, the agent should
+         modify the value to the next unassigned index.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	RANGE(0..128)
+            DEFVALUE: 	NA
+            UNITS:	NA  
+            DESCR:	NA"
+      ::= { tacacsPlusClientMIB 4 }
+
+--=============================================================================   
+-- Start of tacAuthenServerTable
+
+tacAuthenServerTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF TacAuthenServerEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The (conceptual) table listing the TACACS+ authentication
+         servers with its configurable parameters.
+         If a entry (server) has to be deleted, then it must not be
+         associated with any tacacs+ Policy. If so, the deletion is
+         not allowed.
+         Introduced in ISR5.2, to be supported in ISR5.2.01.
+         ALCATEL NOTE :
+            TABLESIZE : 256 
+            DESCR     : NA"
+      ::= { tacacsPlusClientMIB 5 }
+
+tacAuthenServerEntry OBJECT-TYPE
+      SYNTAX     TacAuthenServerEntry
+      ACCESS	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing the configuration 
+         of a TACACS+ authentication server."
+      INDEX { tacAuthenServerIndex }
+      ::= { tacAuthenServerTable 1 }
+
+TacAuthenServerEntry ::= SEQUENCE {
+      tacAuthenServerIndex          INTEGER,
+      tacAuthenServerName           DisplayString,
+      tacAuthenServerVrfIndex	    TacacsRouterIndex,
+      tacAuthenServerAddrType       InetAddressType,
+      tacAuthenServerAddress	    InetAddress,
+      tacAuthenServerPort  	    InetPortNumber,
+      tacAuthenServerMode           INTEGER,
+      tacAuthenServerSecret	    DisplayString,
+      tacAuthenServerTimeoutLimit   TacacsPlusTimeout,
+      tacAuthenServerAdminState	    INTEGER,
+      tacAuthenServerOperState	    INTEGER,
+      tacAuthenServerDeadInterval   TacacsPlusDeadInterval,
+      tacAuthenServerRowStatus	    RowStatus
+      }
+
+tacAuthenServerIndex	 OBJECT-TYPE
+      SYNTAX		INTEGER
+      ACCESS		not-accessible
+      STATUS		mandatory
+      DESCRIPTION
+         "Index used to uniquely identify an entry in this table.
+         ALCATEL NOTE :
+            ACCESS:     NA / INDEX
+            USAGE:      NA
+            PERSIST:  	YES
+            INSRVMOD: 	NA
+            RANGE:	RANGE(1..256)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerEntry 1 }
+
+tacAuthenServerName	 OBJECT-TYPE
+      SYNTAX		DisplayString (SIZE (1..64))
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+         "The Name associated with this Tacacs Authentication Server Entry. It should be  
+         unique among the different Authentication Servers configured.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	NO
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerEntry 2 }
+
+tacAuthenServerVrfIndex	 OBJECT-TYPE
+      SYNTAX		TacacsRouterIndex
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "The tacAuthenServerVrfIndex to which this TACACS+ Authentication server belongs.
+         In case of NE with SHUB, this is the Vrf. 
+         In case of NE with IHUB, this is the Service Id of the VPRN or the base router when 0.
+         Only base router supported in ISR5.2. 
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	NO
+            RANGE:      DEP (1..127) in case of NE with SHUB,
+                        (0..2147483647) in case of NE with IHUB
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerEntry 3 }
+
+tacAuthenServerAddrType  OBJECT-TYPE
+      SYNTAX		InetAddressType
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+         " A value representing the type of Internet Address.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	NO
+            RANGE:	NA
+            DEFVALUE: 	1(ipv4)
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerEntry 4 }
+
+tacAuthenServerAddress          OBJECT-TYPE
+      SYNTAX		InetAddress
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+         "The IP address of this TACACS+ Authentication server. The Type of 
+         this Ip Address (IPv4/Ipv6/...) is determined by the value of the 
+         object tacAuthenServerAddrType.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      NA
+            DEFVALUE: 	NA
+            UNITS:	NA
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerEntry 5 }
+
+tacAuthenServerPort OBJECT-TYPE
+      SYNTAX            InetPortNumber
+      ACCESS            read-write
+      STATUS            mandatory
+      DESCRIPTION
+	 "The TCP port number to/from server as TACACS+ authentication messages is sent/received 
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      RANGE(0..65535)
+            DEFVALUE: 	49
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      DEFVAL  {49}
+      ::= { tacAuthenServerEntry 6 }
+
+tacAuthenServerMode OBJECT-TYPE
+      SYNTAX            INTEGER {
+                           ascii (1),
+                           pap (2),
+                           chap (3)
+                        }  
+      ACCESS            read-write
+      STATUS            mandatory
+      DESCRIPTION
+         "The TACACS+ authentication mode.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      NA
+            DEFVALUE: 	ascii (1)
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      DEFVAL  {1}
+      ::= { tacAuthenServerEntry 7 }
+	  
+tacAuthenServerSecret OBJECT-TYPE
+      SYNTAX		DisplayString (SIZE (6..64))
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "The secret used in encrypting the packets passed between the TACACS+ 
+	 authentication server and the client.
+         For security reasons, the secret wont be displayed to the users.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerEntry 8 }
+
+tacAuthenServerTimeoutLimit OBJECT-TYPE
+      SYNTAX		TacacsPlusTimeout
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "This is the time of waiting for response from server after TACACS+ 
+         authentication message is sent.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      RANGE(1..60)
+            DEFVALUE: 	5
+            UNITS:	time in seconds 
+            SPARSE:	NO 
+            DESCR:	NA"
+      DEFVAL  {5}
+      ::= { tacAuthenServerEntry 9 }
+
+tacAuthenServerAdminState OBJECT-TYPE
+      SYNTAX		INTEGER {
+                           up(1),
+                           down(2)
+                        }  
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "The Administrative State of the TACACS+ Authentication Server.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      NA
+            DEFVALUE:   up
+            UNITS:	NA
+            SPARSE:	NO 
+            DESCR:	NA"
+      DEFVAL  { up }
+      ::= { tacAuthenServerEntry 10 }
+
+tacAuthenServerOperState  OBJECT-TYPE
+      SYNTAX		INTEGER {
+                           up(1),
+                           down(2),
+  	                   unknown(3)
+                        }
+      ACCESS		read-only
+      STATUS		mandatory
+      DESCRIPTION
+	 "The Operational State of the TACACS+ Authentication Server.
+         Initially the oper state of a server is in unknown. When
+         the first user authenticates using this server and if 
+         a reply is received, then the state of this server is
+         moved to up state. When the server doesnt get a response 
+         and goes to down state then the deadinterval timer is 
+         started and when it expires, the state again moves to
+         unknown. When a user has to be authenticated using this
+         server, then the state goes to up state after receiving
+         a reply from this server.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:      NA
+            DEFVALUE: 	NA
+            UNITS:	NA
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerEntry 11 }
+
+tacAuthenServerDeadInterval     OBJECT-TYPE
+      SYNTAX		TacacsPlusDeadInterval
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "Indicates the number of seconds before setting the operational state
+	 of this authentication server to unknown from down state. A write to this 
+         object will immediately trigger the above mentioned action. If this Interval 
+         is set to zero, then the dead interval timer won't be started.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      RANGE(0..3600)
+            DEFVALUE: 	600
+            UNITS:	in seconds 
+            SPARSE:	NO 
+            DESCR:	NA"
+      DEFVAL  {600}
+      ::= { tacAuthenServerEntry 12 }
+
+tacAuthenServerRowStatus       OBJECT-TYPE
+      SYNTAX		RowStatus
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+         "This is used for Row creation/Deletion.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      1,4,6
+            DEFVALUE: 	NA
+            UNITS:	NA
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerEntry 13 }
+
+-- End of tacAuthenServerTable
+
+
+-- Start of tacAuthenServerMappingTable
+
+tacAuthenServerMappingTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF TacAuthenServerMappingEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The (conceptual) table is a Mapping Table listing the TACACS+
+         Authentication Server Names within a Vrf with their equivalent TACACS+ 
+         Authentication Server Index used in the TACACS+ Authentication Server Table.
+	 This is a Read-Only Table and for each entry in the TACACS+ Authentication
+         Server Table, an corresponding entry is created in this table.
+         Introduced in ISR5.2, to be supported in ISR5.2.01
+         ALCATEL NOTE :
+            TABLESIZE : DEP on the number of rows in the tacAuthenServerTable 
+            DESCR : NA"     
+      ::= { tacacsPlusClientMIB 6 }
+
+tacAuthenServerMappingEntry OBJECT-TYPE
+      SYNTAX     TacAuthenServerMappingEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing the TACACS+ Authentication Server Name
+         (Within a Vrf) to Index Mapping."
+      INDEX      { tacAuthenServerMappingVrf, tacAuthenServerMappingName }
+      ::= { tacAuthenServerMappingTable 1 }
+
+TacAuthenServerMappingEntry ::= SEQUENCE {
+      tacAuthenServerMappingVrf				TacacsRouterIndex,
+      tacAuthenServerMappingName			DisplayString,
+      tacAuthenServerMappingIndex			INTEGER
+      }
+
+tacAuthenServerMappingVrf OBJECT-TYPE
+      SYNTAX     TacacsRouterIndex
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The tacAuthenServerMappingVrf to which the TACACS+ Authentication Server belongs.
+         In case of NE with SHUB, this is the Vrf. 
+         In case of NE with IHUB, this is the Service Id of the VPRN or the base router when 0.
+         Only base router supported in ISR5.2. 
+         ALCATEL NOTE :
+            ACCESS:     NA / INDEX
+            USAGE:      NA
+            PERSIST:  	YES
+            INSRVMOD: 	NA
+            RANGE:	DEP (1..127) in case of NE with SHUB,
+                        (0..2147483647) in case of NE with IHUB
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerMappingEntry 1 }
+
+tacAuthenServerMappingName OBJECT-TYPE
+      SYNTAX     DisplayString (SIZE (1..64))
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "A name uniquely identifying a TACACS+ Authentication Server.
+         ALCATEL NOTE :
+            ACCESS:     NA / INDEX
+            USAGE:      NA
+            PERSIST:  	YES
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerMappingEntry 2 }
+
+tacAuthenServerMappingIndex OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS 	 read-only
+      STATUS     mandatory
+      DESCRIPTION
+         "The corresponding Index associated with this Name.
+          ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	RANGE(1..256)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerMappingEntry 3 }
+
+-- End of tacAuthenServerMappingTable
+
+--=============================================================================
+-- Start of  tacAuthorServerTable
+
+tacAuthorServerTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF TacAuthorServerEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The (conceptual) table listing the TACACS+ authorization
+         servers with its configurable parameters.
+         If a entry (server) has to be deleted, then it must not be
+         associated with any tacacs+ Policy. If so, the deletion is
+         not allowed. 
+         Introduced in ISR5.2, but to be supported in ISR5.2.01.
+         ALCATEL NOTE :
+            TABLESIZE : 256 
+            DESCR     : NA"
+      ::= { tacacsPlusClientMIB 7 }
+
+tacAuthorServerEntry OBJECT-TYPE
+      SYNTAX     TacAuthorServerEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing the configuration 
+         of a TACACS+ authorization server."
+      INDEX { tacAuthorServerIndex }
+      ::= { tacAuthorServerTable 1 }
+
+TacAuthorServerEntry ::= SEQUENCE {
+      tacAuthorServerIndex 	   INTEGER,
+      tacAuthorServerName           DisplayString,
+      tacAuthorServerVrfIndex	    TacacsRouterIndex,
+      tacAuthorServerAddrType	    InetAddressType,
+      tacAuthorServerAddress	    InetAddress,
+      tacAuthorServerPort   	    InetPortNumber,
+      tacAuthorServerSecret	    DisplayString,
+      tacAuthorServerTimeoutLimit   TacacsPlusTimeout,
+      tacAuthorServerAdminState     INTEGER,
+      tacAuthorServerOperState      INTEGER,
+      tacAuthorServerDeadInterval   TacacsPlusDeadInterval,
+      tacAuthorServerRowStatus	    RowStatus
+      }
+
+tacAuthorServerIndex     OBJECT-TYPE
+      SYNTAX		INTEGER
+      ACCESS		not-accessible
+      STATUS		mandatory
+      DESCRIPTION
+         "Index used to uniquely identify an entry in this table.
+         ALCATEL NOTE:
+            ACCESS:     NA / INDEX
+            USAGE:      NA
+            PERSIST:  	YES
+            INSRVMOD: 	NA
+            RANGE:	RANGE(1..256)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerEntry 1 }
+
+tacAuthorServerName     OBJECT-TYPE
+      SYNTAX		DisplayString (SIZE (1..64))
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+         "A name uniquely identifying a TACACS+ Authorization Server within a Vrf. It 
+         should be unique among the different Authorization Servers configured.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	NO
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerEntry 2 }
+
+tacAuthorServerVrfIndex     OBJECT-TYPE
+      SYNTAX		TacacsRouterIndex
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+         "The tacAuthorServerVrfIndex to which the TACACS+ authorization server belongs.
+         In case of NE with SHUB, this is the Vrf. 
+         In case of NE with IHUB, this is the Service Id of the VPRN or the base router when 0.
+         Only base router supported in ISR5.2. 
+         ALCATEL NOTE
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	NO
+            RANGE:	DEP (1..127) in case of NE with SHUB,
+                        (0..2147483647) in case of NE with IHUB
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerEntry 3 }
+
+tacAuthorServerAddrType        OBJECT-TYPE
+      SYNTAX		InetAddressType
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "A value representing the type of Internet Address.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	NO
+            RANGE:	NA
+            DEFVALUE: 	1(ipv4)
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerEntry 4 }
+
+tacAuthorServerAddress        OBJECT-TYPE
+      SYNTAX		InetAddress
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "The IP address of this TACACS+ authorization Server. The Type of 
+         this Ip Address (IPv4/Ipv6/...) is determined by the value of the 
+         object tacAuthorServerAddrType.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerEntry 5 }
+
+tacAuthorServerPort OBJECT-TYPE
+      SYNTAX		InetPortNumber
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "The TCP port number to/from server as TACACS+ authorization messages is sent/received.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      RANGE(0..65535)
+            DEFVALUE: 	49
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      DEFVAL  {49}
+      ::= { tacAuthorServerEntry 6 }
+
+tacAuthorServerSecret   OBJECT-TYPE
+      SYNTAX		DisplayString (SIZE (6..64))
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "The secret used in encrypting the packets passed between the TACACS+ 
+	 authorization server and the client.
+         For security reasons, the secret wont be displayed to the users.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerEntry 7 }
+
+tacAuthorServerTimeoutLimit     OBJECT-TYPE
+      SYNTAX		TacacsPlusTimeout
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "This is the time of waiting for response from server after TACACS+ 
+         authorization message is sent.
+         ALCATEL NOTE:
+             ACCESS:     NA
+             USAGE:     OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:     RANGE(1..60)
+             DEFVALUE: 	5
+             UNITS:	time in seconds 
+             SPARSE:	NO 
+             DESCR:	NA"
+      DEFVAL  {5}
+      ::= { tacAuthorServerEntry 8 }
+
+tacAuthorServerAdminState       OBJECT-TYPE
+      SYNTAX		INTEGER {
+                       	   up(1),
+                           down(2)
+                        }
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "The Administrative State of the TACACS+ authorization Server.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      NA
+            DEFVALUE: 	up
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      DEFVAL  { up }
+      ::= { tacAuthorServerEntry 9 }
+
+tacAuthorServerOperState        OBJECT-TYPE
+      SYNTAX		INTEGER {
+                          up(1),
+                          down(2),
+	                  unknown(3)
+                        }
+      ACCESS		read-only
+      STATUS		mandatory
+      DESCRIPTION
+	 "The Operational State of the TACACS+ authorization Server.
+         Initially the oper state of a server is unknown. When
+         the first user sends authorization request to this server
+         and if a reply is received, then the state of this server is
+         moved to up state. When the server doesn't get a response 
+         and goes to down state then the dead-interval timer is 
+         started and when it expires, the state again moves to
+         unknown. When a user has to be ccounted using this
+         server, then the state goes to up state after receiving
+         a reply from this server.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:      NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerEntry 10 }
+
+tacAuthorServerDeadInterval     OBJECT-TYPE
+      SYNTAX		TacacsPlusDeadInterval
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "Indicates the number of seconds before setting the operational state
+         of this authorization server to unknown state from down state. A write 
+         to this object will immediately trigger the above mentioned action. 
+         If this Interval is set to zero, then the dead interval timer won't be started.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      RANGE(0..3600)
+            DEFVALUE: 	600
+            UNITS:	number of seconds 
+            SPARSE:	NO 
+            DESCR:	NA"
+      DEFVAL  {600}
+      ::= { tacAuthorServerEntry 11 }
+
+tacAuthorServerRowStatus        OBJECT-TYPE
+      SYNTAX		RowStatus
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "This is used for Row creation/Deletion.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      1,4,6
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA" 
+      ::= { tacAuthorServerEntry 12 }
+
+-- End of tacAuthorServerTable
+
+-- Start of tacAuthorServerMappingTable
+
+tacAuthorServerMappingTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF TacAuthorServerMappingEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The (conceptual) table ia a Mapping Table listing the TACACS+
+         Authorization Server Names within a Vrf with their equivalent TACACS+ 
+         Authorization Server Index used in the TACACS+ Authorization Server Table.
+	 This is a Read-Only Table and for each entry in the TACACS+ Authorization
+         Server Table, an corresponding entry is created in this table.
+         Introduced in ISR5.2, but to be supported in ISR5.2.01
+         ALCATEL NOTE :
+            TABLESIZE : DEP on number of rows in tacAuthorServerTable
+            DESCR     : NA"             
+      ::= { tacacsPlusClientMIB 8 }
+
+tacAuthorServerMappingEntry OBJECT-TYPE
+      SYNTAX     TacAuthorServerMappingEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing the TACACS+ Authorization Server Name
+         (Within a Vrf) to Index Mapping."
+      INDEX      { tacAuthorServerMappingVrf, tacAuthorServerMappingName }
+      ::= { tacAuthorServerMappingTable 1 }
+
+TacAuthorServerMappingEntry ::= SEQUENCE {
+      tacAuthorServerMappingVrf				TacacsRouterIndex,
+      tacAuthorServerMappingName			DisplayString,
+      tacAuthorServerMappingIndex			INTEGER
+      }
+
+tacAuthorServerMappingVrf OBJECT-TYPE
+      SYNTAX     TacacsRouterIndex
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The tacAuthorServerVrfIndex to which the TACACS+ Authorization Server belongs. 
+         In case of NE with SHUB, this is the Vrf. 
+         In case of NE with IHUB, this is the Service Id of the VPRN or the base router when 0.
+         Only base router supported in ISR5.2. 
+         ALCATEL NOTE:
+            ACCESS:     NA / INDEX
+            USAGE:      NA
+            PERSIST:  	YES
+            INSRVMOD: 	NA
+            RANGE:      DEP (1..127) in case of NE with SHUB,
+                        (0..2147483647) in case of NE with IHUB
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerMappingEntry 1 }
+
+tacAuthorServerMappingName OBJECT-TYPE
+      SYNTAX     DisplayString (SIZE (1..64))
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "A name uniquely identifying a TACACS+ Authorization Server.
+         ALCATEL NOTE:
+            ACCESS:     NA / INDEX
+            USAGE:      NA
+            PERSIST:  	YES
+            INSRVMOD: 	NA
+            RANGE:      NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerMappingEntry 2 }
+
+tacAuthorServerMappingIndex OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS 	 read-only
+      STATUS     mandatory
+      DESCRIPTION
+         "The corresponding Index associated with this Name.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:      NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerMappingEntry 3 }
+
+-- End of tacAuthorServerMappingTable
+
+--=============================================================================
+-- Start of  TacAccServerTable
+
+tacAccServerTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF TacAccServerEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The (conceptual) table listing the TACACS+ accounting
+         servers with its configurable parameters.
+         If a entry (server) has to be deleted, then it must not be
+         associated with any tacacs+ Policy. If so, the deletion is
+         not allowed. 
+         ALCATEL NOTE :
+            TABLESIZE : 256 
+            DESCR     : NA"
+      ::= { tacacsPlusClientMIB 9 }
+
+tacAccServerEntry OBJECT-TYPE
+      SYNTAX     TacAccServerEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing the configuration 
+         of a TACACS+ accounting server."
+      INDEX { tacAccServerIndex }
+      ::= { tacAccServerTable 1 }
+
+TacAccServerEntry ::=
+    SEQUENCE {
+      tacAccServerIndex 		INTEGER,
+      tacAccServerName                  DisplayString,
+      tacAccServerVrfIndex		TacacsRouterIndex,
+      tacAccServerAddrType		InetAddressType,
+      tacAccServerAddress		InetAddress,
+      tacAccServerPort   		InetPortNumber,
+      tacAccServerSecret	        DisplayString,
+      tacAccServerTimeoutLimit		TacacsPlusTimeout,
+      tacAccServerAdminState         	INTEGER,
+      tacAccServerOperState		INTEGER,
+      tacAccServerDeadInterval	    	TacacsPlusDeadInterval,
+      tacAccServerRowStatus		RowStatus
+      }
+
+tacAccServerIndex     OBJECT-TYPE
+      SYNTAX		INTEGER
+      ACCESS		not-accessible
+      STATUS		mandatory
+      DESCRIPTION
+         "Index used to uniquely identify an entry in this table.
+         ALCATEL NOTE :
+            ACCESS:     NA / INDEX
+            USAGE:      NA
+            PERSIST:  	YES
+            INSRVMOD: 	NA
+            RANGE:	RANGE(1..256)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerEntry 1 }
+
+tacAccServerName     OBJECT-TYPE
+      SYNTAX		DisplayString (SIZE (1..64))
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+         "A name uniquely identifying a TACACS+ Accounting Server within a Vrf. It 
+         should be unique among the different Accounting Servers configured.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	NO
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerEntry 2 }
+
+tacAccServerVrfIndex     OBJECT-TYPE
+      SYNTAX		TacacsRouterIndex
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "The tacAccServerVrfIndex to which the TACACS+ Accounting server belongs. 
+         In case of NE with SHUB, this is the Vrf. 
+         In case of NE with IHUB, this is the Service Id of the VPRN or the base router when 0.
+         Only base router supported in ISR5.2. 
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	NO
+            RANGE:	DEP (1..127) in case of NE with SHUB,
+                        (0..2147483647) in case of NE with IHUB
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerEntry 3 }
+
+tacAccServerAddrType        OBJECT-TYPE
+      SYNTAX		InetAddressType
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 " A value representing the type of Internet Address.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	NO
+            RANGE:	NA
+            DEFVALUE: 	1(ipv4)
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerEntry 4 }
+
+tacAccServerAddress        OBJECT-TYPE
+      SYNTAX		InetAddress
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+          "The IP address of this TACACS+ Accounting Server. The Type of 
+          this Ip Address (IPv4/Ipv6/...) is determined by the value of the 
+          object tacAccServerAddrType.
+          ALCATEL NOTE:
+             ACCESS:     NA
+             USAGE:     MAND
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:     NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA"
+      ::= { tacAccServerEntry 5 }
+
+tacAccServerPort OBJECT-TYPE
+      SYNTAX		InetPortNumber
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	  "The TCP port number to/from server as TACACS+ accounting messages is sent/received 
+          ALCATEL NOTE:
+             ACCESS:     NA
+             USAGE:     OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:     RANGE(0..65535)
+             DEFVALUE: 	49
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA"
+      DEFVAL  {49}
+      ::= { tacAccServerEntry 6 }
+
+tacAccServerSecret   OBJECT-TYPE
+      SYNTAX		DisplayString (SIZE (6..64))
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	  "The secret used in encrypting the packets passed between the TACACS+ 
+	  accounting server and the client.
+          For security reasons, the secret wont be displayed to the users.
+          ALCATEL NOTE:
+             ACCESS:     NA
+             USAGE:     MAND
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:     NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA"
+      ::= { tacAccServerEntry 7 }
+
+tacAccServerTimeoutLimit     OBJECT-TYPE
+      SYNTAX		TacacsPlusTimeout
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	  "This is the time of waiting for response from server after TACACS+ accounting
+          message is sent.
+          ALCATEL NOTE:
+             ACCESS:     NA
+             USAGE:     OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:     RANGE(1..60)
+             DEFVALUE: 	5
+             UNITS:	time in seconds 
+             SPARSE:	NO 
+             DESCR:	NA"
+	  DEFVAL  {5}
+      ::= { tacAccServerEntry 8 }
+
+tacAccServerAdminState       OBJECT-TYPE
+      SYNTAX		INTEGER {
+                       	            up(1),
+                                    down(2)
+                                }
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+          "The Administrative State of the TACACS+ Accounting Server.
+          ALCATEL NOTE:
+             ACCESS:     NA
+             USAGE:     OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:     NA
+             DEFVALUE: 	up
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA"
+	  DEFVAL  { up }
+      ::= { tacAccServerEntry 9 }
+
+tacAccServerOperState        OBJECT-TYPE
+      SYNTAX		INTEGER {
+                                    up(1),
+                                    down(2),
+				    unknown(3)
+                                }
+      ACCESS		read-only
+      STATUS		mandatory
+      DESCRIPTION
+	    "The Operational State of the TACACS+ Accounting Server.
+            Initially the oper state of a accounting server is unknown. When
+            the first user sends accounting request to this server
+            and if a reply is received, then the state of this server is
+            moved to up state. When the server doesn't get a response 
+            and goes to down state then the dead-interval timer is 
+            started and when it expires, the state again moves to
+            unknown. When a user has to be ccounted using this
+            server, then the state goes to up state after receiving
+            a reply from this server.
+          ALCATEL NOTE:
+             ACCESS:     NA
+             USAGE:     NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:     NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA"
+      ::= { tacAccServerEntry 10 }
+
+tacAccServerDeadInterval     OBJECT-TYPE
+      SYNTAX		TacacsPlusDeadInterval
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	  "Indicates the number of seconds before setting the operational state
+          of this TACACS+ accounting server to unknown state from down state. A 
+          write to this object will immediately trigger the above mentioned action. 
+          If this Interval is set to zero, then the dead interval timer won't be started.
+          ALCATEL NOTE:
+             ACCESS:     NA
+             USAGE:     OPT
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:     RANGE(0..3600)
+             DEFVALUE: 	600
+             UNITS:	number of seconds 
+             SPARSE:	NO 
+             DESCR:	NA"
+      DEFVAL  {600}
+::= { tacAccServerEntry 11 }
+
+tacAccServerRowStatus        OBJECT-TYPE
+      SYNTAX		RowStatus
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	  "This is used for Row creation/Deletion.
+          ALCATEL NOTE:
+             ACCESS:     NA
+             USAGE:     MAND
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:     1,4,6
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA" 
+      ::= { tacAccServerEntry 12 }
+
+-- End of tacAccServerTable
+
+-- Start of tacAccServerMappingTable
+
+tacAccServerMappingTable OBJECT-TYPE
+      SYNTAX	SEQUENCE OF TacAccServerMappingEntry
+      ACCESS	not-accessible
+      STATUS	mandatory
+      DESCRIPTION
+            "The (conceptual) table ia a Mapping Table listing the TACACS+
+            Accounting Server Names within a Vrf with their equivalent TACACS+ 
+            Accounting Server Index used in the TACACS+ Accounting Server Table.
+	    This is a Read-Only Table and for each entry in the TACACS+ Accounting
+            Server Table, an corresponding entry is created in this table.
+            ALCATEL NOTE :
+              TABLESIZE  : DEP on number of rows in tacAccServerTable
+              DESCR      : NA"             
+      ::= { tacacsPlusClientMIB 10 }
+
+tacAccServerMappingEntry OBJECT-TYPE
+      SYNTAX     TacAccServerMappingEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+            "An entry (conceptual row) representing the TACACS+ Accounting Server Name
+            (Within a Vrf) to Index Mapping."
+      INDEX      { tacAccServerMappingVrf, tacAccServerMappingName }
+      ::= { tacAccServerMappingTable 1 }
+
+TacAccServerMappingEntry ::= SEQUENCE {
+	  tacAccServerMappingVrf				TacacsRouterIndex,
+	  tacAccServerMappingName				DisplayString,
+	  tacAccServerMappingIndex				INTEGER
+    }
+
+tacAccServerMappingVrf OBJECT-TYPE
+      SYNTAX     TacacsRouterIndex
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The TacacsRouterIndex to which the TACACS+ Accounting Server belongs. 
+         In case of NE with SHUB, this is the Vrf. 
+         In case of NE with IHUB, this is the Service Id of the VPRN or the base router when 0.
+         Only base router supported in ISR5.2. 
+         ALCATEL NOTE:
+             ACCESS:    NA / INDEX
+             USAGE:     NA
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:     DEP (1..127) in case of NE with SHUB,
+                        (0..2147483647) in case of NE with IHUB
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA"
+      ::= { tacAccServerMappingEntry 1 }
+
+tacAccServerMappingName OBJECT-TYPE
+      SYNTAX     DisplayString (SIZE (1..64))
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+          "A name uniquely identifying a TACACS+ Accounting Server.
+          ALCATEL NOTE:
+             ACCESS:    NA / INDEX
+             USAGE:     NA
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:     NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA"
+      ::= { tacAccServerMappingEntry 2 }
+
+tacAccServerMappingIndex OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS 	 read-only
+      STATUS     mandatory
+      DESCRIPTION
+          "The corresponding Index associated with this Name.
+          ALCATEL NOTE:
+             ACCESS:    NA
+             USAGE:     NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:     NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA"
+      ::= { tacAccServerMappingEntry 3 }
+
+-- End of tacAccServerMappingTable
+
+--=============================================================================
+-- Start of tacPolicyTable
+
+tacPolicyTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF TacPolicyEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The (conceptual) table listing the TACACS+ policies 
+         together with the parameters applicable globally for 
+         the TACACS+ policy.           
+         An entry in this table (policy) can be deleted only if it is not
+         associated with any of the domains.
+	 If a row in this table is deleted, then also the corresponding rows in
+	 the tacServerSetTable will also be deleted.
+         ALCATEL NOTE :
+            TABLESIZE : 128 
+            DESCR     : NA"
+      ::= { tacacsPlusClientMIB 11 }
+
+tacPolicyEntry OBJECT-TYPE
+      SYNTAX     TacPolicyEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing the global
+         configuration parameters of a TACACS+ policy."
+      INDEX      { tacPolicyIndex }
+      ::= { tacPolicyTable 1 }
+
+TacPolicyEntry ::= SEQUENCE {
+      tacPolicyIndex			   INTEGER,
+      tacPolicyName		           DisplayString,
+      tacPolicyRowStatus		   RowStatus
+      }
+
+tacPolicyIndex OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "Index used to uniquely identify an entry in this table.
+         ALCATEL NOTE :
+            ACCESS:     NA / INDEX
+            USAGE:      NA
+            PERSIST:  	YES
+            INSRVMOD: 	NA
+            RANGE:	RANGE(1..128)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacPolicyEntry 1 }
+
+tacPolicyName OBJECT-TYPE
+      SYNTAX     DisplayString (SIZE (1..64))
+      ACCESS 	 read-write
+      STATUS     mandatory
+      DESCRIPTION
+         "A name uniquely identifying a TACACS+ policy.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	NO
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacPolicyEntry 2 }
+
+tacPolicyRowStatus  OBJECT-TYPE
+      SYNTAX		RowStatus
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "Used for Row Creation/Deletion.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:	1,4,6
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+	 ::= { tacPolicyEntry 3 }
+
+-- End of tacPolicyTable
+
+tacPolicyMappingTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF TacPolicyMappingEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The (conceptual) table ia a Mapping Table listing the TACACS+
+         policy Names with their equivalent TACACS+ Policy Index used in 
+         the TACACS+ Policy Table.
+	 This is a Read-Only Table and for each entry in the TACACS+ 
+	 policy Table, an corresponding entry is created in this table.
+         ALCATEL NOTE :
+            TABLESIZE : DEP on number of rows in tacPolicyTable
+            DESCR     : NA"             
+      ::= { tacacsPlusClientMIB 12 }
+
+tacPolicyMappingEntry OBJECT-TYPE
+      SYNTAX     TacPolicyMappingEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing the TACACS+ Name 
+         to Index Mapping."
+      INDEX      { tacPolicyMappingName }
+      ::= { tacPolicyMappingTable 1 }
+
+TacPolicyMappingEntry ::= SEQUENCE {
+      tacPolicyMappingName		DisplayString,
+      tacPolicyMappingIndex		INTEGER
+      }
+    
+tacPolicyMappingName OBJECT-TYPE
+      SYNTAX     DisplayString (SIZE (1..64))
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "A name uniquely identifying a TACACS+ policy.
+         ALCATEL NOTE :
+            ACCESS:     NA / INDEX
+            USAGE:      NA
+            PERSIST:  	YES
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacPolicyMappingEntry 1 }
+
+tacPolicyMappingIndex OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS 	 read-only
+      STATUS     mandatory
+      DESCRIPTION
+         "The corresponding Index associated with this Name.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacPolicyMappingEntry 2 }
+
+-- End of tacPolicyMappingTable
+
+--=============================================================================
+-- Start of tacServerSetGetNextIndexTable
+
+tacServerSetGetNextIndexTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF TacServerSetGetNextIndexEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The (conceptual) table used for getting the Free Index
+         that can be used for creating a new entry in the 
+         tacServerSetTable.
+         ALCATEL NOTE :
+            TABLESIZE : 1 
+            DESCR     : NA"
+      ::= { tacacsPlusClientMIB 13 }
+
+tacServerSetGetNextIndexEntry OBJECT-TYPE
+      SYNTAX 	TacServerSetGetNextIndexEntry
+      ACCESS 	not-accessible
+      STATUS    mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing a value that
+         can be used for creating a new entry in the 
+         tacServerSetTable."
+      INDEX      { tacPolicyIndex }
+      ::= { tacServerSetGetNextIndexTable 1 }
+
+TacServerSetGetNextIndexEntry ::= SEQUENCE {
+      tacServerSetNextFreeIndex		INTEGER
+      }
+
+tacServerSetNextFreeIndex OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS     read-only
+      STATUS     mandatory
+      DESCRIPTION
+         "A unique number within a TACACS+ Policy that can
+         be used for creating a new entry in the tacServerSetTable.
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the tacServerSetIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current value of this object.  After each retrieval, the agent should
+         modify the value to the next unassigned index.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacServerSetGetNextIndexEntry 1 }
+
+-- End of tacServerSetGetNextIndexTable
+
+--Start of tacServerSetTable
+
+tacServerSetTable OBJECT-TYPE
+      SYNTAX     SEQUENCE OF TacServerSetEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "The (conceptual) table listing the set of TACACS+ servers, together
+	 with the parameters of that set. The servers that are put in a set 
+	 using this table first have to be defined in tacAuthServerTable 
+         and tacAccServerTable.
+         The value returned by the tacServerSetGetNextIndexTable is used
+         by the management station as the value for the index tacServerSetIndex,
+         while creating a new entry in this table.
+         ALCATEL NOTE :
+            TABLESIZE : DEP on the number of rows in racPolicyTable 
+            DESCR     : NA"
+      ::= { tacacsPlusClientMIB 14 }
+
+tacServerSetEntry OBJECT-TYPE
+      SYNTAX     TacServerSetEntry
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing a set of TACACS+ servers."
+      INDEX      { tacPolicyIndex, tacServerSetIndex }
+      ::= { tacServerSetTable 1 }
+
+TacServerSetEntry ::= SEQUENCE {
+      tacServerSetIndex			INTEGER,
+      tacServerSetAuthenServerIndex 	INTEGER,
+      tacServerSetAuthorServerIndex 	INTEGER,
+      tacServerSetAccServerIndex    	INTEGER,
+      tacServerSetPriority		INTEGER,
+      tacServerSetRowStatus		RowStatus
+      }
+
+tacServerSetIndex OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS 	 not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "A number uniquely identifying a set within a TACACS+ profile.
+         ALCATEL NOTE :
+            ACCESS:     NA / INDEX
+            USAGE:      NA
+            PERSIST:  	YES
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacServerSetEntry 1 }
+
+tacServerSetAuthenServerIndex        OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS 	 read-write
+      STATUS     mandatory
+      DESCRIPTION
+         "The Index of the TACACS+ authentication server 
+         defined in the tacAuthenServerTable.
+         This object is optional.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:	RANGE(1..256)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacServerSetEntry 2 }
+
+tacServerSetAuthorServerIndex        OBJECT-TYPE
+      SYNTAX     INTEGER
+      ACCESS 	 read-write
+      STATUS     mandatory
+      DESCRIPTION
+         "The Index of the TACACS+ authorization server 
+         defined in the tacAuthorServerTable.
+         This object is optional.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:	RANGE(1..256)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacServerSetEntry 3 }
+      
+tacServerSetAccServerIndex         OBJECT-TYPE
+      SYNTAX	 INTEGER
+      ACCESS 	 read-write
+      STATUS     mandatory
+      DESCRIPTION
+         "The Index of the TACACS+ accounting server 
+         defined in the tacAccServerTable. 
+         This object is optional.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:	RANGE(0..256)
+            DEFVALUE: 	0
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+	 DEFVAL {0}
+      ::= { tacServerSetEntry 4 }
+
+tacServerSetPriority         OBJECT-TYPE
+      SYNTAX     INTEGER (1..256)
+      ACCESS	 read-write
+      STATUS     mandatory
+      DESCRIPTION
+         "This object defines the priority of the set relative to the 
+         other sets defined within the same tacPolicy. Lesser the
+         Priority when this value is higher.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:	RANGE(1..256)
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacServerSetEntry 5 }
+
+ tacServerSetRowStatus       OBJECT-TYPE
+      SYNTAX     RowStatus
+      ACCESS 	 read-write
+      STATUS     mandatory
+      DESCRIPTION
+         " Used for Row Creation/Deletion.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      MAND
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:	1,4,6
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacServerSetEntry 6 }
+
+-- End of tacServerSetTable
+
+--=============================================================================
+
+tacServerStatistics   OBJECT IDENTIFIER ::= { tacacsPlusClientMIB 15 }
+
+-- Start of tacAuthenServerStatsTable
+
+tacAuthenServerStatsTable OBJECT-TYPE
+      SYNTAX  SEQUENCE OF TacAuthenServerStatsEntry
+      ACCESS  not-accessible
+      STATUS  mandatory
+      DESCRIPTION
+         "The (conceptual) table listing the TACACS+ authentication
+         server's statistics.
+         Introduced in ISR5.2, to be supported in ISR5.2.01.
+         ALCATEL NOTE :
+            TABLESIZE : DEP on the number of rows in the tacAuthenServerTable 
+            DESCR     : NA"
+      ::= { tacServerStatistics 1 }
+
+tacAuthenServerStatsEntry OBJECT-TYPE
+      SYNTAX  TacAuthenServerStatsEntry
+      ACCESS  not-accessible
+      STATUS  mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing a TACACS+
+         authentication server's statistics"
+      INDEX { tacAuthenServerIndex }
+      ::= { tacAuthenServerStatsTable 1 }
+
+
+TacAuthenServerStatsEntry ::= SEQUENCE {
+      tacAuthenClientRoundTripTime			TimeTicks,
+      tacAuthenClientStarts				Counter,
+      tacAuthenClientContinues				Counter,
+      tacAuthenClientReplies				Counter,
+      tacAuthenClientPassReplies			Counter,
+      tacAuthenClientFailReplies			Counter,
+      tacAuthenClientGetPwdReplies			Counter,
+      tacAuthenClientErrorReplies                       Counter,
+      tacAuthenClientOtherReplies			Counter,
+      tacAuthenClientTimeoutRequests			Counter,
+      tacAuthenClientMalformedResponses			Counter
+      }
+
+tacAuthenClientRoundTripTime OBJECT-TYPE
+      SYNTAX TimeTicks
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The time interval (in hundredths of a second) between
+         the most recent START/REPLAY or CONTINUE/REPLY.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerStatsEntry 1 }
+
+tacAuthenClientStarts OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authentication START packets sent
+         to this server. 
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerStatsEntry 2 }
+
+tacAuthenClientContinues OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authentication CONTINUE packets
+         sent to this server.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerStatsEntry 3 }
+
+tacAuthenClientReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authentication REPLY packets received 
+         from this server.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerStatsEntry 4 }
+
+-- TAC_PLUS_AUTHEN_STATUS_PASS
+tacAuthenClientPassReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authentication PASS REPLY packets from this  
+         server indicating authentication passed.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerStatsEntry 5 }
+
+-- TAC_PLUS_AUTHEN_STATUS_FAIL
+tacAuthenClientFailReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authentication FAIL REPLY packets from this  
+         server indicating authentication failed.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerStatsEntry 6 }
+
+-- TAC_PLUS_AUTHEN_STATUS_GETPASS
+tacAuthenClientGetPwdReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authentication GET PASSWORD REPLY packets  
+         from this server.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerStatsEntry 7 }
+       
+-- TAC_PLUS_AUTHEN_STATUS_ERROR       
+tacAuthenClientErrorReplies OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+       "The number of TACACS+ authentication ERROR REPLY packets received 
+       from this server.
+       ALCATEL NOTE :
+             ACCESS:     NA
+             USAGE:      NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA"
+    ::= { tacAuthenServerStatsEntry 8 }
+
+-- TAC_PLUS_AUTHEN_STATUS_GETDATA  
+-- TAC_PLUS_AUTHEN_STATUS_GETUSER  
+-- TAC_PLUS_AUTHEN_STATUS_RESTART  
+-- TAC_PLUS_AUTHEN_STATUS_FOLLOW   
+tacAuthenClientOtherReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ other authentication REPLY packets received 
+         from this server including GetData, GetUser, Restart or Follow 
+         message.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerStatsEntry 9 }
+
+tacAuthenClientTimeoutRequests OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authentication START or CONTINUE packets
+         destined for this server that have not yet received a reply after 
+         waiting timer expires. 
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerStatsEntry 10 }
+
+tacAuthenClientMalformedResponses OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of malformed TACACS+ authentication response packets.
+         It includes such packets with invalid length, message type, etc.
+         The number of TCP error relevant packets is excluded from this counter.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthenServerStatsEntry 11 }
+
+-- End of tacAuthenServerStatisticsTable
+
+-- Start of TacAuthorServerStatsTable
+
+tacAuthorServerStatsTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF TacAuthorServerStatsEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "The (conceptual) table listing the TACACS+ authorization
+         server's statistics.
+         Introduced in ISR5.2, to be supported in ISR5.2.01.
+         ALCATEL NOTE :
+            TABLESIZE : DEP on number of rows in tacAuthorServerTable 
+            DESCR     : NA"
+      ::= { tacServerStatistics 2 }
+
+tacAuthorServerStatsEntry OBJECT-TYPE
+      SYNTAX     TacAuthorServerStatsEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing a TACACS+
+         authorization server's statistics"
+      INDEX      { tacAuthorServerIndex }
+      ::= { tacAuthorServerStatsTable 1 }
+
+TacAuthorServerStatsEntry ::= 
+      SEQUENCE {
+	 tacAuthorClientRoundTripTime			TimeTicks,
+	 tacAuthorClientRequests 			Counter,
+	 tacAuthorClientReplies				Counter,
+	 tacAuthorClientPassReplies			Counter,
+	 tacAuthorClientFailReplies			Counter,
+	 tacAuthorClientFollowReplies			Counter,
+	 tacAuthorClientErrorReplies			Counter,
+	 tacAuthorClientTimeoutRequests			Counter,
+         tacAuthorClientMalformedResponses              Counter
+      }
+
+tacAuthorClientRoundTripTime  OBJECT-TYPE
+      SYNTAX TimeTicks
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The time interval between the most between the recent 
+         authorization REQUEST and REPLY.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerStatsEntry 1 }
+
+tacAuthorClientRequests OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authorization REQUEST packets sent. 
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerStatsEntry 2 }
+
+tacAuthorClientReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authorization REPLY packets received on the
+         authorization port from this server.
+         ALCATEL NOTE :
+             ACCESS:    NA
+             USAGE:     NA
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA 
+             SPARSE:	NO 
+             DESCR:	NA"
+      ::= { tacAuthorServerStatsEntry 3 }
+
+-- TAC_PLUS_AUTHOR_STATUS_PASS_ADD  
+-- TAC_PLUS_AUTHOR_STATUS_PASS_REPL 
+tacAuthorClientPassReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authorization PASS REPLY packets received 
+         on the authorization port from this server.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerStatsEntry 4 }
+
+-- TAC_PLUS_AUTHOR_STATUS_FAIL_REPL 
+tacAuthorClientFailReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authorization FAIL REPLY packets received 
+         on the authorization port from this server.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerStatsEntry 5 }
+
+-- TAC_PLUS_AUTHOR_STATUS_FOLLOW_REPL 
+tacAuthorClientFollowReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authorization FOLLOW REPLY packets received 
+         on the authorization port from this server.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerStatsEntry 6 }
+            
+-- TAC_PLUS_AUTHOR_STATUS_ERROR           
+tacAuthorClientErrorReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authorization ERROR REPLY packets received 
+         on the authorization port from this server. 
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerStatsEntry 7 }
+
+tacAuthorClientTimeoutRequests OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ authorization REQUEST packets
+         sent to this server that have not yet received a reply 
+         after waiting timer expires.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerStatsEntry 8 }
+
+tacAuthorClientMalformedResponses OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of malformed TACACS+ authorization response packets.
+         It includes such packets with invalid length, message type, etc.
+         The number of TCP error relevant packets is excluded from this counter.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAuthorServerStatsEntry 9 }
+
+
+-- End of TacAuthorServerStatisticsTable
+
+-- Start of TacAccServerStatsTable
+
+tacAccServerStatsTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF TacAccServerStatsEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "The (conceptual) table listing the TACACS+ accounting
+         servers with which the client shares a secret.
+         Introduced in ISR5.2, to be supported in ISR5.2.01.
+         ALCATEL NOTE :
+            TABLESIZE : DEP on number of rows in tacAccServerTable 
+            DESCR     : NA"
+      ::= { tacServerStatistics 3 }
+
+tacAccServerStatsEntry OBJECT-TYPE
+      SYNTAX     TacAccServerStatsEntry
+      ACCESS     not-accessible
+      STATUS     mandatory
+      DESCRIPTION
+         "An entry (conceptual row) representing a TACACS+
+         accounting server's statistics"
+      INDEX      { tacAccServerIndex }
+      ::= { tacAccServerStatsTable 1 }
+
+TacAccServerStatsEntry ::= 
+    SEQUENCE {
+	 tacAccClientRoundTripTime			TimeTicks,
+	 tacAccClientRequests				Counter,
+	 tacAccClientReplies				Counter,
+	 tacAccClientSuccReplies			Counter,
+	 tacAccClientErrorReplies			Counter,
+	 tacAccClientFollowReplies			Counter,
+	 tacAccClientTimeoutRequests			Counter,
+         tacAccClientMalformedResponses                 Counter
+    }
+
+tacAccClientRoundTripTime  OBJECT-TYPE
+      SYNTAX TimeTicks
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The time interval between the most between the recent 
+         accounting request and reply.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerStatsEntry 1 }
+
+tacAccClientRequests OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ accounting REQUEST packets sent. 
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerStatsEntry 2 }
+
+tacAccClientReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ REPLY accounting packets received on the
+         accounting port from this server.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerStatsEntry 3 }
+
+-- TAC_PLUS_ACCT_STATUS_SUCCESS    
+tacAccClientSuccReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ accounting SUCC REPLY packets received 
+         on the accounting port from this server.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerStatsEntry 4 }
+
+-- TAC_PLUS_ACCT_STATUS_ERROR    
+tacAccClientErrorReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ accounting ERROR REPLY packets received 
+         on the accounting port from this server.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerStatsEntry 5 }
+   
+-- TAC_PLUS_ACCT_STATUS_FOLLOW    
+tacAccClientFollowReplies OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ accounting FOLLOW REPLY packets received 
+         on the accounting port from this server.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerStatsEntry 6 }
+            
+tacAccClientTimeoutRequests OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of TACACS+ accounting REQUEST packets
+         sent to this server that have not yet received a reply
+         after waiting timer expires.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerStatsEntry 7 }
+
+tacAccClientMalformedResponses OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The number of malformed TACACS+ accounting response packets.
+         It includes such packets with invalid length, message type, etc.
+         The number of TCP error relevant packets is excluded from this counter.
+         ALCATEL NOTE :
+            ACCESS:     NA
+            USAGE:      NA
+            PERSIST:  	NO
+            INSRVMOD: 	NA
+            RANGE:	NA
+            DEFVALUE: 	NA
+            UNITS:	NA 
+            SPARSE:	NO 
+            DESCR:	NA"
+      ::= { tacAccServerStatsEntry 8 }
+
+
+-- End of TacAccServerStatisticsTable
+
+--=============================================================================
+
+tacAccRecordType OBJECT-TYPE
+      SYNTAX		INTEGER {
+                           start-stop(1),
+                           stop-only(2)
+                        }  
+      ACCESS		read-write
+      STATUS		mandatory
+      DESCRIPTION
+	 "The record type of the Accounting message.
+         ALCATEL NOTE:
+            ACCESS:     NA
+            USAGE:      OPT
+            PERSIST:  	YES
+            INSRVMOD: 	YES
+            RANGE:      NA
+            DEFVALUE:   stop-only
+            UNITS:	NA
+            SPARSE:	NO 
+            DESCR:	NA"
+      DEFVAL  { stop-only }
+      ::= { tacacsPlusClientMIB 16 }
+
+END

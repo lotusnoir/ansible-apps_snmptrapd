@@ -1,0 +1,152 @@
+-- ============================================================================
+-- Copyright (C) 2004 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description:MA5600V8R4 RIP透传开关特性
+-- Reference:  
+-- Version:    V1.00
+-- History:
+-- zhuweihui created.   2006-09-22 
+-- ============================================================================
+
+HUAWEI-PACKET-TUNNEL-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	OBJECT-TYPE, MODULE-IDENTITY	
+		FROM SNMPv2-SMI	       		
+	hwVlanMngObject, hwVlanIndex
+		FROM HUAWEI-VLAN-MIB;  
+				
+
+    hwPacketTunnelTable    OBJECT-TYPE
+        SYNTAX          SEQUENCE OF HwPacketTunnelEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "huawei IPDSLAM packet tunnel mib"
+    ::= { hwVlanMngObject 17 }
+    
+    hwPacketTunnelEntry    OBJECT-TYPE
+        SYNTAX          HwPacketTunnelEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "huawei IPDSLAM packet tunnel mib"
+    INDEX   { 
+               hwVlanIndex
+            }
+    ::= { hwPacketTunnelTable 1 }
+    
+    HwPacketTunnelEntry ::=
+    	SEQUENCE {
+    	    hwPacketTunnelRip  
+    	    	 INTEGER,
+    	    hwPacketTunnelOspf
+                 INTEGER,  
+            hwPacketTunnelIgmp
+                 INTEGER,
+            hwPacketTunnelNtp
+            	 INTEGER,
+						hwPacketTunnelLdp
+            	 INTEGER
+    	         }
+    	         
+    hwPacketTunnelRip        OBJECT-TYPE
+           SYNTAX      INTEGER
+           	           {
+                           enable(1),
+                           disable(2)
+                       }           
+           MAX-ACCESS  read-create
+           STATUS      current
+           DESCRIPTION
+               "huawei IPDSLAM rip tunnel mib"
+    ::= { hwPacketTunnelEntry 1}		
+	
+    hwPacketTunnelOspf        OBJECT-TYPE
+           SYNTAX      INTEGER
+           	           {
+                           enable(1),
+                           disable(2)
+                       }           
+           MAX-ACCESS  read-write
+           STATUS      current
+           DESCRIPTION
+               "huawei IPDSLAM ospf tunnel mib"
+    ::= { hwPacketTunnelEntry 2}		
+		
+    hwPacketTunnelIgmp        OBJECT-TYPE
+           SYNTAX      INTEGER        
+           	           {                
+                           enable(1), 
+                           disable(2) 
+                       }              
+           MAX-ACCESS  read-write     
+           STATUS      current        
+           DESCRIPTION                
+               "huawei IPDSLAM igmp tunnel mib"
+    ::= { hwPacketTunnelEntry 3}      
+    
+    hwPacketTunnelNtp        OBJECT-TYPE
+           SYNTAX      INTEGER        
+           	           {                
+                           enable(1), 
+                           disable(2) 
+                       }              
+           MAX-ACCESS  read-write     
+           STATUS      current        
+           DESCRIPTION                
+               "huawei IPDSLAM ntp tunnel mib"
+    ::= { hwPacketTunnelEntry 4}  
+    hwPacketTunnelLdp        OBJECT-TYPE
+           SYNTAX      INTEGER        
+           	           {                
+                           enable(1), 
+                           disable(2) 
+                       }              
+           MAX-ACCESS  read-write     
+           STATUS      current        
+           DESCRIPTION                
+               "huawei IPDSLAM ldp tunnel mib"
+    ::= { hwPacketTunnelEntry 5} 
+        
+ hwBpduTunnelTable    OBJECT-TYPE
+        SYNTAX          SEQUENCE OF HwBpduTunnelEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "huawei IPDSLAM bpdu tunnel mib"
+    ::= { hwVlanMngObject 18 }
+    
+    hwBpduTunnelEntry    OBJECT-TYPE
+        SYNTAX          HwBpduTunnelEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+            "huawei IPDSLAM bpdu tunnel mib"
+    INDEX   { 
+               hwVlanIndex
+            }      
+            
+    ::= { hwBpduTunnelTable 1 }
+    
+    HwBpduTunnelEntry ::=
+    	SEQUENCE {
+    	    hwBpduTunnel
+                 INTEGER
+    	         }
+    	         
+    hwBpduTunnel        OBJECT-TYPE
+           SYNTAX      INTEGER
+           	           {
+                           enable(1),
+                           disable(2)
+                       }           
+           MAX-ACCESS  read-create
+           STATUS      current
+           DESCRIPTION
+               "huawei IPDSLAM bpdu tunnel mib"
+    ::= { hwBpduTunnelEntry 1}		
+		
+END
+
+	

@@ -1,0 +1,3759 @@
+-- ============================================================================
+-- Copyright (C) by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description:  
+-- Reference:  
+-- Version: V3.12
+-- History:
+--  1 赖夏茗（20009）、李长泰申请修改针对端口的统计信息hwifXStatTable表
+--  2 吕民申请修改：hwMacExpire的单位说明为百分之一秒
+-- 1 李成员申请修改: 在hwIpdslamConnectTable中新增hwIpdslamConnectInnerVlanId
+--                   和hwIpdslamConnectInnerVlanPriority两个叶子节点
+-- 2 镇方敏申请修改: 在hwL2IfMibObject中新增hwSystemSwitchMode
+--                   叶子节点
+-- 3 镇方敏申请修改: 增加静态MAC地址设置hwStaticMacTable，hwStaticMacNextFreeIndex
+--                   增加单PVC多业务流表hwExtSrvFlowTable
+--                   增加基于流的流量统计hwFlowFluxStatisticTable
+--                   叶子节点
+-- 4 谭彬中申请修改: 增加指定流的流量统计表 hwFlowFluxStatisticTable 的两个叶子：
+--                   hwFlowFluxUpBytes 上行流量字节统计
+--                   hwFlowFluxDownBytes 下行流量字节统计
+--  3 汤杰成申请修改：增加标量叶子节点hwCosQueueMappingMask 
+--  4 y40902:增加表项 hwCosQueueSchedTable hwCosQueueDepthRateTable 
+--           在 hwEthernetTable 中增加叶子 hwifEthernetJumboEnable
+--  5 h38748:在表项HwIfAggregateEntry中增加叶子hwifAggregateWorkMode
+-- 6 刘志（52111）申请修改：增加流的描述信息节点hwExtSrvFlowDescInfo 2006-04-04
+-- 7 马驰58080 申请修改: 在hwEthernetTable中增加叶子结点:hwifPortDefPriority  2006-09-14
+-- 8 胡莹申请修改  ：增加端口隔离表项HwPortIsolateEntry（主流已经评审但没有走电子流）
+--                   增加动态MAC地址管理相关表项hwDynamicMacConfigTable、hwDynamicMacTable
+-- 9 傅琼申请修改  ：增加调度队列设置表项hwCosQueueMappingMask,hwCosQueueSchedTable,
+--                   hwCosQueueDepthRateTable(主流已经评审但没有走电子流)
+--                   增加IP流量模板表项hwIpTrafficParamTable
+--                   增加端口限速模式表项hwBoardTrafficModeEntry
+--                   增加端口加CoS限速表项hwCosPortTrafficEntry
+--                   增加用于控制单板控制报文是否送CPU的叶子hwIsCtrlPacket2CPU
+--                   增加绑定流到延时通道表项hwFlowBindChannelTable
+-- 10 宋祥林申请修改：1、在hwEthernetTable中增加叶子结节点: hwifEthernetTrafficBroadcast、
+--                                                         hwifEthernetTrafficMulticast、
+--                                                         hwifEthernetTrafficUnknowncast
+--                    2、将hwDynamicMacTable中叶子结节点:hwDynamicMacVlanId
+--                                                     和hwDynamicMacAddr改为read-write
+-- 11 傅琼申请修改  ：增加标量叶子节点hwIpTrafficIndexNext
+-- 12 宋祥林申请修改：在hwDynamicMac中增加单独的叶子结节点: hwDynamicMacLearningMode
+-- 13 许永峰54799 申请修改: 因为保留vlan可配置特性，修改hwStaticMacVlanID取值范围为1-4093
+-- 14 文霞申请修改： 为了支持GPON产品，在hwExtSrvFlowTable表中的hwExtSrvFlowParaType叶子节点中
+--                    增加一个枚举值gpon(4)
+-- 15 王振邦申请修改：在hwCosPortTrafficTable中增加叶子节点：hwCosPortTrafficRowStatus
+-- 16 陈建发申请修改：在hwExtSrvFlowTable中增加叶子节点：hwExtSrvFlowTagTransform
+--                    在hwFlowBindChannelTable中修改叶子节点hwFlowLatencyChannel的取值，
+--                    由原来的<0,1>修改为<1,2>.
+-- 17 王振邦申请修改：在hwCosQueueSchedTable表中修改叶子节点hwCosQueueSchedMode的枚举值
+--                    在hwCosPortTrafficTable表中修改叶子节点hwCosPortTrafficIndex的名称为
+--                    hwCosPortInboundTrafficIndex，并且增加hwCosPortOutboundTrafficIndex叶子节点
+-- 18 唐海凡申请修改：增加业务流索引反查表项hwFlowIndexQueryTable. 
+-- 19 陈建发申请修改：在hwCosPortTrafficTable表中增加叶子节点hwCosPortExtPara1   
+-- 20 胡勇申请修改：在hwFlowFluxStatisticTable表中增加叶子节点hwFlowFluxUpDiscardPackets和hwFlowFluxDnDiscardPackets
+-- 21 王振邦申请修改：增加hwExtSrvFlowTable表中叶子hwExtSrvFlowMultiServiceType的枚举值
+-- 22 杨显杰申请修改：增加hwExtSrvFlowTable表中叶子hwExtSrvFlowParaType的枚举值及对应的叶子hwExtSrvFlowPara1、hwExtSrvFlowPara2、hwExtSrvFlowPara3值的用法
+-- 22 陈建发申请修改：在hwExtSrvFlowTable中增加叶子节点：hwExtSrvFlowSimulationServiceType 
+-- ============================================================================
+
+	HUAWEI-ETHERLIKE-EXT-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			hwFrameIndex, hwSlotIndex, hwFrameIndex, hwSlotIndex, hwPortIndex			
+				FROM HUAWEI-DEVICE-MIB			
+			huaweiMgmt			
+				FROM HUAWEI-MIB			
+			ifIndex, InterfaceIndex			
+				FROM IF-MIB			
+			TimeTicks, Counter32, Counter64, IpAddress, OBJECT-TYPE, MODULE-IDENTITY, 
+			NOTIFICATION-TYPE, OBJECT-IDENTITY			
+				FROM SNMPv2-SMI			
+			SnmpAdminString
+			  FROM SNMP-FRAMEWORK-MIB
+			TruthValue, RowStatus, MacAddress, TEXTUAL-CONVENTION, DisplayString			
+				FROM SNMPv2-TC;
+	
+	
+		hwEthernet MODULE-IDENTITY 
+			LAST-UPDATED "200602210900Z"
+			ORGANIZATION 
+				"Fix-Net Dept, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floor 5, Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,  P.R.C.
+				http://www.huawei.com
+				Zip: 518057
+				"
+			DESCRIPTION 
+				"huawei ethernet like interface  mib.	"
+			::= { huaweiMgmt 14 }
+		
+	
+--
+-- Textual conventions
+--
+	
+--  Textual conventions
+-- 
+		PortList ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				"Each octet within this value specifies a set of eight
+				ports, with the first octet specifying ports 1 through
+				8, the second octet specifying ports 9 through 16, etc.
+				Within each octet, the most significant bit represents
+				the lowest numbered port, and the least significant bit
+				represents the highest numbered port. Thus, each port
+				of the bridge is represented by a single bit within the
+				value of this object. If that bit has a value of '1'
+				then that port is included in the set of ports; the port
+				is not included if its bit has a value of '0'."
+			SYNTAX OCTET STRING
+			
+	
+--
+-- Node definitions
+--
+	
+--  Node definitions
+-- 
+-- Node definitions
+-- 
+		hwL2IfMibObject OBJECT IDENTIFIER ::= { hwEthernet 1 }
+		
+		hwSlotPortMax OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Max ports in the slots
+				"
+			::= { hwL2IfMibObject 1 }
+		
+		hwSwitchPortMax OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Max ports that this switch includes
+				"
+			::= { hwL2IfMibObject 2 }
+		
+		hwMacExpire OBJECT-TYPE
+			SYNTAX TimeTicks
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				expire time of MAC learning, in unit of cent second. By default, it is 30,000 cent seconds.
+				"
+			::= { hwL2IfMibObject 3 }
+		
+		hwEthernetTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwEthernetEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				Ethernet port table 
+				"
+			::= { hwL2IfMibObject 4 }
+		
+		hwEthernetEntry OBJECT-TYPE
+			SYNTAX HwEthernetEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				etherner port table  property
+				"
+			INDEX { ifIndex }
+			::= { hwEthernetTable 1 }
+		
+		HwEthernetEntry ::=
+			SEQUENCE { 
+				hwifEthernetDuplex
+					INTEGER,
+				hwifEthernetMTU
+					INTEGER,
+				hwifEthernetSpeed
+					INTEGER,
+				hwifEthernetLoopback
+					INTEGER,
+				hwifEthernetMdi
+					INTEGER,
+				hwMaxMacLearn
+					INTEGER,
+				hwifMacAddressLearn
+					INTEGER,
+				hwifTag
+					INTEGER,
+				hwifEthernetNegotiate
+					TruthValue,
+				hwifEthernetPeerNegotiate
+					TruthValue,
+				hwifEthernetPauseFrameTag
+					TruthValue,
+				hwifEthernetPauseFrameSending
+					TruthValue,
+				hwifEthernetVlanDefault
+					INTEGER,
+				hwifEthernetOnlineState
+					TruthValue,
+				hwifEthernetLineSelfAdaptMode
+					TruthValue,
+			        hwifEthernetTrafficBroadcast
+				        INTEGER,
+				hwifEthernetTrafficMulticast
+				        INTEGER,
+				hwifEthernetTrafficUnknowncast
+				        INTEGER,
+				hwifEthernetJumboEnable
+				        INTEGER,
+				hwifPortDefPriority
+				        INTEGER        
+			 }
+
+		hwifEthernetDuplex OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				full(1),
+				half(2),
+				auto(3), 
+				auto-full(4),
+				auto-half(5)
+
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Ethernet interface working mode  
+				"
+			::= { hwEthernetEntry 1 }
+		
+		hwifEthernetMTU OBJECT-TYPE
+			SYNTAX INTEGER (0..1600)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Ethernet interface MTU 
+				"
+			::= { hwEthernetEntry 2 }
+		
+		hwifEthernetSpeed OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				auto(0),
+				s10M(10),
+				s100M(100),
+				s1000M(1000),  
+				s10000M(10000),
+				auto-s10M(11),
+				auto-s100M(101),
+				auto-s1000M(1001),
+				auto-s10000M(10001)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Ethernet speed
+				"
+			::= { hwEthernetEntry 3 }
+		
+		hwifEthernetLoopback OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				noloopback(1),
+				internalloopback(2),
+				externalloopback(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				etherner loop back mode
+				Port loopback test  Noloopback        1: no loopback,  Internalloopback   2: local loopback,   externalloopback   3: remote loopback
+				"
+			::= { hwEthernetEntry 4 }
+		
+		hwifEthernetMdi OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				mdiII(1),
+				mdiX(2),
+				mdiAuto(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"ethernet line type
+				
+				
+				MDI-II (direct connection cable): 1  MDI-X (cross-over cable) : 2  MDI-AUTO (auto-sensing): 3 端口所接线路类型 MDI-II（直连线）：1  MDI-X（交叉线）：2  MDI-AUTO（自适应）：3 "
+			::= { hwEthernetEntry 5 }
+		
+		hwMaxMacLearn OBJECT-TYPE
+			SYNTAX INTEGER (0..600 | 65535)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The max MAC learned by the interface 
+				"
+			::= { hwEthernetEntry 6 }
+		
+		hwifMacAddressLearn OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Status indicates if the interface is
+				allowed to learn mac address. eanbled(1) means the
+				interface can learn mac address, otherwise disabled(2)
+				can be set.
+				Enable the self-learning of the MAC address at the interface
+				"
+			::= { hwEthernetEntry 7 }
+		
+		hwifTag OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				tag(1),
+				untag(2),
+				multi(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Ethernet interface tag
+				"
+			::= { hwEthernetEntry 8 }
+		
+		hwifEthernetNegotiate OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Ethernet port negotiatation mode 
+				"
+			::= { hwEthernetEntry 9 }
+		
+		hwifEthernetPeerNegotiate OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Ethernet peer port auto-negotiation node (which is needed by MA5100 V2R1 product, and can be selected by other products of the fixed network depending on the practice.) 
+				"
+			::= { hwEthernetEntry 10 }
+		
+		hwifEthernetPauseFrameTag OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"ethernet pause tag 
+				
+				Whether the network port supports Pause frame flow control. true supports, while false does not (which is needed by MA5100 V2R1 product, and can be selected by other products of the fixed network depending on the practice.)
+				"
+			::= { hwEthernetEntry 11 }
+		
+		hwifEthernetPauseFrameSending OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Ethernet pause frame sending tag (Notes: only for Huawei product of Ma5100)
+				
+				Whether the network interface is sending Pause frame (which is needed by MA5100 V2R1 product, and can be selected by other products of the fixed network depending on the practice.)
+				"
+			::= { hwEthernetEntry 12 }
+		
+		hwifEthernetVlanDefault OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Ethernet default VLAN ID (Notes: only for Huawei product of MA5100)
+				
+				The defaulted VLAN number configuration of Ethernet (which is needed by MA5100 V2R1 product, and can be selected by other products of the fixed network depending on the practice.)
+				"
+			::= { hwEthernetEntry 13 }
+		
+		hwifEthernetOnlineState OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Ethernet port online status  (Notes: only for Huawei product of Ma5100)
+				
+				Whether the network interface is online (which is needed by MA5100 V2R1 product, and can be selected by other products of the fixed network depending on the practice). 
+				"
+			::= { hwEthernetEntry 14 }
+		
+		hwifEthernetLineSelfAdaptMode OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Connecting adaptatively tag,default false.
+				true(1):   adapting by itself
+				false(2):  adapting by manual	 
+				
+				  The self-adaptation switch:
+				In the case of true, the self-adaptation is enabled, and the device will be self-adaptive, cross-over cable or not.
+				In the case of false, the self-adaptation is disabled, and the device will not be self-adaptive, thus the network cable should be connected by the user.
+				"
+			::= { hwEthernetEntry 15 }
+			
+	        hwifEthernetTrafficBroadcast OBJECT-TYPE
+			SYNTAX INTEGER (0..13)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"  Traffic Broadcast of Ethernet Port:
+				    	0..13：index of Traffic Broadcast List，7 is default。
+				    	
+				    	  Traffic suppression ID definition:                                            
+						  ---------------------------------------------------------------------         
+						   NO.  Min bandwidth(kbps)  Max bandwidth(kbps)  Package number(pps)           
+						  ---------------------------------------------------------------------         
+						     1                    6                  145                   12           
+						     2                   12                  291                   24           
+						     3                   24                  582                   48           
+						     4                   48                 1153                   95           
+						     5                   97                 2319                  191           
+						     6                  195                 4639                  382           
+						     7                  390                 9265                  763           
+						     8                  781                18531                 1526           
+						     9                 1562                37063                 3052           
+						    10                 3125                74126                 6104           
+						    11                 6249               148241                12207           
+						    12                12499               296483                24414    
+						    13					  0	       			   0					0
+						  ---------------------------------------------------------------------         
+
+        
+				  "
+			::= { hwEthernetEntry 16 }  
+			
+		hwifEthernetTrafficMulticast OBJECT-TYPE
+			SYNTAX INTEGER (0..13)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"  Traffic Multicast of Ethernet Port:
+				    	0..13：index of Traffic Multicast List，7 is default。
+				    	
+				    	  Traffic suppression ID definition:                                            
+						  ---------------------------------------------------------------------         
+						   NO.  Min bandwidth(kbps)  Max bandwidth(kbps)  Package number(pps)           
+						  ---------------------------------------------------------------------         
+						     1                    6                  145                   12           
+						     2                   12                  291                   24           
+						     3                   24                  582                   48           
+						     4                   48                 1153                   95           
+						     5                   97                 2319                  191           
+						     6                  195                 4639                  382           
+						     7                  390                 9265                  763           
+						     8                  781                18531                 1526           
+						     9                 1562                37063                 3052           
+						    10                 3125                74126                 6104           
+						    11                 6249               148241                12207           
+						    12                12499               296483                24414   
+						    13					  0	       			   0					0        
+						  ---------------------------------------------------------------------  
+
+				  "
+			::= { hwEthernetEntry 17 }
+			
+		hwifEthernetTrafficUnknowncast OBJECT-TYPE
+			SYNTAX INTEGER (0..13)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"  Traffic Unknowncast of Ethernet Port:
+				    	0..13：index of Traffic Unknowncast List，7 is default。
+				    	
+				    	  Traffic suppression ID definition:                                            
+						  ---------------------------------------------------------------------         
+						   NO.  Min bandwidth(kbps)  Max bandwidth(kbps)  Package number(pps)           
+						  ---------------------------------------------------------------------         
+						     1                    6                  145                   12           
+						     2                   12                  291                   24           
+						     3                   24                  582                   48           
+						     4                   48                 1153                   95           
+						     5                   97                 2319                  191           
+						     6                  195                 4639                  382           
+						     7                  390                 9265                  763           
+						     8                  781                18531                 1526           
+						     9                 1562                37063                 3052           
+						    10                 3125                74126                 6104           
+						    11                 6249               148241                12207           
+						    12                12499               296483                24414   
+						    13					  0	       			   0					0        
+						  ---------------------------------------------------------------------  
+
+				  "
+			::= { hwEthernetEntry 18 }
+
+		
+		hwifEthernetJumboEnable OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Status indicates if the interface support jumbo frames.
+				enabled(1) means the jumbo frames can be passed through the interface, 
+				while disabled(2) means not.
+				"
+			::= { hwEthernetEntry 19 }
+
+		hwifPortDefPriority OBJECT-TYPE
+			SYNTAX INTEGER (0..7)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Port default 802.1p priority (Notes: Default value is 0.)   
+				  
+				                    ------------------------------------------------------------                  
+   										F/ S/ P     Port Priority                                       
+  									------------------------------------------------------------                  
+   										0/ 3/ 0       3                                                                  
+   										0/ 3/ 1       4 
+   										0/ 3/ 2       5                                                     
+   										0/ 3/ 3       6                                                     
+   										0/ 3/ 4       7                                                                  
+   										0/ 3/ 5       5                                                                  
+   										0/ 3/ 6       4                                                                  
+   										0/ 3/ 7       3                                                                  
+									------------------------------------------------------------ 
+
+				"
+			::= { hwEthernetEntry 20 }
+
+		hwifVLANTrunkStatusTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIfVLANTrunkStatusEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"vlan trunk table 
+				Gvrp property of VLAN Trunk port
+				"
+			::= { hwL2IfMibObject 5 }
+		
+		hwifVLANTrunkStatusEntry OBJECT-TYPE
+			SYNTAX HwIfVLANTrunkStatusEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" vlan trunk table entry 
+				Gvrp property of VLAN Trunk port
+				"
+			INDEX { hwifVLANTrunkIndex }
+			::= { hwifVLANTrunkStatusTable 1 }
+		
+		HwIfVLANTrunkStatusEntry ::=
+			SEQUENCE { 
+				hwifVLANTrunkIndex
+					InterfaceIndex,
+				hwifVLANTrunkGvrpRegistration
+					INTEGER,
+				hwifVLANTrunkPassListLow
+					OCTET STRING,
+				hwifVLANTrunkPassListHigh
+					OCTET STRING,
+				hwifVLANTrunkAllowListLow
+					OCTET STRING,
+				hwifVLANTrunkAllowListHigh
+					OCTET STRING
+			 }
+
+		hwifVLANTrunkIndex OBJECT-TYPE
+			SYNTAX InterfaceIndex
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" vlan trunk index
+				interface index of VLANTrunk
+				"
+			::= { hwifVLANTrunkStatusEntry 1 }
+		
+		hwifVLANTrunkGvrpRegistration OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				fixed(2),
+				forbidden(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Normal:(1)this is the default configration. Allow create, register and unretiser vlans dynamiclly at this port.
+				fixed: (2)allow create and register vlan manully at this port.And prevent from unregistering vlans or registering known vlans of this port at another trunk port.
+				Forbidden:(3)Unregister all vlans but vlan 1, forbid to create or register any other vlans at this port.
+				
+				GVRP registration information
+				
+				"
+			::= { hwifVLANTrunkStatusEntry 2 }
+		
+		hwifVLANTrunkPassListLow OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" The low vlan trunk pass list.total vlan includes  8*255= 2040 vlan ids 
+				Each octet within this value specifies a set of eight
+				ports, with the first octet specifying ports 1 through
+				8, the second octet specifying ports 9 through 16, etc.
+				Within each octet, the most significant bit represents
+				the lowest numbered port, and the least significant bit
+				represents the highest numbered port. Thus, each port
+				of the bridge is represented by a single bit within the
+				value of this object.  If that bit has a value of '1'
+				then that port is included in the set of ports; the port
+				is not included if its bit has a value of '0'.
+				The VLANs that actually pass the VLAN port (low 2040 VLANs (1-2040)), in the length of 255.
+				"
+			::= { hwifVLANTrunkStatusEntry 3 }
+		
+		hwifVLANTrunkPassListHigh OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" The high  vlan trunk pass list. The total vlan includes 8*255= 2040 vlan ids
+				Each octet within this value specifies a set of eight
+				ports, with the first octet specifying ports 1 through
+				8, the second octet specifying ports 9 through 16, etc.
+				Within each octet, the most significant bit represents
+				the lowest numbered port, and the least significant bit 
+				represents the highest numbered port. Thus, each port
+				of the bridge is represented by a single bit within the
+				value of this object.  If that bit has a value of '1'
+				then that port is included in the set of ports; the port
+				is not included if its bit has a value of '0'.
+				
+				 The VLANs that pass the VLAN port (1960 VLANs (2041-4000)), in the length of 245.
+				"
+			::= { hwifVLANTrunkStatusEntry 4 }
+		
+		hwifVLANTrunkAllowListLow OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"  The low inteface of vlan .total interface includes 8*255= 2040 vlan ids
+				Each octet within this value specifies a set of eight
+				ports, with the first octet specifying ports 1 through
+				8, the second octet specifying ports 9 through 16, etc.
+				Within each octet, the most significant bit represents
+				the lowest numbered port, and the least significant bit
+				represents the highest numbered port. Thus, each port
+				of the bridge is represented by a single bit within the
+				value of this object.  If that bit has a value of '1'
+				then that port is included in the set of ports; the port
+				is not included if its bit has a value of '0'.
+				
+				The VLANs that are allowed to pass  the VLAN port(2040 VLANs (1-2040)),in the length of 255.
+				"
+			::= { hwifVLANTrunkStatusEntry 5 }
+		
+		hwifVLANTrunkAllowListHigh OBJECT-TYPE
+			SYNTAX OCTET STRING
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"  The high  inteface of vlan .total interface includes 8*255= 2040 vlan ids
+				Each octet within this value specifies a set of eight
+				ports, with the first octet specifying ports 1 through
+				8, the second octet specifying ports 9 through 16, etc.
+				Within each octet, the most significant bit represents
+				the lowest numbered port, and the least significant bit
+				represents the highest numbered port.  Thus, each port
+				of the bridge is represented by a single bit within the
+				value of this object.  If that bit has a value of '1'
+				then that port is included in the set of ports; the port
+				is not included if its bit has a value of '0'.
+				
+				The VLANs allowed to pass the VLAN port (low 2040 VLANs (1-2040)), in length of 255.
+				"
+			::= { hwifVLANTrunkStatusEntry 6 }
+			
+	        hwSystemSwitchMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				standbyPortUp(1),
+				standbyPortDown(2)
+				}	
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				1 auto system switch mode (undo shutdown standby port)
+				2 manual system switch mode (shutdown standby port)
+				"
+			::= { hwL2IfMibObject 6 }			
+		
+		hwExtInterface OBJECT IDENTIFIER ::= { hwEthernet 2 }
+		
+		hwifXXTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIfXXEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				interface expand expand table by huawei LTD
+				"
+			::= { hwExtInterface 1 }
+		
+		hwifXXEntry OBJECT-TYPE
+			SYNTAX HwIfXXEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				interface expand  table by huawei LTD entry 
+				"
+			INDEX { ifIndex }
+			::= { hwifXXTable 1 }
+		
+		HwIfXXEntry ::=
+			SEQUENCE { 
+				hwifAggregatePort
+					INTEGER,
+				hwifMirrorPort
+					TruthValue,
+				hwifUnknowncastControl
+					INTEGER,
+				hwifMcastControl
+					INTEGER,
+				hwifFlowControl
+					TruthValue,
+				hwifSrcMacControl
+					TruthValue,
+				hwifClearStat
+					INTEGER,
+			        hwifLinkStateChangeNum
+					Counter32,
+				hwifLinkUpTime
+					Counter32,
+				hwifClearCountTimeStamp
+					TimeTicks
+			 }
+
+		hwifAggregatePort OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				noAggregatePort(1),
+				masterPort(2),
+				subPort(3)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" 
+				Whether it is an aggregation interface, aggregation master port or aggregation slave port.
+				"
+			::= { hwifXXEntry 1 }
+		
+		hwifMirrorPort OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Whether it is a mirror port.
+				"
+			::= { hwifXXEntry 2 }
+		
+		hwifUnknowncastControl OBJECT-TYPE
+			SYNTAX INTEGER (5..100)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Unknown unicast suppression traffic node, in range of (5-100) %
+				"
+			::= { hwifXXEntry 3 }
+		
+		hwifMcastControl OBJECT-TYPE
+			SYNTAX INTEGER (5..100)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Broadcast storm suppression, in range of (5-100) %.
+				"
+			::= { hwifXXEntry 4 }
+		
+		hwifFlowControl OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Flow control status
+				"
+			::= { hwifXXEntry 5 }
+		
+		hwifSrcMacControl OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Whether the source MAC address is being filtered.
+				"
+			::= { hwifXXEntry 6 }
+		
+		hwifClearStat OBJECT-TYPE
+			SYNTAX INTEGER { clear(1) }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Clear port statistics information
+				"
+			::= { hwifXXEntry 7 }
+			
+		hwifLinkStateChangeNum OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Short duration breaks in the link status"
+			::= { hwifXXEntry  8 }
+		
+		hwifLinkUpTime OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Indicates the time since last link protocol reset/down"
+			::= { hwifXXEntry 9 }
+		
+		hwifClearCountTimeStamp OBJECT-TYPE
+			SYNTAX TimeTicks
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Gives the time at which the counters that measure cumulative statistics"
+			::= { hwifXXEntry 10 }
+			
+		hwifAggregateTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIfAggregateEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				interface aggregation table 
+				"
+			::= { hwExtInterface 2 }
+		
+		hwifAggregateEntry OBJECT-TYPE
+			SYNTAX HwIfAggregateEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				interface aggregation table entry
+				"
+			INDEX { hwifAggregateIndex }
+			::= { hwifAggregateTable 1 }
+		
+		HwIfAggregateEntry ::=
+			SEQUENCE { 
+				hwifAggregateIndex
+					InterfaceIndex,
+				hwifAggregatePortName
+					OCTET STRING,
+				hwifAggregatePortListPorts
+					PortList,
+				hwifAggregateModel
+					INTEGER,
+				hwifAggregateRowStatus
+					RowStatus,
+				hwifAggregateWorkMode
+				        INTEGER
+			 }
+
+		hwifAggregateIndex OBJECT-TYPE
+			SYNTAX InterfaceIndex
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" ifindex of aggregation, it must include physical info explained by products
+				
+				Aggregation index ID, supports internal own coding (Refer to inIndex. The detailed description on hwifAggregateIndex is provided by various products)
+				"
+			::= { hwifAggregateEntry 1 }
+		
+		hwifAggregatePortName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..40))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				name of aggregation port
+				"
+			::= { hwifAggregateEntry 2 }
+		
+		hwifAggregatePortListPorts OBJECT-TYPE
+			SYNTAX PortList
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Aggregation port list.
+				"
+			::= { hwifAggregateEntry 3 }
+		
+		hwifAggregateModel OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				ingress(1),
+				ingressEgress(2),
+				roundRobin(3),
+				egress(4)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"mode of a aggregating. 
+				
+				Load sharing mode of port aggregation 
+				ingress(1)         load sharing only according to the source MAC. 
+				ingressEgress(2)   Ingress+egress, load sharing according to source MAC and the destination MAC	
+				roundRobin(3)      round load sharing  
+				egress(4)          load sharing only according to destination MAC  
+				"
+			::= { hwifAggregateEntry 4 }
+		
+		hwifAggregateRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"rowstatus
+				
+				The present operation status of the row "
+			::= { hwifAggregateEntry 5 }
+			
+		hwifAggregateWorkMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				manual(1),
+				lacp-static(2)
+				}	
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"workmode of link-aggregation 
+				manual(1)         manual link aggregation
+				lacp-static(2)    lacp static link aggregation
+				"
+			::= { hwifAggregateEntry 6 }
+		
+		hwMacToVlanTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwMacToVlanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Trans to the interface (corresponding to the port), VLAN and the ID list of PVC according to the MAC address.
+				"
+			::= { hwExtInterface 3 }
+		
+		hwMacToVlanEntry OBJECT-TYPE
+			SYNTAX HwMacToVlanEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				An entry of the mac trans to vlan table  
+				"
+			INDEX { hwMacAddress }
+			::= { hwMacToVlanTable 1 }
+		
+		HwMacToVlanEntry ::=
+			SEQUENCE { 
+				hwMacAddress
+					MacAddress,
+				hwInterface
+					INTEGER,
+				hwVlanId
+					INTEGER,
+				hwConnectId
+					INTEGER
+			 }
+
+		hwMacAddress OBJECT-TYPE
+			SYNTAX MacAddress
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The MAC learned by the system
+				"
+			::= { hwMacToVlanEntry 1 }
+		
+		hwInterface OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the interface index related to the port
+				"
+			::= { hwMacToVlanEntry 2 }
+		
+		hwVlanId OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Mac binding vlan ID
+				"
+			::= { hwMacToVlanEntry 3 }
+		
+		hwConnectId OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the atm pvc connect id of the port if it used as atm interface 
+				"
+			::= { hwMacToVlanEntry 4 }
+		
+		hwIfEthernetMirrorTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIfEthernetMirrorEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Ether interface mirror table
+				"
+			::= { hwExtInterface 4 }
+		
+		hwIfEthernetMirrorEntry OBJECT-TYPE
+			SYNTAX HwIfEthernetMirrorEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				the entry of interface map port table 
+				"
+			INDEX { hwifEthernetMirrorDstPort }
+			::= { hwIfEthernetMirrorTable 1 }
+		
+		HwIfEthernetMirrorEntry ::=
+			SEQUENCE { 
+				hwifEthernetMirrorDstPort
+					INTEGER,
+				hwifEthernetMirrorSrcPort
+					PortList
+			 }
+
+		hwifEthernetMirrorDstPort OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" 
+				Destination mirror port, whose format is the same as ifIndex
+				"
+			::= { hwIfEthernetMirrorEntry 1 }
+		
+		hwifEthernetMirrorSrcPort OBJECT-TYPE
+			SYNTAX PortList
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The mirror port to the source port
+				"
+			::= { hwIfEthernetMirrorEntry 2 }
+		
+		hwifXStatTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwifXStatEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"a table of the  FE/GE interface stat."
+			::= { hwExtInterface 5 }
+		
+		hwifXStatEntry OBJECT-TYPE
+			SYNTAX HwifXStatEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"An interface entry containing objects at the
+				subnetwork layer and below for a particular
+				interface."
+			INDEX { ifIndex }
+			::= { hwifXStatTable 1 }
+		
+		HwifXStatEntry ::=
+			SEQUENCE { 
+				hwifInArpPkts
+					Counter64,
+				hwifInIcmpkts
+					Counter64,
+				hwifOutArpPkts
+					Counter64,
+				hwifOutIcmpPkts
+					Counter64,
+				hwifOutCRCAlignErrors
+					Counter64,
+				hwifOutUndersizePkts
+					Counter64,
+				hwifOutOversizePkts
+					Counter64,
+				hwifOutFragments
+					Counter64,
+				hwifOutJabbers
+					Counter64,
+				hwifOutCollisions
+					Counter64,
+				hwifOutPkts64Octets
+					Counter64,
+				hwifOutPkts65to127Octets
+					Counter64,
+				hwifOutPkts128to255Octets
+					Counter64,
+				hwifOutPkts256to511Octets
+					Counter64,
+				hwifOutPkts512to1023Octets
+					Counter64,
+				hwifOutPkts1024to1518Octets
+					Counter64,
+				hwifInCRCAlignErrors
+					Counter64,
+				hwifInUndersizePkts
+					Counter64,
+				hwifInOversizePkts
+					Counter64,
+				hwifInFragments
+					Counter64,
+				hwifInJabbers
+					Counter64,
+				hwifInPkts64Octets
+					Counter64,
+				hwifInPkts65to127Octets
+					Counter64,
+				hwifInPkts128to255Octets
+					Counter64,
+				hwifInPkts256to511Octets
+					Counter64,
+				hwifInPkts512to1023Octets
+					Counter64,
+				hwifInPkts1024to1518Octets
+					Counter64
+			 }
+
+		hwifInArpPkts OBJECT-TYPE
+			SYNTAX Counter64
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of arp packets received on the
+				interface"
+			::= { hwifXStatEntry 1 }
+		
+		hwifInIcmpkts OBJECT-TYPE
+			SYNTAX Counter64
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of icmp packets received on the
+				interface"
+			::= { hwifXStatEntry 2 }
+		
+		hwifOutArpPkts OBJECT-TYPE
+			SYNTAX Counter64
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of arp packets transmitted out of the
+				interface"
+			::= { hwifXStatEntry 3 }
+		
+		hwifOutIcmpPkts OBJECT-TYPE
+			SYNTAX Counter64
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of icmp packets transmitted out of the
+				interface"
+			::= { hwifXStatEntry 4 }
+		
+		hwifOutCRCAlignErrors OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets received that
+				had a length (excluding framing bits, but
+				including FCS octets) of between 64 and 1518
+				octets, inclusive, but had either a bad
+				Frame Check Sequence (FCS) with an integral
+				number of octets (FCS Error) or a bad FCS with
+				a non-integral number of octets (Alignment Error)."
+			::= { hwifXStatEntry 5 }
+		
+		hwifOutUndersizePkts OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets received that were
+				less than 64 octets long (excluding framing bits,
+				but including FCS octets) and were otherwise well
+				formed."
+			::= { hwifXStatEntry 6 }
+		
+		hwifOutOversizePkts OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets received that were
+				longer than 1518 octets (excluding framing bits,
+				but including FCS octets) and were otherwise
+				well formed."
+			::= { hwifXStatEntry 7 }
+		
+		hwifOutFragments OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets received that were less than
+				64 octets in length (excluding framing bits but including
+				FCS octets) and had either a bad Frame Check Sequence
+				(FCS) with an integral number of octets (FCS Error) or a
+				bad FCS with a non-integral number of octets (Alignment
+				Error).
+				
+				Note that it is entirely normal for etherStatsFragments to
+				increment.  This is because it counts both runts (which are
+				normal occurrences due to collisions) and noise hits."
+			::= { hwifXStatEntry 8 }
+		
+		hwifOutJabbers OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets received that were
+				longer than 1518 octets (excluding framing bits,
+				but including FCS octets), and had either a bad
+				Frame Check Sequence (FCS) with an integral number
+				of octets (FCS Error) or a bad FCS with a non-integral
+				number of octets (Alignment Error).
+				
+				Note that this definition of jabber is different
+				than the definition in IEEE-802.3 section 8.2.1.5
+				(10BASE5) and section 10.3.1.4 (10BASE2).  These
+				documents define jabber as the condition where any
+				packet exceeds 20 ms.  The allowed range to detect
+				jabber is between 20 ms and 150 ms."
+			::= { hwifXStatEntry 9 }
+		
+		hwifOutCollisions OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Collisions"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The best estimate of the total number of collisions
+				on this Ethernet segment.
+				
+				The value returned will depend on the location of the
+				RMON probe. Section 8.2.1.3 (10BASE-5) and section
+				10.3.1.3 (10BASE-2) of IEEE standard 802.3 states that a
+				station must detect a collision, in the receive mode, if
+				three or more stations are transmitting simultaneously.  A
+				repeater port must detect a collision when two or more
+				stations are transmitting simultaneously.  Thus a probe
+				placed on a repeater port could record more collisions
+				than a probe connected to a station on the same segment
+				would.
+				
+				Probe location plays a much smaller role when considering
+				10BASE-T.  14.2.1.4 (10BASE-T) of IEEE standard 802.3
+				defines a collision as the simultaneous presence of signals
+				on the DO and RD circuits (transmitting and receiving
+				at the same time).  A 10BASE-T station can only detect
+				collisions when it is transmitting.  Thus probes placed on
+				a station and a repeater, should report the same number of
+				collisions.
+				
+				Note also that an RMON probe inside a repeater should
+				ideally report collisions between the repeater and one or
+				more other hosts (transmit collisions as defined by IEEE
+				802.3k) plus receiver collisions observed on any coax
+				segments to which the repeater is connected."
+			::= { hwifXStatEntry 10 }
+		
+		hwifOutPkts64Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were 64 octets in length
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 11 }
+		
+		hwifOutPkts65to127Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were between
+				65 and 127 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 12 }
+		
+		hwifOutPkts128to255Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were between
+				128 and 255 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 13 }
+		
+		hwifOutPkts256to511Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were between
+				256 and 511 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 14 }
+		
+		hwifOutPkts512to1023Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were between
+				512 and 1023 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 15 }
+		
+		hwifOutPkts1024to1518Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) received that were between
+				1024 and 1518 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 16 }
+		
+		hwifInCRCAlignErrors OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets send that
+				had a length (excluding framing bits, but
+				including FCS octets) of between 64 and 1518
+				octets, inclusive, but had either a bad
+				Frame Check Sequence (FCS) with an integral
+				number of octets (FCS Error) or a bad FCS with
+				a non-integral number of octets (Alignment Error)."
+			::= { hwifXStatEntry 17 }
+		
+		hwifInUndersizePkts OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets send that were
+				less than 64 octets long (excluding framing bits,
+				but including FCS octets) and were otherwise well
+				formed."
+			::= { hwifXStatEntry 18 }
+		
+		hwifInOversizePkts OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets send that were
+				longer than 1518 octets (excluding framing bits,
+				but including FCS octets) and were otherwise
+				well formed."
+			::= { hwifXStatEntry 19 }
+		
+		hwifInFragments OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets send that were less than
+				64 octets in length (excluding framing bits but including
+				FCS octets) and had either a bad Frame Check Sequence
+				(FCS) with an integral number of octets (FCS Error) or a
+				bad FCS with a non-integral number of octets (Alignment
+				Error).
+				
+				Note that it is entirely normal for etherStatsFragments to
+				increment.  This is because it counts both runts (which are
+				normal occurrences due to collisions) and noise hits."
+			::= { hwifXStatEntry 20 }
+		
+		hwifInJabbers OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets send that were
+				longer than 1518 octets (excluding framing bits,
+				but including FCS octets), and had either a bad
+				Frame Check Sequence (FCS) with an integral number
+				of octets (FCS Error) or a bad FCS with a non-integral
+				number of octets (Alignment Error).
+				
+				Note that this definition of jabber is different
+				than the definition in IEEE-802.3 section 8.2.1.5
+				(10BASE5) and section 10.3.1.4 (10BASE2).  These
+				documents define jabber as the condition where any
+				packet exceeds 20 ms.  The allowed range to detect
+				jabber is between 20 ms and 150 ms."
+			::= { hwifXStatEntry 21 }
+
+		
+		hwifInPkts64Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) send that were 64 octets in length
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 22 }
+
+		
+		hwifInPkts65to127Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) send that were between
+				65 and 127 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 23 }
+		
+		hwifInPkts256to511Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) send that were between
+				256 and 511 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 24 }
+		
+		hwifInPkts512to1023Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) send that were between
+				512 and 1023 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 25 }
+		
+		hwifInPkts1024to1518Octets OBJECT-TYPE
+			SYNTAX Counter64
+			UNITS "Packets"
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of packets (including bad
+				packets) send  that were between
+				1024 and 1518 octets in length inclusive
+				(excluding framing bits but including FCS octets)."
+			::= { hwifXStatEntry 26 }
+
+
+
+
+		
+		hwExtIpdslam OBJECT IDENTIFIER ::= { hwEthernet 3 }
+		
+--   hwIpdslamConnectTable
+-- 
+		hwIpdslamConnectTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIpdslamConnectEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Property table of IP DSLAM connection table 
+				"
+			::= { hwExtIpdslam 1 }
+		
+		hwIpdslamConnectEntry OBJECT-TYPE
+			SYNTAX HwIpdslamConnectEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" The entry of connection on IP DSLAM table 
+				
+				IP DSLAM connection property. Under ATM mode, the property is configured in the unit of connection. Therefore, atmVcCrossConnectIndex is the index of hwIpdslamConnectIndex. Under IP mode, the index mode has to be extended."
+			INDEX { hwIpdslamConnectIndex }
+			::= { hwIpdslamConnectTable 1 }
+		
+		HwIpdslamConnectEntry ::=
+			SEQUENCE { 
+				hwIpdslamConnectIndex
+					INTEGER,
+				hwIpdslamConnectFlowControl
+					INTEGER,
+				hwIpdslamConnectMaxMacLearn
+					INTEGER,
+				hwIpdslamConnectMacLearnd
+					INTEGER,
+				hwIpdslamConnectPriorityLevel
+					INTEGER,
+				hwIpdslamConnectSrcVportPhysical
+					INTEGER,
+				hwIpdslamConnectDstVportPhysical
+					INTEGER,
+				hwIpdslamConnectInnerVlanId
+				    INTEGER,
+				hwIpdslamConnectInnerVlanPriority
+				    INTEGER,
+				hwIpdslamConnectMulticastForwardingMode
+					INTEGER					
+			 }
+
+		hwIpdslamConnectIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"IP DSLAM connection index
+				
+				IP DSLAM connection property table. Under ATM mode, the property is configured in the unit of connection. Therefore, atmVcCrossConnectIndex is the index of hwIpdslamConnectIndex. Under IP mode, the index mode has to be extended. 
+				"
+			::= { hwIpdslamConnectEntry 1 }
+		
+		hwIpdslamConnectFlowControl OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				bothOff(1),
+				srcDown(2),
+				dstDown(3),
+				srcDownAndDstDown(4),
+				srcUp(5),
+				srcBoth(6),
+				srcUpAndDstDown(7),
+				srcBothAndDstDown(8),
+				dstUp(9),
+				dstUpAndSrcDown(10),
+				dstBoth(11),
+				dstBothAndSrcDown(12),
+				dstUpAndSrcUp(13),
+				dstUpAndSrcBoth(14),
+				dstBothAndSrcUp(15),
+				dstBothAndSrcBoth(16)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Enable/disable the connection flow control, and the source destination direction is determined by the direction created by PVC. The connect flow control.				
+				"
+			::= { hwIpdslamConnectEntry 2 }
+		
+		hwIpdslamConnectMaxMacLearn OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The maximum MACs this connection can learn				
+				"
+			::= { hwIpdslamConnectEntry 3 }
+		
+		hwIpdslamConnectMacLearnd OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The number of MACs this connection has learned
+				"
+			::= { hwIpdslamConnectEntry 4 }
+		
+		hwIpdslamConnectPriorityLevel OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				high(1),
+				low(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The priority of this connection
+				
+				Before the priority function is enabled in LAN, the order of priority for each connection in LAN can be specified.				
+				"
+			::= { hwIpdslamConnectEntry 5 }
+
+		hwIpdslamConnectSrcVportPhysical OBJECT-TYPE
+			SYNTAX	INTEGER 
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the source virsual physical port of this connection.
+				The port can't be bigger than or equal to 65535.
+                                "
+			::= { hwIpdslamConnectEntry 6 }
+
+		hwIpdslamConnectDstVportPhysical OBJECT-TYPE
+			SYNTAX	INTEGER 
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the Dest virsual physical port of this connection.
+				The port can't be bigger than or equal to 65535.
+                                "
+			::= { hwIpdslamConnectEntry 7 }
+		
+		
+		hwIpdslamConnectInnerVlanId OBJECT-TYPE
+			SYNTAX INTEGER (1..4095)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The inner VLAN index of this connection(1-4095).
+				"           
+		    DEFVAL { 1 }
+			::= { hwIpdslamConnectEntry 8 }			
+						
+		hwIpdslamConnectInnerVlanPriority OBJECT-TYPE
+			SYNTAX INTEGER (0..7)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The inner VLAN priority of this connection, from 0 to 7.  
+				"
+			DEFVAL { 0 }
+			::= { hwIpdslamConnectEntry 9 }
+			
+		hwIpdslamConnectMulticastForwardingMode OBJECT-TYPE
+			SYNTAX INTEGER {outervlan(1),outervlan-innervlan(2)}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The flag of Multicast forwarding mode on service board, 1--outervlan, 2--outervlan & innervlan.  
+				"
+			DEFVAL { 1 }
+			::= { hwIpdslamConnectEntry 10 }
+
+--hwIpdslamBindIpTable
+--
+		hwIpdslamBindIpTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIpdslamBindIpEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"IP address bind table 
+				"
+			::= { hwExtIpdslam 2 }
+		
+		hwIpdslamBindIpEntry OBJECT-TYPE
+			SYNTAX HwIpdslamBindIpEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"the entry of bind IP address table 				
+				"
+				
+			INDEX { hwIpdslamBindIpConnectIndex,hwIpdslamBindIpSubIndex }
+			::= { hwIpdslamBindIpTable 1 }
+
+		
+		HwIpdslamBindIpEntry ::=
+			SEQUENCE { 
+				hwIpdslamBindIpConnectIndex
+					INTEGER,
+				hwIpdslamBindIpSubIndex
+					INTEGER,
+				hwIpdslamBindIpAddress
+					IpAddress,
+				hwIpdslamBindIpAddressRowStatus
+					RowStatus
+			 }
+
+		hwIpdslamBindIpConnectIndex OBJECT-TYPE		
+			SYNTAX      INTEGER
+            		MAX-ACCESS  not-accessible
+            		STATUS      current
+            		DESCRIPTION
+                		"bind IP address connect identification
+                		"
+			::= { hwIpdslamBindIpEntry 1 }
+
+		hwIpdslamBindIpSubIndex OBJECT-TYPE		
+			SYNTAX      INTEGER
+            		MAX-ACCESS  not-accessible
+            		STATUS      current
+            		DESCRIPTION
+                		"bind IP address sub index
+                		"
+			::= { hwIpdslamBindIpEntry 2 }
+
+		hwIpdslamBindIpAddress OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the IP address to bind
+				"
+			::= { hwIpdslamBindIpEntry 3 }
+
+		hwIpdslamBindIpAddressRowStatus OBJECT-TYPE
+			SYNTAX      RowStatus
+            		MAX-ACCESS  read-create
+            		STATUS      current
+            		DESCRIPTION
+                		"bind IP address operate (add(4),delete(6))
+                		"
+			::= { hwIpdslamBindIpEntry 4 }
+--
+--hwIpdslamBindMacTable
+--
+		hwIpdslamBindMacTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIpdslamBindMacEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"MAC address bind table 
+				"
+			::= { hwExtIpdslam 3 }
+		
+		hwIpdslamBindMacEntry OBJECT-TYPE
+			SYNTAX HwIpdslamBindMacEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"the entry of bind MAC address table 				
+				"
+				
+			INDEX { hwIpdslamBindMacConnectIndex,hwIpdslamBindMacSubIndex }
+			::= { hwIpdslamBindMacTable 1 }
+
+		
+		HwIpdslamBindMacEntry ::=
+			SEQUENCE { 
+				hwIpdslamBindMacConnectIndex
+					INTEGER,
+			        hwIpdslamBindMacSubIndex
+					INTEGER,
+				hwIpdslamBindMacAddress
+					MacAddress,
+				hwIpdslamBindMacAddressRowStatus
+					RowStatus
+			 }
+
+		hwIpdslamBindMacConnectIndex OBJECT-TYPE
+			SYNTAX      INTEGER
+            		MAX-ACCESS  not-accessible
+            		STATUS      current
+            		DESCRIPTION
+                		"bind MAC address connect identification
+                		"
+			::= { hwIpdslamBindMacEntry 1 }
+			
+		hwIpdslamBindMacSubIndex OBJECT-TYPE		
+			SYNTAX      INTEGER
+            		MAX-ACCESS  not-accessible
+            		STATUS      current
+            		DESCRIPTION
+                		"bind MAC address sub index
+                		"
+			::= { hwIpdslamBindMacEntry 2 }
+
+		hwIpdslamBindMacAddress OBJECT-TYPE
+			SYNTAX MacAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the MAC address to bind
+				"
+			::= { hwIpdslamBindMacEntry 3 }
+
+		hwIpdslamBindMacAddressRowStatus OBJECT-TYPE
+			SYNTAX      RowStatus
+            		MAX-ACCESS  read-create
+            		STATUS      current
+            		DESCRIPTION
+                		"bind MAC address operate (add(4),delete(6))
+                		"
+			::= { hwIpdslamBindMacEntry 4 }
+
+--
+--hwIpdslamQryLocation
+--
+        hwIpdslamQryLocation OBJECT IDENTIFIER ::= { hwExtIpdslam 4 }   
+        
+        hwIpdslamQryCondition OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..17))
+			MAX-ACCESS write-only
+			STATUS current
+			DESCRIPTION
+				"Query condition, Support MAC address(xx-xx-xx-xx-xx-xx) and IP address(x.x.x.x)"
+			::= { hwIpdslamQryLocation 1 }
+		
+		hwIpdslamQryType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				mac(1),
+				ip(2)
+				}			
+			MAX-ACCESS write-only
+			STATUS current
+			DESCRIPTION
+				"Query type(mac(1), ip(2))"
+			::= { hwIpdslamQryLocation 2 }
+
+------------------------------------------------------------------------------
+-- hwCosQueueMappingMask
+------------------------------------------------------------------------------
+			
+       hwCosQueueMappingMask OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Indicate how the 802.1p priority map to the queue ID.			
+				Every four bits indicate the queue ID corresponding to one 802.1p 
+				priority value.
+				The range of the queue ID is from 0 to 7.    
+				
+			    bit value:                bit31                              bit0
+				                             0000 0000 0000 0000 0000 0000 0000 0000
+				802.1p priority value:	 cos7 cos6 cos5 cos4 cos3 cos2 cos1 cos0                                         
+				
+				when set this mask with value 0xffffffff,means restore it to default value.
+				"    
+			DEFVAL { 1985229328 }
+			::= { hwExtIpdslam 5 }
+------------------------------------------------------------------------------
+-- hwCosQueueSchedTable
+------------------------------------------------------------------------------
+ 
+        hwCosQueueSchedTable OBJECT IDENTIFIER ::= { hwExtIpdslam 6 }   
+        
+        hwCosQueueSchedMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				strict-priority(1),
+				wrr(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Scheduler mode to the cos queue"
+			::= { hwCosQueueSchedTable 1 }
+        
+        hwCosQueueWeightQue0 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"WRR weight of NO.0 cos queue"
+			::= { hwCosQueueSchedTable 2 }
+        
+        hwCosQueueWeightQue1 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"WRR weight of NO.1 cos queue"
+			::= { hwCosQueueSchedTable 3 }
+        
+        hwCosQueueWeightQue2 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"WRR weight of NO.2 cos queue"
+			::= { hwCosQueueSchedTable 4 }
+        
+        hwCosQueueWeightQue3 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"WRR weight of NO.3 cos queue"
+			::= { hwCosQueueSchedTable 5 }
+        
+        hwCosQueueWeightQue4 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"WRR weight of NO.4 cos queue"
+			::= { hwCosQueueSchedTable 6 }
+        
+        hwCosQueueWeightQue5 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"WRR weight of NO.5 cos queue"
+			::= { hwCosQueueSchedTable 7 }
+			
+       hwCosQueueWeightQue6 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"WRR weight of NO.6 cos queue"
+			::= { hwCosQueueSchedTable 8 }
+			
+      hwCosQueueWeightQue7 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"WRR weight of NO.7 cos queue"
+			::= { hwCosQueueSchedTable 9 }
+		
+------------------------------------------------------------------------------
+-- hwCosQueueDepthRateTable
+------------------------------------------------------------------------------
+ 
+        hwCosQueueDepthRateTable OBJECT IDENTIFIER ::= { hwExtIpdslam 7 }   
+        
+        hwCosQueueDepthRateQue0 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Buffer size ratio of NO.0 cos queue"
+			::= { hwCosQueueDepthRateTable 1 }
+        
+        hwCosQueueDepthRateQue1 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Buffer size ratio of NO.1 cos queue"
+			::= { hwCosQueueDepthRateTable 2 }
+        
+        hwCosQueueDepthRateQue2 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Buffer size ratio of NO.2 cos queue"
+			::= { hwCosQueueDepthRateTable 3 }
+        
+        hwCosQueueDepthRateQue3 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Buffer size ratio of NO.3 cos queue"
+			::= { hwCosQueueDepthRateTable 4 }
+        
+        hwCosQueueDepthRateQue4 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Buffer size ratio of NO.4 cos queue"
+			::= { hwCosQueueDepthRateTable 5 }
+        
+        hwCosQueueDepthRateQue5 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Buffer size ratio of NO.5 cos queue"
+			::= { hwCosQueueDepthRateTable 6 }
+        
+        hwCosQueueDepthRateQue6 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Buffer size ratio of NO.6 cos queue"
+			::= { hwCosQueueDepthRateTable 7 }
+        
+        hwCosQueueDepthRateQue7 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Buffer size ratio of NO.7 cos queue"
+			::= { hwCosQueueDepthRateTable 8 }
+			        
+--hwIpTrafficParamTable
+--
+		hwIpTrafficParamTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIpTrafficParamEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"IP traffic table 
+				
+				IP流量模板表"
+			::= { hwExtIpdslam 8 }
+		
+		hwIpTrafficParamEntry OBJECT-TYPE
+			SYNTAX HwIpTrafficParamEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The entry of IP traffic table
+				
+				IP流量模板表"
+			INDEX { hwIpTrafficIndex }
+			::= { hwIpTrafficParamTable 1 }
+
+		
+		HwIpTrafficParamEntry ::=
+			SEQUENCE {
+				hwIpTrafficIndex
+					INTEGER,
+				hwIpTrafficName
+					SnmpAdminString, 
+				hwIpTrafficCir
+					INTEGER,
+				hwIpTrafficCbs
+					INTEGER,
+				hwIpTrafficPir
+					INTEGER,
+				hwIpTrafficPbs
+					INTEGER,
+				hwIpTrafficCm
+					INTEGER,
+				hwIpTrafficPriority
+					INTEGER,
+				hwIpTrafficPriorityPolicy
+					INTEGER,
+				hwIpTrafficRowStatus
+					INTEGER
+			 }
+
+		hwIpTrafficIndex OBJECT-TYPE		
+			SYNTAX INTEGER
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This object is used by the service-port 
+				table to identify the row of this table.
+				
+				流量模板索引"
+			::= { hwIpTrafficParamEntry 1 }
+
+		hwIpTrafficName OBJECT-TYPE
+			SYNTAX SnmpAdminString (SIZE (0..64))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Traffic Name
+				
+				流量模板名称"
+			::= { hwIpTrafficParamEntry 2 }
+
+		hwIpTrafficCir OBJECT-TYPE		
+			SYNTAX INTEGER
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+				"Committed information rate
+				
+				保证信息速率"
+			::= { hwIpTrafficParamEntry 3 }
+
+		hwIpTrafficCbs OBJECT-TYPE		
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Committed burst size
+				
+				保证突发度"
+			::= { hwIpTrafficParamEntry 4 }
+
+		hwIpTrafficPir OBJECT-TYPE		
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Peek information rate
+				
+				峰值信息速率"
+			::= { hwIpTrafficParamEntry 5 }
+		
+		hwIpTrafficPbs OBJECT-TYPE		
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Peek burst size
+				
+				峰值突发度"
+			::= { hwIpTrafficParamEntry 6 }
+			
+		hwIpTrafficCm OBJECT-TYPE		
+			SYNTAX INTEGER
+				{
+				color-blind(1),
+				color-aware(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Color mode
+				
+				颜色识别模式"
+			::= { hwIpTrafficParamEntry 7 }
+		
+		hwIpTrafficPriority OBJECT-TYPE		
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+            	"Set corresponding 802.1p priority for IP connection
+            	
+            	802.1p优先级"
+			::= { hwIpTrafficParamEntry 8 }
+
+		hwIpTrafficPriorityPolicy OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				first-local(1),
+				first-802dot1p(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Traffic priority policy, can use location priority or 802.1p tag
+				
+				优先级测策略，可选本地优先级或者Tag优先级"
+			::= { hwIpTrafficParamEntry 9 }
+
+		hwIpTrafficRowStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				active(1),
+				notInService(2),
+				notReady(3),
+				createAndGo(4),   
+				createAndWait(5),
+				destroy(6), 
+				modify(7)
+				}
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+				"This object is used to create, delete or modify 
+				a row in this table (add(4),delete(6),modify(7))
+				
+				操作状态，用于创建(4)、删除(6)或者修改(7)IP流量模板"
+			::= { hwIpTrafficParamEntry 10 }
+
+--
+--hwBoardTrafficModeTable
+--
+		hwBoardTrafficModeTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBoardTrafficModeEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Taffic mode table
+				
+				限速模式表"
+			::= { hwExtIpdslam 9 }
+		
+		hwBoardTrafficModeEntry OBJECT-TYPE
+			SYNTAX HwBoardTrafficModeEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The entry of traffic mode table
+				
+				限速模式表"
+			INDEX { hwFrameIndex,hwSlotIndex }
+			::= { hwBoardTrafficModeTable 1 }
+
+		HwBoardTrafficModeEntry ::=
+			SEQUENCE {
+				hwBoardTrafficModeType
+				INTEGER
+			 }
+
+		hwBoardTrafficModeType OBJECT-TYPE		
+			SYNTAX INTEGER
+				{
+				service-port(1),
+				port-cos(2)
+				}
+            MAX-ACCESS read-write
+			STATUS current
+            DESCRIPTION
+				"Traffic mode.This object can be set to 'service-port' or 'port-cos'
+				Note: 'port-cos' means 'gemport-cos' in GPON service"
+			::= { hwBoardTrafficModeEntry 1 }
+			
+--
+--hwCosPortTrafficTable
+--
+		hwCosPortTrafficTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwCosPortTrafficEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Port and 802.1p priority traffic table
+				
+				端口加802.1p优先级限速表"
+			::= { hwExtIpdslam 10 }
+		
+		hwCosPortTrafficEntry OBJECT-TYPE
+			SYNTAX HwCosPortTrafficEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The entry of port and 802.1p priority traffic table
+				
+				端口加802.1p优先级限速表"
+			INDEX { ifIndex, hwCosPortExtPara1, hwCosPortTrafficCos }
+			::= { hwCosPortTrafficTable 1 }
+
+		
+		HwCosPortTrafficEntry ::=
+			SEQUENCE {
+				hwCosPortTrafficCos
+					INTEGER, 
+				hwCosPortInboundTrafficIndex
+					INTEGER,
+				hwCosPortOutboundTrafficIndex
+					INTEGER,	
+				hwCosPortTrafficRowStatus
+					INTEGER,
+				hwCosPortExtPara1
+					INTEGER
+			 }
+			 
+		hwCosPortTrafficCos OBJECT-TYPE		
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"802.1p priority
+				
+				802.1p优先级"
+			::= { hwCosPortTrafficEntry 1 }
+		
+		hwCosPortInboundTrafficIndex OBJECT-TYPE		
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The index of IP traffic table used to limit speed 
+				 of packet from outside of device to inside of device
+				
+				从设备外进入到设备内报文引用IP流量模板索引"
+			::= { hwCosPortTrafficEntry 2 }
+			
+		hwCosPortOutboundTrafficIndex OBJECT-TYPE		
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The index of IP traffic table used to limit speed 
+				 of packet from inside of device to outside of device
+				从设备内转发到设备外报文引用IP流量模板索引"
+			::= { hwCosPortTrafficEntry 3 }
+			
+                hwCosPortTrafficRowStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				active(1),
+				notInService(2),
+				notReady(3),
+				createAndGo(4),   
+				createAndWait(5),
+				destroy(6)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"This object is used to create, delete  
+				a row in this table (add(4),delete(6))"
+			::= { hwCosPortTrafficEntry 4 }
+			
+                hwCosPortExtPara1 OBJECT-TYPE		
+			SYNTAX INTEGER
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Cos port configuration parameter, If the board is GPON type board, this parameter means GEM port ID, otherwise, this parameter is not significant. 
+				配置Port+CoS限速参数项，当是GPON接入类型单板时，该值表示GEM端口ID,当是其它接入类型单板时，该值无意义"
+			::= { hwCosPortTrafficEntry 5 }
+				
+------------------------------------------------------------------------------
+-- hwIsCtrlPacket2CPU
+------------------------------------------------------------------------------
+			
+      hwIsCtrlPacket2CPU OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				enable(1),
+				disable(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Switch sending ctrl-packet to CPU or not when maximum MAC address is zero
+				
+				当业务虚端口最大MAC地址学习数设置为0时，控制报文是否送CPU处理的开关"
+			DEFVAL { enable }
+			::= { hwExtIpdslam 11 }	
+							        
+------------------------------------------------------------------------------
+-- hwIpTrafficIndexNext
+------------------------------------------------------------------------------
+			
+      hwIpTrafficIndexNext OBJECT-TYPE
+			SYNTAX INTEGER (0..2147483647)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"This object contains an appropriate value to
+				be used for hwIpTrafficIndex when
+				creating entries in the
+				hwIpTrafficParamTable.
+				The value 0 indicates that no unassigned
+				entries are available. To obtain the
+				hwIpTrafficIndex value for a new
+				entry, the manager issues a management
+				protocol retrieval operation to obtain the
+				current value of this object.  After each
+				retrieval, the agent should modify the value
+				to the next unassigned index.
+				After a manager retrieves a value the agent will
+				determine through its local policy when this index
+				value will be made available for reuse."
+			::= { hwExtIpdslam 12 }
+			
+        
+		hwExtLanBoard OBJECT IDENTIFIER ::= { hwEthernet 4 }
+		
+--   hwLanBoardExtTable
+-- 
+		hwLanBoardExtTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwLanBoardExtEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				extended attribute table of LAN board		
+				"
+			::= { hwExtLanBoard 1 }
+		
+		hwLanBoardExtEntry OBJECT-TYPE
+			SYNTAX HwLanBoardExtEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				extended attribute of lan board table 			
+				"
+			INDEX { hwFrameIndex, hwSlotIndex }
+			::= { hwLanBoardExtTable 1 }
+		
+		HwLanBoardExtEntry ::=
+			SEQUENCE { 
+				hwLanBoardExtWorkMode
+					INTEGER,
+				hwLanBoardExtPriorityControl
+					INTEGER,
+				hwLanBoardExtMulticastControl
+					INTEGER,
+				hwLanBoardExtUnknowncastControl
+					INTEGER,
+				hwLanBoardExtLogicLoop
+					INTEGER,
+				hwLanBoardExtBroadcastControl
+					INTEGER,
+			    hwLanBoardExtLowPriorityRatio
+			        INTEGER,
+			    hwLanBoardExtHighPriorityRatio
+			        INTEGER,
+			    hwLanBoardExtGMIIPauseFrameControl        
+			        INTEGER,
+			    hwLanBoardExtPriorityLevel
+			        INTEGER,
+			    hwLanBoardExtPitpStatus
+			        INTEGER,
+			    hwLanBoardExtPitpEthernetType
+			        INTEGER,
+			    hwLanBoardExtPitpPortTagType
+			        INTEGER,
+			    hwLanBoardExtPitpInfoTagType
+			        INTEGER
+			 }
+
+		hwLanBoardExtWorkMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				general(1),
+				ipdslam(2),
+				atmgroup(3),
+				ipcascade(4)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				mode of the lan board  
+				
+				Common mode: normal mode, in which the chip of lsw works normally.
+				IPDSLAM mode: the VLAN function of lsw chip is replaced by logic.
+				ATM GROUP mode: applied to the multicast of ATM mode, which supports not only the VLAN connection from xDSL to the LAN board, but also the connection between VLAN and other ATM ports in the LAN.
+				"
+			::= { hwLanBoardExtEntry 1 }
+		
+		hwLanBoardExtPriorityControl OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Whether the LAN board supports the function of priority control. If it does, the order of priority for each connection can also be specified.
+				"
+			::= { hwLanBoardExtEntry 2 }
+		
+		hwLanBoardExtMulticastControl OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The traffic suppression of broadcast packet, in unit of packet/second.
+				"
+			::= { hwLanBoardExtEntry 3 }
+		
+		hwLanBoardExtUnknowncastControl OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The traffic suppression of unknown unicast, in unit of packet/second.
+				"
+			::= { hwLanBoardExtEntry 4 }
+		
+		hwLanBoardExtLogicLoop OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				no-loopback(1),
+				gmii-remote(2),
+				utoipa-remote(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				LAN board loopback mode: no loopback(1) cancel loopback, gmii remote(2): GMII remote loopback, utoipa remote(3): UTOPIA remote loopback
+				"
+			::= { hwLanBoardExtEntry 5 }
+		
+		hwLanBoardExtBroadcastControl OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Traffic suppression of broadcast packet control, in unit of packet/second.
+				"
+			::= { hwLanBoardExtEntry 6 }			
+	
+			
+                hwLanBoardExtLowPriorityRatio OBJECT-TYPE
+			SYNTAX INTEGER (0..15)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Default low priority use for filling 802.1p field in ethernet packet upstream."
+			::= { hwLanBoardExtEntry 7 }
+		
+		hwLanBoardExtHighPriorityRatio OBJECT-TYPE
+			SYNTAX INTEGER (0..15)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Default high priority use for filling 802.1p field in ethernet packet upstream."
+			::= { hwLanBoardExtEntry 8 }
+			
+		hwLanBoardExtGMIIPauseFrameControl OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				if the lan board support the function of priority control
+				"
+			::= { hwLanBoardExtEntry 9 }
+
+		hwLanBoardExtPriorityLevel  OBJECT-TYPE
+			SYNTAX INTEGER (0..6)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The level will limit for priority level, eg.level equel 2,so low priority scope is 0-2,
+				high priority scope is 3-7.
+				"
+			::= { hwLanBoardExtEntry 10 }
+		
+		hwLanBoardExtPitpStatus  OBJECT-TYPE
+			SYNTAX INTEGER { pitpoff(1),  pitpvmodeenable(2), pitppmodeenable(3) }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				PITP switch state: pitpoff,pitp vmode enable,pitp pmode enable.the default is bothdisable.
+				"
+			DEFVAL { 1 }
+			::= { hwLanBoardExtEntry 11 }
+
+		hwLanBoardExtPitpEthernetType  OBJECT-TYPE
+			SYNTAX INTEGER (1536..65535)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The ethernet protocol type of PITP PDU, the default is 0x8200.
+				"
+			DEFVAL { 33280 }
+			::= { hwLanBoardExtEntry 12 }
+
+		hwLanBoardExtPitpPortTagType  OBJECT-TYPE
+			SYNTAX INTEGER (1..65535)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The port tag type of PITP PDU, the default is 0x0110.
+				"
+			DEFVAL { 272 }
+			::= { hwLanBoardExtEntry 13 }
+
+		hwLanBoardExtPitpInfoTagType  OBJECT-TYPE
+			SYNTAX INTEGER (1..65535)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The infomation tag type of PITP PDU, the default is 0x0111.
+				"
+			DEFVAL { 273 }
+			::= { hwLanBoardExtEntry 14 }
+--   traps
+-- 
+		hwEthernetTraps OBJECT IDENTIFIER ::= { hwEthernet 10 }
+		
+		hwEthernetAlarmTraps OBJECT IDENTIFIER ::= { hwEthernetTraps 2 }
+		
+		hwEthernetAlarmTrapsOids OBJECT IDENTIFIER ::= { hwEthernetAlarmTraps 0 }
+		
+		hwAlarmEthernetPortOffline NOTIFICATION-TYPE
+			OBJECTS { hwPortIndex }
+			STATUS current
+			DESCRIPTION 
+				"alarm description: port offline 
+				explaination： LAN port offline, the line is not connected 
+				resolving method: change the line or check the peer port  
+				alarm description: the port is offline   
+				"
+			::= { hwEthernetAlarmTrapsOids 1 }
+		
+		hwAlarmEthernetPeerPortNoNeg NOTIFICATION-TYPE
+			OBJECTS { hwPortIndex }
+			STATUS current
+			DESCRIPTION 
+				"Alarm description: peer port does not support auto-negotiation.
+				Explanation: this port is auto-negotiation alarm, while the peer port is non-auto-negotiation alarm.
+				Resolution: Modify the mode of the peer port as auto-negotiation, or set the mode of this port as the non-auto-negotiation mode. In addition, ensure that the parameters under the non-auto-negotiation mode are consistent with the peer port, including the duplex mode, the rate and whether to support PAUSE frame.
+				"
+			::= { hwEthernetAlarmTrapsOids 2 }
+		
+		hwAlarmEthernetMacLost NOTIFICATION-TYPE
+			OBJECTS { hwSlotIndex, hwIpdslamConnectIndex }
+			STATUS current
+			DESCRIPTION 
+				"Alarm description: MAC is lost
+				explanation: The user MAC connected with IP DSLAM is lost.
+				Resolution: Adjust the max MAC learning of PVC.
+				Because in the connection with IP DSLAM, the number of a PVC can learn is limited,the user MAC will be lost if the number is bigger than the limited number.
+				
+				"
+			::= { hwEthernetAlarmTrapsOids 3 }			
+
+		hwAlarmEthernetPortActive NOTIFICATION-TYPE
+			OBJECTS { hwPortIndex }
+			STATUS current
+			DESCRIPTION 
+				"
+				alarm description: port active
+				explaination： LAN port active
+				resolving method:No process to need
+                                "
+			::= { hwEthernetAlarmTrapsOids 4 }
+		hwAlarmEthernetPortDeActive NOTIFICATION-TYPE
+			OBJECTS { hwPortIndex }
+			STATUS current
+			DESCRIPTION 
+				"alarm description: port deactive
+				explaination： LAN port deactive
+				resolving method:check port status is active
+				"
+			::= { hwEthernetAlarmTrapsOids 5 }
+--   hwExtSrvFlow 
+		hwExtSrvFlow OBJECT IDENTIFIER ::= { hwEthernet 5 }
+		
+		hwExtSrvFlowIndexNext OBJECT-TYPE
+			SYNTAX INTEGER (0..2147483647)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" This object contains an appropriate value to
+ 	                          be used for hwSrvFlowIndex when creating
+ 	                          entries in the hwExtSrvFlowTable. The value
+ 	                          0 indicates that no unassigned entries are
+ 	                          available. To obtain the hwSrvFlowIndex
+ 	                          value for a new entry, the manager issues a
+ 	                          management protocol retrieval operation to obtain
+ 	                          the current value of this object.  After each
+ 	                          retrieval, the agent should modify the value to
+ 	                          the next unassigned index.
+ 	                          After a manager retrieves a value the agent will
+ 	                          determine through its local policy when this index
+ 	                          value will be made available for reuse.
+ 	                          查找下一个可用的业务流索引
+				"
+			::= { hwExtSrvFlow 1 }
+		
+				
+		hwExtSrvFlowTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwExtSrvFlowEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" service virtual port table  
+				  业务虚端口表
+				"
+			::= { hwExtSrvFlow 2 }
+		
+		hwExtSrvFlowEntry OBJECT-TYPE
+			SYNTAX HwExtSrvFlowEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"service virtual port entry"
+			INDEX { hwExtSrvFlowIndex }
+			::= { hwExtSrvFlowTable 1 }
+		
+		HwExtSrvFlowEntry ::=
+			SEQUENCE {
+				hwExtSrvFlowIndex        		   			INTEGER,	
+				hwExtSrvFlowPara1                           INTEGER,
+				hwExtSrvFlowPara2			   				INTEGER,	
+				hwExtSrvFlowPara3                           INTEGER,
+				hwExtSrvFlowPara4                           INTEGER,
+				hwExtSrvFlowPara5                           INTEGER,
+				hwExtSrvFlowParaType                        INTEGER,
+				hwExtSrvFlowVlanid                          INTEGER,
+				hwExtSrvFlowReceiveTrafficDescrIndex	    INTEGER,
+				hwExtSrvFlowTransmitTrafficDescrIndex       INTEGER,
+				hwExtSrvFlowMultiServiceType   		   		INTEGER,
+				hwExtSrvFlowMultiServiceUserPara	    	INTEGER,
+				hwExtSrvFlowAdminStatus 		    		INTEGER,
+				hwExtSrvFlowOperStatus                      INTEGER,
+				hwExtSrvFlowRowStatus			    		RowStatus,
+				hwExtSrvFlowInnerVlanId                     INTEGER,
+				hwExtSrvFlowDescInfo                        DisplayString,
+				hwExtSrvFlowTagTransform           	    	INTEGER,
+				hwExtSrvFlowSimulationServiceType           INTEGER
+			}
+			
+		hwExtSrvFlowIndex OBJECT-TYPE
+			SYNTAX INTEGER (1..2147483647)
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" A unique value to identify this service virtual port. "
+			::= { hwExtSrvFlowEntry 1 }	
+
+		hwExtSrvFlowPara1 OBJECT-TYPE
+			SYNTAX INTEGER (1..2147483647)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				  if hwExtSrvFlowParaType equals 1 : this Para indicates the PVC connectId
+				  if hwExtSrvFlowParaType equals 2 : this Para indicates the FrameId
+				  if hwExtSrvFlowParaType equals 3 : this Para indicates the Vdsl mode
+				  if hwExtSrvFlowParaType equals 4 : this Para indicates the FrameId
+				  if hwExtSrvFlowParaType equals 6 : this Para indicates the IfIndex			
+				"
+			::= { hwExtSrvFlowEntry 2 }
+			
+		hwExtSrvFlowPara2 OBJECT-TYPE
+			SYNTAX INTEGER (1..2147483647)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				  if hwExtSrvFlowParaType equals 1 : this Para indicates whether create service virtual port in PVC Bundle or not (Yes(1), No(0))
+				  if hwExtSrvFlowParaType equals 2 : this Para indicates the SlotId
+				  if hwExtSrvFlowParaType equals 3 : this Para indicates the FrameId
+				  if hwExtSrvFlowParaType equals 4 : this Para indicates the SlotId
+				  if hwExtSrvFlowParaType equals 6 : this Para indicates the vpi					
+				"
+			::= { hwExtSrvFlowEntry 3 }
+		
+		hwExtSrvFlowPara3 OBJECT-TYPE
+			SYNTAX INTEGER (1..2147483647)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				  if hwExtSrvFlowParaType equals 1 : this Para is reserved
+				  if hwExtSrvFlowParaType equals 2 : this Para indicates the PortId
+				  if hwExtSrvFlowParaType equals 3 : this Para indicates the SlotId
+				  if hwExtSrvFlowParaType equals 4 : this Para indicates the PortId
+				  if hwExtSrvFlowParaType equals 6 : this Para indicates the vci
+				"
+			::= { hwExtSrvFlowEntry 4 }
+		
+		hwExtSrvFlowPara4 OBJECT-TYPE
+			SYNTAX INTEGER (1..2147483647)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				  if hwExtSrvFlowParaType equals 1 : this Para is reserved
+				  if hwExtSrvFlowParaType equals 2 : this Para is reserved
+				  if hwExtSrvFlowParaType equals 3 : this Para indicates the PortId
+				  if hwExtSrvFlowParaType equals 4 : this Para indicates the GemportId
+				  if hwExtSrvFlowParaType equals 6 : this Para is reserved
+				"
+			::= { hwExtSrvFlowEntry 5 }
+		
+		hwExtSrvFlowPara5 OBJECT-TYPE
+			SYNTAX INTEGER (1..2147483647)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				  reserved parameter
+				"
+			::= { hwExtSrvFlowEntry 6 }
+		
+		hwExtSrvFlowParaType OBJECT-TYPE
+			SYNTAX INTEGER 
+			        { 
+			            pvc(1), 
+			            eth(2),
+			            vdsl(3),
+			            gpon(4),
+			            shdsl(5),
+			            vcl(6)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" How to create a flow of service virtual port " 
+			DEFVAL { pvc }
+			::= { hwExtSrvFlowEntry 7 }
+				
+		hwExtSrvFlowVlanid OBJECT-TYPE
+			SYNTAX INTEGER (1..4095)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" The vlanid of service virtual port 
+				业务虚端口的上行VLAN
+				"
+			DEFVAL { 1 }
+			::= { hwExtSrvFlowEntry 8 } 
+
+	       hwExtSrvFlowReceiveTrafficDescrIndex OBJECT-TYPE
+			SYNTAX INTEGER 
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The value of this object identifies the row
+                                 of the IP Traffic Descriptor Table which applies
+                                 to the receive direction of this service virtual port.
+                                 业务虚端口接收的流量模板索引
+                                 "
+			DEFVAL { 1 }
+			::= { hwExtSrvFlowEntry 9 }
+		
+	       hwExtSrvFlowTransmitTrafficDescrIndex OBJECT-TYPE
+			SYNTAX INTEGER 
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The value of this object identifies the row
+                                 of the IP Traffic Descriptor Table which applies
+                                 to the Transmit direction of this service virtual port.
+                                 业务虚端口发送的流量模板索引
+                                 "
+                        DEFVAL { 1 }         
+			::= { hwExtSrvFlowEntry 10 }
+		 
+	      hwExtSrvFlowMultiServiceType OBJECT-TYPE
+			SYNTAX INTEGER 
+			        { 
+			         by_uservlan(1),
+				 by_encap(2), 
+				 by_8021p(3),
+				 by_vlan_encap(4),
+			         single_service(255)
+				 }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The mode of Multi-service on one pvc 
+				单PVC多业务的方式
+				"   
+		        DEFVAL { by_uservlan }
+			::= { hwExtSrvFlowEntry 11 }
+			
+		hwExtSrvFlowMultiServiceUserPara OBJECT-TYPE
+			SYNTAX INTEGER 
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"THE Multi-service parameter.
+				 If hwExtSrvFlowMultiServiceType is MULTI_SERVICE_BY_USERVLAN,
+				 the bound of parameter is 1 to 4095.
+				 If hwExtSrvFlowMultiServiceType is MULTI_SERVICE_BY_ENCAP,
+				 the parameter is IPoE(1) or PPPoE(2).
+				 If hwExtSrvFlowMultiServiceType is MULTI_SERVICE_BY_8021P,
+				 the parameter is the combination of 802.1p priority(0 to 7)
+				 and User VLAN(0 to 4095)
+				 bit value:       31              16 15      13    12     11         0
+				 combination:     |     reserve     | priority | reserve | User VLAN |
+				 单PVC多业务的用户侧参数
+				 "
+			DEFVAL { 1 }	 
+			::= { hwExtSrvFlowEntry 12 }	
+			
+		 hwExtSrvFlowAdminStatus   OBJECT-TYPE
+                    SYNTAX   INTEGER  {
+                                       up(1),
+                                       down(2)
+                                           }
+                    MAX-ACCESS   read-create
+                    STATUS       current
+                    DESCRIPTION
+                     "The desired administrative status of service virtual port. "
+                     DEFVAL { up }
+                    ::= { hwExtSrvFlowEntry 13}
+
+                 hwExtSrvFlowOperStatus  OBJECT-TYPE
+                    SYNTAX   INTEGER  {
+                                       up(1),
+                                       down(2),
+                                       unknown(3)
+                                           }
+                    MAX-ACCESS   read-only
+                    STATUS       current
+                    DESCRIPTION
+                     "The operstatus status of service virtual port. "
+                    ::= { hwExtSrvFlowEntry 14}
+                    
+                 hwExtSrvFlowRowStatus        OBJECT-TYPE
+                    SYNTAX       RowStatus
+                    MAX-ACCESS   read-create
+                    STATUS       current
+                    DESCRIPTION
+                     "This object is used to create, delete or
+                      modify a row in this table.  To create
+                      a new service virtual port, this object 
+                      is initially set to 'createAndWait' or 
+                      'createAndGo'. To delete a service virtual
+                      port ,this object is is initially set to 
+                      'destroy' "
+                    DEFVAL { active }
+                    ::= { hwExtSrvFlowEntry 15}   
+                    
+                    
+                hwExtSrvFlowInnerVlanId OBJECT-TYPE
+			SYNTAX INTEGER (1..4095)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Multi-Service up inner vlan id,
+				  the bound of patameter is 1 to 4095
+				"
+			DEFVAL { 1 }
+			::= { hwExtSrvFlowEntry 16 } 
+			
+		hwExtSrvFlowDescInfo OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..63))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Service port description.
+				"
+			::= { hwExtSrvFlowEntry 17 }
+			
+		hwExtSrvFlowTagTransform OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				default(0),
+				transparent(1)
+				} 
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Set the tag transform mode of service virtual port.
+				 设置业务虚端口标签切换方式
+				 "
+			DEFVAL { default }	 
+			::= { hwExtSrvFlowEntry 18 }	
+			
+		hwExtSrvFlowSimulationServiceType OBJECT-TYPE
+			SYNTAX INTEGER
+				{   
+				    default(0)
+					aoe(1)
+				} 
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The simulation service type of service virtual port.
+				 "
+			DEFVAL { default }	 
+			::= { hwExtSrvFlowEntry 19 }	
+--			
+-- hwFlowFluxStatisticTable
+--
+		hwFlowFluxStatisticTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwFlowFluxStatisticEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Statistics based on flow."
+			::= { hwExtSrvFlow 3 }
+			
+		hwFlowFluxStatisticEntry OBJECT-TYPE
+		SYNTAX HwFlowFluxStatisticEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"   "
+			INDEX { hwFlowID  }
+			::= { hwFlowFluxStatisticTable 1 }
+			
+		HwFlowFluxStatisticEntry ::=
+		SEQUENCE { 
+			hwFlowID
+				INTEGER,
+			hwFlowFluxUpCells
+				Unsigned32,
+			hwFlowFluxUpPackets
+				Unsigned32,
+			hwFlowFluxDownCells
+				Unsigned32,
+			hwFlowFluxDownPackets
+				Unsigned32,
+			hwFlowFluxAdminStatus
+				INTEGER,
+			hwFlowFluxUpBytes
+				Unsigned32,
+			hwFlowFluxDownBytes
+				Unsigned32,
+			hwFlowFluxUpDiscardPackets
+				Unsigned32,
+			hwFlowFluxDnDiscardPackets
+				Unsigned32
+			 }
+
+		hwFlowID OBJECT-TYPE
+			SYNTAX INTEGER (1..65535)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Index of this table."
+			::= { hwFlowFluxStatisticEntry 1 }
+			
+		hwFlowFluxUpCells OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Statistic of up stream cells(cells)."
+			::= { hwFlowFluxStatisticEntry 2 }
+			
+		hwFlowFluxUpPackets OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Statistic of up stream packets(packets)."
+			::= { hwFlowFluxStatisticEntry 3 }
+			
+		hwFlowFluxDownCells OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Statistic of down stream cells(cells)."
+			::= { hwFlowFluxStatisticEntry 4 }
+			
+		hwFlowFluxDownPackets OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Statistic of down stream packets(packets)."
+			::= { hwFlowFluxStatisticEntry 5 }
+			
+		hwFlowFluxAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				    reset(0)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"To be used to reset the statistics only."
+			::= { hwFlowFluxStatisticEntry 6 }
+			
+		hwFlowFluxUpBytes OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Statistic of up stream bytes(bytes)."
+			::= { hwFlowFluxStatisticEntry 7 }
+			
+		hwFlowFluxDownBytes OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Statistic of down stream bytes(bytes)."
+			::= { hwFlowFluxStatisticEntry 8 }  
+			
+	    hwFlowFluxUpDiscardPackets OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Statistic of up stream discard packets."
+			::= { hwFlowFluxStatisticEntry 9 }
+			
+		hwFlowFluxDnDiscardPackets OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Statistic of down stream discard packets."
+			::= { hwFlowFluxStatisticEntry 10 } 		
+
+--			
+-- hwFlowBindChannelTable
+--
+		hwFlowBindChannelTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwFlowBindChannelEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Flow bind channel table
+				
+				业务虚端口绑定到延时通道表"
+			::= { hwExtSrvFlow 4 }
+			
+		hwFlowBindChannelEntry OBJECT-TYPE
+		SYNTAX HwFlowBindChannelEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Flow bind channel entry
+				
+				业务虚端口绑定到延时通道表"
+			INDEX { hwFlowID  }
+			::= { hwFlowBindChannelTable 1 }
+			
+		HwFlowBindChannelEntry ::=
+		SEQUENCE {
+			hwFlowLatencyChannel
+				INTEGER
+			 }
+
+		hwFlowLatencyChannel OBJECT-TYPE
+			SYNTAX INTEGER (1..2)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The number of latency channel, the bound of parameter is 1 to 2.
+				
+				延时通道号"
+			DEFVAL { 1 }
+			::= { hwFlowBindChannelEntry 1 }
+
+--			
+-- hwFlowIndexQueryTable
+--
+		hwFlowIndexQueryTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwFlowIndexQueryEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				Index of service virtual port query table. 
+				"
+			::= { hwExtSrvFlow 5 }
+			
+		hwFlowIndexQueryEntry OBJECT-TYPE
+		SYNTAX HwFlowIndexQueryEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" The entry of service virtual port query table. "
+			INDEX { ifIndex,
+			        hwFlowBridgePortType,hwFlowPortExtPara1,hwFlowPortExtPara2, hwFlowPortExtPara3,
+			        hwFlowMulitiServiceType,hwFlowMulitiServicePara
+			       }
+			::= { hwFlowIndexQueryTable 1 }
+			
+		HwFlowIndexQueryEntry ::=
+		SEQUENCE { 
+			hwFlowBridgePortType
+				INTEGER,
+			hwFlowPortExtPara1
+				INTEGER,
+			hwFlowPortExtPara2
+				INTEGER,
+			hwFlowPortExtPara3
+				INTEGER,
+			hwFlowMulitiServiceType
+				INTEGER,
+			hwFlowMulitiServicePara
+				INTEGER,
+			hwExtSrvFlowIndex
+				INTEGER
+			 }
+						
+		hwFlowBridgePortType OBJECT-TYPE
+			SYNTAX INTEGER
+			             {
+			             vc_port(1),
+			             ethernet_ptm(2),
+			             gem_port(3)
+			             }
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				The mode of service virtual port.
+				"
+			::= { hwFlowIndexQueryEntry 1 }
+			
+		hwFlowPortExtPara1 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				The service virtual port parameter1.
+				If hwFlowBridgePortType is VC Port, the parameter is VPI.
+				If hwFlowBridgePortType is Ethernet/PTM, the parameter is of no effect.
+				If hwFlowBridgePortType is GEM Port, the parameter is GEM Port ID.
+				"
+			::= { hwFlowIndexQueryEntry 2 }
+			
+		hwFlowPortExtPara2 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				The service virtual port parameter2.
+				If hwFlowBridgePortType is VC Port, the parameter is VCI.
+				If hwFlowBridgePortType is Ethernet/PTM, the parameter is of no effect.
+				If hwFlowBridgePortType is GEM Port, the parameter is of no effect.
+				"
+			::= { hwFlowIndexQueryEntry 3 }
+			
+		hwFlowPortExtPara3 OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				The service virtual port parameter3.
+				"
+			::= { hwFlowIndexQueryEntry 4 }
+			
+		hwFlowMulitiServiceType OBJECT-TYPE
+			SYNTAX INTEGER
+			             {
+			              by_uservlan(1),
+			              by_encap(2),
+			              by_8021p(3),
+			              single_service(255)
+			             }
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				The mode of Multi-service.
+				"
+			::= { hwFlowIndexQueryEntry 5 }
+			
+		hwFlowMulitiServicePara OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				 The Multi-service parameter.
+				 If hwFlowMulitiServiceType is by_uservlan, the bound of parameter 
+				 is 1 to 4095 or 0(priority tagged) or 65534(TLS) or 65535(untagged).
+				 If hwFlowMulitiServiceType is by_encap, the parameter is IPoE(1) or PPPoE(2).
+				 If hwFlowMulitiServiceType is by_8021p,
+				 the parameter is the combination of 802.1p priority(0 to 7) and User VLAN(0 to 4095)
+				 bit value:       31              16 15      13    12     11         0
+				 combination:     |     reserve     | priority | reserve | User VLAN |
+				 If hwFlowMulitiServiceType is single_service, the parameter is of no effect.
+				"
+			::= { hwFlowIndexQueryEntry 6 }
+
+		hwExtSrvFlowIndex OBJECT-TYPE
+			SYNTAX INTEGER (1..2147483647)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				A unique value to identify this service virtual port. 
+				"
+			::= { hwFlowIndexQueryEntry 7 }	
+	           			
+---------------------------------------------------------------------
+-- hwStaticMacTable
+---------------------------------------------------------------------
+		hwStaticMacTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwStaticMacEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" Static MAC address table  "
+			::= { hwEthernet 11 }
+			
+		hwStaticMacEntry OBJECT-TYPE
+		SYNTAX HwStaticMacEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" Static MAC address table property "
+			INDEX { hwStaticMacIndex }
+			::= { hwStaticMacTable 1 }
+			
+		HwStaticMacEntry ::=
+		SEQUENCE { 
+			hwStaticMacIndex
+				Unsigned32,
+			hwStaticMacIfIndex
+				Unsigned32,
+			hwStaticMacVlanID
+				Unsigned32,
+			hwStaticMacVPI
+				Unsigned32,
+			hwStaticMacVCI
+				Unsigned32,
+			hwStaticMacFlowID
+				Unsigned32,
+			hwStaticMacMacAddr
+				MacAddress,
+			hwStaticMacRowStatus
+				INTEGER
+			 }
+
+		hwStaticMacIndex   OBJECT-TYPE
+			SYNTAX Unsigned32 (1..1024)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The mux number of static mac can be set is 1024 for MA5600
+				and 512 for others, and any mac accepted is stored in a control 
+				struct.This leaf just signals the index of the exact mac control 
+				struct."
+			::= { hwStaticMacEntry 1 }
+			
+		hwStaticMacIfIndex OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"In mac control struct, mac is stored together with the port
+				information accordingly. It gives the port type, such as ADSL,
+				ETH,ect, and the frame/slot/port/."
+			::= { hwStaticMacEntry 2 }
+			
+		hwStaticMacVlanID OBJECT-TYPE
+			SYNTAX Unsigned32 (1..4093)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"when set static mac to eth port, a vlan ID must be provided together.
+				It is just the vlan ID"
+			::= { hwStaticMacEntry 3 }
+			
+		hwStaticMacVPI OBJECT-TYPE
+			SYNTAX Unsigned32 (0..4095,8191)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The VPI of a PVC"
+			::= { hwStaticMacEntry 4 }
+			
+		hwStaticMacVCI OBJECT-TYPE
+			SYNTAX Unsigned32 (32..65535)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The VCI of a PVC"
+			::= { hwStaticMacEntry 5 }
+			
+		hwStaticMacFlowID OBJECT-TYPE
+			SYNTAX Unsigned32 (0..8191)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Flow ID,index to the service virtual port"
+			::= { hwStaticMacEntry 6 }
+			
+		hwStaticMacMacAddr OBJECT-TYPE
+			SYNTAX MacAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the mac address, and its format is XX-XX-XX-XX-XX-XX.
+				The exception is 00-00-00-00-00-00, and also broadcast mac
+				and all multicast mac are invalid.				
+				"
+			::= { hwStaticMacEntry 7 }
+			
+		hwStaticMacRowStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				    active(1),
+				    notInService(2),
+				    notReady(3),
+				    createAndGo(4),   
+				    createAndWait(5),
+				    destroy(6), 
+				    modify(7)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the variable is used to decide what operation will be done
+				when set from SNMP. The supported operations are create and
+				destroy.
+				"
+			::= { hwStaticMacEntry 8 }
+
+------------------------------------------------------------------			
+-- hwStaticMacNextFreeIndex
+------------------------------------------------------------------			
+    hwStaticMacNextFreeIndex OBJECT-TYPE
+			SYNTAX INTEGER 
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+			"  This object contains an appropriate value to
+ 	          be used for hwStaticMacIndex when creating
+ 	          entries in the hwStaticMacTable. The value
+ 	          0 indicates that no unassigned entries are
+ 	          available. To obtain the hwStaticMacIndex
+ 	          value for a new entry, the manager issues a
+ 	          management protocol retrieval operation to obtain
+ 	          the current value of this object.  After each
+ 	          retrieval, the agent should modify the value to
+ 	          the next unassigned index.
+ 	            After a manager retrieves a value the agent will
+ 	          determine through its local policy when this index
+ 	          value will be made available for reuse.  "
+ 	        ::= { hwEthernet 12 }	
+ 	        
+------------------------------------------------------------------	 	        			
+-- hwPortIsolate
+------------------------------------------------------------------	
+		hwPortIsolate OBJECT IDENTIFIER ::= { hwEthernet 13 }
+
+		hwPortIsolatetable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwPortIsolateEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"port isolate table."
+			::= { hwPortIsolate 1 }
+			
+		hwPortIsolateEntry OBJECT-TYPE
+		    SYNTAX HwPortIsolateEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"   "
+			INDEX { hwFrameIsolateIndex,
+			        hwSlotIsolateIndex,
+			        hwPortIsolateIndex }
+			::= { hwPortIsolatetable 1 }
+			
+		HwPortIsolateEntry ::=
+		SEQUENCE { 
+			hwFrameIsolateIndex
+				INTEGER,
+			hwSlotIsolateIndex
+				INTEGER,
+			hwPortIsolateIndex
+				INTEGER,
+			hwIsolateRowstatus
+				INTEGER,
+			hwIsolateStatus
+				INTEGER,
+			hwIsolateBroadcast
+				INTEGER,
+			hwIsolateUnknownMulticast
+				INTEGER,
+			hwIsolateUnknownUnicast
+				INTEGER
+			 }
+
+		hwFrameIsolateIndex OBJECT-TYPE
+			SYNTAX INTEGER (0..2147483647)
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Index of this table."
+			::= { hwPortIsolateEntry 1 }
+		
+		hwSlotIsolateIndex OBJECT-TYPE
+			SYNTAX INTEGER (0..2147483647)
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Index of this table."
+			::= { hwPortIsolateEntry 2 }
+			
+		hwPortIsolateIndex OBJECT-TYPE
+			SYNTAX INTEGER (0..2147483647)
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Index of this table."
+			::= { hwPortIsolateEntry 3 }
+			
+		hwIsolateRowstatus OBJECT-TYPE
+			SYNTAX INTEGER  
+			{
+			    active(1),
+			    notInService(2),
+			    notReady(3),
+			    createAndGo(4),   
+			    createAndWait(5),
+			    destroy(6), 
+			    modify(7)
+			}   
+			MAX-ACCESS   read-write
+			STATUS       current
+			DESCRIPTION
+				"This object is used to create, delete or
+				modify a row in this table.  To create
+				a new service virtual port, this object 
+				is initially set to 'createAndWait' or 
+				'createAndGo'. To delete a service virtual
+				port ,this object is is initially set to 
+				'destroy' "
+				DEFVAL { active }
+			::= { hwPortIsolateEntry 4}   
+			
+		hwIsolateStatus OBJECT-TYPE
+			SYNTAX   INTEGER  
+			{
+			     enable(1),
+			     disable(2)
+			}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"port isolate status.
+				 enable or disable the system isolation switch of port in the same smart vlan.
+				 To UpLink Port default value is disable.
+				 To Downlink Port default value is enable"
+			::= { hwPortIsolateEntry 5 }
+			
+		hwIsolateBroadcast OBJECT-TYPE    	
+			SYNTAX INTEGER
+			 {
+			     enabled(1),
+			     disabled(2)
+			 }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				enable or disable the system isolation switch of broadcast frame between 
+				different down link ports in the same smart vlan.Default state is disable.
+				"
+				DEFVAL { 2 }
+			::= { hwPortIsolateEntry 6 }
+			
+		hwIsolateUnknownMulticast OBJECT-TYPE    	
+			SYNTAX INTEGER
+			 {
+			     enabled(1),
+			     disabled(2)
+			 }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				enable or disable the system isolation switch of unknown multicast frame between 
+				different down link ports in the same smart vlan.Default state is disable.
+				"
+				DEFVAL { 2 }
+			::= { hwPortIsolateEntry 7 }
+				
+		hwIsolateUnknownUnicast OBJECT-TYPE    	
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				enable or disable the system isolation switch of unknown unicast frame between 
+				different down link ports in the same smart vlan.Default state is disable.
+				"
+				DEFVAL { 2 }
+			::= { hwPortIsolateEntry 8 }
+			
+---------------------------------------------------------------------
+-- hwDynamicMac
+---------------------------------------------------------------------
+    hwDynamicMac OBJECT IDENTIFIER ::= { hwEthernet 14 }   
+    
+    hwDynamicMacConfigTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDynamicMacConfigEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" Dynamic MAC address  config table  "
+			::= { hwDynamicMac 1 }
+			
+		hwDynamicMacConfigEntry OBJECT-TYPE
+		SYNTAX HwDynamicMacConfigEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" Dynamic MAC address config table property "
+			INDEX { ifIndex }
+			::= { hwDynamicMacConfigTable 1 }
+			
+		HwDynamicMacConfigEntry ::=
+		SEQUENCE {
+			hwPortMaxDynamicMacCount
+				Unsigned32
+				 }
+
+		hwPortMaxDynamicMacCount   OBJECT-TYPE
+			SYNTAX Unsigned32 (0..16384)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The MAX number of dynamic mac address can be learned per port."
+			::= { hwDynamicMacConfigEntry 2 }
+
+    hwDynamicMacTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDynamicMacEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" Dynamic MAC address table  "
+			::= { hwDynamicMac 2 }
+			
+		hwDynamicMacEntry OBJECT-TYPE
+		SYNTAX HwDynamicMacEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" Dynamic MAC address table property "
+			INDEX { ifIndex, hwDynamicMacIndex }
+			::= { hwDynamicMacTable 1 }	
+					
+		HwDynamicMacEntry ::=
+		SEQUENCE {
+		    hwDynamicMacIndex
+				Unsigned32,
+			hwDynamicMacVlanId
+			    Unsigned32,
+			hwDynamicMacAddr
+				MacAddress,
+			hwTimeTillExpired
+				Unsigned32,
+			hwDynamicMacRowStatus
+			    INTEGER
+				 }
+
+		hwDynamicMacIndex   OBJECT-TYPE
+			SYNTAX Unsigned32 (0..16384)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The dynamic MAC address index. "
+			::= { hwDynamicMacEntry 1 }
+
+        hwDynamicMacVlanId   OBJECT-TYPE
+			SYNTAX Unsigned32 (1..4094)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The VLAN of dynamic MAC address. "
+			::= { hwDynamicMacEntry 2 }
+			
+		hwDynamicMacAddr   OBJECT-TYPE
+			SYNTAX MacAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The mac address, and its format is XX-XX-XX-XX-XX-XX."
+			::= { hwDynamicMacEntry 3 }
+
+        hwTimeTillExpired   OBJECT-TYPE
+			SYNTAX Unsigned32 (10..1000000)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The time of the MAC address till expired."
+			::= { hwDynamicMacEntry 4 }  
+			
+		hwDynamicMacRowStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				    active(1),
+				    notInService(2),
+				    notReady(3),
+				    createAndGo(4),   
+				    createAndWait(5),
+				    destroy(6), 
+				    modify(7)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The variable is used to decide what operation will be done
+				when set from SNMP. The supported operations is only destroy.
+				"
+			::= { hwDynamicMacEntry 5 }
+		
+	hwDynamicMacLearningMode OBJECT-TYPE
+		SYNTAX INTEGER
+			{
+				unlimited(1),
+				limited(2)					
+			}
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION
+			"MAC address learning mode.
+			"
+		::= { hwDynamicMac 3 }	
+					
+	END
+

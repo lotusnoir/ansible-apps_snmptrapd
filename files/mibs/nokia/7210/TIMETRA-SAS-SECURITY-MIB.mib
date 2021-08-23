@@ -1,0 +1,248 @@
+TIMETRA-SAS-SECURITY-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Unsigned32,
+    Counter32, IpAddress, Counter64, Gauge32, Integer32,
+    NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+
+    TEXTUAL-CONVENTION, RowStatus, DisplayString,
+    TruthValue, TimeStamp, DateAndTime, MacAddress
+        FROM SNMPv2-TC
+
+    timetraSRMIBModules, tmnxSRObjs, tmnxSRNotifyPrefix,
+    tmnxSRConfs
+        FROM TIMETRA-GLOBAL-MIB
+
+    TItemDescription, TNamedItem, TNamedItemOrEmpty,
+    TmnxPortID, IpAddressPrefixLength,
+    TTcpUdpPort, TIpProtocol, TmnxAdminState, TmnxOperState,
+    TDSCPNameOrEmpty, TIpOption, TmnxVRtrIDOrZero, TmnxActionType,
+    TCpmProtPolicyID, TCIRRate, TPIRRate, TPIRRateOrZero,
+    TmnxServId, Dot1PPriority, Dot1PPriorityMask,
+    ServiceAccessPoint, TOperator,
+    TBurstSize, InterfaceIndex, TmnxDisplayStringURL
+        FROM TIMETRA-TC-MIB
+
+    TItemMatch, TFilterLogId, TEntryId
+        FROM TIMETRA-FILTER-MIB
+
+    tmnxCpmFlashHwIndex, tmnxCpmFlashOperStatus
+        FROM TIMETRA-CHASSIS-MIB
+
+    InetAddressIPv6, InetAddressPrefixLength, InetAddressType,
+    InetAddress
+        FROM INET-ADDRESS-MIB
+
+    Dot1agCfmMDLevel
+        FROM IEEE8021-CFM-MIB
+
+    InterfaceIndexOrZero
+        FROM IF-MIB
+
+    vRtrID, vRtrIfIndex
+        FROM TIMETRA-VRTR-MIB
+
+    svcId
+        FROM TIMETRA-SERV-MIB
+
+    sapPortId, sapEncapValue
+        FROM TIMETRA-SAP-MIB
+
+    sdpBindId
+        FROM TIMETRA-SDP-MIB
+
+    tmnxPortPortID
+        FROM TIMETRA-PORT-MIB
+
+    tmnxIPMafMatchEntry                           
+       FROM TIMETRA-SECURITY-MIB
+        
+
+    timetraSASObjs, timetraSASModules,timetraSASNotifyPrefix, 
+    timetraSASConfs                               FROM TIMETRA-SAS-GLOBAL-MIB    
+
+    tmnxSASSecurityObjects,tmnxSASSecurityNotifyPrefix,
+    tmnxSASSecurityNotifications              FROM TIMETRA-SAS-SYSTEM-MIB
+    ;
+
+timetraSASSecurityMIBModule  MODULE-IDENTITY
+        LAST-UPDATED "201102010000Z"
+        ORGANIZATION "Nokia"
+        CONTACT-INFO
+            "Nokia SROS Support
+             Web: http://www.nokia.com"
+        DESCRIPTION
+            "This document is the SNMP MIB module to manage and provision
+             Security features on Nokia 7210 systems.
+
+             Copyright 2003-2015 Nokia. All rights reserved.
+             Reproduction of this document is authorized on the condition that
+             the foregoing copyright notice is included.
+
+             This SNMP MIB module (Specification) embodies Nokia's
+             proprietary intellectual property.  Nokia retains
+             all title and ownership in the Specification, including any
+             revisions.
+
+             Nokia grants all interested parties a non-exclusive
+             license to use and distribute an unmodified copy of this
+             Specification in connection with management of Nokia
+             products, and without fee, provided this copyright notice and
+             license appear on all copies.
+
+             This Specification is supplied 'as is', and Nokia
+             makes no warranty, either express or implied, as to the use,
+             operation, condition, or performance of the Specification."
+
+--
+--  Revision History
+--
+
+        REVISION        "200301270000Z"
+        DESCRIPTION     "Rev 1.0                27 Jan 2003 00:00
+                         Initial version of the TIMETRA-SAS-SECURITY-MIB."
+
+        ::= { timetraSASModules 20 }
+
+
+tmnxSASSecurityConformance     OBJECT IDENTIFIER ::= { timetraSASConfs 20 }
+
+        
+-- --------------------------------------------------------------------
+-- Objects in the TIMETRA-SAS-SECURITY-MIB
+-- --------------------------------------------------------------------
+
+tmnxSASMafObjs OBJECT IDENTIFIER ::= { tmnxSASSecurityObjects 1 }
+
+-- --------------------------------------------------------------------
+-- tmnxIPMafMatchExtnTable
+-- --------------------------------------------------------------------
+
+
+
+tmnxIPMafMatchExtnTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TmnxIPMafMatchExtnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table replaces the tmnxMafMatchExtnTable. It allows to define both
+         IPv4 and IPv6 MAF IP entries.
+
+         The tmnxIPMafMatchExtnTable contains ipvx filter match criteria
+         associated with Management Access Filters (MAFs) configured on the
+         system."
+::= { tmnxSASMafObjs 1 }
+
+tmnxIPMafMatchExtnEntry OBJECT-TYPE
+    SYNTAX      TmnxIPMafMatchExtnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each row entry contains information about a management access filter
+         entry associated with a specific Management Access Filter (MAF).
+
+         The filter criter is applied in order according to the value of
+         tmnxIPMafMatchIndex.
+
+         The match algorithm is exited upon the first
+         match found and then the action specified is executed.  For this
+         reason, entries must be sequenced from most to least explicit.
+
+         An entry where tmnxIPMafMatchAction has a value of 'none' is not
+         active.
+         
+         Rows can only be created for tmnxGenMafType's:
+         - ipv4 (1), and.
+         - ipv6 (2).
+         For mac Maf filters a dedicated table is provided
+         (tmnxMacMafMatchTable). "
+    AUGMENTS { tmnxIPMafMatchEntry }
+    ::= { tmnxIPMafMatchExtnTable 1 }
+
+TmnxIPMafMatchExtnEntry ::= SEQUENCE {
+    tmnxIPMafMatchL4SrcPort      TTcpUdpPort,
+    tmnxIPMafMatchL4SrcPortMask  Unsigned32,
+    tmnxIPMafMatchFragment           TItemMatch
+}
+
+tmnxIPMafMatchL4SrcPort  OBJECT-TYPE
+    SYNTAX      TTcpUdpPort
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxIPMafMatchL4SrcPort specifies a TCP or UDP port
+         number to be used as a match criteria in this Management Access
+         Filter Entry.  A value of zero indicates that this object is
+         not initialized."
+    DEFVAL { 0 }
+    ::= { tmnxIPMafMatchExtnEntry 1 }
+
+tmnxIPMafMatchL4SrcPortMask  OBJECT-TYPE
+    SYNTAX      Unsigned32 (0|1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxIPMafMatchL4SrcPortMask specifies a mask to be used
+         when the value of tmnxIPMafMatchL4SrcPort is not equal to zero.
+         The mask allows a range of TCP or UDP port values to be
+         specified for the match criteria in this Management Access Filter
+         Entry.  A value of 65535, 0xFFFF, is used to indicate that
+         this object is not initialized."
+    DEFVAL { 'FFFF'h }
+    ::= { tmnxIPMafMatchExtnEntry 2 }
+
+tmnxIPMafMatchFragment  OBJECT-TYPE
+    SYNTAX      TItemMatch
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "When the value of tmnxIPMafMatchFragment is 'true', entry match fragmentation
+         is enabled."
+    DEFVAL { off }
+    ::= { tmnxIPMafMatchExtnEntry 3 }
+
+
+
+--
+-- Conformance Information
+--
+tmnxSASSecurityCompliances OBJECT IDENTIFIER ::= { tmnxSASSecurityConformance 1 }
+tmnxSASSecurityGroups      OBJECT IDENTIFIER ::= { tmnxSASSecurityConformance 2 }
+
+--
+-- Compliance Statements
+--
+
+
+tmnxSASSecurity7210V2v0Compliance  MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for management of security features
+         on Nokia 7210 series systems release R7.0."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+            tmnxSASSecurityMafV7v0Group
+           }
+       ::= { tmnxSASSecurityCompliances 2 }
+
+
+
+tmnxSASSecurityMafV7v0Group OBJECT-GROUP
+    OBJECTS {
+    tmnxIPMafMatchL4SrcPort,
+    tmnxIPMafMatchL4SrcPortMask, 
+    tmnxIPMafMatchFragment      
+    }
+    STATUS    current
+    DESCRIPTION
+        "The group of objects supporting management of Management Access
+         Filters (MAF) capabilities on Nokia SROS series systems
+         release 6.0"
+    ::= { tmnxSASSecurityGroups 2}
+
+ END   
+            

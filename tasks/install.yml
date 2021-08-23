@@ -1,0 +1,49 @@
+---
+- name: Check if executable exist
+  stat:
+    path: "/usr/sbin/snmptrapd"
+  register: snmptrapd_binary
+
+- when: not snmptrapd_binary.stat.exists
+  block:
+    - name: Install required packages
+      package:
+        name: [snmptrapd, rsync]
+        state: present
+
+    - name: Create required folders
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      with_items:
+        - "/etc/systemd/system/snmptrapd.service.d"
+        - "{{ snmptrapd_logdir }}"
+
+    - name: Start and enable snmptrapd service
+      service:
+        name: snmptrapd
+        state: started
+        enabled: true
+
+- name: Synchronise mibs
+  synchronize:
+    src: mibs
+    dest: /var/lib/
+
+- name: Create systemd override
+  template:
+    src: snmptrapd_override.conf
+    dest: "/etc/systemd/system/snmptrapd.service.d/override.conf"
+    mode: 0644
+  notify:
+    - reload daemon
+    - restart snmptrapd
+
+- name: Create config file
+  template:
+    src: snmptrapd.conf
+    dest: "/etc/snmp/snmptrapd.conf"
+    mode: 0644
+  notify:
+    - restart snmptrapd

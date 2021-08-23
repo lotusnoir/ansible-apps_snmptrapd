@@ -1,0 +1,2233 @@
+-- IHUB QOS MIB
+--------------------------------------------------------------------------- 
+-- This specification is published by Alcatel-Lucent under Non-Disclosure 
+-- Agreement(s) (NDA) with specific parties and has to be considered as 
+-- Confidential Information as defined in such NDA. 
+-- Alcatel-Lucent reserves the right to revise this document for any reason, 
+-- including but not limited to conformity with standards promulgated by 
+-- various agencies, utilisation of advances in the state of the technical 
+-- areas, or the reflection of changes in the design of any equipment, 
+-- techniques, or procedures described or referred to herein. 
+-- The product specifications and other technical or performance information 
+-- contained herein are subject to change without notice. 
+-- Updates of this document will be issued under the above NDA's. 
+-- Alcatel-Lucent makes no representation or warranty, expressed or implied, 
+-- with respect to the sufficiency, accuracy, or utility of any information 
+-- or opinion contained herein. Alcatel-Lucent expressly advises that any use
+-- of for any purpose or reliance upon this technical reference is at the 
+-- risk of the user and that Alcatel-Lucent shall not be liable for any 
+-- damage or injury incurred by any person arising out of the sufficiency, 
+-- accuracy, or utility of any information or opinion contained herein. 
+-- This document is not to be construed as a suggestion to any manufacturer 
+-- to modify or change any of its products, nor does this document represent 
+-- any commitment by Alcatel-Lucent to sell or purchase any product. 
+-- Nothing contained herein shall be construed as conferring by implication, 
+-- estoppel, or otherwise any license or right under any patent, whether or 
+-- not the use of any information herein necessarily employs an invention of 
+-- any existing or later issued patent. 
+-- Alcatel-Lucent reserves the right not to offer any or all of these products 
+-- and to withdraw any or all of them at any future time. 
+-- Copyright (C) 2009, Alcatel-Lucent. All Rights Reserved. 
+---------------------------------------------------------------------------
+
+
+IHUB-QOS-MIB DEFINITIONS ::= BEGIN
+
+-- Import list ? need to delete the unused ones!
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, enterprises,
+    Unsigned32, IpAddress, Integer32
+                                                     FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP
+                                                     FROM SNMPv2-CONF
+    TEXTUAL-CONVENTION, RowStatus,
+    MacAddress, TruthValue, 
+    StorageType, TimeStamp
+                                                     FROM SNMPv2-TC
+    InetAddress, InetAddressType,                                                 
+    InetAddressIPv6, InetAddressPrefixLength
+                                                     FROM INET-ADDRESS-MIB
+
+    timetraSRMIBModules, tmnxSRObjs,
+    tmnxSRNotifyPrefix, tmnxSRConfs
+                                                     FROM TIMETRA-GLOBAL-MIB
+    Dot1PPriority, TItemDescription,
+    TNamedItem, TNamedItemOrEmpty,
+    TDSCPName, TFCName, TLspExpValue,
+    TCIRRate, TPIRRate, TFCType
+                                                     FROM TIMETRA-TC-MIB
+    
+    TItemScope, TProfile,
+    TProfileOrNone, TPrecValue			     FROM TIMETRA-TC-MIB	
+    
+    svcId 						
+    							FROM TIMETRA-SERV-MIB   	    	
+    ;
+
+
+ihubQosMIB   
+        MODULE-IDENTITY
+        LAST-UPDATED    "201303150000Z"
+        ORGANIZATION    "Alcatel"
+        CONTACT-INFO
+            "Tom Batsele
+             Email:  asam.mibsupport@alcatel-lucent.com" 
+        DESCRIPTION
+            "This document is the SNMP MIB module to manage and provision
+             Quality of Service features on Alcatel-Lucent?s IHUB for
+             the 7302 ISAM, 7330 ISAM FTTN, and 7342 ISAM FTTU systems."
+
+--
+--  Revision History
+--
+       REVISION    "201303150000Z"
+       DESCRIPTION "Rev 0.6
+                   Editor: Jaikumar S.
+                   For RCR ALU00187423
+                   Added
+                      ihubQosIngressLsrNetworkPolicyTable 
+                      ihubQosIngressLsrNetworkPolicyEntry 
+                      ihubQosIngressLsrNetworkPolicyIndex
+                      ihubQosIngressLsrNetworkPolicyRowStatus
+                      ihubQosIngressLsrNetworkPolicyScope
+                      ihubQosIngressLsrNetworkPolicyDescription
+                      ihubQosIngressLsrNetworkPolicyRefCount
+                      ihubQosIngressLsrNetworkPolicyDefaultFC
+                      ihubQosIngressLsrNetworkPolicyLastChanged"
+        
+        REVISION        "201201180000Z"
+        DESCRIPTION     "Rev 0.5                    18 January 2012 00:00
+                         Changes: Additional objects for TR-156 QoS
+                         RCR ALU00418799."
+
+        REVISION        "201106130000Z"
+        DESCRIPTION     "Rev 0.4                    13 June 2011 00:00
+                         Changes: Additional objects for Per CoS Rate Limiting
+                         RCR ALU00187423."
+
+
+        REVISION        "201003150000Z"
+        DESCRIPTION     "Rev 0.3                    15 March 2010 00:00
+                         Changes: replace SMIv1 syntax by SMIv2."
+
+        REVISION        "200905240000Z"
+        DESCRIPTION     "Rev 0.2                    24 Mai 2009 00:00
+                         Updated version of the IHUB-QOS-MIB."
+
+        REVISION        "200811010000Z"
+        DESCRIPTION     "Rev 0.1                    05 Nov 2008 00:00
+                         Initial version of the IHUB-QOS-MIB."
+
+
+
+      ::= { enterprises alcatel(637) asd(61) asam(1) 87 }
+
+
+ihubIngressQos             OBJECT IDENTIFIER ::= { ihubQosMIB 1 } 
+ihubSgtQos                 OBJECT IDENTIFIER ::= { ihubQosMIB 2 }
+ihubIngressNetworkQos      OBJECT IDENTIFIER ::= { ihubQosMIB 3 } 
+ihubEgressNetworkQos       OBJECT IDENTIFIER ::= { ihubQosMIB 4 } 
+-- ihubNetworkQos             OBJECT IDENTIFIER ::= { ihubQosMIB 5 } 
+ihubBaseRouterPolicyIds    OBJECT IDENTIFIER ::= { ihubQosMIB 6 } 
+
+
+ihubIngressSystemCosQos	   	OBJECT IDENTIFIER ::= { ihubQosMIB 7 }  	
+ihubEgressSystemPerCosMap	OBJECT IDENTIFIER ::= { ihubQosMIB 8 }  	
+ihubEgressPerCosQos	   	OBJECT IDENTIFIER ::= { ihubQosMIB 9 }  
+
+
+ihubEgressSystemPortQos	   	OBJECT IDENTIFIER ::= { ihubQosMIB 10 }
+ihubIngressSystemStormControl     OBJECT IDENTIFIER ::= { ihubQosMIB 11 }
+ihubEgressSystemStormControl     OBJECT IDENTIFIER ::= { ihubQosMIB 12 }
+-- ----------------------------
+-- Textual Conventions
+-- -------------------------
+
+PolicyRefCount ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Count of how many times a policy has been used. In general, the count
+         must be zero before the policy can be deleted. Also, for a policy with
+         scope = exclusive, the count can never be greater than 1."
+    SYNTAX  Integer32 
+
+TQosVcTypeSet ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This data type describes a set of VC-types.
+         It is defined as a bitmap with
+           - bit 0 : vlan
+           - bit 1 : ether"
+    SYNTAX  Integer32(0..255)
+
+IhubRateLimitBurstSize ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+       "The burst size for rate limiting (metering) functions. The units are
+        kBytes. Broadcom hardware allows up to a maximum of 256 Mbytes or
+        262144 kBytes."
+    SYNTAX      Integer32 (-1|1..262144)
+
+IhubEgressPortQueue ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+       "The Number egress queues available per port."
+    SYNTAX      Integer32 (0..7)
+
+-- ----------------------------
+-- MIB Objects begin here
+-- ----------------------------
+
+-- ----------------------------------------
+-- Ingress QoS Policy Table
+-- ----------------------------------------
+
+ihubQosIngressPolicyTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IhubQosIngressPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "This object contains a table for creating and storing policies for ingress
+     QoS. A maximum of 32 policies are allowed."
+::= { ihubIngressQos 1  }
+
+
+ihubQosIngressPolicyEntry OBJECT-TYPE
+    SYNTAX IhubQosIngressPolicyEntry 
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    	  "This table contains as row a single ingress QoS policy.
+          Policy (1) is the default policy which is created
+          automatically. The other policies are created by user.
+          The default policy cannot be modified or deleted."
+    	INDEX {ihubQosIngressPolicyIndex}
+::= { ihubQosIngressPolicyTable 1}
+
+
+IhubQosIngressPolicyEntry ::=
+ SEQUENCE
+    { 
+       ihubQosIngressPolicyIndex                  Integer32, 
+       ihubQosIngressPolicyRowStatus              RowStatus, 
+       ihubQosIngressPolicyScope                  TItemScope,
+       ihubQosIngressPolicyDescription            TItemDescription,
+       ihubQosIngressPolicyRefCount               PolicyRefCount,
+       ihubQosIngressPolicyDefaultFC              TNamedItem,
+       ihubQosIngressPolicyDefaultProfile         TProfile,
+       ihubQosIngressPolicyUntaggedDot1p          Dot1PPriority,
+       ihubQosIngressPolicyLastChanged            TimeStamp,
+       ihubQosIngressPolicyColorSelector	  INTEGER
+    }
+
+ihubQosIngressPolicyIndex OBJECT-TYPE
+    SYNTAX       Integer32 (1..65535)
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The policy ID is the index to this table."
+    ::= { ihubQosIngressPolicyEntry 1 }
+
+ihubQosIngressPolicyRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Row Status for the policy. The deletion of this row
+         has an action of removing the dependent rows in the 
+         following tables :
+           - ihubQosIngressDscpTable
+           - ihubQosIngressPrecedenceTable
+           - ihubQosIngressDot1pTable"
+    ::= { ihubQosIngressPolicyEntry 2 }
+
+ihubQosIngressPolicyScope OBJECT-TYPE
+    SYNTAX       TItemScope
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Scope of the policy. If the scope is 'exclusive', it can only be
+         associated with a single service (VPRN, IES, V-VPLS, EPIPE, VPLS, 
+         base router). If the scope is 'template', it can be associated with 
+         multiple items"
+    DEFVAL { template }
+    ::= { ihubQosIngressPolicyEntry 3 }
+
+ihubQosIngressPolicyDescription OBJECT-TYPE
+    SYNTAX       TItemDescription
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "User provided description of the policy."
+    DEFVAL { ''H }
+    ::= { ihubQosIngressPolicyEntry 4 }
+
+ihubQosIngressPolicyRefCount  OBJECT-TYPE
+    SYNTAX       PolicyRefCount
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Indicates the number of entities using this policy. If the
+         reference count is greater than 0, then this policy is 'in use',
+         and may NOT be deleted. If the value is 0, then this policy is
+         'not in use', and can be deleted."
+    ::= { ihubQosIngressPolicyEntry 5 }
+
+ihubQosIngressPolicyDefaultFC OBJECT-TYPE
+    SYNTAX       TNamedItem
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the forwarding class which should be used for 
+         all traffic that does not match a specific classification 
+         specified in this ingress QoS policy. If not specified 
+         explicitly, all traffic will be classified as best-effort 
+         'be'."
+    DEFVAL { 'be'H }
+    ::= { ihubQosIngressPolicyEntry 6 }
+
+ihubQosIngressPolicyDefaultProfile OBJECT-TYPE
+    SYNTAX       TProfile
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the profile (i.e. in or out) which should be used for 
+         all traffic that does not match a specific classification 
+         specified in this ingress QoS policy. If not specified 
+         explicitly, all traffic will be classified as out of profile."
+    DEFVAL { in }
+    ::= { ihubQosIngressPolicyEntry 7 }
+
+ihubQosIngressPolicyUntaggedDot1p OBJECT-TYPE
+    SYNTAX       Dot1PPriority
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the p-bits which should be used for all untagged 
+         traffic."
+    DEFVAL { 0 }
+    ::= { ihubQosIngressPolicyEntry 8 }
+
+ihubQosIngressPolicyLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosIngressTable. Note 
+         that this does not include changes to ihubQosIngressPolicyRefCount."
+    ::= { ihubQosIngressPolicyEntry 9 }
+
+ihubQosIngressPolicyColorSelector OBJECT-TYPE
+    SYNTAX	 INTEGER {
+			config-entry-based (0),
+                        packet-dei-based (1)
+                          }	     
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Allows to choose whether color profile is based on packet-DEI-bit or
+         policy configuration."
+    DEFVAL {0}
+    ::= { ihubQosIngressPolicyEntry 10 }
+
+-- --------------------------------------
+-- Ingress QoS DSCP Table
+-- --------------------------------------
+
+ihubQosIngressDSCPTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubQosIngressDSCPEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "A list of all DSCP entries for all ingress QOS policies. A maximum of 
+         32 x 64 = 2048 entries are allowed."
+    ::= { ihubIngressQos 2 }
+
+ihubQosIngressDSCPEntry OBJECT-TYPE
+    SYNTAX       IhubQosIngressDSCPEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular DSCP entry for a ingress QOS policy.
+         Entries are created by user. Entries are deleted by user."
+    INDEX { ihubQosIngressPolicyIndex, ihubQosIngressDSCP }
+    ::= { ihubQosIngressDSCPTable 1 }
+
+IhubQosIngressDSCPEntry ::= SEQUENCE
+    {
+        ihubQosIngressDSCP                   TDSCPName,
+        ihubQosIngressDSCPRowStatus          RowStatus,
+        ihubQosIngressDSCPFC                 TNamedItemOrEmpty,
+        ihubQosIngressDSCPProfile            TProfileOrNone,
+        ihubQosIngressDSCPLastChanged        TimeStamp
+    }
+
+ihubQosIngressDSCP OBJECT-TYPE
+    SYNTAX       TDSCPName
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Specifies the DSCP name."
+    ::= { ihubQosIngressDSCPEntry 1 }
+
+ihubQosIngressDSCPRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "This object allows creation/deletion of rows in this table."
+    ::= { ihubQosIngressDSCPEntry 2 }
+
+ihubQosIngressDSCPFC OBJECT-TYPE
+    SYNTAX       TNamedItemOrEmpty
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the forwarding class to be used to classify 
+         all the traffic that matches the specific DSCP i.e. 
+         ihubQosIngressDSCP. Unless ihubQosIngressDSCPFC 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+    DEFVAL { 'be'H }
+    ::= { ihubQosIngressDSCPEntry 3 }
+
+ihubQosIngressDSCPProfile OBJECT-TYPE
+    SYNTAX       TProfileOrNone
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the profile (in or out) to be used to classify 
+         all the traffic that matches the specific DSCP i.e. 
+         ihubQosIngressDSCP. Unless ihubQosIngressDSCPProfile 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+
+    DEFVAL { in }
+    ::= { ihubQosIngressDSCPEntry 4 }
+
+ihubQosIngressDSCPLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosIngressDSCPTable."
+    ::= { ihubQosIngressDSCPEntry 5 }
+
+
+-- --------------------------------------------
+-- Ingress QoS Precedence Table
+-- --------------------------------------------
+
+ihubQosIngressPrecTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubQosIngressPrecEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "A list of all Prec entries for all ingress policies. A maximum of 
+         32 x 8 = 256 entries are allowed. "
+    ::= { ihubIngressQos 3 }
+
+ihubQosIngressPrecEntry OBJECT-TYPE
+    SYNTAX       IhubQosIngressPrecEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular Prec entry for an ingress policy.
+         Entries are created by user. Entries are deleted by user."
+    INDEX { ihubQosIngressPolicyIndex, ihubQosIngressPrecValue }
+    ::= { ihubQosIngressPrecTable 1 }
+
+IhubQosIngressPrecEntry ::= SEQUENCE
+    {
+        ihubQosIngressPrecValue              TPrecValue,
+        ihubQosIngressPrecRowStatus          RowStatus,
+        ihubQosIngressPrecFC                 TNamedItemOrEmpty,
+        ihubQosIngressPrecProfile            TProfileOrNone,
+        ihubQosIngressPrecLastChanged        TimeStamp
+    }
+
+ihubQosIngressPrecValue OBJECT-TYPE
+    SYNTAX       TPrecValue
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Specifies the precedence value."
+    ::= { ihubQosIngressPrecEntry 1 }
+
+ihubQosIngressPrecRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "This object allows creation/deletion of rows in this table."
+    ::= { ihubQosIngressPrecEntry 2 }
+
+ihubQosIngressPrecFC OBJECT-TYPE
+    SYNTAX       TNamedItemOrEmpty
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the forwarding class to be used to classify 
+         all the traffic that matches the specific Prec i.e. 
+         ihubQosIngressPrec. Unless ihubQosIngressPrecFC 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+    DEFVAL { 'be'H }
+    ::= { ihubQosIngressPrecEntry 3 }
+
+ihubQosIngressPrecProfile OBJECT-TYPE
+    SYNTAX       TProfileOrNone
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the profile (in or out) to be used to classify 
+         all the traffic that matches the specific Prec i.e. 
+         ihubQosIngressPrec. Unless ihubQosIngressPrecProfile 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+
+    DEFVAL { in }
+    ::= { ihubQosIngressPrecEntry 4 }
+
+ihubQosIngressPrecLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosIngressPrecTable."
+    ::= { ihubQosIngressPrecEntry 5 }
+
+-- ***********************
+-- Ingress QoS Dot1p Table
+-- ***********************
+
+ihubQosIngressDot1pTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubQosIngressDot1pEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "A list of all Dot1p entries for all ingress policies. A maximum of 
+         32 x 8 = 256 entries are allowed."
+    ::= { ihubIngressQos 4 }
+
+ihubQosIngressDot1pEntry OBJECT-TYPE
+    SYNTAX       IhubQosIngressDot1pEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular Dot1p entry for an ingress policy.
+         Entries are created by user. Entries are deleted by user."
+    INDEX { ihubQosIngressPolicyIndex, ihubQosIngressDot1pValue }
+    ::= { ihubQosIngressDot1pTable 1 }
+
+IhubQosIngressDot1pEntry ::= SEQUENCE
+    {
+        ihubQosIngressDot1pValue              Dot1PPriority,
+        ihubQosIngressDot1pRowStatus          RowStatus,
+        ihubQosIngressDot1pFC                 TNamedItemOrEmpty,
+        ihubQosIngressDot1pProfile            TProfileOrNone,
+        ihubQosIngressDot1pLastChanged        TimeStamp
+    }
+
+ihubQosIngressDot1pValue OBJECT-TYPE
+    SYNTAX       Dot1PPriority
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        " Specifies the dot1p value."
+    ::= { ihubQosIngressDot1pEntry 1 }
+
+ihubQosIngressDot1pRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "This object allows creation/deletion of rows in this table."
+    ::= { ihubQosIngressDot1pEntry 2 }
+
+ihubQosIngressDot1pFC OBJECT-TYPE
+    SYNTAX       TNamedItemOrEmpty
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the forwarding class to be used to classify 
+         all the traffic that matches the specific Dot1p i.e. 
+         ihubQosIngressDot1p. Unless ihubQosIngressDot1pFC 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+    DEFVAL { 'be'H }
+    ::= { ihubQosIngressDot1pEntry 3 }
+
+ihubQosIngressDot1pProfile OBJECT-TYPE
+    SYNTAX       TProfileOrNone
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the profile (in or out) to be used to classify 
+         all the traffic that matches the specific Dot1p i.e. 
+         ihubQosIngressDot1p. Unless ihubQosIngressDot1pProfile 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+
+    DEFVAL { in }
+    ::= { ihubQosIngressDot1pEntry 4 }
+
+ihubQosIngressDot1pLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosIngressDot1pTable."
+    ::= { ihubQosIngressDot1pEntry 5 }
+
+-- -----------------------------------------
+-- Self-generated Traffic QoS Policy Table
+-- -----------------------------------------
+
+ihubQosSgtPolicyTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IhubQosSgtPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "This object contains a table for creating and storing policies for self-generated traffic QoS. A maximum of 32 policies are allowed."
+::= { ihubSgtQos 1  }
+
+
+ihubQosSgtPolicyEntry OBJECT-TYPE
+    SYNTAX IhubQosSgtPolicyEntry 
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "This table contains as row a single SGT QoS policy.
+          Policy (1) is the default policy which is created
+          automatically. The other policies are created by user.
+          The default policy cannot be modified or deleted."
+    INDEX {ihubQosSgtPolicyIndex}
+::= { ihubQosSgtPolicyTable 1}
+
+IhubQosSgtPolicyEntry ::=
+ SEQUENCE
+    { 
+       ihubQosSgtPolicyIndex                  Integer32, 
+       ihubQosSgtPolicyRowStatus              RowStatus, 
+       ihubQosSgtPolicyScope                  TItemScope,
+       ihubQosSgtPolicyDescription            TItemDescription,
+       ihubQosSgtPolicyRefCount               PolicyRefCount,
+       ihubQosSgtPolicyDefaultDSCP            TDSCPName,
+       ihubQosSgtPolicyDefaultDot1p           Dot1PPriority,
+       ihubQosSgtPolicyLastChanged            TimeStamp,
+        ihubQosSgtPolicyDefaultLspExp               TLspExpValue
+    }
+
+ihubQosSgtPolicyIndex OBJECT-TYPE
+    SYNTAX       Integer32 (1..65535)
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The policy ID is the index to this table."
+    ::= { ihubQosSgtPolicyEntry 1 }
+
+ihubQosSgtPolicyRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Row Status for the policy."
+    ::= { ihubQosSgtPolicyEntry 2 }
+
+ihubQosSgtPolicyScope OBJECT-TYPE
+    SYNTAX       TItemScope
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Scope of the policy. If the scope is 'exclusive', it can only be
+         associated with a single service (VPRN, IES, V-VPLS, base router )
+         If the scope is 'template', it can be associated with multiple entities."
+    DEFVAL { template }
+    ::= { ihubQosSgtPolicyEntry 3 }
+
+ihubQosSgtPolicyDescription OBJECT-TYPE
+    SYNTAX       TItemDescription
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "User provided description of the policy."
+    DEFVAL { ''H }
+    ::= { ihubQosSgtPolicyEntry 4 }
+
+ihubQosSgtPolicyRefCount  OBJECT-TYPE
+    SYNTAX       PolicyRefCount
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Indicates the number of entities using this policy. If the
+         reference count is greater than 0, then this policy is 'in use',
+         and may NOT be deleted. If the value is 0, then this policy is
+         'not in use', and can be deleted."
+    ::= { ihubQosSgtPolicyEntry 5 }
+
+ihubQosSgtPolicyDefaultDSCP OBJECT-TYPE
+    SYNTAX       TDSCPName
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        " Specifies the default DSCP name."
+    DEFVAL { "nc2" }
+    ::= { ihubQosSgtPolicyEntry 6 }
+
+ihubQosSgtPolicyDefaultDot1p OBJECT-TYPE
+    SYNTAX       Dot1PPriority
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        " Specifies the default dot1p value."
+    DEFVAL { 7 }
+    ::= { ihubQosSgtPolicyEntry 7 }
+
+ihubQosSgtPolicyLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosSgtPolicyTable. Note 
+         that this does not include changes to ihubQosSgtPolicyRefCount."
+    ::= { ihubQosSgtPolicyEntry 8 }
+
+
+ihubQosSgtPolicyDefaultLspExp OBJECT-TYPE
+    SYNTAX       TLspExpValue
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        " Specifies the default MPLS Exp value."
+    DEFVAL { 7 }
+    ::= { ihubQosSgtPolicyEntry 9 }
+
+
+-- ----------------------------------------
+-- MPLS Service Ingress Network QoS Policy Table
+-- ----------------------------------------
+
+ihubQosIngressNetworkPolicyTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IhubQosIngressNetworkPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "This object contains a table for creating and storing policies for MPLS service ingress network QoS. A maximum of 32 policies are allowed."
+::= { ihubIngressNetworkQos 1  }
+
+
+ihubQosIngressNetworkPolicyEntry OBJECT-TYPE
+    SYNTAX IhubQosIngressNetworkPolicyEntry 
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "This table contains as row a single MPLS service ingress network QoS policy.
+          Policy (1) is the default policy which is created
+          automatically. The other policies are created by user.
+          The default policy cannot be modified or deleted."
+    INDEX {ihubQosIngressNetworkPolicyIndex}
+::= { ihubQosIngressNetworkPolicyTable 1}
+
+
+IhubQosIngressNetworkPolicyEntry ::=
+ SEQUENCE
+    { 
+       ihubQosIngressNetworkPolicyIndex                  Integer32, 
+       ihubQosIngressNetworkPolicyRowStatus              RowStatus, 
+       ihubQosIngressNetworkPolicyScope                  TItemScope,
+       ihubQosIngressNetworkPolicyDescription            TItemDescription,
+       ihubQosIngressNetworkPolicyRefCount               PolicyRefCount,
+       ihubQosIngressNetworkPolicyDefaultFC              TNamedItem,
+       ihubQosIngressNetworkPolicyDefaultProfile         TProfile,
+   	   ihubQosIngressNetworkPolicyLerUseDot1p            TQosVcTypeSet,
+       ihubQosIngressNetworkPolicyLastChanged            TimeStamp
+    }
+
+ihubQosIngressNetworkPolicyIndex OBJECT-TYPE
+    SYNTAX       Integer32 (1..65535)
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The policy ID is the index to this table."
+    ::= { ihubQosIngressNetworkPolicyEntry 1 }
+
+ihubQosIngressNetworkPolicyRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Row Status for the policy. The deletion of this row
+         has an action of removing the dependent rows in the 
+         following tables :
+           - ihubQosIngressNetworkDot1pTable
+           - ihubQosIngressNetworkLspExpTable"
+    ::= { ihubQosIngressNetworkPolicyEntry 2 }
+
+ihubQosIngressNetworkPolicyScope OBJECT-TYPE
+    SYNTAX       TItemScope
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Scope of the policy. If the scope is 'exclusive', it can only be
+         associated with a single service (VPLS/EPIPE)> If the scope is
+         'template', it can be associated with multiple services."
+    DEFVAL { template }
+    ::= { ihubQosIngressNetworkPolicyEntry 3 }
+
+ihubQosIngressNetworkPolicyDescription OBJECT-TYPE
+    SYNTAX       TItemDescription
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "User provided description of the policy."
+    DEFVAL { ''H }
+    ::= { ihubQosIngressNetworkPolicyEntry 4 }
+
+ihubQosIngressNetworkPolicyRefCount  OBJECT-TYPE
+    SYNTAX       PolicyRefCount
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Indicates the number of entities using this policy. If the
+         reference count is greater than 0, then this policy is 'in use',
+         and may NOT be deleted. If the value is 0, then this policy is
+         'not in use', and can be deleted."
+    ::= { ihubQosIngressNetworkPolicyEntry 5 }
+
+ihubQosIngressNetworkPolicyDefaultFC OBJECT-TYPE
+    SYNTAX       TNamedItem
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the forwarding class which should be used for 
+         all traffic that does not match a specific classification 
+         specified in this ingress QoS policy. If not specified 
+         explicitly, all traffic will be classified as best-effort 
+         'be'."
+    DEFVAL { 'be'H }
+    ::= { ihubQosIngressNetworkPolicyEntry 6 }
+
+ihubQosIngressNetworkPolicyDefaultProfile OBJECT-TYPE
+    SYNTAX       TProfile
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the profile (i.e. in or out) which should be used for 
+         all traffic that does not match a specific classification 
+         specified in this ingress QoS policy. If not specified 
+         explicitly, all traffic will be classified as out of profile."
+    DEFVAL { in }
+    ::= { ihubQosIngressNetworkPolicyEntry 7 }
+
+
+ihubQosIngressNetworkPolicyLerUseDot1p OBJECT-TYPE
+    SYNTAX       TQosVcTypeSet
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies whether inner p-bits or EXP value should be used to define the
+         FC. When no bits are set, EXP value is used. When only ether bit is set,
+         then inner P-bit value is used for PW-type ether and EXP for PW-type vlan.
+         When only vlan bit is set, then inner P-bit value is used for PW-type vlan
+         and EXP for PW-type ether. When ether and vlan bits are set, then inner 
+         P-bit is used"
+    DEFVAL { 0 }
+    ::= { ihubQosIngressNetworkPolicyEntry 8 }
+
+ihubQosIngressNetworkPolicyLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosIngressNetworkTable. Note 
+         that this does not include changes to ihubQosIngressNetworkPolicyRefCount"
+    ::= { ihubQosIngressNetworkPolicyEntry 9 }
+
+
+
+
+-- ********************************************
+-- MPLS Service Ingress Network QoS Dot1p Table
+-- ********************************************
+
+ihubQosIngressNetworkDot1pTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubQosIngressNetworkDot1pEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "A list of all Dot1p entries for all MPLS service ingress network policies. 
+         A maximum of 32 x 8 = 256 entries are allowed."
+    ::= { ihubIngressNetworkQos 2 }
+
+ihubQosIngressNetworkDot1pEntry OBJECT-TYPE
+    SYNTAX       IhubQosIngressNetworkDot1pEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular Dot1p entry for a service ingress network
+         policy. Entries are created by user. Entries are deleted by user."
+    INDEX { ihubQosIngressNetworkPolicyIndex, ihubQosIngressNetworkDot1pValue }
+    ::= { ihubQosIngressNetworkDot1pTable 1 }
+
+IhubQosIngressNetworkDot1pEntry ::= SEQUENCE
+    {
+        ihubQosIngressNetworkDot1pValue              Dot1PPriority,
+        ihubQosIngressNetworkDot1pRowStatus          RowStatus,
+        ihubQosIngressNetworkDot1pFC                 TNamedItemOrEmpty,
+        ihubQosIngressNetworkDot1pProfile            TProfileOrNone,
+        ihubQosIngressNetworkDot1pLastChanged        TimeStamp
+    }
+
+ihubQosIngressNetworkDot1pValue OBJECT-TYPE
+    SYNTAX       Dot1PPriority
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        " Specifies the dot1p value."
+    ::= { ihubQosIngressNetworkDot1pEntry 1 }
+
+ihubQosIngressNetworkDot1pRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "This object allows creation/deletion of rows in this table."
+    ::= { ihubQosIngressNetworkDot1pEntry 2 }
+
+ihubQosIngressNetworkDot1pFC OBJECT-TYPE
+    SYNTAX       TNamedItemOrEmpty
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the forwarding class to be used to classify 
+         all the traffic that matches the specific Dot1p i.e. 
+         ihubQosIngressNetworkDot1pValue. Unless ihubQosIngressNetworkDot1pFC 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+    DEFVAL { 'be'H }
+    ::= { ihubQosIngressNetworkDot1pEntry 3 }
+
+ihubQosIngressNetworkDot1pProfile OBJECT-TYPE
+    SYNTAX       TProfileOrNone
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the profile (in or out) to be used to classify 
+         all the traffic that matches the specific Dot1p i.e. 
+         ihubQosIngressNetworkDot1pValue. Unless ihubQosIngressNetworkDot1pProfile 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+
+    DEFVAL { in }
+    ::= { ihubQosIngressNetworkDot1pEntry 4 }
+
+ihubQosIngressNetworkDot1pLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosIngressNetworkDot1pTable."
+    ::= { ihubQosIngressNetworkDot1pEntry 5 }
+
+
+
+-- **********************************************
+-- MPLS Service Ingress Network QoS LSP EXP Table
+-- **********************************************
+
+ihubQosIngressNetworkLspExpTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubQosIngressNetworkLspExpEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "A list of all Lsp Exp entries for all MPLS service ingress network 
+         policies. 
+         A maximum of 32 x 8 = 256 entries are allowed."
+    ::= { ihubIngressNetworkQos 3 }
+
+ihubQosIngressNetworkLspExpEntry OBJECT-TYPE
+    SYNTAX       IhubQosIngressNetworkLspExpEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular Lsp Exp entry for a service ingress network
+         policy. Entries are created by user. Entries are deleted by user."
+    INDEX { ihubQosIngressNetworkPolicyIndex, ihubQosIngressNetworkLspExpValue }
+    ::= { ihubQosIngressNetworkLspExpTable 1 }
+
+IhubQosIngressNetworkLspExpEntry ::= SEQUENCE
+    {
+        ihubQosIngressNetworkLspExpValue              TLspExpValue,
+        ihubQosIngressNetworkLspExpRowStatus          RowStatus,
+        ihubQosIngressNetworkLspExpFC                 TNamedItemOrEmpty,
+        ihubQosIngressNetworkLspExpProfile            TProfileOrNone,
+        ihubQosIngressNetworkLspExpLastChanged        TimeStamp
+    }
+
+ihubQosIngressNetworkLspExpValue OBJECT-TYPE
+    SYNTAX       TLspExpValue
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        " Specifies the Lsp Exp value."
+    ::= { ihubQosIngressNetworkLspExpEntry 1 }
+
+ihubQosIngressNetworkLspExpRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "This object allows creation/deletion of rows in this table."
+    ::= { ihubQosIngressNetworkLspExpEntry 2 }
+
+ihubQosIngressNetworkLspExpFC OBJECT-TYPE
+    SYNTAX       TNamedItemOrEmpty
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the forwarding class to be used to classify 
+         all the traffic that matches the specific Lsp Exp i.e. 
+         ihubQosIngressNetworkLspExpValue. Unless ihubQosIngressNetworkLspExpFC 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+    DEFVAL { 'be'H }
+    ::= { ihubQosIngressNetworkLspExpEntry 3 }
+
+ihubQosIngressNetworkLspExpProfile OBJECT-TYPE
+    SYNTAX       TProfileOrNone
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the profile (in or out) to be used to classify 
+         all the traffic that matches the specific Lsp Exp i.e. 
+         ihubQosIngressNetworkLspExpValue.Unless ihubQosIngressNetworkLspExpProfile 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+
+    DEFVAL { in }
+    ::= { ihubQosIngressNetworkLspExpEntry 4 }
+
+ihubQosIngressNetworkLspExpLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosIngressNetworkLspExpTable."
+    ::= { ihubQosIngressNetworkLspExpEntry 5 }
+
+
+-- ----------------------------------------
+-- MPLS Service Ingress LSR Network QoS Policy Table
+-- ----------------------------------------
+
+ihubQosIngressLsrNetworkPolicyTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF IhubQosIngressLsrNetworkPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS  current
+    DESCRIPTION
+    "This object contains a table for creating and storing policies for MPLS service ingress network QoS. A maximum of 32 policies are allowed."
+::= { ihubIngressNetworkQos 4  }
+
+
+ihubQosIngressLsrNetworkPolicyEntry OBJECT-TYPE
+    SYNTAX IhubQosIngressLsrNetworkPolicyEntry 
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+      "This table contains as row a single MPLS service ingress network QoS policy.
+          Policy (1) is the default policy which is created
+          automatically. The other policies are created by user.
+          The default policy cannot be modified or deleted."
+    INDEX {ihubQosIngressLsrNetworkPolicyIndex}
+::= { ihubQosIngressLsrNetworkPolicyTable 1}
+
+
+IhubQosIngressLsrNetworkPolicyEntry ::=
+ SEQUENCE
+    { 
+       ihubQosIngressLsrNetworkPolicyIndex                  Integer32, 
+       ihubQosIngressLsrNetworkPolicyRowStatus              RowStatus, 
+       ihubQosIngressLsrNetworkPolicyScope                  TItemScope,
+       ihubQosIngressLsrNetworkPolicyDescription            TItemDescription,
+       ihubQosIngressLsrNetworkPolicyRefCount               PolicyRefCount,
+       ihubQosIngressLsrNetworkPolicyDefaultFC              TNamedItem,
+       ihubQosIngressLsrNetworkPolicyDefaultProfile         TProfile,
+       ihubQosIngressLsrNetworkPolicyLastChanged            TimeStamp
+    }
+
+ihubQosIngressLsrNetworkPolicyIndex OBJECT-TYPE
+    SYNTAX       Integer32 (1..65535)
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The policy ID is the index to this table."
+    ::= { ihubQosIngressLsrNetworkPolicyEntry 1 }
+
+ihubQosIngressLsrNetworkPolicyRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Row Status for the policy. The deletion of this row
+         has an action of removing the dependent rows in the 
+         following tables :
+           - ihubQosIngressNetworkDot1pTable
+           - ihubQosIngressNetworkLspExpTable"
+    ::= { ihubQosIngressLsrNetworkPolicyEntry 2 }
+
+ihubQosIngressLsrNetworkPolicyScope OBJECT-TYPE
+    SYNTAX       TItemScope
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Scope of the policy. If the scope is 'exclusive', it can only be
+         associated with a single service (VPLS/EPIPE)> If the scope is
+         'template', it can be associated with multiple services."
+    DEFVAL { template }
+    ::= { ihubQosIngressLsrNetworkPolicyEntry 3 }
+
+ihubQosIngressLsrNetworkPolicyDescription OBJECT-TYPE
+    SYNTAX       TItemDescription
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "User provided description of the policy."
+    DEFVAL { ''H }
+    ::= { ihubQosIngressLsrNetworkPolicyEntry 4 }
+
+ihubQosIngressLsrNetworkPolicyRefCount  OBJECT-TYPE
+    SYNTAX       PolicyRefCount
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Indicates the number of entities using this policy. If the
+         reference count is greater than 0, then this policy is 'in use',
+         and may NOT be deleted. If the value is 0, then this policy is
+         'not in use', and can be deleted."
+    ::= { ihubQosIngressLsrNetworkPolicyEntry 5 }
+
+ihubQosIngressLsrNetworkPolicyDefaultFC OBJECT-TYPE
+    SYNTAX       TNamedItem
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the forwarding class which should be used for 
+         all traffic that does not match a specific classification 
+         specified in this ingress QoS policy. If not specified 
+         explicitly, all traffic will be classified as best-effort 
+         'be'."
+    DEFVAL { 'be'H }
+    ::= { ihubQosIngressLsrNetworkPolicyEntry 6 }
+
+ihubQosIngressLsrNetworkPolicyDefaultProfile OBJECT-TYPE
+    SYNTAX       TProfile
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the profile (i.e. in or out) which should be used for 
+         all traffic that does not match a specific classification 
+         specified in this ingress QoS policy. If not specified 
+         explicitly, all traffic will be classified as out of profile."
+    DEFVAL { out }
+    ::= { ihubQosIngressLsrNetworkPolicyEntry 7 }
+
+ihubQosIngressLsrNetworkPolicyLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosIngressNetworkTable. Note 
+         that this does not include changes to ihubQosIngressNetworkPolicyRefCount"
+    ::= { ihubQosIngressLsrNetworkPolicyEntry 8 }
+
+-- **********************************************
+-- MPLS Service Ingress LSR Network QoS LSP EXP Table
+-- ********************************************** 
+ihubQosIngressLsrNetworkLspExpTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubQosIngressLsrNetworkLspExpEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "A list of all Lsp Exp entries for all MPLS ingress network 
+         policies. 
+         A maximum of 32 x 8 = 256 entries are allowed."
+    ::= { ihubIngressNetworkQos 5 } 
+
+ihubQosIngressLsrNetworkLspExpEntry OBJECT-TYPE
+    SYNTAX       IhubQosIngressLsrNetworkLspExpEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular Lsp Exp entry for a service ingress network
+         policy. Entries are created by user. Entries are deleted by user."
+    INDEX { ihubQosIngressLsrNetworkPolicyIndex, ihubQosIngressLsrNetworkLspExpValue }
+    ::= { ihubQosIngressLsrNetworkLspExpTable 1 }
+
+IhubQosIngressLsrNetworkLspExpEntry ::= SEQUENCE
+    {
+        ihubQosIngressLsrNetworkLspExpValue              TLspExpValue,
+        ihubQosIngressLsrNetworkLspExpRowStatus          RowStatus,
+        ihubQosIngressLsrNetworkLspExpFC                 TNamedItemOrEmpty,
+        ihubQosIngressLsrNetworkLspExpProfile            TProfileOrNone,
+        ihubQosIngressLsrNetworkLspExpLastChanged        TimeStamp
+    }
+
+ihubQosIngressLsrNetworkLspExpValue OBJECT-TYPE
+    SYNTAX       TLspExpValue
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        " Specifies the Lsp Exp value."
+    ::= { ihubQosIngressLsrNetworkLspExpEntry 1 }
+ihubQosIngressLsrNetworkLspExpRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "This object allows creation/deletion of rows in this table."
+    ::= { ihubQosIngressLsrNetworkLspExpEntry 2 }
+
+ihubQosIngressLsrNetworkLspExpFC OBJECT-TYPE
+    SYNTAX       TNamedItemOrEmpty
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the forwarding class to be used to classify 
+         all the traffic that matches the specific Lsp Exp i.e. 
+         ihubQosIngressNetworkLspExpValue. Unless ihubQosIngressNetworkLspExpFC 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+    DEFVAL { 'be'H }
+    ::= { ihubQosIngressLsrNetworkLspExpEntry 3 }
+
+ihubQosIngressLsrNetworkLspExpProfile OBJECT-TYPE
+    SYNTAX       TProfileOrNone
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the profile (in or out) to be used to classify 
+         all the traffic that matches the specific Lsp Exp i.e. 
+         ihubQosIngressLsrNetworkLspExpValue.Unless ihubQosIngressLsrNetworkLspExpProfile 
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+    DEFVAL { in }
+    ::= { ihubQosIngressLsrNetworkLspExpEntry 4 }
+
+ihubQosIngressLsrNetworkLspExpLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosIngressLsrNetworkLspExpTable."
+    ::= { ihubQosIngressLsrNetworkLspExpEntry 5 }
+
+
+-- ********************************************
+-- MPLS Service Egress Network QoS Policy Table
+-- ********************************************
+
+ihubQosEgressNetworkPolicyTable OBJECT-TYPE
+    	SYNTAX  	SEQUENCE OF IhubQosEgressNetworkPolicyEntry
+    	MAX-ACCESS  	not-accessible
+    	STATUS  	current
+    	DESCRIPTION
+    	"This object contains a table for creating and storing policies for MPLS service egress network QoS. A maximum of 32 policies are allowed."
+::= { ihubEgressNetworkQos 1  }
+
+
+ihubQosEgressNetworkPolicyEntry OBJECT-TYPE
+    	SYNTAX IhubQosEgressNetworkPolicyEntry 
+    	MAX-ACCESS not-accessible
+    	STATUS current
+    	DESCRIPTION
+    	  "This table contains as row a single MPLS service egress network QoS policy.
+          Policy (1) is the default policy which is created
+          automatically. The other policies are created by user.
+          The default policy cannot be modified or deleted."
+    	INDEX {ihubQosEgressNetworkPolicyIndex}
+::= { ihubQosEgressNetworkPolicyTable 1}
+
+IhubQosEgressNetworkPolicyEntry ::=
+ SEQUENCE
+    { 
+       ihubQosEgressNetworkPolicyIndex                  Integer32, 
+       ihubQosEgressNetworkPolicyRowStatus              RowStatus, 
+       ihubQosEgressNetworkPolicyScope                  TItemScope,
+       ihubQosEgressNetworkPolicyDescription            TItemDescription,
+       ihubQosEgressNetworkPolicyRefCount               PolicyRefCount,
+       ihubQosEgressNetworkPolicyLastChanged            TimeStamp
+    }
+
+ihubQosEgressNetworkPolicyIndex OBJECT-TYPE
+    SYNTAX       Integer32 (1..65535)
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The policy ID is the index to this table."
+    ::= { ihubQosEgressNetworkPolicyEntry 1 }
+
+ihubQosEgressNetworkPolicyRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Row Status for the policy. The deletion of this row
+         has an action of removing the dependent rows in the 
+         following tables :
+           - ihubQosEgressNetworkFCTable"
+    ::= { ihubQosEgressNetworkPolicyEntry 2 }
+
+ihubQosEgressNetworkPolicyScope OBJECT-TYPE
+    SYNTAX       TItemScope
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Scope of the policy. If the scope is 'exclusive', it can only be
+         associated with a single service (VPLS/EPIPE)> If the scope is
+         'template', it can be associated with multiple services."
+    DEFVAL { template }
+    ::= { ihubQosEgressNetworkPolicyEntry 3 }
+
+ihubQosEgressNetworkPolicyDescription OBJECT-TYPE
+    SYNTAX       TItemDescription
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "User provided description of the policy."
+    DEFVAL { ''H }
+    ::= { ihubQosEgressNetworkPolicyEntry 4 }
+
+ihubQosEgressNetworkPolicyRefCount  OBJECT-TYPE
+    SYNTAX       PolicyRefCount
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Indicates the number of entities using this policy. If the
+         reference count is greater than 0, then this policy is 'in use',
+         and may NOT be deleted. If the value is 0, then this policy is
+         'not in use', and can be deleted."
+    ::= { ihubQosEgressNetworkPolicyEntry 5 }
+
+
+ihubQosEgressNetworkPolicyLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosEgressNetworkTable. Note 
+         that this does not include changes to ihubQosEgressNetworkPolicyRefCount."
+    ::= { ihubQosEgressNetworkPolicyEntry 6 }
+
+
+
+
+
+-- ****************************************
+-- MPLS Service Egress Network QoS FC Table
+-- ****************************************
+
+ihubQosEgressNetworkFCTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubQosEgressNetworkFCEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "A list of all FC entries for all MPLS service ingress network policies. A      
+         maximum of 32 x 8 = 256 entries are allowed."
+    ::= { ihubEgressNetworkQos 2 }
+
+ihubQosEgressNetworkFCEntry OBJECT-TYPE
+    SYNTAX       IhubQosEgressNetworkFCEntry
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about mapping FC to a particular Lsp Exp value for a service
+         egress network policy. Entries are created by user. Entries are deleted by   
+         user. Outer P-bit value is set identical to the EXP value. When no mapping 
+         for a particular FC is specified, the mapping of the default policy (
+         index 1 ) is used"
+    INDEX { ihubQosEgressNetworkPolicyIndex, ihubQosEgressNetworkFCName }
+    ::= { ihubQosEgressNetworkFCTable 1 }
+
+IhubQosEgressNetworkFCEntry ::= SEQUENCE
+    {
+        ihubQosEgressNetworkFCName                     TFCName,
+        ihubQosEgressNetworkFCRowStatus                RowStatus,
+        ihubQosEgressNetworkFCLspExpInProfile          TLspExpValue,
+        ihubQosEgressNetworkFCLspExpOutProfile         TLspExpValue,
+        ihubQosEngressNetworkFCLastChanged             TimeStamp
+    }
+
+ihubQosEgressNetworkFCName OBJECT-TYPE
+    SYNTAX       TFCName
+    MAX-ACCESS       not-accessible
+    STATUS       current
+    DESCRIPTION
+        " Specifies the Forwarding Class Name. Entry needs to be created by the 
+          user when deviation from default FC mapping (policy index 1) is wanted"
+    ::= { ihubQosEgressNetworkFCEntry 1 }
+
+ihubQosEgressNetworkFCRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "This object allows creation/deletion of rows in this table."
+    ::= { ihubQosEgressNetworkFCEntry 2 }
+
+ihubQosEgressNetworkFCLspExpInProfile OBJECT-TYPE
+    SYNTAX       TLspExpValue
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the MPLS EXP value to be used for all the in profile traffic 
+         that matches the given FC. i.e.ihubQosEgressNetworkFCName. Unless 
+         ihubQosEgressNetworkFCLspExpInProfile
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+    DEFVAL { ''H }
+    ::= { ihubQosEgressNetworkFCEntry 3 }
+
+ihubQosEgressNetworkFCLspExpOutProfile OBJECT-TYPE
+    SYNTAX       TLspExpValue
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the MPLS EXP value to be used for all the out profile traffic 
+         that matches the given FC. i.e.ihubQosEgressNetworkFCName. Unless 
+         ihubQosEgressNetworkFCLspExpOutProfile
+         is specified explicitly, this match will be ignored 
+         for classification purposes."
+
+    DEFVAL { ''H }
+    ::= { ihubQosEgressNetworkFCEntry 4 }
+
+ihubQosEngressNetworkFCLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubQosEgressNetworkFCTable."
+    ::= { ihubQosEgressNetworkFCEntry 5 }
+
+
+
+
+
+
+-- **************************
+-- Base router policy indexes
+-- **************************
+
+
+ihubBaseRouterNetworkPolicyId                  OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of this object specifies the configured ingress qos policy id 
+         for all defined network IP interfaces. I.e it points to a row of
+         ihubQosIngressPolicyTable                 
+         Policy id = 1 is the default. The default policy 
+         is hard-coded and cannot be edited or deleted. 
+        "
+    DEFVAL          { 1 }
+    ::= { ihubBaseRouterPolicyIds    1 }
+
+ihubBaseRouterSgtPolicyId                      OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of this object specifies the configured Self generated policy id 
+         for all defeined network IP interfaces.I.e. it points to a row in
+         ihubQosSgtPolicyTable                           
+         Policy id = 1 is the default. The default policy 
+         is hard-coded and cannot be edited or deleted. 
+        "
+    DEFVAL          { 1 }
+    ::= { ihubBaseRouterPolicyIds    2 }
+
+
+--- ################################ NEW ONES ####################################
+
+
+-------------------------------------------------------------------------------------------------------
+
+-- ******************************************************
+-- Per Cos Rate Limiting LT Loasharing  Mode
+-- ******************************************************
+  
+ihubQosEgressRateLimitNtLoadSharingPercentage   OBJECT-TYPE
+         SYNTAX      INTEGER (0..100)  
+         MAX-ACCESS  read-write
+         STATUS      current
+         DESCRIPTION
+            "The mode decides the way the ratelimiting is applied on the NTs.
+             When a 100 is set the NT will police the traffic to the full policing parameters set.
+             The traffic from local LT ports and ingressing via HIGIG from the peer NT for LT's supporting 
+             loasharing is policed.This is typically used when all upstream service traffic will egress only 
+             through a single NT. 
+             When a value other than 100 is specified the active NT will police traffic by spliting
+             the policing parameters (ihubEgressPerCosQosCirRate,ihubEgressPerCosQosCBurstSize,
+       	     ihubEgressPerCosQosPirRate,ihubEgressPerCosQosPBurstSize)  to each NT based on the percentage of
+	           value set. The traffic from local LT ports alone is policed based on the set percentage.
+             This is typically used when the upstream service traffic will egress through both the NTs in a 
+             shared manner. 
+             When a value 0 is set the NT will police traffic from local LT ports to full policing parameters set.  "
+     DEFVAL          { 0 }
+     ::= { ihubIngressSystemCosQos 1 }
+    
+-------------------------------------------------------------------------------------------------------
+
+-- ********************************************
+-- System Level Ingress Dot1p to FC/Color Table
+-- ********************************************
+
+ihubIngressSystemDot1pTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubIngressSystemDot1pEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The System level configuration table used to  specify the input color to be used to classify 
+         all the traffic that matches the specific Dot1p. The input color set at the system level will 
+         be taken by the per Service Egress rate limit configured in  fadSvcBaseExtTable or 
+         ihubEgressPerCosQosTable. The table has in total eight entries corresponding to each Dot1p.
+         " 
+    ::= { ihubIngressSystemCosQos 2 }
+
+ihubIngressSystemDot1pEntry OBJECT-TYPE
+    SYNTAX       IhubIngressSystemDot1pEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular Dot1p entry at system level."
+    INDEX { ihubIngressSystemDot1pValue }
+    ::= { ihubIngressSystemDot1pTable 1 }
+
+IhubIngressSystemDot1pEntry ::= SEQUENCE
+    {
+        ihubIngressSystemDot1pValue              Dot1PPriority,
+        ihubIngressSystemDot1pProfile            TProfileOrNone,
+        ihubIngressSystemDot1pLastChanged        TimeStamp
+    }
+
+ihubIngressSystemDot1pValue OBJECT-TYPE
+    SYNTAX       Dot1PPriority
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        " Specifies the dot1p value."
+    ::= { ihubIngressSystemDot1pEntry 1 }
+
+ihubIngressSystemDot1pProfile OBJECT-TYPE
+    SYNTAX       TProfileOrNone
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the profile (in or out) to be used to classify 
+         all the traffic that matches the specific Dot1p i.e. 
+         ihubIngressSystemDot1pValue. ihubIngressSystemDot1pProfile 
+         is required to be configured during an entry creation.
+         If ihubIngressSystemDot1pProfile is not explicitly specified
+         for a dot1p then it is considered as 'in' by default"
+    ::= { ihubIngressSystemDot1pEntry 2 }
+
+ihubIngressSystemDot1pLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubIngressSystemDot1pTable."
+    ::= { ihubIngressSystemDot1pEntry 3 }
+-------------------------------------------------------------------------------------------------------
+
+-- ***************************************************
+-- System Level Egress Dot1p/Color to Dot1p Remap Table
+-- ****************************************************
+
+ihubEgressSystemDot1pMapTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubEgressSystemDot1pMapEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The table has the configuration to remark the 802.1p field in 
+        the outgoing packet based on the incoming 802.1p and profile from
+        rate limiter or service ingress Qos Profile. Entries cannot 
+        be created or deleted in this table. The table has in total eight
+        entries corresponding to each forwarding class."
+    ::= { ihubEgressSystemPerCosMap 1 }
+
+ihubEgressSystemDot1pMapEntry OBJECT-TYPE
+    SYNTAX       IhubEgressSystemDot1pMapEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "System level information about a particular Dot1p entry"
+    INDEX { ihubEgressSystemDot1pFC }
+    ::= { ihubEgressSystemDot1pMapTable 1 }
+
+IhubEgressSystemDot1pMapEntry ::= SEQUENCE
+    {
+    	ihubEgressSystemDot1pFC                 TFCType,
+        ihubEgressSystemDot1pInProfile          Dot1PPriority,
+        ihubEgressSystemDot1pOutProfile         Dot1PPriority,
+        ihubEgressSystemDot1pLastChanged        TimeStamp
+    }
+  
+ihubEgressSystemDot1pFC OBJECT-TYPE
+    SYNTAX       TFCType
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Specifies the forwarding class.
+         By default the entries for each forwarding class is filled with Dot1p values corresponding 
+         to each forwarding class. Remarking of 802.1p field in outgoing packet will occur only
+         when these default values are overrided.
+         "
+        ::= { ihubEgressSystemDot1pMapEntry 1 }
+
+
+ihubEgressSystemDot1pInProfile OBJECT-TYPE
+    SYNTAX       Dot1PPriority
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the the dot1p used to remark for all 'inProfile'
+         packets. This object is required to be specified
+         explicitly during an entry creation."
+    ::= { ihubEgressSystemDot1pMapEntry 2 }
+
+
+ihubEgressSystemDot1pOutProfile OBJECT-TYPE
+    SYNTAX       Dot1PPriority
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "Specifies the the dot1p used to remark for all 'outofProfile'
+         packets. This object is required to be specified
+         explicitly during an entry creation."
+        ::= { ihubEgressSystemDot1pMapEntry 3 }
+    
+ihubEgressSystemDot1pLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS       read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubEgressSystemDot1pMapTable."
+    ::= { ihubEgressSystemDot1pMapEntry 4 }
+
+-------------------------------------------------------------------------------------------------------
+
+
+
+-- ***************************************************
+-- Egress Per Cos/VLAN Ratelimiting table
+-- ****************************************************
+
+ihubEgressPerCosQosTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF IhubEgressPerCosQosEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table specifies the Egress per Cos Rate limiting parameters for
+        a service (only for V-VPLS in >= ISR43 Release)"
+    ::= { ihubEgressPerCosQos 1 }
+
+ihubEgressPerCosQosEntry OBJECT-TYPE
+    SYNTAX      IhubEgressPerCosQosEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Specifies rate limiting information at the per service/cos level"
+    INDEX { svcId,ihubEgressPerCosQosPbitsIndex }
+    ::= { ihubEgressPerCosQosTable 1 }
+
+IhubEgressPerCosQosEntry ::=
+    SEQUENCE {
+    	ihubEgressPerCosQosPbitsIndex	 Integer32,    	
+    	ihubEgressPerCosQosRowStatus     RowStatus,
+    	ihubEgressPerCosQosPktPrio	 Integer32,
+    	ihubEgressPerCosQosCirRate       TCIRRate,
+	ihubEgressPerCosQosPirRate       TPIRRate,
+	ihubEgressPerCosQosCBurstSize    IhubRateLimitBurstSize, 
+        ihubEgressPerCosQosPBurstSize    IhubRateLimitBurstSize,
+        ihubEgressPerCosQostrTcmMode     INTEGER,
+        ihubEgressPerCosQosAdminStatus	 INTEGER,
+	ihubEgressPerCosQosLastChanged	 TimeStamp
+    }
+
+ihubEgressPerCosQosPbitsIndex OBJECT-TYPE
+	SYNTAX      Integer32 (1..8)
+	MAX-ACCESS  not-accessible
+	STATUS      current
+	DESCRIPTION
+	" Specifies the Index to be used for the given set of 802.1p bits in  ihubEgressPerCosQosPktPrio. 
+	  For aggregate metering the same ihubEgressPerCosQosPbitsIndex can be shared across different
+	  dot1p's specified in the bitmap of ihubEgressPerCosQosPktPrio." 
+	::= { ihubEgressPerCosQosEntry 1 }  
+	
+ihubEgressPerCosQosRowStatus OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+        "The status of this conceptual row. This object is used to
+        manage creation and deletion of rows in this table.         
+        The values supported during a set operation are 'createAndGo' 
+         'destroy' ."
+    ::= { ihubEgressPerCosQosEntry 2 }
+    
+
+ 
+ihubEgressPerCosQosPktPrio OBJECT-TYPE
+	SYNTAX      Integer32 (1..255)				
+	MAX-ACCESS  read-write
+	STATUS      current
+	DESCRIPTION
+	"Specifies the dot1p value used to classify the packets to apply
+	the egress rate limiting. It is specified as a bitmap of 8 bits where
+	each bit corresponds to a dot1p value.
+	For example: 
+		Dot1p 0 : 0x1
+		Dot1p 1 : 0x2
+		Dot1p 2 : 0x4
+		..
+		Dot1p 7 : 0x80		
+	To Specify Dot1p 0, 2,4 --> 0x15 	
+	" 
+        DEFVAL  { 255 }        
+        ::= { ihubEgressPerCosQosEntry 3 }
+        
+ihubEgressPerCosQosCirRate OBJECT-TYPE
+	SYNTAX      TCIRRate
+	MAX-ACCESS  read-write
+	STATUS      current
+	DESCRIPTION
+	    "The value of this object specifies committed information rate for the
+	     service, in units of kbps. The default is -1 which indicates that
+	     no rate limit is applied.
+	ALCATEL NOTE: 
+		 ACCESS:      read-write             USAGE:          OPT
+		 PERSIST:     NA                     INSRVMOD:       NA
+		 RANGE:       -1|0..100000000        DEFVALUE:       -1
+		 UNITS:       kbps                   SPARSE:         NA
+		 DESCR:       The value cannot exceed 100Gbps."
+	DEFVAL          { -1 }
+	::= { ihubEgressPerCosQosEntry 4 }
+
+    
+ihubEgressPerCosQosPirRate OBJECT-TYPE
+        SYNTAX      TPIRRate
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The value of this object specifies peak information rate for the
+             service, in units of kbps. The default is -1 which indicates that
+             no rate limit is applied. 
+             ALCATEL NOTE: 
+                 ACCESS:      read-write             USAGE:          OPT
+                 PERSIST:     NA                     INSRVMOD:       NA
+                 RANGE:       -1|1..100000000        DEFVALUE:       -1
+                 UNITS:       kbps                   SPARSE:         NA
+                 DESCR:       The value cannot exceed 100Gbps."
+        DEFVAL          { -1 }
+        ::= { ihubEgressPerCosQosEntry 5 }
+    
+ihubEgressPerCosQosCBurstSize OBJECT-TYPE
+        SYNTAX      IhubRateLimitBurstSize
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The value of this object specifies committed burst size in kBytes.
+             A higher burst size will accommodate more bursty traffic without 
+             causing packets to be dropped unless there is a sustained rate 
+             greater than the configured rate limit. A lower burst size will 
+             tend to drop some bursty traffic, even though the sustained rate 
+             is less than the configured rate limit.
+    
+             ALCATEL NOTE: 
+                 ACCESS:    read-write             USAGE:          OPT
+                 PERSIST:   NA                     INSRVMOD:       NA
+                 RANGE:     -1|1..262144           DEFVALUE:       -1
+                 UNITS:     kB                     SPARSE:         NA
+                 DESCR:     If no burst size is specified, a default value will be
+                            used. The default value depends on the value of the 
+                            rate limit."
+        DEFVAL          { -1 }
+        ::= { ihubEgressPerCosQosEntry 6 }
+    
+ihubEgressPerCosQosPBurstSize OBJECT-TYPE
+        SYNTAX      IhubRateLimitBurstSize
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The value of this object specifies peak burst size in kBytes.
+             A higher burst size will accommodate more bursty traffic without 
+             causing packets to be dropped unless there is a sustained rate
+             greater than the configured rate limit. A lower burst size will 
+             tend to drop some bursty traffic, even though the sustained rate 
+             is less than the configured rate limit.
+    
+            ALCATEL NOTE: 
+                 ACCESS:    read-write             USAGE:          OPT
+                 PERSIST:   NA                     INSRVMOD:       NA
+                 RANGE:     -1|1..262144           DEFVALUE:       -1
+                 UNITS:     kB                     SPARSE:         NA
+                 DESCR:     If no burst size is specified, a default value will be
+                            used. The default value depends on the value of the 
+                            rate limit."
+        DEFVAL          { -1 }
+    ::= { ihubEgressPerCosQosEntry 7 }
+    
+
+ihubEgressPerCosQostrTcmMode   OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        trTCM (1),
+                        modifiedtrTCM (2)
+                    }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+           "When the value of ihubQostrTcmMode is set to  '1' the meter is compliant
+            as per RFC 2698. When the value is set to '2' the meter is compliant 
+            to RFC 4115."
+    DEFVAL          { 1 }
+    ::= { ihubEgressPerCosQosEntry 8 }    
+
+ihubEgressPerCosQosAdminStatus OBJECT-TYPE
+      SYNTAX      INTEGER {
+                     enabled (0),
+                     disabled (1)
+                 }
+      MAX-ACCESS read-write
+      STATUS     current
+      DESCRIPTION
+          " Allows to enable/disable the rate-limiter applier for the set of 802.1ps in this entry."
+     ::= { ihubEgressPerCosQosEntry 9 }
+
+ihubEgressPerCosQosLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubEgressPerCosQosTable."
+    ::= { ihubEgressPerCosQosEntry 10 }
+    
+-------------------------------------------------------------------------------------------------------
+--	TR-156 QoS Implementation ---------------------------------------------------------------------
+-- ---------------------------------------------
+-- System Egress Port Queue Policy 
+-- ---------------------------------------------
+ihubEgressSystemPortQosPolicyTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF IhubEgressSystemPortQosPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table specifies the Egress port Queue Policy for
+         an egress port"
+    ::= { ihubEgressSystemPortQos 1 }
+
+ihubEgressSystemPortQosPolicyEntry OBJECT-TYPE
+    SYNTAX      IhubEgressSystemPortQosPolicyEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Specifies the Egress port Queue Policy for
+         an egress port"
+    INDEX { ihubEgressSystemPortQosPolicyId }
+    ::= { ihubEgressSystemPortQosPolicyTable 1 }
+
+IhubEgressSystemPortQosPolicyEntry ::=
+    SEQUENCE {
+    	ihubEgressSystemPortQosPolicyId			Integer32,    	
+	ihubEgressSystemPortQosPolicyDescription	TItemDescription,
+        ihubEgressSystemPortQosPolicyQueueMode          INTEGER,
+    	ihubEgressSystemPortQosPolicyRowStatus		RowStatus,
+	ihubEgressSystemPortQosPolicyLastChanged	TimeStamp
+    }
+
+ ihubEgressSystemPortQosPolicyId               OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of this object specifies the configured egress port queue qos policy id 
+         for all egress ports.Policy ids 1 and 2 are default for four queues and eight 
+         queues respectively. The default policies and cannot be edited or deleted.In NANT-D,
+         policy 1 alone will be created as default policy
+          "
+    ::= { ihubEgressSystemPortQosPolicyEntry 1 }
+
+ ihubEgressSystemPortQosPolicyDescription	OBJECT-TYPE
+    SYNTAX       TItemDescription
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "User provided description of the egress port queue policy."
+    DEFVAL { ''H }
+    ::= {  ihubEgressSystemPortQosPolicyEntry 2 }
+
+  ihubEgressSystemPortQosPolicyQueueMode	OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        four (1),
+                        eight (2)
+                }
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "The mode of the egress port queue policy."
+    DEFVAL { four }
+    ::= {  ihubEgressSystemPortQosPolicyEntry 3 }
+
+ ihubEgressSystemPortQosPolicyRowStatus	 OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+        "The status of this conceptual row. This object is used to
+        manage creation and deletion of rows in this table.   
+        The values supported during a set operation are 'createAndGo' and 'destroy'."
+    ::= {  ihubEgressSystemPortQosPolicyEntry 4 }
+
+ ihubEgressSystemPortQosPolicyLastChanged OBJECT-TYPE
+    SYNTAX       TimeStamp
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "Timestamp of last change to this row in ihubEgressSystemPortQosPolicyTable."
+    ::= { ihubEgressSystemPortQosPolicyEntry 5 }
+
+
+--FC to queue Map 
+
+ihubFCToQueueMapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF IhubFCToQueueMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table specifies Mapping of a Particular Forwarding Class to a unicast and non-unicast queue"
+    ::= { ihubEgressSystemPortQos 2 }
+
+ihubFCToQueueMapEntry 	OBJECT-TYPE
+    SYNTAX      IhubFCToQueueMapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Specifies the Forwarding class to Queue Mapping entries which map each FC to an
+         Egress unicast and non-unicast Queue.
+ If entry is not created for a particular forwarding class, then the values for that particular forwarding class will be applied implicitly from the default four or eight queue policy depending on the mode of the policy" 
+    INDEX { ihubEgressSystemPortQosPolicyId, ihubFCName }
+    ::= { ihubFCToQueueMapTable 1 }
+
+IhubFCToQueueMapEntry ::=
+    SEQUENCE {
+    	ihubFCName		TFCName,    	
+	ihubUnicastQueueId      IhubEgressPortQueue,
+        ihubNonUnicastQueueId   IhubEgressPortQueue
+    }
+
+ihubFCName   OBJECT-TYPE
+    SYNTAX       TFCName
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Forwarding Class name which specifies the packet Forwarding Class."
+    ::= { ihubFCToQueueMapEntry 1 }
+
+ihubUnicastQueueId	 OBJECT-TYPE
+    SYNTAX       IhubEgressPortQueue
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+        "Egress unicast Queue to which a particular Forwarding Class (specified by ihubFCName) need to be mapped"
+    ::= { ihubFCToQueueMapEntry 2 }
+
+ihubNonUnicastQueueId	 OBJECT-TYPE
+    SYNTAX       IhubEgressPortQueue
+    MAX-ACCESS   read-write
+    STATUS       current
+    DESCRIPTION
+        "Egress non-unicast queue to which a particular Forwarding Class (specified by ihubFCName) need to be mapped"
+    ::= { ihubFCToQueueMapEntry 3 }
+
+ --  Port queue to weight and priority map
+
+ ihubEgressPortQueueTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF IhubEgressPortQueueEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table specifies the Egress port Queue parameters for egress queues."
+         
+    ::= { ihubEgressSystemPortQos 3 }
+
+ ihubEgressPortQueueEntry OBJECT-TYPE
+    SYNTAX      IhubEgressPortQueueEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Specifies the Egress port Queue parameters for an egress queue.
+         If entry is not created for a particular queue, then the values for that particular queue will be applied implicitly from the default four or eight queue policy depending on the mode of the policy
+ "
+    INDEX { ihubEgressSystemPortQosPolicyId,ihubEgressPortQueueId }
+    ::= { ihubEgressPortQueueTable 1 }
+
+IhubEgressPortQueueEntry ::=
+    SEQUENCE {
+    	ihubEgressPortQueueId 		  	IhubEgressPortQueue,
+        ihubEgressPortQueueWeight              	Integer32,
+    	ihubEgressPortQueuePriority       	Integer32
+    }
+
+ihubEgressPortQueueId               	OBJECT-TYPE
+    SYNTAX      IhubEgressPortQueue
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of this object specifies the queue identifier of Egress port queue(s). 
+
+         A queue with a non-zero weight is a weighted queue.
+         A queue with a weight zero is a strict priority queue. 
+	 
+         For a particular ihubEgressSystemPortQosPolicyId,
+
+         All weighted queues have to use lowest and same priority.
+         All strict priority queues need a weight as zero.
+         All strict-priority queues should have different values of priority.
+.        "
+    ::= { ihubEgressPortQueueEntry 1 }
+
+ihubEgressPortQueueWeight               OBJECT-TYPE
+    SYNTAX      Integer32 (0..127)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of this object specifies the queue weights of Egress port queue(s)
+	 "
+    DEFVAL { 0 }
+    ::= { ihubEgressPortQueueEntry 2 }
+
+ihubEgressPortQueuePriority             OBJECT-TYPE
+    SYNTAX      Integer32 (1..100)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of this object specifies the queue priority of Egress port queue(s)
+         associated with a particular Egress Port Queue Policy for Strict Priority Scheduling.            "
+    DEFVAL { 1 }
+    ::= { ihubEgressPortQueueEntry 3 }
+
+ihubSystemEgressPortQosPolicy	OBJECT-TYPE
+    SYNTAX      Integer32 (1..65535) 
+    MAX-ACCESS       read-write
+    STATUS       current
+    DESCRIPTION
+        "The egress port qos policy(IhubEgressSystemPortQosPolicyEntry::ihubSystemEgressPortQosPolicyId) active in the system.
+         The policy should be created before it is configured as active.
+         When a policy is configured as active
+         ihubEgressSystemPortQosPolicyTable,ihubFCToQueueMapTable and ihubEgressPortQueueTable
+         cannot be modified for that policy"
+    DEFVAL { 1 }
+    ::= { ihubEgressSystemPortQos 4 }
+
+--  ==================================================================
+--  |                     INGRESS/EGRESS STORM CONTROL                |
+--  ==================================================================
+--
+--  Ingress (Downstream) storm control
+--
+ihubIngressSystemStormControlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF IhubIngressSystemStormControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table specifies the storm control rate-limit
+         parameters for downstream traffic per storm-type and aggregate."
+    ::= { ihubIngressSystemStormControl 1 }
+	
+ihubIngressSystemStormControlEntry OBJECT-TYPE
+    SYNTAX      IhubIngressSystemStormControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Specifies downstream storm control rate-limit
+         parameters at system-level"
+    INDEX { ihubIngressSystemStormControlType }
+    ::= { ihubIngressSystemStormControlTable 1 }
+	
+IhubIngressSystemStormControlEntry ::=
+    SEQUENCE {
+    	        ihubIngressSystemStormControlType INTEGER,
+              ihubIngressSystemStormControlRate	Integer32,
+              ihubIngressSystemStormControlBurstSize   IhubRateLimitBurstSize
+             }
+	
+ihubIngressSystemStormControlType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    broadcast (1),
+                    unknown-unicast (2),
+                    unknown-multicast (3),
+                    aggregate (4)
+                  }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The ihubIngressSystemStormControlType variable specifies the
+         each type or aggregate of all storm-types to be rate-limited
+         in downstream direction. 
+         Following  are the possible values:-
+		 Broadcast:-
+		 Broadcast frames with destination mac-address FF:FF:FF:FF:FF:FF
+		 Unknown-Unicast:-
+		 Destination Lookup-Failure Frames including unicast frames whose 
+		 switching/routing information is unknown at the switch. A switch can take 
+		 one of the following actions depending on the policy set at the switch:
+			-Drop the frame (or Copy to CPU)
+			-Broadcast the frame on all the ports in the VLAN
+		 Unknown-Multicast:-
+		 Multicast frames whose  switching/routing information is unknown at the switch. 
+		 A switch can take one of the following actions depending on the policy set at the switch:
+			-Drop the frame (or Copy to CPU)
+			-Broadcast the frame on all the ports in the VLAN
+		 Aggregate:-
+		 All of the storm-types, i.e, Broadcast,Unknown-Unicast and Unknown-Multicast.
+		 NOTE: Aggregate and per-storm-control rate-limit cannot be configured together."
+    ::= { ihubIngressSystemStormControlEntry 1 }
+
+ihubIngressSystemStormControlRate OBJECT-TYPE
+    SYNTAX      Integer32 (-1 | 1..100000000) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The ihubIngressSystemStormControlRate variable specifies the maximum ingress
+         bandwidth (in kilobits per second)allowed for a particular storm-type or
+         aggregate of all storm-types. A value of -1 means that the limit is the actual
+         physical limit."
+    DEFVAL { -1 }
+    ::= { ihubIngressSystemStormControlEntry 2 }
+	
+ihubIngressSystemStormControlBurstSize OBJECT-TYPE
+    SYNTAX      IhubRateLimitBurstSize
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When an ingress storm-control rate-limit is configured, this parameter
+         specifies the corresponding burst size in kBytes. Generally, a higher
+         burst size will accommodate more bursty traffic without causing 
+         packets to be dropped unless there is a sustained rate greater than 
+         the configured rate limit. A lower burst size will tend to drop some
+         bursty traffic, even though the sustained rate is less than the 
+         configured rate limit.
+
+        ALCATEL NOTE: 
+             ACCESS:    read-write             USAGE:          OPT
+             PERSIST:   NA                     INSRVMOD:       NA
+             RANGE:     -1|1..262144           DEFVALUE:       -1
+             UNITS:     kB                     SPARSE:         NA
+             DESCR:     If no burst size is specified, a default value will be
+                        used. The default value depends on the value of the 
+                        rate limit." 
+    DEFVAL { -1 }
+    ::= { ihubIngressSystemStormControlEntry 3 }
+	
+-- Egress (Upstream) storm-control------   
+
+ihubEgressSystemStormControlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF IhubEgressSystemStormControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The table specifies the storm control rate-limit
+         parameters for upstream traffic per storm-type and aggregate."
+    ::= { ihubEgressSystemStormControl 1 }
+	
+ihubEgressSystemStormControlEntry OBJECT-TYPE
+    SYNTAX      IhubEgressSystemStormControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Specifies downstream storm control rate-limit
+         parameters at system-level."
+    INDEX { ihubEgressSystemStormControlType }
+    ::= { ihubEgressSystemStormControlTable 1 }
+	
+IhubEgressSystemStormControlEntry ::=
+    SEQUENCE {
+    	        ihubEgressSystemStormControlType INTEGER,
+              ihubEgressSystemStormControlRate	Integer32,
+              ihubEgressSystemStormControlBurstSize   IhubRateLimitBurstSize
+    }
+	
+ihubEgressSystemStormControlType OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    broadcast (1),
+                    unknown-unicast (2),
+                    unknown-multicast (3),
+                    aggregate (4)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The ihubEgressSystemStormControlType variable specifies the
+         each type or aggregate of all storm-types to be rate-limited 
+         in upstream direction. 
+         Following  are the possible values:-
+		 Broadcast:-
+		 Broadcast frames with destination mac-address FF:FF:FF:FF:FF:FF
+		 Unknown-Unicast:-
+		 Destination Lookup-Failure Frames including unicast frames whose 
+		 switching/routing information is unknown at the switch. A switch can take 
+		 one of the following actions depending on the policy set at the switch:
+			-Drop the frame (or Copy to CPU)
+			-Broadcast the frame on all the ports in the VLAN
+		 Unknown-Multicast:-
+		 Multicast frames whose  switching/routing information is unknown at the switch. 
+		 A switch can take one of the following actions depending on the policy set at the switch:
+			-Drop the frame (or Copy to CPU)
+			-Broadcast the frame on all the ports in the VLAN
+		 Aggregate:-
+		 All of the storm-types, i.e, Broadcast,Unknown-Unicast and Unknown-Multicast.
+		 NOTE: Aggregate and per-storm-control rate-limit cannot be configured together."
+    ::= { ihubEgressSystemStormControlEntry 1 }
+
+ihubEgressSystemStormControlRate OBJECT-TYPE
+    SYNTAX      Integer32 (-1 | 1..100000000) 
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The ihubEgressSystemStormControlRate variable specifies the maximum egress
+         bandwidth (in kilobits per second)allowed for a particular storm-type or
+         aggregate of all storm-types. A value of -1 means that the limit is the actual
+         physical limit."
+    DEFVAL { -1 }
+    ::= { ihubEgressSystemStormControlEntry 2 }
+	
+ihubEgressSystemStormControlBurstSize OBJECT-TYPE
+    SYNTAX      IhubRateLimitBurstSize
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "When an egress storm-control rate-limit is configured, this parameter
+         specifies the corresponding burst size in kBytes. Generally, a higher
+         burst size will accommodate more bursty traffic without causing 
+         packets to be dropped unless there is a sustained rate greater than 
+         the configured rate limit. A lower burst size will tend to drop some
+         bursty traffic, even though the sustained rate is less than the 
+         configured rate limit.
+
+        ALCATEL NOTE: 
+             ACCESS:    read-write             USAGE:          OPT
+             PERSIST:   NA                     INSRVMOD:       NA
+             RANGE:     -1|1..262144           DEFVALUE:       -1
+             UNITS:     kB                     SPARSE:         NA
+             DESCR:     If no burst size is specified, a default value will be
+                        used. The default value depends on the value of the 
+                        rate limit." 
+    DEFVAL { -1 }
+    ::= { ihubEgressSystemStormControlEntry 3 }
+
+
+END
+    

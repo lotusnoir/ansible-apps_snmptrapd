@@ -1,0 +1,3757 @@
+VRF-MIB DEFINITIONS ::= BEGIN
+
+-- ==============================================================================
+-- This specification is published by Alcatel under Non-Disclosure
+-- Agreement(s) (NDA) with specific parties and has to be considered as
+-- Confidential Information as defined in such NDA.
+-- Alcatel reserves the right to revise this document for any reason,
+-- including but not limited to conformity with standards promulgated by
+-- various agencies, utilisation of advances in the state of the technical
+-- areas, or the reflection of changes in the design of any equipment,
+-- techniques, or procedures described or referred to herein.
+-- The product specifications and other technical or performance information
+-- contained herein are subject to change without notice.
+-- Updates of this document will be issued under the above NDA's.
+-- Alcatel makes no representation or warranty, expressed or implied, with
+-- respect to the sufficiency, accuracy, or utility of any information or
+-- opinion contained herein. Alcatel expressly advises that any use of for 
+-- any purpose or reliance upon this technical reference is at the risk of
+-- the user and that Alcatel shall not be liable for any damage or injury
+-- incurred by any person arising out of the sufficiency, accuracy, or
+-- utility of any information or opinion contained herein.
+-- This document is not to be construed as a suggestion to any manufacturer
+-- to modify or change any of its products, nor does this document represent
+-- any commitment by Alcatel to sell or purchase any product.
+-- Nothing contained herein shall be construed as conferring by implication,
+-- estoppel, or otherwise any license or right under any patent, whether or
+-- not the use of any information herein necessarily employs an invention of
+-- any existing or later issued patent.
+-- Alcatel reserves the right not to offer any or all of these products and
+-- to withdraw any or all of them at any future time.
+-- Copyright (C) 2007, Alcatel. All Rights Reserved.
+-- ==============================================================================
+--
+--  MODULE-IDENTITY
+--  LAST-UPDATED   "200612191400Z"
+--  ORGANIZATION   "Alcatel"
+--  CONTACT-INFO
+--
+--          "Email:  asam.mibsupport@alcatel.be"
+--
+--  DESCRIPTION   Alcatel proprietary Virtual Routing and Forwarding (VRF) context-
+--                specific variant of the standard IP and IP Forwarding MIB.
+-- 
+--  REVISION 200612190600Z
+--  DESCRIPTION
+--        "Version:  3FE21838EAAA_V3.4.0.0.0
+--         Editor:   Hemachandra Ramineni
+--         Changes:  Implementation for BDFhw52075. Added new tables
+--                   for supporting summary and detailed ARP OAM counters"
+--
+--  REVISION 2006009260000Z
+--  DESCRIPTION
+--        "Version:  3FE21383AAAA_E3.1.0.0
+--         Editor:   Lucien Marcotte
+--         Changes:  Updates for ISAM R3.1; changed vrfModuleIpNetToMediaSlotIndex
+--                              Integer range from 3..21 to 1..65535 as EqptSlotIndex
+--
+--  REVISION 200604030000Z
+--  DESCRIPTION
+--        "Version:  3FE21383AAAA_E3.0.0.0
+--         Editor:   Lucien Marcotte
+--         Changes:  Updates from ISAM R3.0; table sizes adapted to 19 slots:
+--                     vrfModuleIpNetToMediaSlotIndex changed to 3..21, 
+--                     vrfCurrentIpTable (4672), vrfIpInterfaceTable (4800),
+--                     vrfInetCidrRouteTable (10048), vrfModuleIpNetToMedia (91200),
+--                     vrfIpInterfaceStatsTable (3648), vrfIpAddressTable (3072)"
+--
+--  REVISION 200502230000Z
+--  DESCRIPTION
+--        "Version:  3FE21383AAAA_E2.1.0.1
+--         Editor:   Yin Qin
+--         Changes:  Updates the values of IpAddressOriginTC in iSAM R2.1"
+--
+--  REVISION 200409190000Z
+--  DESCRIPTION
+--        "Version:  3FE21383AAAA_E2.1.0.0
+--         Editor:   Yin Qin
+--         Changes:  Updates for iSAM R2.1"
+--
+--  REVISION 200408160000Z
+--  DESCRIPTION
+--        "Version:  3FE21383AAAA_E2.0.0.2
+--         Editor:   Marijke Coenen 
+--         Changes:  Updates as per ed 02p06 of PB document"
+--  
+--  REVISION 200406111745Z
+--  DESCRIPTION
+--        "Version:  3FE21383AAAA_E2.0.0.1
+--         Editor:   Frank Desseyn 
+--         Changes:  Various corrections"
+--
+--  REVISION 200403221600Z
+--  DESCRIPTION
+--        "Version:  3FE21383AAAA_E2.0.0.0
+--         Editor:   Patrick Mensch 
+--         Changes:  Initial Version"
+--  
+-- ======================================================================
+
+   IMPORTS  OBJECT-TYPE                     FROM RFC-1212
+            AutonomousType                  FROM SNMPv2-TC
+            TruthValue                      FROM SNMPv2-TC
+            TestAndIncr                     FROM SNMPv2-TC
+            RowStatus                       FROM SNMPv2-TC
+            TimeStamp                       FROM SNMPv2-TC
+            Counter                         FROM RFC1155-SMI
+            Gauge                           FROM RFC1155-SMI
+            mib-2                           FROM RFC1213-MIB
+            DisplayString                   FROM RFC1213-MIB
+            PhysAddress                     FROM RFC1213-MIB
+            IANAifType                      FROM IANAifType-MIB
+            ifIndex, InterfaceIndex         FROM ITF-MIB
+            InterfaceIndexOrZero            FROM ITF-MIB
+            InetAddress                     FROM INET-ADDRESS-MIB
+            InetAddressType                 FROM INET-ADDRESS-MIB
+            InetAddressPrefixLength         FROM INET-ADDRESS-MIB
+            InetAutonomousSystemNumber      FROM INET-ADDRESS-MIB
+            IANAipRouteProtocol             FROM IANA-RTPROTO-MIB
+--          NetworkTimeInSeconds            FROM ASAM-TC-MIB
+            AsamProfilePointer              FROM ASAM-TC-MIB
+            asam                            FROM SYSTEM-MIB;
+
+
+-- asam OBJECT IDENTIFIER ::= { iso(1) identified-organization(3) dod(6)
+--                              internet(1) private(4) enterprises(1)
+--                              alcatel(637) asd(61) asam(1)}
+
+-- **************************************************************************
+-- **   T E X T U A L     C O N V E N T I O N S                            **
+-- **************************************************************************
+
+IpAddressOriginTC ::= INTEGER
+    {
+        other(1),
+        manual(2),
+        wellknown(3),
+        dhcp(4),
+        linklayer(5),
+        random(6),
+        rarp(7),
+        bootp(8),
+        ppp(9)
+    }
+
+IpAddressStatusTC ::= INTEGER
+    {
+        preferred(1),
+--        deprecated(2),
+        invalid(3),
+        inaccessible(4),
+        unknown(5),
+        tentative(6),
+        duplicate(7)
+    }
+
+Uint32 ::= Gauge (0 .. 4294967295)
+
+VrfIndex ::= INTEGER (0..255)
+-- for iSAM range is (0..127) as indicated through the ALCATEL NOTES
+
+  TosValue ::= INTEGER (0 .. 255)
+
+
+-- **************************************************************************
+-- **   O B J E C T     D E F I N I T I O N S                              **
+-- **************************************************************************
+
+vrfMIB      OBJECT IDENTIFIER ::= { asam 41 }
+
+-- **************************************************************************
+-- **   N E X T     F R E E     V R F     I N D E X                        **
+-- **************************************************************************
+
+   vrfIndexNext OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The next free Virtual Routing and Forwarding (VRF) index.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+		"
+
+      ::= {vrfMIB 2}
+
+
+-- **************************************************************************
+-- **   V R F     S Y S T E M     S T A T S     T A B L E                  **
+-- **                                                                      **
+-- **   vrfSysStatsTable  ::= {vrfMIB 10}                                  **
+-- **************************************************************************
+
+     vrfSysStatsTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF VrfSysStatsEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+           "The Alcatel proprietary Virtual Routing and Forwarding (VRF)
+            independent statistics table.
+
+            ALCATEL NOTE:
+             SUPPORT:  	YES
+             TABLESIZE:  1"
+
+        ::= {vrfMIB 10}
+
+     vrfSysStatsEntry  OBJECT-TYPE
+        SYNTAX VrfSysStatsEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+           "An entry containing VRF-independent statistical
+            information."
+
+        INDEX { vrfSysStatsIpVersion }
+
+        ::= {vrfSysStatsTable 1}
+
+     VrfSysStatsEntry ::= SEQUENCE
+     {
+        vrfSysStatsIpVersion                    InetAddressType,
+        vrfSysStatsCurrentIpRouteEntries        Counter,
+        vrfSysStatsCurrentIpNetToMediaEntries   Counter
+     }
+
+
+     vrfSysStatsIpVersion  OBJECT-TYPE
+        SYNTAX InetAddressType
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The IP version for which VRF-independent statistics
+            are required.
+
+            ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NO / INDEX
+             RANGE:     NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfSysStatsEntry 1}
+
+
+   vrfSysStatsCurrentIpRouteEntries  OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The current, total number of IP Routes in the system Inet CIDR route table 
+		  (of all VRFs).  
+		  The number of IP Routes in the system Inet CIDR route table equals the sum 
+		  of the number of IP Routes present in each of the VRF Inet CIDR route 
+		  tables.
+		  The number of IP Routes present in a VRF Inet CIDR route table does not 
+		  consider the potential redundancy due to the internal iSAM architecture. 
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfSysStatsEntry 2}
+
+
+   vrfSysStatsCurrentIpNetToMediaEntries  OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The current, total number of entries in the system IP Net-to-Media table 
+		 (of all VRFs).
+		  The number of entries in the system IP Net-to-Media table equals the sum
+		  of the number of IP Net-to-Media entries present in each of the VRF IP 
+		  Net-to-Media tables.
+		  The number of IP Net-to-Media entries present in a VRF IP Net-to-Media 
+		  table does not consider the potential redundancy due to the internal iSAM 
+		  architecture.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfSysStatsEntry 3}
+
+-- **************************************************************************
+-- **  V R F     C O N F I G U R A T I O N    T A B L E                    **
+-- **                                                                      **
+-- **   vrfConfigTable  ::= {vrfMIB 11}                                    ** 
+-- **************************************************************************
+
+   vrfConfigTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF VrfConfigEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "The Alcatel proprietary Virtual Routing and Forwarding (VRF)
+          configuration table.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             TABLESIZE:   128"
+
+      ::= {vrfMIB 11}
+
+
+   vrfConfigEntry  OBJECT-TYPE
+      SYNTAX VrfConfigEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry containing configuration information applicable to a
+          particular VRF context.
+       Row creation : A VRF shall be created in one step by a
+          set-request with all necessary VRF parameter values and
+          vrfConfigRowStatus set to createAndGo(4).
+       Row deletion in ASAM: A VRF shall be deleted by in 2 steps:
+          First all resources shall be removed by setting vrfConfigAction to
+          removeAllResources(2).
+          The manager shall then poll vrfConfigStatus. When the status has
+          become idle, the manager shall set vrfConfigRowStatus to destroy(6),
+          which will delete the VRF.
+          When vrfConfigStatus is different from idle, the VRF cannot be
+          deleted.
+       Row deletion in iSAM: A VRF shall be deleted by setting the row status
+       of the corresponding row to destroy.  Note that VRF deletion is only 
+       allowed if all attached resources are cleaned up."
+
+      INDEX {vrfIndex}
+
+      ::= {vrfConfigTable 1}
+
+
+    VrfConfigEntry ::= SEQUENCE
+    {
+        vrfIndex                            VrfIndex,
+        vrfConfigRowStatus                  RowStatus,
+        vrfConfigName                       DisplayString,
+        vrfConfigDescription                DisplayString,
+        vrfConfigContact                    DisplayString,
+        vrfConfigAdminStatus                INTEGER,
+        vrfConfigRouterIpv4Address          InetAddress,
+        vrfConfigRouterIpv6Address          InetAddress,
+        vrfConfigIpv4Forwarding             INTEGER,
+        vrfConfigIpv6Forwarding             INTEGER,
+        vrfConfigMaxIpv4RouteEntries        INTEGER,
+        vrfConfigMaxIpv6RouteEntries        INTEGER,
+        vrfConfigIpv4DefaultTTL             INTEGER,
+        vrfConfigIpv6DefaultHopLimit        INTEGER,
+        vrfConfigReasmTimeout               Uint32,
+        vrfConfigIcmpEchoHandling           INTEGER,
+        vrfConfigAction                     INTEGER,
+        vrfConfigStatus                     INTEGER,
+        vrfErrors                           Counter,
+        vrfCurrentIpv4RouteEntries          INTEGER
+    }
+
+
+   vrfIndex  OBJECT-TYPE
+      SYNTAX VrfIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "A number which uniquely identifies a particular VRF context
+          within the system.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO / INDEX
+             RANGE:	0..127
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 1}
+
+
+   vrfConfigRowStatus  OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The status of this conceptual row.
+          The RowStatus TC requires that this DESCRIPTION clause
+          states under which circumstances other objects in this row
+          can be modified.  The value of this object has no effect on
+          whether other objects in this conceptual row can be
+          modified.
+          A conceptual row can always be made active.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	1 | 4 | 6	-- active (1), createAndGo (4), destroy (6)
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 2}
+
+
+   vrfConfigName  OBJECT-TYPE
+      SYNTAX DisplayString (SIZE(0..32))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "A unique name of this particular VRF context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	SIZE(0..32)
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 3}
+
+
+   vrfConfigDescription  OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0..255))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "A textual description of the usage of this
+          particular VRF context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	SIZE(0..32)
+             DEFVALUE: 	null
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 4}
+
+
+   vrfConfigContact  OBJECT-TYPE
+      SYNTAX DisplayString (SIZE(0..255))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "A textual identification of the contact person
+          or the contact information for administration of
+          this particular VRF context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	SIZE(0..32)
+             DEFVALUE: 	null
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 5}
+
+
+   vrfConfigAdminStatus  OBJECT-TYPE
+      SYNTAX INTEGER
+             {
+                up(1),
+                down(2)
+             }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The adminstrative status of this particular
+          VRF context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	1 -- up
+             DEFVALUE: 	1 -- up
+             UNITS:	NA
+         "
+      DEFVAL {up}
+      ::= {vrfConfigEntry 6}
+
+
+   vrfConfigRouterIpv4Address  OBJECT-TYPE
+      SYNTAX InetAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The router Ipv4 address or system Ipv4 address within
+          this particular VRF context.  This IP address is used
+          for various purposes:
+
+            as the 'my Ipv4 address' during PPP/IPCP negotiation
+            as the unique ID of the system to be used in routing
+                protocols
+
+          The router Ipv4 address can be a unique value in the system
+          or the IP address of one of our own IP interfaces.  It shall
+          however never be equal to the IP address of any next hop.
+
+          This IP address can only be modified if it is 'not used
+          anymore' i.e. no PPP session is established to this VRF
+          and this IP address is not used as unique system ID in
+          a routing protocol.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	NA
+             DEFVALUE: 	0.0.0.0
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 7}
+
+
+   vrfConfigRouterIpv6Address  OBJECT-TYPE
+      SYNTAX InetAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The router Ipv6 address or system Ipv6 address within
+          this particular VRF context.
+  
+          The router Ipv6 address can be a unique value in the system
+          or the IP address of one of our own IP interfaces.  It shall
+          however never be equal to the IP address of any next hop.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+          "
+      ::= {vrfConfigEntry 8}
+
+
+   vrfConfigIpv4Forwarding  OBJECT-TYPE
+      SYNTAX INTEGER
+             {
+                forwarding (1),             -- acting as a standard IP forwarder
+                notForwarding (2),          -- not acting as an IP forwarder
+                residentialForwarding (3),  -- acting as a 
+                                            -- residential IP forwarder
+					    -- i.e one which blocks user-to-user 
+					    -- communication
+		intraSubnetForwarding (4), -- acting as an intra subnet forwarder
+		residentialIntraSubnetForwarding (5), -- acting as an intra subnet 
+						      -- forwarder without user-to-user
+						      -- traffic
+		predefinedIntraSubnetForwarding (6)   -- acting as a predefined intra 
+						      -- subnet forwarder
+             }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The indication of whether this entity is acting as an Ipv4
+          router in respect to the forwarding of datagrams received
+          by, but not addressed to, this entity within this VRF context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	5 | 6
+             DEFVALUE: 	6
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 9}
+
+
+   vrfConfigIpv6Forwarding  OBJECT-TYPE
+      SYNTAX INTEGER
+             {
+                forwarding (1),             -- acting as a standard IP forwarder
+                notForwarding (2),          -- not acting as an IP forwarder
+                forwardingNoUser2user (3)   -- acting as a residential IP forwarder
+					    -- i.e. one which blocks user-to-user
+					    -- communication
+             }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The indication of whether this entity is acting as an Ipv6
+          router in respect to the forwarding of datagrams received
+          by, but not addressed to, this entity within this VRF context.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      DEFVAL {forwarding}
+      ::= {vrfConfigEntry 10}
+
+
+   vrfConfigMaxIpv4RouteEntries  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The maximum number of entries in the Ipv4 CIDR route
+          table, allowed within this VRF.  The number of
+          entries is calculated as the sum of the number of:
+
+           * direct routes derived from the local IP interface(s)
+           * direct and indirect routes which are configured
+           * direct routes learnt via ICMP or DHCP
+           * indirect routes learnt via some routing protocol
+
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 11}
+
+
+   vrfConfigMaxIpv6RouteEntries  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The maximum number of entries in the Ipv6 CIDR route
+          table, allowed within this VRF.  The number of
+          entries is calculated as the sum of the number of:
+  
+           * direct routes derived from the local IP interface(s)
+           * direct and indirect routes which are configured
+           * direct routes learnt via ICMP or DHCP
+           * indirect routes learnt via some routing protocol
+
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 12}
+
+
+   vrfConfigIpv4DefaultTTL  OBJECT-TYPE
+      SYNTAX INTEGER (1..255)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The default value inserted into the Time-To-Live field of
+          the Ipv4 header of datagrams originated at this entity
+          within this VRF context, whenever a TTL value is not
+          supplied by the transport layer protocol.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	32
+             UNITS:	NA
+         "
+      DEFVAL {32}
+      ::= {vrfConfigEntry 13}
+
+
+   vrfConfigIpv6DefaultHopLimit  OBJECT-TYPE
+      SYNTAX INTEGER (0..255)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The default value inserted into the Hop Limit field of
+          the Ipv6 header of datagrams originated at this entity
+          within this VRF context, , whenever a Hop Limit value
+          is not supplied by the transport layer protocol.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 14}
+
+
+   vrfConfigReasmTimeout OBJECT-TYPE
+      SYNTAX Uint32
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The maximum number of seconds which received fragments are
+          held while they are awaiting reassembly at this entity
+          within this VRF context.
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	NA
+             DEFVALUE: 	30
+             UNITS:	SECONDS
+         "
+      ::= {vrfConfigEntry 15}
+
+
+   vrfConfigIcmpEchoHandling  OBJECT-TYPE
+      SYNTAX INTEGER
+             {
+                ignoreAll (1),         -- do not reply to received ICMP EchoReq 
+				       -- messages
+                replyFromNetwork (2),  -- reply to received ICMP EchoReq messages 
+				       -- from network, ignore others.
+                replyFromUser (3),     -- reply to received ICMP Echoreq messages
+	     			       -- from users, ignore others
+                replyAlways (4)        -- always reply to received ICMP EchoReq
+				       -- messages
+             }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The indication of whether this entity will reply to received
+          ICMP EchoReq messages and if yes, from those received from
+          network side, user side or both.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfConfigEntry 16}
+
+
+vrfConfigAction OBJECT-TYPE
+   SYNTAX INTEGER
+          {
+             noAction           (1),
+             removeAllResources (2)
+          }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "vrfConfigAction can be used to remove all resources of the VRF.  (e.g.
+      DHCP-sessions, IP-addresses, interfaces, routes, ...)  Once all resources
+      are removed, field ConfigStatus will have value 3 (idle).
+      The VRF can be deleted when ConfigStatus=idle.
+      ALCATEL NOTE:
+        SUPPORT:     YES
+        PERSIST:     YES
+        INSRVMOD:    YES
+        RANGE:       1	-- no action
+        DEFVALUE:    1
+        UNITS:       NA"
+   DEFVAL {noAction}
+   ::= {vrfConfigEntry 17}
+
+
+vrfConfigStatus OBJECT-TYPE
+   SYNTAX INTEGER
+          {
+             operational         (1),
+             removingresources   (2),
+             idle                (3)
+          }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Status of resource removal action.
+      Operational: VRF is up and running.
+        Modification of VRF objects is allowed.
+        Deletion of VRF is not allowed.
+      removingresources: the system is busy removing VRF resources.
+        Modification of VRF objects is not allowed.
+        Deletion of VRF is not allowed.
+      idle: the VRF has no resources.
+        Modification of VRF objects is allowed.
+        Deletion of VRF is allowed.
+      ALCATEL NOTE:
+        SUPPORT:     YES
+        PERSIST:     YES
+        INSRVMOD:    NA
+        RANGE:       1	-- operational
+        DEFVALUE:    1
+        UNITS:       NA"
+   ::= {vrfConfigEntry 18}
+
+
+vrfErrors OBJECT-TYPE
+   SYNTAX Counter
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Reflects the total number of errors that occurred on this VRF.
+      ALCATEL NOTE:
+        SUPPORT:     NO
+        PERSIST:     NA
+        INSRVMOD:    NA
+        RANGE:       NA
+        DEFVALUE:    NA
+        UNITS:       NA"
+   ::= {vrfConfigEntry 19}
+
+
+vrfCurrentIpv4RouteEntries OBJECT-TYPE
+   SYNTAX INTEGER (1..61440)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Current number of routes in the FIB for this VRF.
+      ALCATEL NOTE:
+        SUPPORT:     NO
+        PERSIST:     NA
+        INSRVMOD:    NA
+        RANGE:       NA
+        DEFVALUE:    NA
+        UNITS:       NA"
+   ::= {vrfConfigEntry 20}
+
+
+-- **************************************************************************
+-- **   V R F     M A P P I N G     T A B L E                              **
+-- **                                                                      **
+-- **   vrfMappingTable  ::= {vrfMIB 12}                                   **
+-- **************************************************************************
+
+   vrfMappingTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF VrfMappingEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "The Alcatel proprietary Virtual Routing and Forwarding (VRF)
+          mapping table.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             TABLESIZE:  128"
+
+      ::= {vrfMIB 12}
+
+   vrfMappingEntry  OBJECT-TYPE
+      SYNTAX VrfMappingEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry containing VRF name-to-id mapping information.
+       Row creation : auto-instantiated as a result of creation of an entry
+                      in the vrfConfigTable.
+       Row deletion : auto-deleted as a result of deletion of an entry in the
+                      vrfConfigTable.
+		"
+
+      INDEX { vrfMappingName }
+
+      ::= {vrfMappingTable 1}
+
+   VrfMappingEntry ::= SEQUENCE
+   {
+      vrfMappingName                 DisplayString,
+      vrfMappingVrfIndex             VrfIndex
+   }
+
+
+   vrfMappingName  OBJECT-TYPE
+      SYNTAX DisplayString (SIZE(0..32))
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "A unique name of this particular VRF context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NO / INDEX
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfMappingEntry 1}
+
+
+   vrfMappingVrfIndex  OBJECT-TYPE
+      SYNTAX VrfIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "A number which uniquely identifies a particular VRF context
+          within the system.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfMappingEntry 2}
+
+-- **************************************************************************
+-- **   V R F     S T A T I S T I C S     T A B L E                        **
+-- **                                                                      **
+-- **   vrfStatsTable  ::= {vrfMIB 13}                                     **
+-- **************************************************************************
+
+     vrfStatsTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF VrfStatsEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+           "The Alcatel proprietary Virtual Routing and Forwarding (VRF)
+            statistics table.
+
+            ALCATEL NOTE:
+             SUPPORT:  	YES
+             TABLESIZE:  128"
+
+        ::= {vrfMIB 13}
+
+     vrfStatsEntry  OBJECT-TYPE
+        SYNTAX VrfStatsEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+           "An entry containing VRF-specific statistical
+            information."
+
+        INDEX { vrfIndex, vrfStatsIpVersion }
+
+        ::= {vrfStatsTable 1}
+     VrfStatsEntry ::= SEQUENCE
+     {
+
+        vrfStatsIpVersion                   InetAddressType,
+        vrfStatsCurrentIpRouteEntries       Counter,
+        vrfStatsCurrentIpNetToMediaEntries  Counter,
+        vrfStatsInOctets                    OCTET STRING,
+        vrfStatsOutOctets                   OCTET STRING,
+        vrfStatsInReceives                  Counter,
+        vrfStatsOutTransmits                Counter,
+        vrfStatsInIpHeaderErrors            Counter,
+        vrfStatsInIpAddressErrors           Counter,
+        vrfStatsInIpProtocolErrors          Counter,
+        vrfStatsInOutOfProfiles             Counter,
+        vrfStatsOutOutOfProfiles            Counter,
+        vrfStatsInNoRoutes                  Counter,
+        vrfStatsOutNoRoutes                 Counter,
+        vrfStatsInDiscards                  Counter,
+        vrfStatsInDelivers                  Counter,
+        vrfStatsInForwards                  Counter,
+        vrfStatsInReasmOKs                  Counter,
+        vrfStatsInReasmFails                Counter,
+        vrfStatsInFragments                 Counter,
+        vrfStatsOutFragOKs                  Counter,
+        vrfStatsOutFragFails                Counter,
+        vrfStatsOutFragments                Counter
+  }
+
+
+     vrfStatsIpVersion  OBJECT-TYPE
+        SYNTAX InetAddressType
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The IP version for which VRF statistics are required.
+
+            ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NO / INDEX
+             RANGE:	1 - only Ipv4
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 1}
+
+
+   vrfStatsCurrentIpRouteEntries  OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The current, total number of entries in the
+          INET CIDR route table within this VRF.   The
+          number of entries is calculated as the sum of
+          the number of:
+
+            * direct routes derived from the local IP interface(s)
+            * direct and indirect routes which are configured
+            * direct routes learnt via ICMP or DHCP
+            * indirect routes learnt via some routing protocol
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfStatsEntry 2}
+
+
+   vrfStatsCurrentIpNetToMediaEntries  OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The current, total number of entries in the
+          IP Net-to-Media table of any VRF.  The number
+          of entries is calculated as the sum of the
+          number of entries per VRF context.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfStatsEntry 3}
+  
+  
+     vrfStatsInOctets  OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(8))
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The total number of octets received in input IP datagrams,
+            including those received in error.  Octets from datagrams
+            counted in vrfStatsInReceives shall be counted here.
+            Syntax Counter does not fit as Counter is restricted to 
+            32 bits values.
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 4}
+  
+  
+     vrfStatsOutOctets  OBJECT-TYPE
+        SYNTAX OCTET STRING (SIZE(8))
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The total number of octets delivered in output IP datagrams,
+            to the lower layers for transmission.  Octets from datagrams
+            counted in vrfStatsOutTransmits shall be counted here.
+            Syntax Counter does not fit as Counter is restricted to 
+            32 bits values.
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 5}
+  
+  
+     vrfStatsInReceives  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The total number of input IP datagrams received, including
+            those received in error.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 6}
+  
+  
+     vrfStatsOutTransmits  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The total number of output IP datagrams, delivered to the
+            lower layers for transmission.  This includes datagrams
+            generated local and those forwarded by this entity.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 7}
+  
+  
+     vrfStatsInIpHeaderErrors  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of input IP datagrams discarded due to errors in
+            their IP headers, including version number mismatch, other
+            format errors, hop count exceeded, errors discovered in
+            processing their IP options, etc.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 8}
+  
+  
+     vrfStatsInIpAddressErrors  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of input IP datagrams discarded because the IP
+            address in their IP header's destination field was not a
+            valid address to be received at this entity.  This count
+            includes invalid addresses (e.g., ::0) and addresses which
+            are not allowed on this interface i.e. which are considered
+            as being spoofed.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 9}
+  
+  
+     vrfStatsInIpProtocolErrors  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of locally-addressed IP datagrams received
+            successfully but discarded because of an unknown or
+            unsupported protocol.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 10}
+  
+  
+     vrfStatsInOutOfProfiles  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of input IP datagrams discarded by some
+            ingress policer i.e. the number of out-of-profile
+            input IP datagrams.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 11}
+  
+  
+     vrfStatsOutOutOfProfiles  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of output IP datagrams discarded by some
+            egress policer i.e. the number of out-of-profile
+            output IP datagrams.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 12}
+  
+  
+     vrfStatsInNoRoutes  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of input IP datagrams discarded because no
+            route could be found to forward them to their destination.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 13}
+  
+  
+     vrfStatsOutNoRoutes  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of locally generated IP datagrams discarded
+            because no route could be found to send them to their
+            destination.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 14}
+  
+  
+     vrfStatsInDiscards  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of input IP datagrams for which no problems
+            were encountered to prevent their continued processing,
+            but which were discarded (e.g., for lack of buffer space).
+            Note that this counter does not include any datagrams
+            discarded while awaiting re-assembly.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 15}
+  
+  
+     vrfStatsInDelivers  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of input IP datagrams successfully delivered to
+            IP user-protocols (including ICMP, IGMP, UDP, TCP, ...).
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 16}
+  
+  
+     vrfStatsInForwards  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of input IP datagrams for which this entity
+            was not their final IP destination and for which this
+            entity attempted to find a route to forward them to that
+            final destination.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 17}
+  
+  
+     vrfStatsInReasmOKs  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of input IP datagrams that have been
+            successfully reassembled.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 18}
+  
+  
+     vrfStatsInReasmFails  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of failures detected by the IP re-assembly
+            algorithm (for whatever reason: timed out, errors, etc.).
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 19}
+  
+  
+     vrfStatsInFragments  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of input IP datagram fragments that have
+            been offered to the IP reassembly algorithm.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 20}
+  
+  
+     vrfStatsOutFragOKs  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of output IP datagrams that have been
+            successfully fragmented.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+
+           "
+        ::= {vrfStatsEntry 21}
+  
+  
+     vrfStatsOutFragFails  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of IP datagrams that have been discarded
+            because they needed to be fragmented but could not be.
+            This includes Ipv4 packets that have the DF bit set and
+            Ipv6 packets that are being forwarded and exceed the
+            outgoing link MTU.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 22}
+  
+  
+     vrfStatsOutFragments  OBJECT-TYPE
+        SYNTAX Counter
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of output IP datagram fragments that have
+            been generated by the IP fragmentation algorithm.
+  
+            ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+           "
+        ::= {vrfStatsEntry 23}
+
+
+-- **************************************************************************
+-- **   V R F     I P     A D D R E S S     T A B L E                      **
+-- **                                                                      **
+-- **   vrfIpAddressTable  ::= {vrfMIB 14}                                 **
+-- **************************************************************************
+
+   vrfIpAddressTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF VrfIpAddressEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "The Alcatel proprietary IP address table within this
+          Virtual Routing and Forwarding (VRF) context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             TABLESIZE:   3072  (16*128 (#subnets/VRF->user gateway) 
+                               + 1024 (network numbered interfaces))
+        "
+
+      ::= {vrfMIB 14}
+
+
+   vrfIpAddressEntry  OBJECT-TYPE
+      SYNTAX VrfIpAddressEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry containing IP address information applicable to a
+          particular VRF context."
+
+      INDEX { vrfIndex, vrfIpAddressAddrType, vrfIpAddressAddr }
+
+      ::= {vrfIpAddressTable 1}
+
+
+   VrfIpAddressEntry ::= SEQUENCE
+    {
+        vrfIpAddressAddrType           InetAddressType,
+        vrfIpAddressAddr               InetAddress,
+        vrfIpAddressRowStatus          RowStatus,
+        vrfIpAddressIfIndex            InterfaceIndex,
+        vrfIpAddressPrefixLength       InetAddressPrefixLength,
+        vrfIpAddressOrigin             IpAddressOriginTC,
+        vrfIpAddressStatus             IpAddressStatusTC,
+        vrfIpAddressCreated            TimeStamp,
+        vrfIpAddressLastChanged        TimeStamp
+    }
+
+
+   vrfIpAddressAddrType  OBJECT-TYPE
+      SYNTAX InetAddressType
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The address type of vrfIpAddressAddr.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO / INDEX
+             RANGE:	1  --only Ipv4
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfIpAddressEntry 1}
+
+
+   vrfIpAddressAddr  OBJECT-TYPE
+      SYNTAX InetAddress
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The IP address within this VRF context to which this entry's
+          addressing information pertains.  Note that an IP address is
+          only unique within a particular VRF context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO / INDEX
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfIpAddressEntry 2}
+
+
+   vrfIpAddressRowStatus  OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The status of this conceptual row.
+          The RowStatus TC requires that this DESCRIPTION clause
+          states under which circumstances other objects in this row
+          can be modified.  The value of this object has no effect on
+          whether other objects in this conceptual row can be
+          modified.
+          A conceptual row can always be made active.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	1 | 4 | 6	-- active (1), createAndGo (4), destroy (6)
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfIpAddressEntry 3}
+
+
+   vrfIpAddressIfIndex  OBJECT-TYPE
+      SYNTAX InterfaceIndex
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The index value which uniquely identifies the interface to
+          which this entry is applicable.  The interface identified by
+          a particular value of this index is the same interface as
+          identified by the same value of the IF-MIB's ifIndex.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfIpAddressEntry 4}
+
+
+   vrfIpAddressPrefixLength  OBJECT-TYPE
+      SYNTAX InetAddressPrefixLength
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The IP address prefix which is basically the number
+          of '1' bits in the netmask.  The range of allowed
+          values of this object is derived from the address type
+          in vrfIpAddressAddrType i.e. [1..30] for Ipv4 or
+          [1..126] for Ipv6.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfIpAddressEntry 5}
+
+
+   vrfIpAddressOrigin  OBJECT-TYPE
+      SYNTAX IpAddressOriginTC
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The origin of this IP address.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	2  --only manual
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfIpAddressEntry 6}
+
+
+   vrfIpAddressStatus  OBJECT-TYPE
+      SYNTAX IpAddressStatusTC
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The status of the address, describing whether the IP
+          address can be used for communication.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	1  -- only preferred
+             DEFVALUE: 	preferred (1)
+             UNITS:	NA
+         "
+      ::= {vrfIpAddressEntry 7}
+
+
+   vrfIpAddressCreated  OBJECT-TYPE
+      SYNTAX TimeStamp
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The network time when this entry in the vrfIpAddressTable
+          was created.
+
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfIpAddressEntry 8}
+  
+  
+   vrfIpAddressLastChanged  OBJECT-TYPE
+      SYNTAX TimeStamp
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The network time when this entry in the vrfIpAddressTable
+          was last changed.
+
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfIpAddressEntry 9}
+
+
+-- **************************************************************************
+-- **   V R F     I NET     C I D R     R O U T E     T A B L E           **
+-- **                                                                      **
+-- **   vrfInetCidrRouteTable::= {vrfMIB 15}                               **
+-- **************************************************************************
+
+   vrfInetCidrRouteTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF VrfInetCidrRouteEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "The Alcatel proprietary IP routing and forwarding
+          table within this Virtual Routing and Forwarding (VRF)
+          context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             TABLESIZE:   10048  (19*48*4 + 50*128)"
+
+      ::= {vrfMIB 15}
+
+
+   vrfInetCidrRouteEntry  OBJECT-TYPE
+      SYNTAX VrfInetCidrRouteEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry containing a route to a particular destination
+          under a particular routing policy within a particular
+          VRF context.
+          Row creation:
+            - static entries by a manager using vrfInetCidrRouteRowStatus,
+              A route shall be created in one step by a set-request with
+              all necessary parameter values and vrfInetCidrRouteRowStatus set
+              to createAndGo(4).
+              The creation will be rejected when either of these conditions is
+              not fulfilled:
+              - the vrfConfigTable entry, specified by vrfIndex, does not exist.
+              - the IP interface, specified by vrfInetCidrRouteIfIndex, does
+                not exist.
+            - autocreated entries as a result of creation of an entry in the
+              ipAddresstable.
+          Row deletion:
+         - static entries by a manager using vrfIpCidrRouteRowStatus,
+              A route shall be deleted by setting vrfIpAddressRowStatus
+              to destroy(6).
+         - autocreated entries as a result of deletion of an entry in the
+           ipAddresstable.  "
+
+      INDEX { vrfIndex,
+              vrfInetCidrRouteDestType, vrfInetCidrRouteDest,
+              vrfInetCidrRoutePrefixLength, vrfInetCidrRoutePolicy,
+              vrfInetCidrRouteNextHopType, vrfInetCidrRouteNextHop }
+
+      ::= {vrfInetCidrRouteTable 1}
+
+   VrfInetCidrRouteEntry ::= SEQUENCE
+    {
+        vrfInetCidrRouteDestType         InetAddressType,
+        vrfInetCidrRouteDest             InetAddress,
+        vrfInetCidrRoutePrefixLength     InetAddressPrefixLength,
+        vrfInetCidrRoutePolicy           OBJECT IDENTIFIER,
+        vrfInetCidrRouteNextHopType      InetAddressType,
+        vrfInetCidrRouteNextHop          InetAddress,
+        vrfInetCidrRouteRowStatus        RowStatus,
+        vrfInetCidrRouteIfIndex          InterfaceIndexOrZero,
+        vrfInetCidrRouteType             INTEGER,
+        vrfInetCidrRouteProto            IANAipRouteProtocol,
+        vrfInetCidrRouteAge      	 Gauge,
+        vrfInetCidrRouteNextHopAS        InetAutonomousSystemNumber,
+        vrfInetCidrRouteMetric1          INTEGER,
+        vrfInetCidrRouteMetric2          INTEGER,
+        vrfInetCidrRouteMetric3          INTEGER,
+        vrfInetCidrRouteMetric4          INTEGER,
+        vrfInetCidrRouteMetric5          INTEGER,
+        vrfInetCidrRouteStaticSelect     INTEGER    
+    }
+
+
+   vrfInetCidrRouteDestType  OBJECT-TYPE
+      SYNTAX InetAddressType
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The address type of vrfInetCidrRouteDest.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO / INDEX
+             RANGE:	1  --only Ipv4
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfInetCidrRouteEntry 1}
+
+
+   vrfInetCidrRouteDest  OBJECT-TYPE
+      SYNTAX InetAddress
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The destination IP address or IP subnet of this route
+          within this VRF context.  Note that a route is only
+          unique within a particular VRF context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO / INDEX
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfInetCidrRouteEntry 2}
+
+
+   vrfInetCidrRoutePrefixLength  OBJECT-TYPE
+      SYNTAX InetAddressPrefixLength
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The IP address prefix which is basically the number
+          of '1' bits in the netmask.  The range of allowed
+          values of this object is derived from the address type
+          in vrfInetCidrRouteDestType i.e. [0..32] for Ipv4 or
+          [0..128] for Ipv6.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO / INDEX
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfInetCidrRouteEntry 3}
+
+
+   vrfInetCidrRoutePolicy  OBJECT-TYPE
+      SYNTAX OBJECT IDENTIFIER
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object is an opaque object without any defined
+          semantics.  Its purpose is to serve as an additional
+          index which may delineate between multiple entries to
+          the same destination.  The value { 0.0 } shall be used
+          as the default value for this object.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO / INDEX
+             RANGE:	{0.0}
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfInetCidrRouteEntry 4}
+
+
+   vrfInetCidrRouteNextHopType  OBJECT-TYPE
+      SYNTAX InetAddressType
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The address type of vrfInetCidrRouteNextHop.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO / INDEX
+             RANGE:	1  --only Ipv4
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfInetCidrRouteEntry 5}
+
+
+   vrfInetCidrRouteNextHop  OBJECT-TYPE
+      SYNTAX InetAddress
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "For remote/indirect routes, the address of the next
+          system en route.  For local/direct routes, a zero
+          length string.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO / INDEX
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfInetCidrRouteEntry 6}
+
+
+   vrfInetCidrRouteRowStatus  OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The status of this conceptual row.
+          The RowStatus TC requires that this DESCRIPTION clause
+          states under which circumstances other objects in this row
+          can be modified.  The value of this object has no effect on
+          whether other objects in this conceptual row can be
+          modified.
+          A conceptual row can always be made active.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	1 | 4 | 6	-- active (1), createAndGo (4), destroy (6)
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfInetCidrRouteEntry 7}
+
+
+   vrfInetCidrRouteIfIndex  OBJECT-TYPE
+      SYNTAX InterfaceIndexOrZero
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The index value which uniquely identifies the interface
+          through which the next hop of this route should be reached.
+          The interface identified by a particular value of this index
+          is the same interface as identified by the same value of the
+          IF-MIB's ifIndex.  
+	  Both cases, a value of 0 or the IfIndex not specified at all, 
+	  are seen as a valid input. In this case, the system will 
+	  automatically allocate an ifindex for this row.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfInetCidrRouteEntry 8}
+
+
+   vrfInetCidrRouteType  OBJECT-TYPE
+      SYNTAX INTEGER
+             {
+                other      (1),   -- not specified by this MIB
+                reject     (2),   -- route which discards traffic and 
+		  		  -- returns ICMP notification
+                local      (3),   -- local destination/direct route
+                remote     (4),   -- remote destination/indirect route
+                blackhole  (5)    -- route which silently discards traffic
+             }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The type of route.  Note that:
+
+		reject (2) refers to a route which, if matched,
+                 	discards the message as unreachable and returns
+                 	a notification  (e.g. ICMP error) to the message
+                 	sender;  this is used in some protocols as a means
+                 	of correctly aggregating routes
+		local (3) refers to a route for which the
+                 	next hop is the final destination
+		remote (4) refers to a route for which the
+                 	next hop is not the final destination
+		blackhole (5) refers to a route which, if matched,
+                 	silently discards the message
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO 
+             RANGE:	 3 | 4
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfInetCidrRouteEntry 9}
+
+
+   vrfInetCidrRouteProto  OBJECT-TYPE
+      SYNTAX IANAipRouteProtocol
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The routing protocol via which this route was learned.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	2 | 3  
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfInetCidrRouteEntry 10}
+
+
+   vrfInetCidrRouteAge  OBJECT-TYPE
+      SYNTAX Gauge
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The network time when this entry in the vrfInetCidrRouteTable
+          was last changed.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= { vrfInetCidrRouteEntry 11}
+
+
+vrfInetCidrRouteNextHopAS OBJECT-TYPE
+    SYNTAX     InetAutonomousSystemNumber
+    ACCESS     read-write
+    STATUS     mandatory
+    DESCRIPTION 
+       "The Autonomous System Number of the Next Hop.  The semantics of this
+       object are determined by the routing protocol specified in the route's
+       inetCidrRouteProto value. When this object is unknown or not relevant
+       its value should be set to zero.
+       ALCATEL NOTE:
+         SUPPORT:     NO
+         PERSIST:     NA
+         INSRVMOD:    NA
+         RANGE:       NA
+         DEFVALUE:    NA
+         UNITS:       NA"
+    ::= { vrfInetCidrRouteEntry 12 }
+
+
+   vrfInetCidrRouteMetric1  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The primary routing metric for this route.  The semantics
+          of this metric are determined by the routing protocol
+          specified in the route's vrfInetCidrRouteProto value.
+          If this metric is not used, its value should be set to -1.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      DEFVAL { -1 }
+      ::= {vrfInetCidrRouteEntry 13}
+  
+  
+   vrfInetCidrRouteMetric2  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "An alternate routing metric for this route.  The semantics
+          of this metric are determined by the routing protocol
+          specified in the route's vrfInetCidrRouteProto value.
+          If this metric is not used, its value should be set to -1.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      DEFVAL { -1 }
+      ::= {vrfInetCidrRouteEntry 14}
+  
+  
+   vrfInetCidrRouteMetric3  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "An alternate routing metric for this route.  The semantics
+          of this metric are determined by the routing protocol
+          specified in the route's vrfInetCidrRouteProto value.
+          If this metric is not used, its value should be set to -1.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      DEFVAL { -1 }
+      ::= {vrfInetCidrRouteEntry 15}
+
+
+   vrfInetCidrRouteMetric4  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "An alternate routing metric for this route.  The semantics
+          of this metric are determined by the routing protocol
+          specified in the route's vrfInetCidrRouteProto value.
+          If this metric is not used, its value should be set to -1.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      DEFVAL { -1 }
+      ::= {vrfInetCidrRouteEntry 16}
+  
+  
+   vrfInetCidrRouteMetric5  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "An alternate routing metric for this route.  The semantics
+          of this metric are determined by the routing protocol
+          specified in the route's vrfInetCidrRouteProto value.
+          If this metric is not used, its value should be set to -1.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      DEFVAL { -1 }
+      ::= {vrfInetCidrRouteEntry 17}
+
+
+vrfInetCidrRouteStaticSelect  OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "This field only exists for static entries. This allows to easily retrieve
+      only the static entries in the table.
+      ALCATEL NOTE:
+        SUPPORT:     NO
+        PERSIST:     NO
+        INSRVMOD:    NA
+        RANGE:       NA
+        DEFVALUE:    NA
+        UNITS:       NA"
+   ::= {vrfInetCidrRouteEntry 18}
+
+
+-- **************************************************************************
+-- **   V R F          C U R R E N T  IP    T A B L E                   **
+-- **	vrfCurrentIpTable::= {vrfMIB 17}   							**
+-- **************************************************************************
+
+
+   vrfCurrentIpTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF VrfCurrentIpEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "The Alcatel proprietary interface + local INET CIDR route
+          to our IP address mapping table within this Virtual
+          Routing and Forwarding (VRF) context.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             TABLESIZE:  4672  (  19*48*4 (direct user routes) 
+                                   + 1024 (local routes of the numbered network IP i/f's))
+        "
+      ::= {vrfMIB 17}
+  
+  
+   vrfCurrentIpEntry  OBJECT-TYPE
+      SYNTAX VrfCurrentIpEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry mapping a particular interface + local INET CIDR
+          route to a particular IP address within a particular
+          VRF context.
+  
+ALCATEL NOTE:
+SUPPORT:  	YES"
+  
+      INDEX { vrfIndex, vrfCurrentIpIfIndex,
+              vrfCurrentIpDestType, vrfCurrentIpDest,
+              vrfCurrentIpPrefixLength }
+  
+      ::= {vrfCurrentIpTable 1}
+  
+  
+   VrfCurrentIpEntry ::= SEQUENCE
+    {
+        vrfCurrentIpIfIndex            InterfaceIndex,
+        vrfCurrentIpDestType           InetAddressType,
+        vrfCurrentIpDest               InetAddress,
+        vrfCurrentIpPrefixLength       InetAddressPrefixLength,
+        vrfCurrentIpOwnIpAddress       InetAddress,
+        vrfCurrentIpAddressingMode     INTEGER
+    }
+  
+  
+   vrfCurrentIpIfIndex  OBJECT-TYPE
+      SYNTAX InterfaceIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The index value which uniquely identifies the interface to
+          which this entry is applicable.  The interface identified
+          by a particular value of this index is the same interface
+          as identified by the same value of the IF-MIB's ifIndex.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfCurrentIpEntry 1}
+  
+  
+   vrfCurrentIpDestType  OBJECT-TYPE
+      SYNTAX InetAddressType
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The address type of vrfCurrentIpDest.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfCurrentIpEntry 2}
+  
+  
+   vrfCurrentIpDest  OBJECT-TYPE
+      SYNTAX InetAddress
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The IP Address on this particular interface.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfCurrentIpEntry 3}
+  
+  
+   vrfCurrentIpPrefixLength  OBJECT-TYPE
+      SYNTAX InetAddressPrefixLength
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The IP address prefix which is basically the number
+          of '1' bits in the netmask.  The range of allowed
+          values of this object is derived from the address type
+          in vrfCurrentIpDestType i.e. [0..32] for Ipv4 or
+          [0..128] for Ipv6.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfCurrentIpEntry 4}
+  
+  
+   vrfCurrentIpOwnIpAddress  OBJECT-TYPE
+      SYNTAX InetAddress
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The IP address within this VRF context that is used as our
+          IP address on this interface to this destination.  Note that
+          for unnumbered interfaces, this IP address may appear more
+          than once or may not exist.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfCurrentIpEntry 5}
+  
+  
+   vrfCurrentIpAddressingMode  OBJECT-TYPE
+      SYNTAX INTEGER
+             {
+                modeNumbered   (1),   -- the IP address, used as our IP
+				      -- address on this interface,
+			    	      -- is unique
+                modeUnnumbered (2)    -- the IP address, used as our IP
+				      -- address on this interface,
+				      -- is not unique or we don't
+				      -- have an IP address on this
+				      -- interface
+             }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The IP addressing mode.  Note that:
+		* numbered means that a unique IP address is used as
+                   our IP address on this interface which implies that
+                   an explicit subnet is defined on this interface i.e.
+                   the prefix length can be maximum /30
+		* unnumbered means that the IP address, used as our IP
+                   address on this interface, is not unique or we don't
+                   have an IP address on this interface; typical examples
+                   are:
+		   -	the prefix length is /32 i.e. a host route with
+                     	our IP address equal to the router/system IP
+                     	address or the IP address of a loopback interface
+                     	within this VRF
+		   -	a configured, local route i.e. a route which is
+                     	not originated from the IP address table; for
+                     	such a route, our IP address is undefined
+  
+          ALCATEL NOTE:
+             SUPPORT:  	YES 
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfCurrentIpEntry 6}
+
+  
+
+-- **************************************************************************
+-- **   V R F     M O D U L E    N E T - T O - M E D I A     T A B L E     **
+-- **   vrfModuleIpNetToMediaTable ::= {vrfMIB 18}                         **
+-- **   vrfArpCorrectnessTime      ::= {vrfMIB 19}  NOT SUPPORTED          **
+-- **   vrfArpDisConnectTime       ::= {vrfMIB 20}  NOT SUPPORTED          **       
+-- **************************************************************************
+
+   vrfModuleIpNetToMediaTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF VrfModuleIpNetToMediaEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "The Alcatel proprietary, module-specific IP address to
+          media-dependent physical address mapping table within
+          this Virtual Routing and Forwarding (VRF) context.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             TABLESIZE:   91200   (19*48*4 + 19*4608  (network ARP entries))
+         "
+
+      ::= {vrfMIB 18}
+
+
+   vrfModuleIpNetToMediaEntry  OBJECT-TYPE
+      SYNTAX VrfModuleIpNetToMediaEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry mapping a pariticular IP address to a particular
+          media-dependent physical address within a particular VRF
+          context on a particular module.
+          Row creation:
+           - dynamic entries via ARP learning,
+           - creation of static entries by a manager using is currently not
+             not supported
+          Row deletion:
+           - dynamic entries:
+              - via ARP aging,
+              - by changing vrfModuleIpNetToMediaType to invalid(2)."
+
+      INDEX { 	vrfIndex, vrfModuleIpNetToMediaSlotIndex,
+		vrfModuleIpNetToMediaIfIndex, vrfModuleIpNetToMediaNetAddressType,
+		vrfModuleIpNetToMediaNetAddress }
+
+      ::= {vrfModuleIpNetToMediaTable 1}
+
+
+   VrfModuleIpNetToMediaEntry ::= SEQUENCE
+    {
+	vrfModuleIpNetToMediaSlotIndex       INTEGER,
+        vrfModuleIpNetToMediaIfIndex         InterfaceIndexOrZero,
+        vrfModuleIpNetToMediaNetAddressType     InetAddressType,
+        vrfModuleIpNetToMediaNetAddress         InetAddress,
+        vrfModuleIpNetToMediaRowStatus       RowStatus,
+        vrfModuleIpNetToMediaPhysAddress     PhysAddress,
+        vrfModuleIpNetToMediaLastUpdated     TimeStamp,
+        vrfModuleIpNetToMediaType            INTEGER,
+        vrfModuleIpNetToMediaState           INTEGER
+    }
+
+
+   vrfModuleIpNetToMediaSlotIndex  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "A number which uniquely identifies a particular module
+          by its logical slot index (Rack/Shelf/Slot).
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NO / INDEX
+             RANGE:	1..65535
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::={vrfModuleIpNetToMediaEntry 1}
+
+   vrfModuleIpNetToMediaIfIndex  OBJECT-TYPE
+      SYNTAX InterfaceIndexOrZero
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The index value which uniquely identifies the interface to
+          which this entry is applicable.  The interface identified
+          by a particular value of this index is the same interface
+          as identified by the same value of the IF-MIB's ifIndex.
+  
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NO / INDEX
+             RANGE:	0 | InterfaceIndex
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfModuleIpNetToMediaEntry 2}
+
+
+   vrfModuleIpNetToMediaNetAddressType  OBJECT-TYPE
+      SYNTAX InetAddressType
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The address type of vrfModuleIpNetToMediaNetAddress.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NO / INDEX
+             RANGE:	1  --only Ipv4
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfModuleIpNetToMediaEntry 3}
+
+
+   vrfModuleIpNetToMediaNetAddress  OBJECT-TYPE
+      SYNTAX InetAddress
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The IP Address corresponding to the media-dependent
+          physical address.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NO / INDEX
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfModuleIpNetToMediaEntry 4}
+
+
+   vrfModuleIpNetToMediaRowStatus  OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The status of this conceptual row.
+          The RowStatus TC requires that this DESCRIPTION clause
+          states under which circumstances other objects in this row
+          can be modified.  The value of this object has no effect on
+          whether other objects in this conceptual row can be
+          modified.
+          A conceptual row can always be made active.
+
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfModuleIpNetToMediaEntry 5}
+
+
+   vrfModuleIpNetToMediaPhysAddress  OBJECT-TYPE
+      SYNTAX PhysAddress (SIZE(0..65535))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The media-dependent physical address.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA 
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfModuleIpNetToMediaEntry 6}
+
+
+   vrfModuleIpNetToMediaLastUpdated  OBJECT-TYPE
+      SYNTAX TimeStamp
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The network time when this entry in the vrfModuleIpNetToMediaTable
+          was last updated.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= { vrfModuleIpNetToMediaEntry 7}
+
+
+   vrfModuleIpNetToMediaType  OBJECT-TYPE
+      SYNTAX INTEGER
+             {
+                other      (1),   -- not specified by this MIB
+                invalid    (2),   -- an invalid mapping, used for
+				  -- removing this entry
+                dynamic    (3),   -- dynamic mapping
+                static     (4),   -- static mapping
+                local      (5)    -- mapping for a local interface
+				  -- IP address
+             }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The type of mapping.  Note that:
+		* invalid (2) has the effect of invalidating the corresponding
+                    entry in the vrfModuleIpNetToMediaTable i.e.:
+		      -	if the original entry was dynamically learnt, this will
+                     	force updating this entry
+		      -	if the original entry was statically configured, this
+                     	will remove this entry
+		* dynamic (3) refers to an IP address to physical addresses
+                    mapping that has been dynamically resolved using e.g. Ipv4
+                    ARP or the Ipv6 Neighbor Discovery protocol; this type can
+                    not be set
+		* static (4) refers to an IP address to physical addresses
+                    mapping that has been statically configured by a manager;
+                    this type can not be set
+		* local (5) refers to an IP address to physical addresses
+                    mapping for an entity's own interface address
+            
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NO
+             RANGE:	2 | 3
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfModuleIpNetToMediaEntry 8}
+
+
+   vrfModuleIpNetToMediaState  OBJECT-TYPE
+      SYNTAX INTEGER
+             {
+                reachable  (1),   -- confirmed reachability
+                stale      (2),   -- unconfirmed reachability
+                delay      (3),   -- waiting for reachability
+				  -- confirmation before entering
+				  -- the probe state
+                probe      (4),   -- actively probing
+                invalid    (5),   -- an invalidated mapping
+                unknown    (6),   -- state can not be determined
+	 			  -- for some reason
+                incomplete (7)    -- address resolution is being
+				  -- performed
+             }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The Neighbor Unreachability Detection state for the
+          interface when the address mapping in this entry is used.
+          If Neighbor Unreachability Detection is not in use (e.g. for
+          Ipv4), this object is always unknown (6).
+  
+          ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+         "
+      ::= {vrfModuleIpNetToMediaEntry 9}
+
+
+-- **************************************************************************
+-- **   V R F     T O S   T O   L 2   M A P    T A B L E                   **
+-- **                                                                      **
+-- **   vrfTosToL2MapTable  ::= {vrfMIB 21}     NOT SUPPORTED              **
+-- **************************************************************************
+
+-- **************************************************************************
+-- **   V R F     A T M   T O   T O S   M A P   T A B L E                  **
+-- **                                                                      **
+-- **   vrfAtmToTosMapTable ::= {vrfMIB 22}     NOT SUPPORTED              **
+-- **************************************************************************
+
+-- **************************************************************************
+-- **   V R F   N E T  T O  M E D I A  C O N F I G   T A B L E             **
+-- **                                                                      **
+-- **   vrfNetToMediaConfigTable ::= {vrfMIB 23}     NOT SUPPORTED         **
+-- **************************************************************************
+
+
+
+-- **************************************************************************
+-- **   V R F     I P     I N T E R F A C E     T A B L E            **
+-- **                                                                       **
+-- **   vrfIpInterfaceTable	::= {vrfMIB 24}						  **
+-- **************************************************************************
+	  vrfIpInterfaceTable  OBJECT-TYPE
+    	  SYNTAX SEQUENCE OF VrfIpInterfaceEntry
+   	  ACCESS not-accessible
+   	  STATUS mandatory
+   	  DESCRIPTION
+      	  "This table allows to create an IP interface, and specify a 
+			  number of parameters per it.
+
+	  ALCATEL NOTE:
+SUPPORT:  	YES
+TABLE SIZE:	4800  (19*48*4 + 128 (usr gw/VRF) + 1024 (network side))
+"
+   		::= {vrfMIB 24}
+
+	  vrfIpInterfaceEntry  OBJECT-TYPE
+   	  SYNTAX VrfIpInterfaceEntry
+   	  ACCESS not-accessible
+   	  STATUS mandatory
+   	  DESCRIPTION
+      	  "An entry in the IP interface table.
+       	  Row creation : An IP interface shall be created in one step
+            by a set-request with all necessary parameter values and
+            vrfIpInterfaceRowStatus set to createAndGo(4).
+            The creation will be rejected when
+            - the vrfConfigTable entry, specified by vrfIpInterfaceVrfIndex,
+              does not exist.
+            - in GENT: the vrfIpInterfaceSharedIfIndex, in case of creation of an 
+unnumbered IP interface, does not exist.
+		   - in iSAM: the related lower layer interface does not exist.
+       	  Row deletion : An IP interface shall be deleted by setting
+            vrfIpInterfaceRowStatus to destroy(6).
+            In GENT, deleting an IP interface will automatically remove all IP 
+	    addresses, route table entries and ARP table entries linked to that 
+	    interface.
+		  In iSAM, it is only possible to delete an IP interface, when all the 
+Related resource has released.
+
+	  ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  INDEX { vrfIpInterfaceIndex }
+   	  ::= {vrfIpInterfaceTable 1}
+
+	  VrfIpInterfaceEntry ::= SEQUENCE
+		  {
+     		vrfIpInterfaceIndex            InterfaceIndex,
+     		vrfIpInterfaceRowStatus        RowStatus,
+     		vrfIpInterfaceVrfIndex         VrfIndex,
+     		vrfIpInterfaceSharedIfIndex    InterfaceIndexOrZero,
+     		vrfIpInterfaceUnnumberedFlag   INTEGER,
+     		vrfIpInterfaceDefaultTos       TosValue,
+     		vrfIpInterfaceErrors           Counter,
+			vrfIpInterfaceQoSProfileId		AsamProfilePointer,
+			vrfIpInterfaceArpPolicy			INTEGER
+		  }
+
+	  vrfIpInterfaceIndex  OBJECT-TYPE
+   	  SYNTAX InterfaceIndex
+   	  ACCESS read-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+     		  "Index of the IP interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO/INDEX
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceEntry 1}
+
+	  vrfIpInterfaceRowStatus  OBJECT-TYPE
+   	  SYNTAX RowStatus
+   	  ACCESS read-write
+   	  STATUS mandatory
+   	  DESCRIPTION
+      		  "This object is used to create, delete or modify a row in this table.
+      		  To create a new IP interface, this object is initially set to
+      		  createAndGo( 4). 
+In GENT:
+This object should not be set to 'active' unless the following 
+columnar objects have been set to their desired value in this
+     		  row:
+        			vrfIpInterfaceVrfIndex;
+        		vrfIpInterfaceSharedIfIndex if vrfIpInterfaceUnnumberedFlag 
+is set to numbered(2).
+			  In iSAM:
+			  The object should always be set to 'active' after the row has been 
+			  created. If vrfIpInterfaceVrfIndex is not specified, the default 
+			  VRF will be used. If vrfIpInterfaceUnnumberedFlag is not specified, 
+			  the system will give it.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	1 | 4 | 6	-- active (1), createAndGo (4), destroy (6)
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceEntry 2}
+
+	  vrfIpInterfaceVrfIndex  OBJECT-TYPE
+   	  SYNTAX VrfIndex
+   	  ACCESS read-write
+   	  STATUS mandatory
+   	  DESCRIPTION
+      		  "Index of the VRF to which the IP interface is attached.
+
+      	  ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE:	0..127
+             DEFVALUE: 	0
+             UNITS:	NA
+			  "
+		  ::= {vrfIpInterfaceEntry 3}
+
+	  vrfIpInterfaceSharedIfIndex  OBJECT-TYPE
+   	  SYNTAX InterfaceIndexOrZero
+   	  ACCESS read-write
+   	  STATUS mandatory
+   	  DESCRIPTION
+      		  "vrfIpInterfaceSharedIfIndex is used to represent the system-side (
+      		  internal interface of the IpPool or some other numbered interface) for
+      		  unnumbered IP interfaces.  The IPaddress of the SharedIfIndex will be
+      		  used as GiAddr in the DHCP relay function. Value zero shall be used for
+      		  numbered IP interfaces.
+
+      	  ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  DEFVAL { 0 }
+   	  ::= {vrfIpInterfaceEntry 4}
+
+	  vrfIpInterfaceUnnumberedFlag  OBJECT-TYPE
+   	  SYNTAX INTEGER
+         				 {
+             				unnumbered  (1),
+             				numbered    (2)
+          	 			 }
+   	  ACCESS read-write
+   	  STATUS mandatory
+   	  DESCRIPTION
+      		  "Type of IP interface. 
+
+	  ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:	1 | 2
+             DEFVALUE: 	2
+             UNITS:	NA
+			  "
+   	  DEFVAL { numbered }
+   	  ::= {vrfIpInterfaceEntry 5}
+
+	  vrfIpInterfaceDefaultTos  OBJECT-TYPE
+   	  SYNTAX TosValue
+   	  ACCESS read-write
+   	  STATUS mandatory
+   	  DESCRIPTION
+      		  "DefaultTos allows to mark packets that are received from untrusted
+      		  interfaces.
+
+	  ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+  		  DEFVAL { 0 }
+   	  ::= {vrfIpInterfaceEntry 6}
+
+	  vrfIpInterfaceErrors  OBJECT-TYPE
+   	  SYNTAX Counter
+   	  ACCESS read-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+      		  "Reflects the total number of errors that occurred on this interface.
+      		  This counter is always available.
+
+	  ALCATEL NOTE:
+             SUPPORT:  	NO
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceEntry 7}
+
+	  vrfIpInterfaceQoSProfileId  OBJECT-TYPE
+   	  SYNTAX AsamProfilePointer
+   	  ACCESS read-write
+   	  STATUS mandatory
+   	  DESCRIPTION
+      		  "Identifies the QoS profile applied to this IP interface.
+			  Zero means no QoS profile applies to this IP interface.
+
+	  ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	0..65535
+             DEFVALUE: 	0
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceEntry 8}
+
+	  vrfIpInterfaceArpPolicy  OBJECT-TYPE
+   	  SYNTAX INTEGER 
+{
+				none		(1),
+				notTrusted	(2),
+				trusted		(3)
+			  }
+   	  ACCESS read-write
+   	  STATUS mandatory
+   	  DESCRIPTION
+      		  "Identifies the system behaviour regarding to received
+ARP packets from network interface.
+
+	  ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	1 | 2 | 3
+DEFVALUE: 	NA 
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceEntry 9}
+
+-- **************************************************************************
+-- **   V R F  DETAILLED  S T A T S   M O N I T O R I N G     T A B L E    **
+-- **                                                                      **
+-- **   vrfDetMonTable ::= {vrfMIB 25}     NOT SUPPORTED                   **
+-- **************************************************************************
+
+
+
+-- **************************************************************************
+-- **   I P   I N T E R F A C E     S T A T I S T I C S     T A B L E      **
+-- **                                                                      **
+-- **   vrfIpIfDetMonTable ::= {vrfMIB 26}     NOT SUPPORTED                   **
+-- **************************************************************************
+
+
+
+-- **************************************************************************
+-- **   I P   S H A R E D    I N T E R F A C E   M A P P I N G   T A B L E **
+-- **                                                                      **
+-- **   ipSharedIpIfMappingTable ::= {vrfMIB 27} NOT SUPPORTED             **
+-- **************************************************************************
+
+
+-- **************************************************************************
+-- **   S Y S T E M    W I D E    O B J E C T S                            **
+-- **                                                                      **
+-- **   these objects are not supported, data is stored in vrfSysStatsTable**
+-- **   currentIp4RouteEntries  ::= {vrfMIB 28} NOT SUPPORTED         **
+-- **   currentIp4NetToMediaEntries  ::= {vrfMIB 29} NOT SUPPORTED         **
+-- **************************************************************************
+
+
+-- **************************************************************************
+-- **   V R F     I P     I N T E R F A C E    S T A T I S T I C S   T A B L E    **
+-- **                                                                       **
+-- **   vrfIpInterfaceStatsTable	::= {vrfMIB 30}						  **
+-- **************************************************************************
+	  vrfIpInterfaceStatsTable  OBJECT-TYPE
+    	  SYNTAX SEQUENCE OF VrfIpInterfaceStatsEntry
+   	  ACCESS not-accessible
+   	  STATUS mandatory
+   	  DESCRIPTION
+      	  "The IP interface statistics table. It is only applicable to
+		  the user side IP interface.
+
+	  ALCATEL NOTE:
+SUPPORT:  	YES
+TABLE SIZE:	3648  (19*48*4 (user interfaces only)) 
+	     "
+   		::= {vrfMIB 30}
+
+	  vrfIpInterfaceStatsEntry  OBJECT-TYPE
+   	  SYNTAX VrfIpInterfaceStatsEntry
+   	  ACCESS not-accessible
+   	  STATUS mandatory
+   	  DESCRIPTION
+      	  "An entry in the IP interface statistics table.
+       	  When a user side IP interface is created, the row should be 
+		  auto-created in this table.
+       	  When a user side IP interface is deleted, the row should be 
+		  auto-deleted in this table.
+
+	  ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NA
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  INDEX { vrfIpInterfaceIndex }
+   	  ::= {vrfIpInterfaceStatsTable 1}
+
+	  VrfIpInterfaceStatsEntry ::= SEQUENCE
+		  {
+     		vrfIpInterfaceStatsReset				INTEGER,
+vrfIpInterfaceStatsInPackets            OCTET STRING,
+     		vrfIpInterfaceStatsInOctets             OCTET STRING,
+     		vrfIpInterfaceStatsInDropPackets       OCTET STRING,
+     		vrfIpInterfaceStatsInDropOctets        OCTET STRING,
+     		vrfIpInterfaceStatsOutPackets            OCTET STRING,
+     		vrfIpInterfaceStatsOutOctets             OCTET STRING,
+     		vrfIpInterfaceStatsOutDropPackets       OCTET STRING,
+     		vrfIpInterfaceStatsOutDropOctets        OCTET STRING
+		  }
+
+	  vrfIpInterfaceStatsReset            OBJECT-TYPE
+   	  SYNTAX INTEGER
+				{
+					reset	(1)
+				}
+   	  ACCESS write-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+     		  "Reset all the counters to 0 of this IP interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceStatsEntry 1}
+
+	  vrfIpInterfaceStatsInPackets            OBJECT-TYPE
+   	  SYNTAX OCTET STRING (SIZE(8))
+   	  ACCESS read-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+     		  "The received IP packets of this IP interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceStatsEntry 2}
+
+	  vrfIpInterfaceStatsInOctets            OBJECT-TYPE
+   	  SYNTAX OCTET STRING (SIZE(8))
+   	  ACCESS read-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+     		  "The received octets of this IP interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceStatsEntry 3}
+
+	  vrfIpInterfaceStatsInDropPackets            OBJECT-TYPE
+   	  SYNTAX OCTET STRING (SIZE(8))
+   	  ACCESS read-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+     		  "The received but dropped IP packets of this IP interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceStatsEntry 4}
+
+	  vrfIpInterfaceStatsInDropOctets            OBJECT-TYPE
+   	  SYNTAX OCTET STRING (SIZE(8))
+   	  ACCESS read-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+     		  "The received but dropped octets of this IP interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceStatsEntry 5}
+
+	  vrfIpInterfaceStatsOutPackets            OBJECT-TYPE
+   	  SYNTAX OCTET STRING (SIZE(8))
+   	  ACCESS read-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+     		  "The transmitted IP packets of this IP interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceStatsEntry 6}
+
+	  vrfIpInterfaceStatsOutOctets            OBJECT-TYPE
+   	  SYNTAX OCTET STRING (SIZE(8))
+   	  ACCESS read-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+     		  "The transmitted octets of this IP interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceStatsEntry 7}
+
+	  vrfIpInterfaceStatsOutDropPackets            OBJECT-TYPE
+   	  SYNTAX OCTET STRING (SIZE(8))
+   	  ACCESS read-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+     		  "The transmitted but dropped IP packets of this IP interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceStatsEntry 8}
+
+	  vrfIpInterfaceStatsOutDropOctets            OBJECT-TYPE
+   	  SYNTAX OCTET STRING (SIZE(8))
+   	  ACCESS read-only
+   	  STATUS mandatory
+   	  DESCRIPTION
+     		  "The transmitted but dropped octets of this IP interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE: 	NA
+             UNITS:	NA
+			  "
+   	  ::= {vrfIpInterfaceStatsEntry 9}
+
+
+-- **************************************************************************
+-- **           VRF  ARP  SUMMARY  STATISTICS  TABLE                       **
+-- **                                                                      **
+-- **   vrfArpStatsSumTable ::= { vrfMIB 31 }                              **
+-- **************************************************************************
+
+    vrfArpStatsSumTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF VrfArpStatsSumEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "The table used for storing the ARP summary statistics per
+             VRF IP interface. The table defines summary error counters
+             for each of the IP interfaces created at the User side only.
+
+            ALCATEL NOTE:
+                TABLESIZE: DEP
+                           The table size depends on the number of IP
+                           interfaces that have been configured on the
+                           User side. Max size will be 48*8*19 = 7296
+            "
+    ::= { vrfMIB 31 }
+
+
+    vrfArpStatsSumEntry  OBJECT-TYPE
+        SYNTAX    VrfArpStatsSumEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "An entry in the ARP statistics summary table. All entries in
+             the table are auto-instantiated or auto-deleted.
+
+                * Row Creation. A row in the table is created whenever an
+                  IP interface has been configured on the User side.
+
+                * Row Deletion. A row in the table is deleted when the 
+                  associated IP interface on the User side has been deleted.
+
+                * Index Usage. The entry is indexed by an external table index,
+                  vrfIpInterfaceIndex (from vrfIpInterfaceTable).
+            "
+        INDEX { vrfIpInterfaceIndex }
+    ::= { vrfArpStatsSumTable 1 }
+
+    VrfArpStatsSumEntry ::= SEQUENCE
+    {
+        vrfArpCounterReset              TruthValue,
+
+        -- Summary Counters
+        vrfArpErrorSummaryCounter       Counter
+    }
+
+
+    vrfArpCounterReset  OBJECT-TYPE
+        SYNTAX    TruthValue
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "This object is a button-like object to reset the summary
+             counters for a given vrfArpStatsSumEntry. 
+
+             When it is set to true(1) value, the corresponding
+             vrfArpErrorSummaryCounter is cleared.  Additionally, if the detailed
+             statistics have been enabled for the associated IP Interface, all
+             the detailed counters that exist in the vrfArpStatsTable for this
+             IP Interface are also cleared. However note that there are some
+             objects defined (of type Gauge) in the vrfArpStatsTable that would
+             not be affected by a counter reset.
+
+             A value set to false(2) is ignored.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   YES
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsSumEntry 1 }
+
+    vrfArpErrorSummaryCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "A count of all ARP packets that have been dropped because of
+             errors. The counter value represents the number of packets dropped
+             since the last user reset or counter rollover.  
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      0..65535
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsSumEntry 2 }
+
+
+-- **************************************************************************
+-- **           VRF  ARP  DETAILED  STATISTICS  TABLE                      **
+-- **                                                                      **
+-- **   vrfArpStatsTable ::= { vrfMIB 32 }                                 **
+-- **************************************************************************
+
+    vrfArpStatsTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF VrfArpStatsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "The table used for storing the ARP detailed statistics per
+             VRF IP interface. The table defines both fine grained error
+             counters and statistics counters for the IP interfaces created at
+             the User side only.
+
+             In the event of an ARP packet having multiple errors, only
+             one of the error counters will be incremented and the packet
+             dropped at the first point of failure. The order in which the
+             error checks will be carried out is unspecified.
+
+            ALCATEL NOTE:
+                TABLESIZE: DEP
+                           The table size depends on the number of IP
+                           interfaces for which detailed counters have been
+                           explicitly enabled by the operator. 
+                                Max size = 5*19 = 95
+                           Maximum number of interfaces for which detailed
+                           counters can be enabled is fixed at 5 per LT.  
+            "
+    ::= { vrfMIB 32 }
+
+
+    vrfArpStatsEntry  OBJECT-TYPE
+        SYNTAX    VrfArpStatsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "An entry in the ARP detailed statistics table. All entries in
+             the table are dynamically created by the manager whenever detailed
+             statistics need to be enabled for a particular IP interface.
+             Conversely whenever detailed statistics are to be disabled for a
+             particular IP interface the corresponding table entries are
+             dynamically deleted by the manager.
+
+                * Row Creation. An entry is created by a set-request with the
+                  vrfArpStatsRowStatus set to createAndGo(4). The set-request
+                  would be successful if:
+                    - the specified IP interface exists on the User side.
+                    - the detailed counters have not already been enabled for
+                      the specified IP interface.
+                    - the number of IP interfaces for which detailed counters
+                      have already been enabled has not yet reached the maximum
+                      limit. At a given time, only five interfaces per LT can be
+                      enabled for detailed counters. 
+
+                * Row Deletion. A table entry is deleted by a set-request with
+                  the vrfArpStatsRowStatus set to destroy(6). A table entry can
+                  also be auto-deleted. The auto-deletion happens when the 
+                  associated IP interface gets deleted.  
+
+                * Index Usage. The entry is indexed by an external table index,
+                  vrfIpInterfaceIndex (from vrfIpInterfaceTable).
+            "
+        INDEX { vrfIpInterfaceIndex }
+    ::= { vrfArpStatsTable 1 }
+
+    VrfArpStatsEntry ::= SEQUENCE
+    {
+        vrfArpStatsRowStatus                        RowStatus,
+
+        -- Error Counters
+        vrfArpInternalContextErrCounter             Counter,
+        vrfArpUnsupportedHWTypeCounter              Counter,
+        vrfArpUnsupportedL3ProtoCounter             Counter,
+        vrfArpUnsupportedAddrLenCounter             Counter,
+        vrfArpInvalidOpCodeCounter                  Counter,
+        vrfArpInvalidSrcMacCounter                  Counter,
+        vrfArpNoFreeArpEntryCounter                 Counter,
+        vrfArpUserItfNotIPoECounter                 Counter,
+        vrfArpInvalidTargetIpCounter                Counter,
+        vrfArpInvalidSrcIpCounter                   Counter,
+        vrfArpUnknownUserCounter                    Counter,
+        vrfArpSrcTargetOnSameUserItfCounter         Counter,
+        vrfArpUnknownTargetIpCounter                Counter,
+        vrfArpUnsupportedProbePacketsCounter        Counter,
+
+        -- Protocol Packet Statistics
+        vrfArpReqRxAndRespondedCounter              Counter,
+        vrfArpReqTxAndRespondedByUserCounter        Counter,
+        vrfArpReqTxAndNotRespondedByUserCounter     Counter,
+        vrfArpReqTxAndWaitingForReply               Gauge,
+        vrfArpGratuitousRxAndAcceptedCounter        Counter
+    }
+
+
+    vrfArpStatsRowStatus  OBJECT-TYPE
+        SYNTAX    RowStatus
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The status of this conceptual row. 
+
+             The value of this object has no effect on whether other objects in
+             this conceptual row can be modified. A conceptual row in this table
+             can always be made active.
+
+            ALCATEL NOTE:
+                USAGE:      MAND
+                PERSIST:    YES
+                INSRVMOD:   YES
+                RANGE:      1|4|6
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+                DESCR:      A note on the RowStatus persistence. The counters
+                            themselves are not persistent but the interfaces for
+                            which detailed counters have been enabled is made
+                            persistent. What this means is that after a system
+                            reset the table will retain all the rows created
+                            aprior, but all the counters would be initialized
+                            to zero.
+            "
+    ::= { vrfArpStatsEntry 1 }
+
+    vrfArpInternalContextErrCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because of internal context errors.
+             These can also be due to internal software logic errors.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 2 }
+
+    vrfArpUnsupportedHWTypeCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the received ARP packet
+             header specifies a HW type other than Ethernet.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 3 }
+
+    vrfArpUnsupportedL3ProtoCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the received ARP packet
+             specifies a L3 protocol type other than IP.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 4 }
+
+    vrfArpUnsupportedAddrLenCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the address lengths specified
+             in the packet are not supported. The addresses under consideration can
+             be L2 or L3.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 5 }
+
+    vrfArpInvalidOpCodeCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because of invalid opcode being
+             specified.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 6 }
+
+    vrfArpInvalidSrcMacCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the specified source MAC
+             address in the received ARP packet is invalid. The source MAC address
+             cannot be a multicast or broadcast or all zeros.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 7 }
+
+    vrfArpNoFreeArpEntryCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped due to errors in adding to ARP
+             cache because of cache overflow. Maximum Number of ARP entries
+             allowed in the cache is reached and hence packet is dropped. The
+             ARP cache limit for the user side is specified as both per VRF and
+             across all VRFs. Currently this cache limit is set to 384, both
+             per VRF and across all VRFs. 
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 8 }
+
+    vrfArpUserItfNotIPoECounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the configured User
+             interface is not supported. Current software supports only IPoE.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 9 }
+
+    vrfArpInvalidTargetIpCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the Target IP specified
+             in the received arp packet is invalid. The Target IP cannot be
+             a class D, class E or a loopback IP address. It also cannot be
+             a Directed Broadcast or a Limited Broadcast address.
+
+             Definitions Used:
+             A Limited Broadcast address is an IP address of all zeros or all
+             ones. A Directed Broadcast address is an IP address where only the
+             host part of the IP address is all zeros or all ones.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 10 }
+
+    vrfArpInvalidSrcIpCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the Sender IP specified
+             in the received arp packet is invalid. The Sender IP cannot be
+             a class D, class E or a loopback IP address. It also cannot be
+             a Directed Broadcast address. A Limited Broadcast address of all
+             ones (255.255.255.255) is also not allowed.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 11 }
+
+    vrfArpUnknownUserCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because the Sender IP in the
+             received arp packet has not been learnt on the incoming
+             user interface (IP anti-spoofing).
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 12 }
+
+    vrfArpSrcTargetOnSameUserItfCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP packets dropped because of both sender and target
+             IP addresses having been learnt on the same user interface.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 13 }
+
+    vrfArpUnknownTargetIpCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream ARP packets dropped because of unknown
+             target IP. A target IP is classified as unknown if it does
+             NOT satisfy any of the below criteria:
+                - Same as the gateway IP
+                - Is in the same subnet as the sender IP
+                - Is matching any other subnet of the gateway IP addresses
+                  configured on the user-gateway interface
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 14 }
+
+    vrfArpUnsupportedProbePacketsCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of ARP Probe packets received and dropped. The received
+             packet is classified as an ARP probe packet if the Sender IP
+             in the packet has been specified as all zeros. This is a valid
+             ARP packet but is currently not supported in ISAM and is treated
+             as an error.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 15 }
+
+    vrfArpReqRxAndRespondedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Count of all ARP Requests received from User on this user
+             interface and responded by LT. Note that ARP Gratuitous User
+             requests will not be responded by LT.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 40 }
+
+    vrfArpReqTxAndRespondedByUserCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Count of all ARP Requests sent out by LT on this user interface
+             and responded by the User.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 41 }
+
+    vrfArpReqTxAndNotRespondedByUserCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Count of all ARP Requests sent out by LT on this user interface
+             and not responded by the User. This counter will also need to
+             be incremented, each time a re-try message is sent out.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 42 }
+
+    vrfArpReqTxAndWaitingForReply  OBJECT-TYPE
+        SYNTAX    Gauge
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Count of all ARP Requests sent out by LT on this user interface
+             and for which the LT is currently in a pending state. This mib
+             object always reflects the current state of the system and hence
+             is not affected by a counter reset.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 43 }
+
+    vrfArpGratuitousRxAndAcceptedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Count of all ARP Gratuitous Requests that have been received by
+             LT on this user interface and which have passed all the required
+             error checks.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { vrfArpStatsEntry 44 }
+
+END

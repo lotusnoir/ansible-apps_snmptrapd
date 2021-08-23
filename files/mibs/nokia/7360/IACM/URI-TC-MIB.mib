@@ -1,0 +1,184 @@
+-- =============================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied,
+--  with respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel-Lucent expressly advises that any use of
+--  for any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel-Lucent shall not be liable for any damage or
+--  injury incurred by any person arising out of the sufficiency, accuracy,
+--  or utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products
+--  and to withdraw any or all of them at any future time.
+--  Copyright (C) 2011, Alcatel-Lucent. All Rights Reserved.
+-- =============================================================================
+--  MODULE-IDENTITY
+--     LAST-UPDATED "201111170000Z" ## 17 November 2011
+--     ORGANIZATION  
+--         "Alcatel-Lucent"
+--     CONTACT-INFO 
+--         "Email:  asam.mibsupport@alcatel-lucent.com"
+--     DESCRIPTION 
+--         "This MIB module is used in Alcatel-Lucent's ISAM
+--          for Object definitions"
+--     REVISION    "20111117"
+--     DESCRIPTION 
+--        "Version: 3FE62694EAAA_V4.4.0.0.0
+--         Editor: Ludwig Pauwels
+--         Changes:  
+--            Initial version to start from."
+
+-- =============================================================================
+--  Hereafter the copy from the RFC with some things commented out to make it SMIv1
+-- =============================================================================
+
+URI-TC-MIB DEFINITIONS ::= BEGIN
+
+--IMPORTS
+--    MODULE-IDENTITY, mib-2             FROM SNMPv2-SMI      ## [RFC2578]
+--    TEXTUAL-CONVENTION                 FROM SNMPv2-TC;      ## [RFC2579]
+--
+-- uriTcMIB MODULE-IDENTITY
+--    LAST-UPDATED "200709100000Z" ## 10 September 2007
+--    ORGANIZATION "IETF Operations and Management (OPS) Area"
+--    CONTACT-INFO "EMail: ops-area@ietf.org
+--                  Home page: http://www.ops.ietf.org/"
+--    DESCRIPTION
+--            "This MIB module defines textual conventions for
+--            representing URIs, as defined by RFC 3986 STD 66."
+--    REVISION     "200709100000Z" ## 10 September 2007
+--    DESCRIPTION
+--           "Initial revision, published as RFC 5017.
+--
+--            Copyright (C) The IETF Trust (2007).  This version of this
+--            MIB module is part of RFC 5017; see the RFC itself for full
+--            legal notices."
+--    ::= { mib-2 164 }
+
+--Uri ::= TEXTUAL-CONVENTION
+--   DISPLAY-HINT "1a"
+--   STATUS      current
+--   DESCRIPTION
+--            "A Uniform Resource Identifier (URI) as defined by STD 66.
+--
+--            Objects using this TEXTUAL-CONVENTION MUST be in US-ASCII
+--            encoding, and MUST be normalized as described by RFC 3986
+--            Sections 6.2.1, 6.2.2.1, and 6.2.2.2.  All unnecessary
+--            percent-encoding is removed, and all case-insensitive
+--            characters are set to lowercase except for hexadecimal
+--            digits, which are normalized to uppercase as described in
+--            Section 6.2.2.1.
+--
+--            The purpose of this normalization is to help provide unique
+--            URIs.  Note that this normalization is not sufficient to
+--            provide uniqueness.  Two URIs that are textually distinct
+--            after this normalization may still be equivalent.
+--
+--            Objects using this TEXTUAL-CONVENTION MAY restrict the
+--            schemes that they permit.  For example, 'data:' and 'urn:'
+--            schemes might not be appropriate.
+--
+--            A zero-length URI is not a valid URI.  This can be used to
+--            express 'URI absent' where required, for example when used
+--            as an index field.
+--
+--            Where this TEXTUAL-CONVENTION is used for an index field,
+--            it MUST be subtyped to restrict its length.  There is an
+--            absolute limit of 128 subids for an OID, and it is not
+--            efficient to have OIDs whose length approaches this
+--            limit."
+--   REFERENCE "RFC 3986 STD 66 and RFC 3305"
+--   SYNTAX      OCTET STRING
+
+--Uri255 ::= TEXTUAL-CONVENTION
+--   DISPLAY-HINT "255a"
+--   STATUS      current
+--   DESCRIPTION
+--            "A Uniform Resource Identifier (URI) as defined by STD 66.
+--
+--            Objects using this TEXTUAL-CONVENTION MUST be in US-ASCII
+--            encoding, and MUST be normalized as described by RFC 3986
+--            Sections 6.2.1, 6.2.2.1, and 6.2.2.2.  All unnecessary
+--            percent-encoding is removed, and all case-insensitive
+--            characters are set to lowercase except for hexadecimal
+--            digits, which are normalized to uppercase as described in
+--            Section 6.2.2.1.
+--
+--            The purpose of this normalization is to help provide unique
+--            URIs.  Note that this normalization is not sufficient to
+--            provide uniqueness.  Two URIs that are textually distinct
+--            after this normalization may still be equivalent.
+--
+--            Objects using this TEXTUAL-CONVENTION MAY restrict the
+--            schemes that they permit.  For example, 'data:' and 'urn:'
+--            schemes might not be appropriate.
+--
+--            A zero-length URI is not a valid URI.  This can be used to
+--            express 'URI absent' where required, for example when used
+--            as an index field.
+--
+--            STD 66 URIs are of unlimited length.  Objects using this
+--            TEXTUAL-CONVENTION impose a length limit on the URIs that
+--            they can represent.  Where no length restriction is
+--            required, objects SHOULD use the 'Uri' TEXTUAL-CONVENTION
+--            instead.  Objects used as indices SHOULD subtype the 'Uri'
+--            TEXTUAL-CONVENTION."
+--   REFERENCE "RFC 3986 STD 66 and RFC 3305"
+--   SYNTAX      OCTET STRING (SIZE (0..255))
+
+-- added by Alcatel-Lucent
+Uri255 ::= OCTET STRING (SIZE (0..255))
+-- end of added by Alcatel-Lucent
+
+--Uri1024 ::= TEXTUAL-CONVENTION
+--   DISPLAY-HINT "1024a"
+--   STATUS      current
+--   DESCRIPTION
+--            "A Uniform Resource Identifier (URI) as defined by STD 66.
+--
+--            Objects using this TEXTUAL-CONVENTION MUST be in US-ASCII
+--            encoding, and MUST be normalized as described by RFC 3986
+--            Sections 6.2.1, 6.2.2.1, and 6.2.2.2.  All unnecessary
+--            percent-encoding is removed, and all case-insensitive
+--            characters are set to lowercase except for hexadecimal
+--            digits, which are normalized to uppercase as described in
+--            Section 6.2.2.1.
+--
+--            The purpose of this normalization is to help provide unique
+--            URIs.  Note that this normalization is not sufficient to
+--            provide uniqueness.  Two URIs that are textually distinct
+--            after this normalization may still be equivalent.
+--
+--            Objects using this TEXTUAL-CONVENTION MAY restrict the
+--            schemes that they permit.  For example, 'data:' and 'urn:'
+--            schemes might not be appropriate.
+--            A zero-length URI is not a valid URI.  This can be used to
+--            express 'URI absent' where required, for example when used
+--            as an index field.
+--
+--            STD 66 URIs are of unlimited length.  Objects using this
+--            TEXTUAL-CONVENTION impose a length limit on the URIs that
+--            they can represent.  Where no length restriction is
+--            required, objects SHOULD use the 'Uri' TEXTUAL-CONVENTION
+--            instead.  Objects used as indices SHOULD subtype the 'Uri'
+--            TEXTUAL-CONVENTION."
+--   REFERENCE "RFC 3986 STD 66 and RFC 3305"
+--   SYNTAX      OCTET STRING (SIZE (0..1024))
+
+END

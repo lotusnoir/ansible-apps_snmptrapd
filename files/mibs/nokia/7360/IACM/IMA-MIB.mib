@@ -1,0 +1,1378 @@
+-- IMA-MIB
+
+-- =============================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel will not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein will be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2004, Alcatel. All Rights Reserved.
+-- =============================================================================
+
+--  CONTACT-INFO "Marc Van Vlimmeren"
+--  MODULE-IDENTITY
+--  LAST-UPDATED "2004-05-17"
+--  ORGANIZATION "Alcatel"
+--  ORIGINATOR "Bo Liu"
+
+--  Postal:
+
+-- =============================================================================
+--
+--  HISTORY:
+--
+--
+--  Date: 2004-05-17  -  version: 3FE20281AAAA_V4.7.0.0.0
+--  Editor: Bo Liu
+-- 
+-- =============================================================================
+--
+-- ============================================================
+--  ALCATEL IMA MIB (Derived from ATM Forum IMA-MIB)
+-- ============================================================
+-- This MIB module is adapted from the ATM Forum's IMA-MIB 
+-- for use in Alactel ASAM System.
+-- Alcatel specific behavior is indicated by comments
+-- labeled 'ALCATEL NOTE'.
+--
+-- Version: June 10, 1998
+--
+--
+-- CONTACTS:
+--          Rajesh Abbi
+--              Alcatel Network Systems
+--              2912 Wake Forest Road,
+--              Raleigh, NC 27609-7860
+--              Phone: +1 919-850-6194
+--              Fax  : +1 919-850-6670
+--              Email: abbira@aur.alcatel.com
+
+
+IMA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  	ifIndex 
+    	  FROM ITF-MIB
+   	enterprises 
+    	  FROM RFC1155-SMI
+   	OBJECT-TYPE
+    	  FROM RFC-1212
+   	DateAndTime, RowStatus
+    	  FROM SNMPv2-TC;
+
+
+--=====================================================================
+-- The implementation of this MIB is mandatory for all network devices 
+-- which have ATM Inverse Multiplexer network interface module.
+
+-- atmfImaMib    MODULE-IDENTITY
+--       LAST-UPDATED "9701092245Z"
+--       ORGANIZATION "ATM Forum"
+--       CONTACT-INFO 
+--       "ATM Forum
+--       World Headquarters
+--       2570 West El Camino Real
+--       Suite 304
+--       Mountain View, CA 94040-1313
+--       USA
+--       Phone: +1 415 949 6700
+--       Fax: +1 415 949 6705
+--       email: info@atmforum.com"
+--       DESCRIPTION
+--         "The MIB module to describe an ATM Inverse Multiplexer interface"
+--      ::= { atmForumNetworkManagement TBD }  Temporary Assignment below
+--
+
+--=====================================================================
+ 
+   atmForum OBJECT IDENTIFIER ::= { enterprises 353 }
+   atmFNM OBJECT IDENTIFIER ::= { atmForum 12 }
+
+-- ALCATEL NOTE: Following OID has been assigned temporarily as no official
+-- registration is available in the original ATM Forum MIB.
+
+   atmfImaMib OBJECT IDENTIFIER ::= { atmFNM 1 }
+
+   atmfImaMibObjects OBJECT IDENTIFIER ::= { atmfImaMib 1}
+
+-- This MIB consists of the IMA group subtree.
+-- The IMA group subtree consists of the number of IMA groups and a 
+-- table of IMA groups. Each entry in the table of IMA groups contains
+-- information (configuration and status) specific to each group.
+
+-- Textual conventions
+
+IfIndex ::= INTEGER (-2147483648..2147483647)
+
+MilliSeconds ::= INTEGER (0..2147483647)
+
+ImaGroupState ::= INTEGER {
+        notConfigured(1), 
+        startUp(2), 
+        startUpAck(3), 
+        configAbortUnsupportedM(4), 
+        configAbortIncompatibleSymmetry(5),
+        configAbortOther(6),
+        insufficientLinks(7), 
+        blocked(8), 
+        operational(9)}
+
+ImaGroupFailureStatus ::= INTEGER { 
+        noFailure(1), -- unit is up
+        startUpNe(2),
+        startUpFe(3), 
+        invalidMValueNe(4),
+        invalidMValueFe(5),
+        failedAssymetricNe(6),
+        failedAssymetricFe(7),
+        insufficientLinksNe(8),
+        insufficientLinksFe(9),
+        blockedNe(10),
+        blockedFe(11),
+        otherFailure(12)} 
+
+ImaAlarmStatus ::= INTEGER { 
+        cleared(1),
+        declared(2)}
+
+ImaAlarmType ::= INTEGER { 
+        imaAlarmLinkLif(1),
+        imaAlarmLinkLods(2),
+        imaAlarmLinkTxMisConnect(3),
+        imaAlarmLinkRfi(4),
+        imaAlarmLinkFault(5),
+        imaAlarmLinkTxUnusableFe(6),
+        imaAlarmLinkRxUnusableFe(7),
+        imaAlarmGroupStartupFe(8),
+        imaAlarmGroupCfgAbort(9),
+        imaAlarmGroupCfgAbortFe(10),
+        imaAlarmGroupInsuffLinks(11),
+        imaAlarmGroupInsuffLinksFe(12),
+        imaAlarmGroupBlockedFe(13),
+        imaAlarmGroupTimingSynch(14)} 
+
+ImaGroupTxClkMode  ::= INTEGER {
+        ctc(1),
+        itc(2)}
+
+ImaGroupSymmetry ::= INTEGER { 
+        symmetricOperation(1),
+        asymmetricOperation(2),
+        asymmetricConfiguration(3)}
+
+ImaFrameLength ::= INTEGER {
+        m32(32),
+        m64(64),
+        m128(128),
+        m256(256)}
+
+ImaLinkState ::= INTEGER {
+        notInGroup(1), 
+        unusableNoGivenReason(2), 
+        unusableFault(3), 
+        unusableMisconnected(4), 
+        unusableBlocked(5), 
+        unusableFailed(6), 
+        usable(7), 
+        active(8)}
+
+ImaLinkFailureStatus ::= INTEGER {
+        noFailure(1), 
+        imaLinkFailure(2), 
+        lifFailure(3),
+        lodsFailure(4),
+        misConnected(5),
+        blocked(6),
+        fault(7),
+        farEndTxLinkUnusable(8),
+        farEndRxLinkUnusable(9)}
+
+ImaTestProcStatus ::= INTEGER {
+        disabled(1),
+        operating(2),
+        linkFail(3)}
+
+-- The IMA Group subtree
+
+imaGroupNumber    OBJECT-TYPE   
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of IMA groups configured on this system. 
+ALCATEL NOTE: This is the number of 'provisioned' IMA Groups,
+        i.e. those with row-status of 'active'."
+      ::= { atmfImaMibObjects 1}
+
+-- IMA Group Table contains configuration and status information
+
+imaGroupTable     OBJECT-TYPE
+      SYNTAX      SEQUENCE OF ImaGroupEntry
+      ACCESS      not-accessible
+      STATUS      mandatory
+      DESCRIPTION
+        "The IMA Group Configuration table."
+      ::= { atmfImaMibObjects 2 }
+
+imaGroupEntry     OBJECT-TYPE
+      SYNTAX      ImaGroupEntry
+      ACCESS      not-accessible
+      STATUS      mandatory
+      DESCRIPTION
+        "An entry in the IMA Group table.
+ALCATEL NOTE: In ASAM, entries are 
+automatically created by the agent for all possible IMA
+Groups in the system.  The 'imaGroupRowStatus' is set
+to 'notInService'.  In order to provision a specific
+IMA Group, the manager must set the 'imaGroupRowStatus'
+to 'active'."
+      INDEX       { imaGroupIndex }
+      ::= { imaGroupTable 1 }
+
+ImaGroupEntry ::= SEQUENCE {
+      imaGroupIndex               INTEGER,
+      imaGroupRowStatus           RowStatus,
+      imaGroupIfIndex             IfIndex,
+      imaGroupNeState             ImaGroupState,
+      imaGroupFeState             ImaGroupState,
+      imaGroupFailureStatus       ImaGroupFailureStatus,
+      imaGroupSymmetry            ImaGroupSymmetry,
+      imaGroupMinNumTxLinks       INTEGER (1..32),
+      imaGroupMinNumRxLinks       INTEGER (1..32),
+      imaGroupNeTxClkMode         ImaGroupTxClkMode,
+      imaGroupFeTxClkMode         ImaGroupTxClkMode,
+      imaGroupTxTimingRefLink     IfIndex,
+      imaGroupRxTimingRefLink     IfIndex,
+      imaGroupLastChange          DateAndTime,
+      imaGroupTxImaId             INTEGER (0..255),
+      imaGroupRxImaId             INTEGER (0..255),
+      imaGroupTxFrameLength       ImaFrameLength,
+      imaGroupRxFrameLength       ImaFrameLength,
+      imaGroupDiffDelayMax        MilliSeconds,
+      imaGroupLeastDelayLink      IfIndex,
+      imaGroupDiffDelayMaxObs     MilliSeconds,
+      imaGroupAlphaValue          INTEGER (1..2),
+      imaGroupBetaValue           INTEGER (1..5),
+      imaGroupGammaValue          INTEGER (1..5),
+      imaGroupRunningSecs         INTEGER,
+      imaGroupUnavailSecs         INTEGER,
+      imaGroupNeNumFailures       INTEGER,
+      imaGroupFeNumFailures       INTEGER,
+      imaGroupTxAvailCellRate     INTEGER,
+      imaGroupRxAvailCellRate     INTEGER,
+      imaGroupNumTxCfgLnks        INTEGER,
+      imaGroupNumRxCfgLnks        INTEGER,
+      imaGroupNumTxActLnks        INTEGER,
+      imaGroupNumRxActLnks        INTEGER,
+      imaGroupTestLinkIfIndex     IfIndex,
+      imaGroupTestPattern         INTEGER,
+      imaGroupTestProcStatus      ImaTestProcStatus }
+
+imaGroupIndex     OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "A unique value for the IMA Group. 
+ALCATEL NOTE: The value is same as 'imaGroupIfIndex'."
+      ::= { imaGroupEntry 1 }
+      
+imaGroupRowStatus OBJECT-TYPE
+      SYNTAX      RowStatus
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "The imaGroupRowStatus object allows create and delete operations 
+on imaGroupTable entries.
+To create a new conceptual row (or instance) of the
+imaGroupTable, imaGroupRowStatus must be set to'createAndWait' or
+        'createAndGo.'  A successful set of the following objects must be
+performed before the row can transition to 'Active' state:
+          imaGroupTxImaId
+          imaGroupTxFrameLength
+          imaGroupMinNumTxLinks and
+          imaGroupMinNumRxLinks 
+
+        	To change (modify) an imaGroupTable entry, the imaGroupRowStatus 
+object must be set to 'notInService'. Only then can the
+conceptual row be changed. 
+
+        	To remove (delete) an imaGroupTable entry from this table, set
+        	imaGroupRowStatus to 'destroy.'
+
+        	Setting the imaGroupRowStatus to 'Active' has the effect of
+activating the Group Startup Procedure.  The Group Startup Procedure
+        	uses provisioned links that have imaLinkRowStatus set to
+'Active' an imaLinkGroupIndex set the imaGroupIndex in this conceptual row.
+
+        	When the imaGroupRowStatus is not in 'Active' state, the Group State
+        	machine is in its 'Not Configured' state.
+
+        	ALCATEL NOTE: In ASAM, entries are automatically created 
+        	by the agent for all possible IMA Groups in the system.  The 
+        'imaGroupRowStatus' is set to 'notInService'.  In order to provision a 
+        specific IMA Group, the manager must set the 'imaGroupRowStatus'
+        to 'active'.  Entries may not be created or deleted.  Entries may be 
+        un-provisioned by setting the 'imaGroupRowStatus' to 'notInService'.
+        Configuration changes made to an un-provisioned entry are not saved
+        persistently (ie: restart will reset data to default values) until the 
+        row is 'activated'.  Un-provisioning an 'active' entry will also reset 
+        all configuration to its default values. An IMA Group with existing
+        ATM connections (VPL/VCL) or existing Links may not be un-provisioned."
+      ::= { imaGroupEntry 2 }
+
+imaGroupIfIndex   OBJECT-TYPE
+      SYNTAX      IfIndex
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "This object identifies the logical interface number
+        ('ifIndex') assigned to this IMA group, and is used to identify
+        corresponding rows in the Interfaces MIB.
+
+        Note that re-initialization of the management agent may cause
+        a client's 'imaGroupIfIndex' to change."
+      ::= { imaGroupEntry 3 }
+
+imaGroupNeState     OBJECT-TYPE
+      SYNTAX      ImaGroupState
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The mandatory operational state of the near-end IMA 
+        Group State Machine."
+      ::= { imaGroupEntry 4 }
+
+imaGroupFeState     OBJECT-TYPE
+      SYNTAX      ImaGroupState
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The mandatory operational state of the far-end IMA 
+        Group State Machine."
+      ::= { imaGroupEntry 5 }
+
+imaGroupFailureStatus       OBJECT-TYPE
+      SYNTAX      ImaGroupFailureStatus
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+       "The mandatory failure status of the IMA group (the reason why
+        the GTSM is in the down state."
+      ::= { imaGroupEntry 6 }   
+
+imaGroupSymmetry  OBJECT-TYPE
+      SYNTAX      ImaGroupSymmetry
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "Symmetry of the IMA group.
+
+        ALCATEL NOTE: Only 'symmetricOperation' option is supported."
+      DEFVAL { symmetricOperation }
+      ::= { imaGroupEntry 7 }
+
+imaGroupMinNumTxLinks       OBJECT-TYPE
+      SYNTAX      INTEGER (1..32)
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+       "Minimum number of transmit links required to be Active for 
+        the IMA group to be in the Up state."
+      ::= { imaGroupEntry 8 }
+
+imaGroupMinNumRxLinks       OBJECT-TYPE
+      SYNTAX      INTEGER (1..32)
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "Minimum number of receive links required to be Active for 
+        the IMA group to be in the Up state."
+      ::= { imaGroupEntry 9 }
+
+imaGroupNeTxClkMode         OBJECT-TYPE
+      SYNTAX      ImaGroupTxClkMode
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "Transmit clocking mode used by the near-end IMA group.
+
+        ALCATEL NOTE: Only 'ctc' mode is supported."
+      DEFVAL { ctc }
+      ::= { imaGroupEntry 10 }
+
+imaGroupFeTxClkMode         OBJECT-TYPE
+      SYNTAX      ImaGroupTxClkMode 
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Transmit clocking mode used by the far-end IMA group."
+      ::= { imaGroupEntry 11 }
+
+imaGroupTxTimingRefLink     OBJECT-TYPE
+      SYNTAX      IfIndex
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The ifIndex of the transmit timing reference link to 
+        be used by the near-end for IMA data cell clock recovery from
+        the ATM layer.
+
+        ALCATEL NOTE: If no links are provisioned, this object is not
+        valid."
+      ::= { imaGroupEntry 12 }
+
+imaGroupRxTimingRefLink    OBJECT-TYPE
+      SYNTAX      IfIndex
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+         "The ifIndex of the receive timing reference link to be
+         used by near-end for IMA data cell clock recovery toward 
+         the ATM layer.
+
+         ALCATEL NOTE: If no links are provisioned, this object is not
+         valid."
+      ::= { imaGroupEntry 13 }   
+
+imaGroupLastChange OBJECT-TYPE
+      SYNTAX      DateAndTime
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The time-of-day the IMA group last changed operational 
+        state (i.e., value of imaNeGroupState changed)."
+      ::= { imaGroupEntry 14 }
+
+imaGroupTxImaId OBJECT-TYPE
+      SYNTAX      INTEGER (0..255)
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "The IMA ID mandatoryly in use by the near-end IMA function."
+      ::= { imaGroupEntry 15 }
+
+imaGroupRxImaId OBJECT-TYPE
+      SYNTAX      INTEGER (0..255)
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The IMA ID mandatoryly in use by the far-end IMA function."
+      ::= { imaGroupEntry 16 }
+
+imaGroupTxFrameLength    OBJECT-TYPE
+      SYNTAX      ImaFrameLength
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "The frame length to be used by the IMA group in the transmit
+        direction. Can only be set when the IMA group is startup.
+
+        ALCATEL NOTE: IMA Groups in ASAM only support the
+        default m128 option."
+      DEFVAL { m128 }
+      ::= { imaGroupEntry 17 }
+
+imaGroupRxFrameLength OBJECT-TYPE
+      SYNTAX      ImaFrameLength
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Value of IMA frame length as received from remote IMA function."
+      ::= { imaGroupEntry 18 }
+
+imaGroupDiffDelayMax OBJECT-TYPE
+      SYNTAX      MilliSeconds
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "The maximum number of milliseconds of delay differential among
+        the links that will be tolerated on this interface.
+
+        ALCATEL NOTE: IMA Groups in ASAM only support the
+        default 25 ms option."
+      DEFVAL { 25 }
+      ::= { imaGroupEntry 19 }
+
+imaGroupLeastDelayLink OBJECT-TYPE
+      SYNTAX      IfIndex
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The ifIndex of the link configured in the IMA 
+        group which has the smallest link propagation delay. This 
+        value has meaning only if at least 1 link has been configured
+        in the IMA group.
+
+         ALCATEL NOTE: If no links are provisioned, this object is not
+         valid."
+      ::= { imaGroupEntry 20 }
+      
+imaGroupDiffDelayMaxObs OBJECT-TYPE
+      SYNTAX      MilliSeconds
+      ACCESS      read-only 
+      STATUS      mandatory
+      DESCRIPTION
+        "The latest maximum differential delay observed (in 
+        milliseconds), i.e. between the links having the least and 
+        most link propagation delay, among the receive links that 
+        are mandatoryly configured in the IMA group."
+      ::= { imaGroupEntry 21 }
+
+imaGroupAlphaValue OBJECT-TYPE
+      SYNTAX      INTEGER (1..2)
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "This indicates the 'alpha' value used to specify the 
+        number of consecutive invalid ICP cells to be detected 
+        before moving to the IMA HUNT state.
+
+        ALCATEL NOTE: IMA Groups in ASAM only support the
+        default value of 2."
+      DEFVAL { 2 }
+      ::= { imaGroupEntry 22 }
+
+imaGroupBetaValue OBJECT-TYPE
+      SYNTAX      INTEGER (1..5)
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "This indicates the 'beta' value used to specify the 
+        number of consecutive errored ICP cells to be detected 
+        before moving to the IMA HUNT state.
+
+        ALCATEL NOTE: IMA Groups in ASAM only support the
+        default value of 2."
+      DEFVAL { 2 }
+      ::= { imaGroupEntry 23 }
+
+imaGroupGammaValue OBJECT-TYPE
+      SYNTAX      INTEGER (1..5)
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "This indicates the 'gamma' value used to specify the 
+        number of consecutive valid ICP cells to be detected before 
+        moving to the IMA SYNC state from the PRESYNC state.
+
+        ALCATEL NOTE: IMA Groups in ASAM only support the
+        default value of 1."
+      DEFVAL { 1 }
+      ::= { imaGroupEntry 24 }
+
+imaGroupRunningSecs OBJECT-TYPE
+      SYNTAX      INTEGER 
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The amount of time (in seconds) since this IMA group has 
+        been in operation (up or down)."
+      ::= { imaGroupEntry 25 }
+      
+imaGroupUnavailSecs OBJECT-TYPE
+      SYNTAX      INTEGER 
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Count of one second intervals where the IMA Group Traffic 
+        State Machine is Down."
+      ::= { imaGroupEntry 26 }
+
+imaGroupNeNumFailures OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of times a near-end group failure (Config-Abort, 
+        Insufficient-Links) has been reported since power-up or reboot."
+      ::= { imaGroupEntry 27 }
+
+imaGroupFeNumFailures OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of times a far-end group failure(Config-Abort-FE, 
+        Insufficient-Links-FE, Blocked-FE) has been reported since 
+        power-up or reboot. This is an optional attribute."
+      ::= { imaGroupEntry 28 }
+
+imaGroupTxAvailCellRate OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The mandatory cell rate (truncated value in cells per second)
+        provided by this IMA group in the transmit direction, 
+        considering all the transmit links in the Active state."
+      ::= { imaGroupEntry 29 }
+
+imaGroupRxAvailCellRate OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The mandatory cell rate (truncated value in cells per second) 
+        provided by this IMA group in the receive direction, 
+        considering all the receive links in the Active state."
+      ::= { imaGroupEntry 30 }
+
+-- imaGroupNumTxCfgLnks is used by a network operator to tell how many
+-- links are configured for transmit in the IMA group.
+
+imaGroupNumTxCfgLnks  OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of links that are configured to transmit in this IMA
+        group."
+      ::= { imaGroupEntry 31 }
+
+-- imaGroupNumRxCfgLnks is used by a network operator to tell how many
+-- links are configured for receive in the IMA group.
+
+imaGroupNumRxCfgLnks  OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of links that are configured to receive in this IMA
+        group."
+      ::= { imaGroupEntry 32 }
+
+-- imaGroupNumTxActLnks is used by a network operator to tell how many
+-- links which are configured for transmit are also Active.
+ 
+imaGroupNumTxActLnks  OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of links which are configured to transmit and are
+        mandatoryly Active in this IMA group."
+      ::= { imaGroupEntry 33 }
+ 
+-- imaGroupNumRxActLnks is used by a network operator to tell how many
+-- links which are configured for receive are also Active.
+ 
+imaGroupNumRxActLnks  OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of links which are configured to receive and are
+        mandatoryly Active in this IMA group."
+      ::= { imaGroupEntry 34 }
+
+--
+-- Test Pattern Procedure control objects. These objects are implemented
+-- if the IMA implements the Test Pattern Procedure. In this case all
+-- test pattern procedure related objects must be implemented. Specifically
+-- these are
+-- 
+-- imaGroupTestLinkIfIndex
+-- imaGroupTestPattern
+-- imaGroupTestProcStatus
+-- imaLinkTestProcStatus
+-- imaLinkRxTestPattern
+--
+--
+-- ALCATEL NOTE: The Test Pattern Procedure is presently not supported.
+
+imaGroupTestLinkIfIndex  OBJECT-TYPE
+      SYNTAX      IfIndex
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "This object is used to designate an interface as the Test Link.
+        A default value of -1 specifies that the implementation may choose the
+        Test Link. In this case, the implementation may also choose the
+        value of 'imaGroupTestPattern'."
+     -- DEFVAL { -1 }
+      ::= { imaGroupEntry 35 }
+ 
+imaGroupTestPattern  OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "The value of this object is used to specify the test pattern
+        in an IMA group loopback operation. A value in the range 0 to
+        255 designates a specific pattern. A value of -1 specifies
+        that the implementation may choose the value. In this case,
+        the implementation may also choose the value of
+        'imaGroupTestLinkIfIndex'."
+      DEFVAL { -1 }
+      ::= { imaGroupEntry 36 }
+
+imaGroupTestProcStatus OBJECT-TYPE
+      SYNTAX      ImaTestProcStatus
+      ACCESS      read-write
+      STATUS      mandatory
+      DESCRIPTION
+        "This object is used to enable or disable the
+        Test Pattern Procedure, and to note whether at least one
+        link failed the test.
+
+        The test is started by setting operating(2) status. If any
+        link should fail the test, the IMA will set the status to
+        linkfail(3). The linkfail(3) state will persist until
+        either the disabled(1) state is set or until no instance
+        of imaLinkTestProcStatus has the value linkfail(3).
+
+        Only the values disabled(1) and operating(2) may be written.
+        Writing the operating(2) value will not cause clearing of
+        the linkfail(3) state."
+      DEFVAL { disabled }
+      ::= { imaGroupEntry 37 }
+ 
+--
+-- The IMA Group - ifIndex Mapping Table
+--
+-- Note that the Group Index is different than the ifIndex.
+--
+-- The "ifIndex Mapping" table allows the Unit Management to
+-- perform easy look-ups (no searches and sorts). 
+ 
+imaGroupMappingTable OBJECT-TYPE
+      SYNTAX      SEQUENCE OF ImaGroupMappingEntry
+      ACCESS      not-accessible
+      STATUS      mandatory   
+      DESCRIPTION
+        "A table mapping the 'ifIndex' values of 'imaGroupIfIndex'
+        to the 'imaGroupIndex' values of the corresponding
+        IMA group."
+      ::= { atmfImaMibObjects 3 } 
+
+imaGroupMappingEntry OBJECT-TYPE
+      SYNTAX      ImaGroupMappingEntry
+      ACCESS      not-accessible
+      STATUS      mandatory   
+      DESCRIPTION
+        "Each row describes one ifIndex --> imaGroupIndex mapping."
+      INDEX { ifIndex }
+      ::= { imaGroupMappingTable 1 }
+ 
+ImaGroupMappingEntry ::=
+      SEQUENCE {
+         imaGroupMappingIndex    INTEGER
+      }
+
+imaGroupMappingIndex OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The imaGroupIndex of the IMA Group which implements the
+        specified interface."
+      ::= { imaGroupMappingEntry 1 }
+
+
+-- The IMA link status and configuration table
+-- Each entry in the table contains status information about a link
+-- which is part of an IMA group.
+
+imaLinkTable      OBJECT-TYPE
+      SYNTAX      SEQUENCE OF ImaLinkEntry
+      ACCESS      not-accessible
+      STATUS      mandatory
+      DESCRIPTION
+        "The IMA group Link Status and Configuration table."
+      ::= { atmfImaMibObjects 4 }
+
+imaLinkEntry      OBJECT-TYPE
+      SYNTAX      ImaLinkEntry
+      ACCESS      not-accessible
+      STATUS      mandatory
+      DESCRIPTION
+        "An entry in the IMA Group Link table.
+
+        ALCATEL NOTE: In the A1000 ADSL system, only DS1/E1
+        interfaces that have 'asamDsx1E1LineMode' set to 
+        'imaLink(2)' and activated may be added as links."
+      INDEX   { imaLinkIfIndex }
+      ::= { imaLinkTable 1 }
+
+ImaLinkEntry ::=       SEQUENCE {
+      imaLinkIfIndex              INTEGER,
+      imaLinkRowStatus            RowStatus,
+      imaLinkGroupIndex           INTEGER,
+      imaLinkNeTxState            ImaLinkState,
+      imaLinkNeRxState            ImaLinkState,
+      imaLinkFeTxState            ImaLinkState,
+      imaLinkFeRxState            ImaLinkState,
+      imaLinkNeRxFailureStatus    ImaLinkFailureStatus,
+      imaLinkFeRxFailureStatus    ImaLinkFailureStatus,
+      imaLinkTxLid                INTEGER (0..31),
+      imaLinkRxLid                INTEGER (0..31),
+      imaLinkRelDelay             MilliSeconds,
+      imaLinkImaViolations        INTEGER,
+      imaLinkOifAnomalies         INTEGER,
+      imaLinkNeSevErroredSec      INTEGER,
+      imaLinkFeSevErroredSec      INTEGER,
+      imaLinkNeUnavailSec         INTEGER,
+      imaLinkFeUnavailSec         INTEGER,
+      imaLinkNeTxUnusableSec      INTEGER,
+      imaLinkNeRxUnusableSec      INTEGER,
+      imaLinkFeTxUnusableSec      INTEGER,
+      imaLinkFeRxUnusableSec      INTEGER,
+      imaLinkNeTxNumFailures      INTEGER,
+      imaLinkNeRxNumFailures      INTEGER,
+      imaLinkFeTxNumFailures      INTEGER,
+      imaLinkFeRxNumFailures      INTEGER,
+      imaLinkTxStuffs             INTEGER,
+      imaLinkRxStuffs             INTEGER,
+      imaLinkRxTestPattern        INTEGER (0..255),
+      imaLinkTestProcStatus       ImaTestProcStatus }
+
+imaLinkIfIndex    OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "This corresponds to the 'ifIndex' of the MIB-II interface 
+        on which this link is established. This object also
+        corresponds to the logical number ('ifIndex') assigned to 
+        this IMA link."
+      ::= { imaLinkEntry 1 }
+
+imaLinkRowStatus OBJECT-TYPE
+      SYNTAX      RowStatus
+      ACCESS      read-write 
+      STATUS      mandatory
+      DESCRIPTION
+        "The imaLinkRowStatus object allows create, change and delete
+        operations on imaLinkTable entries.  
+       
+        To create a new conceptual row (or instance) of the imaLinkTable,
+        imaLinkRowStatus must be set to 'createAndWait' or 'createAndGo.'
+        A successful set of the object imaLinkGroupIndex must be 
+        performed before the RowStatus of this new row can transition
+        to the 'Active' state. The imaLinkGroupIndex provides the 
+        association between a physical IMA link to an IMA group.
+
+        To change (modify) an imaLinkTable entry, the imaLinkRowStatus 
+        object must be set to 'notInService'. Only then can the
+        conceptual row be changed. Setting object imaLinkGroupIndex to 
+        a different value has the effect of changing the association 
+        between a physical IMA link and an IMA group. To place the 
+        link 'in group', the imaLinkRowStatus object is set to 'Active'. 
+        While the row is not in 'Active' state, both the Transmit and
+        Receive IMA state machines are in the 'Not In Group' state.
+
+        To remove (delete) an imaLinkTable entry from this table, set
+        this object to 'destroy.'
+
+        A network manager may elect to perform a delete operation 
+        followed immediately by a create operation instead of a 
+        modify operation. The net effect of the delete/create is to 
+        re-instantiate (reset) agent counters defined in this table.
+
+        ALCATEL NOTE: The ASAM only supports 'createAndGo' 
+        and 'destroy' operations on this object."
+      ::= { imaLinkEntry 2 }
+
+imaLinkGroupIndex OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-write 
+      STATUS      mandatory
+      DESCRIPTION
+        "The value which identifies the IMA group (imaGroupIndex) 
+        of which this link is a member.
+
+        ALCATEL NOTE: This object may only be set during row-creation."
+      ::= { imaLinkEntry 3 }
+
+imaLinkNeTxState  OBJECT-TYPE
+      SYNTAX      ImaLinkState 
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The mandatory state of the near-end transmit link."
+      ::= { imaLinkEntry 4 }
+
+imaLinkNeRxState  OBJECT-TYPE
+      SYNTAX      ImaLinkState 
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The mandatory state of the near-end receive link."
+      ::= { imaLinkEntry 5 }
+
+imaLinkFeTxState  OBJECT-TYPE
+      SYNTAX      ImaLinkState 
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The mandatory state of the far-end transmit link as reported
+        via ICP cells."
+      ::= { imaLinkEntry 6 }
+
+imaLinkFeRxState  OBJECT-TYPE
+      SYNTAX      ImaLinkState 
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The mandatory state of the far-end receive link as reported
+        via ICP cells."
+      ::= { imaLinkEntry 7 }
+
+imaLinkNeRxFailureStatus       OBJECT-TYPE
+      SYNTAX      ImaLinkFailureStatus
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The mandatory link failure status of the near-end receive link."
+      ::= { imaLinkEntry 8 }
+
+imaLinkFeRxFailureStatus       OBJECT-TYPE
+      SYNTAX      ImaLinkFailureStatus
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The mandatory link failure status of the far-end receive link 
+        as reported via ICP cells."
+      ::= { imaLinkEntry 9 }
+
+imaLinkTxLid      OBJECT-TYPE
+      SYNTAX      INTEGER (0..31)
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The outgoing LID used mandatoryly on the link by the local end.
+        This value has meaning only if the link belongs to an IMA group."
+      ::= { imaLinkEntry 10 }
+
+imaLinkRxLid      OBJECT-TYPE
+      SYNTAX      INTEGER (0..31)
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The incoming LID used mandatoryly on the link by the remote 
+        end as reported via ICP cells. This value has meaning only 
+        if the link belongs to an IMA group."
+      ::= { imaLinkEntry 11 }
+
+imaLinkRelDelay   OBJECT-TYPE
+      SYNTAX      MilliSeconds
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The latest measured delay on this link relative to the link, in 
+        the same IMA group, with the least delay."
+      ::= { imaLinkEntry 12 }
+
+imaLinkImaViolations       OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "ICP violations: count of errored, invalid or missing ICP 
+        cells during non-SES-IMA condition."
+      ::= { imaLinkEntry 13 }
+
+imaLinkOifAnomalies        OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of OIF anomalies during non-SES-IMA condition at the 
+        near-end. This is an optional attribute."
+      ::= { imaLinkEntry 14 }
+ 
+imaLinkNeSevErroredSec       OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Count of one second intervals containing several IV-IMA, or 
+        one or more link defects (e.g., LOS, OOF/LOF, AIS, LCD), LIF, LODS 
+        defects during non-UAS-IMA condition."
+      ::= { imaLinkEntry 15 }
+
+imaLinkFeSevErroredSec       OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Count of one second intervals containing one or more 
+        RDI-IMA defects."
+      ::= { imaLinkEntry 16 }
+
+imaLinkNeUnavailSec       OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Count of unavailable seconds at near-end: unavailability begins 
+        at the onset of 10 contiguous SES-IMA and ends at the onset 
+        of 10 contiguous seconds with no SES-IMA."
+      ::= { imaLinkEntry 17 }
+
+imaLinkFeUnavailSec       OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Count of unavailable seconds at far-end: unavailability begins 
+        at the onset of 10 contiguous SES-IMA-FE and ends at the onset of 
+        10 contiguous seconds with no SES-IMA-FE."
+      ::= { imaLinkEntry 18 }
+
+imaLinkNeTxUnusableSec     OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Tx Unusable seconds: count of Unusable seconds at the near 
+        end Tx LSM."
+      ::= { imaLinkEntry 19 }
+
+imaLinkNeRxUnusableSec     OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Rx Unusable seconds: count of Unusable seconds at the near 
+        end Rx LSM."
+      ::= { imaLinkEntry 20 }
+
+imaLinkFeTxUnusableSec     OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Tx Unusable seconds at far-end: count of seconds with Unusable 
+        indications from the far-end Tx LSM."
+      ::= { imaLinkEntry 21 }
+
+imaLinkFeRxUnusableSec     OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Rx Unusable seconds at far-end: count of seconds with Unusable 
+        indications from the far-end Rx LSM."
+      ::= { imaLinkEntry 22 }
+
+imaLinkNeTxNumFailures       OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of times a near-end transmit failure alarm condition 
+        has been entered on this link."
+      ::= { imaLinkEntry 23 }
+
+imaLinkNeRxNumFailures       OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of times a near-end receive failure alarm condition 
+        has been entered on this link (i.e., LIF, LODS, Mis-Connected, 
+        RDI-IMA)."
+      ::= { imaLinkEntry 24 }
+
+imaLinkFeTxNumFailures       OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of times a far-end transmit failure alarm condition 
+        has been entered on this link. This is an optional attribute."
+      ::= { imaLinkEntry 25 }
+
+imaLinkFeRxNumFailures       OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "The number of times a far-end receive failure alarm condition 
+        has been entered on this link (i.e., LIF, LODS, Mis-Connected, RDI-IMA).
+        This is an optional attribute."
+      ::= { imaLinkEntry 26 }
+
+imaLinkTxStuffs  OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+       "Counts of stuff events inserted in the transmit direction.
+       This is an optional attribute."
+      ::= { imaLinkEntry 27 }
+
+imaLinkRxStuffs  OBJECT-TYPE
+      SYNTAX      INTEGER
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "Counts of stuff events detected in the receive direction.
+        This is an optional attribute."
+      ::= { imaLinkEntry 28 }
+
+
+--
+-- Test Pattern Procedure control objects. These objects are implemented
+-- if the IMA implements the Test Pattern Procedure. In this case all
+-- test pattern procedure related objects must be implemented. Specifically
+-- these are
+-- 
+-- imaGroupTestLinkIfIndex
+-- imaGroupTestPattern
+-- imaGroupTestProcStatus
+-- imaLinkTestProcStatus
+-- imaLinkRxTestPattern
+--
+-- ALCATEL NOTE: The Test Pattern Procedure is presently not supported.
+
+imaLinkRxTestPattern  OBJECT-TYPE
+      SYNTAX      INTEGER (0..255)
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "This object identifies the test pattern received in the
+        ICP Cell (octet 17) on the link during the IMA Test Pattern
+        Procedure. This value may then be compared to the transmitted
+        test pattern."
+      ::= { imaLinkEntry 29 }
+ 
+imaLinkTestProcStatus OBJECT-TYPE
+      SYNTAX      ImaTestProcStatus
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+        "This value indicates the mandatory state of the Test Pattern
+        Procedure. If the value is disabled(1), the test is not
+        running. A value of operating(2) means the test is running
+        and no error has been found on this interface. A value of
+        linkfail(3) means an error has been detected on this link
+        during the test.
+
+        Once an error occurs, the linkfail(3) value is latched until
+        either this object is read or until the imaGroupTestProcStatus
+        is moved to disabled(1). Once read, if the error no longer
+        persists, a subsequent read will report the value operating(2)."
+      ::= { imaLinkEntry 30 }
+
+
+-- 
+-- IMA Failure Alarms
+-- 
+-- Implementation of the imaFailureAlarm Trap is optional.
+--
+--
+
+-- imaAlarmStatus OBJECT-TYPE
+--       SYNTAX      ImaAlarmStatus
+--       ACCESS      read-only
+--       STATUS      mandatory
+--       DESCRIPTION
+--         "Status of the IMA alarm.
+-- 
+--         ALCATEL NOTE: This object is not supported.  See Alcatel
+--         ALARM_MIB."
+--        ::= { atmfImaMibObjects 5 }
+
+-- imaAlarmType OBJECT-TYPE
+--       SYNTAX      ImaAlarmType
+--       ACCESS      read-only
+--       STATUS      mandatory
+--       DESCRIPTION
+--         "The Type of IMA alarm declared or cleared. The value of 
+--         ImaAlarmType identifies the type of alarm according to the
+--         definitions in the IMA specification.
+-- 
+--         ALCATEL NOTE: This object is not supported.  See Alcatel
+--         ALARM_MIB."
+--        ::= { atmfImaMibObjects 6 }
+ 
+-- imaFailureAlarm NOTIFICATION-TYPE
+--       OBJECTS    { ifIndex, imaAlarmStatus, imaAlarmType }
+--       STATUS     mandatory
+--       DESCRIPTION
+--         "The imaFailureAlarm provides a method for an agent implementing IMA 
+--         to notify an NMS of an alarm condition."
+--       ::= { atmfImaMibObjects 7 }
+-- 
+-- Conformance Information
+-- 
+--    atmfImaMibConformance OBJECT IDENTIFIER ::= { atmfImaMib 2 }
+-- 
+--    atmfImaMibGroups        OBJECT IDENTIFIER ::= {atmfImaMibConformance 1 }
+-- 
+--    atmfImaMibCompliances   OBJECT IDENTIFIER ::= {atmfImaMibConformance 2 }
+-- 
+-- 
+-- Compliance Statements
+--
+-- atmfImaMibCompliance       MODULE-COMPLIANCE
+--      STATUS      mandatory
+--      DESCRIPTION
+--        "The compliance statement for network elements implementing
+--        Inverse Multiplexing for ATM."
+--
+--      MODULE IMA-MIB
+--
+-- Mandatory Part
+--
+--      MANDATORY-GROUPS  { atmfImaGroupGroup, atmfImaLinkGroup,
+--         atmfImaGroupMappingTableGroup }
+--
+--      GROUP imaTestPatternGroup
+--      DESCRIPTION
+--        "This group is mandatory only for implementations that support
+--        the Test Pattern Procedure. This group contains objects which 
+--        control and report on the Test Pattern Procedure."
+--
+-- Compliance Part
+--
+--   OBJECT     imaGroupSymmetry
+--   MIN-ACCESS read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   OBJECT     imaGroupMinNumTxLinks
+--   MIN-ACCESS read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   OBJECT     imaGroupMinNumRxLinks
+--   MIN-ACCESS read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   OBJECT     imaGroupTxImaId
+--   MIN-ACCESS read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   OBJECT    imaGroupTxFrameLength    
+--   MIN-ACCESS   read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   OBJECT     imaGroupDiffDelayMax
+--   MIN-ACCESS read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   OBJECT     imaGroupAlphaValue
+--   MIN-ACCESS read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   OBJECT     imaGroupBetaValue
+--   MIN-ACCESS read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   OBJECT     imaGroupGammaValue
+--   MIN-ACCESS read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   OBJECT     imaGroupTestLinkIfIndex
+--   MIN-ACCESS read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   OBJECT     imaGroupTestPattern
+--   MIN-ACCESS read-only
+--   DESCRIPTION
+--     "Write access is not required."
+--
+--   ::= { atmfImaMibCompliances 1 }
+--
+-- Units of Conformance
+--
+--   atmfImaGroupGroup    OBJECT-GROUP
+--   OBJECTS {
+--      imaGroupNumber, imaGroupRowStatus, imaGroupIfIndex,
+--      imaGroupIndex, imaGroupNeState, imaGroupFeState, imaGroupFailureStatus, 
+--      imaGroupSymmetry, imaGroupMinNumTxLinks, imaGroupMinNumRxLinks,
+--      imaGroupNeTxClkMode, imaGroupFeTxClkMode,
+--      imaGroupTxTimingRefLink, imaGroupRxTimingRefLink, imaGroupLastChange,
+--      imaGroupTxImaId, imaGroupRxImaId, imaGroupTxFrameLength,
+--      imaGroupRxFrameLength, imaGroupDiffDelayMax, imaGroupLeastDelayLink,
+--      imaGroupDiffDelayMaxObs, imaGroupAlphaValue, imaGroupBetaValue,
+--      imaGroupGammaValue, imaGroupRunningSecs, imaGroupUnavailSecs,
+--      imaGroupNeNumFailures, imaGroupFeNumFailures, imaGroupTxAvailCellRate,
+--      imaGroupRxAvailCellRate, imaGroupNumTxCfgLnks, imaGroupNumRxCfgLnks, 
+--      imaGroupNumTxActLnks, imaGroupNumRxActLnks }
+--   STATUS     mandatory
+--   DESCRIPTION
+--     "A set of objects providing configuration and status information for
+--     an IMA group definition."
+--   ::= { atmfImaMibGroups 1 }
+--
+--   atmfImaLinkGroup    OBJECT-GROUP
+--   OBJECTS {
+--      imaLinkIfIndex, imaLinkRowStatus, imaLinkGroupIndex,
+--      imaLinkNeTxState, imaLinkNeRxState, imaLinkFeTxState,
+--      imaLinkFeRxState, imaLinkNeRxFailureStatus, imaLinkFeRxFailureStatus,
+--      imaLinkTxLid, imaLinkRxLid, imaLinkRelDelay, 
+--      imaLinkImaViolations, imaLinkOifAnomalies, imaLinkNeSevErroredSec,
+--      imaLinkFeSevErroredSec, imaLinkNeUnavailSec, imaLinkFeUnavailSec,
+--      imaLinkNeTxUnusableSec, imaLinkNeRxUnusableSec, imaLinkFeTxUnusableSec,
+--      imaLinkFeRxUnusableSec, imaLinkNeTxNumFailures, imaLinkNeRxNumFailures,
+--      imaLinkFeTxNumFailures, imaLinkFeRxNumFailures, imaLinkTxStuffs, 
+--      imaLinkRxStuffs }
+--   STATUS     mandatory
+--   DESCRIPTION
+--     "A set of objects providing status information for an IMA link."
+--   ::= { atmfImaMibGroups 2 }
+--
+--   atmfImaGroupMappingTableGroup OBJECT-GROUP
+--   OBJECTS { imaGroupMappingIndex }
+--   STATUS     mandatory
+--   DESCRIPTION
+--     "A table mapping the 'ifIndex' values of 'imaGroupIfIndex'
+--     to the 'imaGroupIndex' values of the corresponding
+--     IMA group."
+--   ::= { atmfImaMibGroups 3 }
+--
+--   imaTestPatternGroup OBJECT-GROUP
+--    OBJECTS { imaGroupTestLinkIfIndex, imaGroupTestPattern,
+--              imaGroupTestProcStatus, imaLinkTestProcStatus, 
+--              imaLinkRxTestPattern }
+--   STATUS     mandatory
+--   DESCRIPTION
+--     "Objects in the imaGroupTable and imaLinkTable which control and 
+--     report on the Test Pattern Procedure. These objects must be 
+--     implemented if the IMA Test Pattern Procedure is supported."
+--   ::= { atmfImaMibGroups 4 }
+--
+--   imaAlarmGroup OBJECT-GROUP
+--   OBJECTS { imaAlarmStatus, imaAlarmType }
+--   STATUS     mandatory
+--   DESCRIPTION
+--     "Objects used in the imaFailureAlarm notification."
+--   ::= { atmfImaMibGroups 5 }
+
+END
+

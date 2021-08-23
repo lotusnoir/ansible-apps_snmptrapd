@@ -1,0 +1,2661 @@
+TIMETRA-TC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        Unsigned32, Integer32           FROM SNMPv2-SMI
+
+        TEXTUAL-CONVENTION,
+        DisplayString                   FROM SNMPv2-TC
+
+        timetraModules                  FROM TIMETRA-GLOBAL-MIB
+        ;
+
+timetraTCMIBModule   MODULE-IDENTITY
+        LAST-UPDATED    "0902280000Z"
+        ORGANIZATION    "Alcatel"
+        CONTACT-INFO    
+            "Alcatel 7x50 Support
+             Web: http://www.alcatel.com/comps/pages/carrier_support.jhtml"
+        DESCRIPTION
+        "This document is the SNMP MIB module for the SNMP Textual
+        Conventions (TCs) used in the Alcatel 7x50 manageability
+        instrumentation.
+
+        Copyright 2003-2010 Alcatel-Lucent. All rights reserved.
+        Reproduction of this document is authorized on the condition
+        that the foregoing copyright notice is included.
+
+        This SNMP MIB module (Specification) embodies Alcatel's
+        proprietary intellectual property.  Alcatel retains
+        all title and ownership in the Specification, including any
+        revisions.
+
+        Alcatel grants all interested parties a non-exclusive
+        license to use and distribute an unmodified copy of this
+        Specification in connection with management of Alcatel
+        products, and without fee, provided this copyright notice and
+        license appear on all copies.
+
+        This Specification is supplied `as is', and Alcatel
+        makes no warranty, either express or implied, as to the use,
+        operation, condition, or performance of the Specification."
+
+--
+--  Revision History
+--
+        REVISION        "0902280000Z"
+        DESCRIPTION     "Rev 7.0                28 Feb 2009 00:00
+                         7.0 release of the TIMETRA-TC-MIB."
+
+        REVISION        "0807010000Z"
+        DESCRIPTION     "Rev 6.1                01 Jul 2008 00:00
+                         6.1 release of the TIMETRA-TC-MIB."
+
+        REVISION        "0801010000Z"
+        DESCRIPTION     "Rev 6.0                01 Jan 2008 00:00
+                         6.0 release of the TIMETRA-TC-MIB."
+
+        REVISION        "0701010000Z"
+        DESCRIPTION     "Rev 5.0                01 Jan 2007 00:00
+                         5.0 release of the TIMETRA-TC-MIB."
+
+        REVISION        "0603230000Z"   
+        DESCRIPTION     "Rev 4.0                23 Mar 2006 00:00
+                         4.0 release of the TIMETRA-TC-MIB."
+
+        REVISION        "0508310000Z"   
+        DESCRIPTION     "Rev 3.0                31 Aug 2005 00:00
+                         3.0 release of the TIMETRA-TC-MIB."
+
+        REVISION        "0501240000Z"   
+        DESCRIPTION     "Rev 2.1                24 Jan 2005 00:00
+                         2.1 release of the TIMETRA-TC-MIB."
+
+        REVISION        "0401150000Z"
+        DESCRIPTION     "Rev 2.0                15 Jan 2004 00:00
+                         2.0 release of the TIMETRA-TC-MIB."
+
+        REVISION        "0308150000Z"
+        DESCRIPTION     "Rev 1.2                15 Aug 2003 00:00
+                         1.2 release of the TIMETRA-TC-MIB."
+
+        REVISION        "0301200000Z"
+        DESCRIPTION     "Rev 1.0                20 Jan 2003 00:00
+                         1.0 Release of the TIMETRA-TC-MIB."
+
+        REVISION        "0105290000Z"
+        DESCRIPTION     "Rev 0.1                14 Aug 2000 00:00
+                         First version of the TIMETRA-TC-MIB."
+
+        ::= { timetraModules 2 }
+
+-- InterfaceIndex TC is defined here to work about problems with
+-- importing from IF-MIB, rfc1573.mib
+
+   -- InterfaceIndex contains the semantics of ifIndex and
+   -- should be used for any objects defined on other mib
+   -- modules that need these semantics.
+
+InterfaceIndex ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+       "A unique value, greater than zero, for each interface
+        or interface sub-layer in the managed system.  It is
+        recommended that values are assigned contiguously
+        starting from 1.  The value for each interface sub-
+        layer must remain constant at least from one re-
+        initialization of the entity's network management
+        system to the next re-initialization."
+    SYNTAX  Integer32
+
+TmnxPortID ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "A portid is an unique 32 bit number encoded as shown below.
+            
+            32 30 | 29 26 | 25 22 | 21 16 | 15  1 |
+            +-----+-------+-------+-------+-------+
+            |000  |  slot |  mda  | port  |  zero | Physical Port
+            +-----+-------+-------+-------+-------+
+
+            32 30 | 29 26 | 25 22 | 21 16 | 15  1 |
+            +-----+-------+-------+-------+-------+
+            |001  |  slot |  mda  | port  |channel| Channel
+            +-----+-------+-------+-------+-------+
+
+         Slots, mdas (if present), ports, and channels are numbered
+         starting with 1.
+
+            32     29 | 28             10 | 9   1 |
+            +---------+-------------------+-------+
+            | 0 1 0 0 |   zeros           |   ID  | Virtual Port
+            +---------+-------------------+-------+
+
+            32     29 | 28                9 | 8 1 |
+            +---------+---------------------+-----+
+            | 0 1 0 1 |   zeros             | ID  | LAG Port
+            +---------+---------------------+-----+
+
+        A card port number (cpn) has significance within the context
+        of the card on which it resides(ie., cpn 2 may exist in one or
+        more cards in the chassis).  Whereas, portid is an
+        unique/absolute port number (apn) within a given chassis.
+        
+        An 'invalid portid' is a TmnxPortID with a value of 0x1e000000 as 
+        represented below.
+        
+            32 30 | 29 26 | 25 22 | 21 16 | 15  1 |
+            +-----+-------+-------+-------+-------+
+            |zero | ones  | zero  |  zero |  zero | Invalid Port
+            +-----+-------+-------+-------+-------+"
+        
+    SYNTAX  Unsigned32
+
+TmnxEncapVal ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+       "The value of the label used to identify the entity using the
+       specified encapsulation value on a specific port.
+
+       The format of this object depends on the encapsulation type
+       defined on this port.
+
+       When the encapsulation is nullEncap the value of this object
+       must be zero.
+
+       31                                   0
+       +--------+--------+--------+--------+
+       |00000000 00000000 00000000 00000000|
+       +--------+--------+--------+--------+
+
+       When the encapsulation is dot1qEncap the value of this object
+       is equal to the 12-bit IEEE 802.1Q VLAN ID.
+
+       31                                   0
+       +--------+--------+--------+--------+
+       |00000000 00000000 0000XXXX XXXXXXXX|
+       +--------+--------+--------+--------+
+
+       When the encapsulation is mplsEncap the value of this object
+       is equal to the 20-bit LSP ID.
+
+       31                                   0
+       +--------+--------+--------+--------+
+       |00000000 0000XXXX XXXXXXXX XXXXXXXX|
+       +--------+--------+--------+--------+
+
+       When the encapsulation is frEncap, the value of this object is
+       equal to the 10-bit Frame Relay DLCI.
+
+       31                                   0
+       +--------+--------+--------+--------+
+       |00000000 00000000 000000XX XXXXXXXX|
+       +--------+--------+--------+--------+
+
+       When the encapsulation is qinqEncap, the value of the outer
+       802.1Q VLAN ID is encoded in the least significant 16 bits,
+       and the value of the inner VLAN ID is encoded in the most
+       significant 16 bits.
+
+       31                                   0
+       +--------+--------+--------+--------+
+       |0000YYYY YYYYYYYY 0000XXXX XXXXXXXX|
+       +--------+--------+--------+--------+
+
+       When the encapsulation is atmEncap, the value
+       of the ATM VCI is encoded in the least significant 
+       16 bits, and the value of the ATM VPI is encoded 
+       in the next 12 bits.
+
+       For ATM VCs, the top 2 bits are 00.  The value of
+       the ATM VCI is encoded in the least significant 16 
+       bits, and the value of the ATM VPI is encoded in the next
+       12 bits.
+                     
+       31                                   0
+       +--------+--------+--------+--------+
+       |0000YYYY YYYYYYYY XXXXXXXX XXXXXXXX|
+       +--------+--------+--------+--------+   
+
+       For ATM VPs, the top 2 bits are 01.  The value of
+       the ATM VPI is encoded in the least significant 12 bits.
+
+       31                                   0
+       +--------+--------+--------+--------+
+       |01000000 00000000 0000XXXX XXXXXXXX|
+       +--------+--------+--------+--------+          
+
+       For ATM VP ranges, the top 2 bits are 10.  The value of
+       the start of the ATM VPI range is encoded in the least significant 
+       12 bits, and the value of the end of the ATM VP range is encoded
+       in the next 12 bits.
+
+       31                                   0
+       +--------+--------+--------+--------+
+       |10000000 YYYYYYYY YYYYXXXX XXXXXXXX|
+       +--------+--------+--------+--------+         
+
+       For ATM ports, the top 2 bits are 11, and the rest of the bits 
+       must be zero.  
+
+       31                                   0
+       +--------+--------+--------+--------+
+       |11000000 00000000 00000000 00000000|
+       +--------+--------+--------+--------+         
+
+       When the encapsulation is wanMirrorEncap the value of this 
+       object is equal to the 12-bit value.
+                     
+       31                                   0
+       +--------+--------+--------+--------+
+       |00000000 00000000 0000XXXX XXXXXXXX|
+       +--------+--------+--------+--------+      
+
+       Some ports have a restrictions to the encapsulation types that
+       they can support and hence impose restrictions on the respective
+       formats defined above."       
+    SYNTAX  Unsigned32
+
+QTag ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The QTag data type is a 12-bit integer tag used to identify
+        a service.  The values 0 and 4095 are not allowed."
+    SYNTAX  INTEGER (1..4094)
+
+QTagOrZero ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type QTagOrZero represents a VLAN tag. 
+        
+         The value '0' indicates that no VLAN tag is provisioned, or that its value
+         is unknown."
+    SYNTAX  Unsigned32 (0..4094)
+
+TmnxStrSapId ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+       "The value of TmnxStrSapId is a printable string which
+        contains the owner SAP Id or equivalent on a remote system.
+
+        The string should contain the printable string equivalent of the
+        textual-conventions TmnxPortID and TmnxEncapVal in the format
+        specified as TmnxPortID[:TmnxEncapVal]"
+    SYNTAX DisplayString (SIZE (0..32))
+
+IpAddressPrefixLength ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "the number of bits to match in an IP address mask."
+    REFERENCE ""
+    SYNTAX INTEGER (0..32)
+
+--
+--      TmnxActionType
+--
+TmnxActionType ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The TmnxActionType data type is an enumerated integer
+        that describes the values used to support action or
+        operation style commands.  Setting a variable of this
+        type to 'doAction' causes the action to occur.  GETs and
+        GETNEXTs on this variable return 'not-applicable'."
+    SYNTAX  INTEGER {
+                doAction (1),
+                notApplicable (2)
+            }
+
+TmnxAdminState ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The TmnxAdminState data type is an enumerated integer that describes
+        the values used to identify the administratively desired state of
+        functional modules."
+    SYNTAX  INTEGER {
+                noop (1),
+                inService (2),
+                outOfService (3)
+                }
+
+TmnxOperState ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The TmnxOperState data type is an enumerated integer that describes
+        the values used to identify the current operational state of functional
+        modules."
+    SYNTAX  INTEGER {
+                unknown (1),
+                inService (2),
+                outOfService (3),
+                transition (4)
+                }
+
+TmnxStatus ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The TmnxStatus data type is an enumerated integer that describes the
+        values used to identify the current status of functional modules in the
+        system such as OSPF and MPLS protocols. Setting this variable to
+        'create' causes instantiation of the feature in the system.  Setting it
+        to 'delete' removes the instance and all associated configuration
+        information."
+    SYNTAX  INTEGER {
+                create (1),
+                delete (2)
+                }
+
+TmnxEnabledDisabled ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The TmnxEnabledDisabled data type is an enumerated integer that
+         describes the values used to identify whether an entity is
+         'enabled' or 'disabled'."
+    SYNTAX  INTEGER {
+                enabled  (1),
+                disabled (2)
+                }
+
+TmnxEnabledDisabledOrInherit ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "The TmnxEnabledDisabledOrInherit data type is an enumerated integer 
+         that describes the values used to identify whether an entity is
+         'enabled', 'disabled' or inherits its state from another object that 
+         is usually in another mib table."
+    SYNTAX    INTEGER {
+                        enabled (1),
+                        disabled (2),
+                        inherit (3)
+                    }
+
+TNamedItem ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The name of an item.  When used as an index to a table, the item
+         name uniquely identifies the instance.  When used in a reference
+         (TNamedItemOrEmpty) the item name entry must exist in the table.
+
+         Note, use only NVT ASCII displayable characters
+         here, no control characters, no UTF-8, etc."
+    SYNTAX DisplayString (SIZE (1..32))
+
+TNamedItemOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The name of an item, or an empty string.  When used in a reference
+         (TNamedItemOrEmpty) the item name entry must exist in the table.
+
+         Note, use only NVT ASCII displayable characters
+         here, no control characters, no UTF-8, etc."
+    SYNTAX DisplayString (SIZE (0 | 1..32))
+
+TLNamedItem ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The long name of an item.  When used as an index to a table, the item
+         name uniquely identifies the instance.  When used in a reference
+         (TLNamedItemOrEmpty) the item name entry must exist in the table.
+
+         Note, use only NVT ASCII displayable characters
+         here, no control characters, no UTF-8, etc."
+    SYNTAX DisplayString (SIZE (1..64))
+
+TLNamedItemOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The long name of an item, or an empty string.  When used in a reference
+         (TLNamedItemOrEmpty) the item name entry must exist in the table.
+
+         Note, use only NVT ASCII displayable characters
+         here, no control characters, no UTF-8, etc."
+    SYNTAX DisplayString (SIZE (0 | 1..64))
+
+TItemDescription ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Description for an item.  Note, use only NVT ASCII displayable characters
+        here, no control characters, no UTF-8, etc."
+    SYNTAX DisplayString (SIZE(0..80))
+
+TItemLongDescription ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Longer description for an item.  Note, use only NVT ASCII displayable
+        characters here, no control characters, no UTF-8, etc."
+    SYNTAX DisplayString (SIZE(0..160))
+
+TmnxVRtrID ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A number used to identify a virtual router instance in the system."
+    SYNTAX       Integer32 (1..10240)
+
+TmnxVRtrIDOrZero ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "A number used to identify a virtual router instance in the system.
+         The number 0 will have special significance in the context the TC 
+         is used."
+    SYNTAX       Integer32 (0..10240)
+
+TmnxBgpAutonomousSystem ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "an autonomous system (AS) number."
+    REFERENCE    "BGP4-MIB.bgpPeerRemoteAs"
+    SYNTAX       INTEGER (0..65535)
+
+TmnxBgpLocalPreference ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "a local route preference value."
+    REFERENCE    "RFC 1771 section 4.3 Path Attributes e)"
+    SYNTAX       Unsigned32
+
+TmnxBgpPreference ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "a route preference value."
+    REFERENCE    "RFC 1771 section 4.3 Path Attributes e)"
+    SYNTAX       Unsigned32 (0..255)
+
+TmnxCustId ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION     "A number used to identify a Customer or
+                     Subscriber. This ID must be unique within
+                     the Service Domain. The value 0 is used as
+                     the null ID."
+    SYNTAX          Unsigned32 (0|1..2147483647)
+
+BgpPeeringStatus ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "The status of the BGP peering session."
+    SYNTAX       INTEGER {
+        notApplicable       (0),
+        installed           (1),
+        notInstalled        (2),
+        noEnhancedSubmgt    (3),
+        wrongAntiSpoof      (4),
+        parentItfDown       (5),
+        hostInactive        (6),
+        noDualHomingSupport (7),
+        invalidRadiusAttr   (8),
+        noDynamicPeerGroup  (9),
+        duplicatePeer       (10),
+        maxPeersReached     (11),
+        genError            (12)
+    }
+
+
+TmnxServId ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION     "A number used to identify a Service. This ID
+                     must be unique within the Service Domain.
+                     The value 0 is used as the null ID."
+    SYNTAX          Unsigned32 (0|1..2147483647|2147483648)
+
+ServiceAdminStatus ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "ServiceAdminStatus data type is an enumerated integer that
+                  describes the values used to identify the administrative
+                  state of a service."
+    REFERENCE    ""
+    SYNTAX       INTEGER {
+                     up(1),
+                     down(2)
+                 }
+
+ServiceOperStatus ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION  "ServiceOperStatus data type is an enumerated integer that
+                  describes the values used to identify the current operational
+                  state of a service.
+    ALCATEL NOTE:
+            ACCESS:      NA            USAGE:       NA
+            PERSIST:     NA            INSRVMOD:    NA
+            RANGE:       1..2|5          DEFVALUE:    NA
+            UNITS:       NA            SPARSE:      NA
+            DESCR:       The values up(1), down(2) and notAvailable(5) are used
+"
+    REFERENCE    ""
+    SYNTAX       INTEGER {
+                     up(1),
+                     down(2),
+                     notAvailable(5)
+                 }
+
+TPolicyID ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The identification number of a policy."
+    SYNTAX Unsigned32 (0..65535|65536|65537)
+
+TTmplPolicyID ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The identification number of a policy for template objects."
+    SYNTAX Unsigned32 (1..65535)
+
+TSapIngressPolicyID ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The identification number of a SAP ingress policy."
+    SYNTAX TPolicyID
+
+TSapEgressPolicyID ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The identification number of a SAP egress policy."
+    SYNTAX TPolicyID (1..65535|65536|65537)
+
+TPerPacketOffset ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value, in bytes, of the adjustment to make to the size of each
+         packet for accounting."
+    SYNTAX Integer32 (-32..31)
+
+TPerPacketOffsetOvr ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value, in bytes, of the override of the adjustment to make
+         to the size of each packet for accounting.
+         A value of -128 indicates no override."
+    SYNTAX Integer32 (-128 | -32..31)
+
+TIngressHsmdaPerPacketOffset ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value, in bytes, of the adjustment to make to the size of each
+         incoming packet for accounting."
+    SYNTAX Integer32 (-32..31)
+
+TIngHsmdaPerPacketOffsetOvr ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value, in bytes, of the override of the adjustment to make
+         to the size of each incoming packet for accounting.
+         A value of -128 indicates no override."
+    SYNTAX Integer32 (-128 | -32..31)
+
+TEgressHsmdaPerPacketOffset ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value, in bytes, of the adjustment to make to the size of each
+         outgoing packet for accounting."
+    SYNTAX Integer32 (-32..31)
+
+THsmdaCounterIdOrZero ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The identifcation number of a HSMDA  counter. 
+         The value 0 indicates an undefined counter id."
+    SYNTAX Unsigned32 (0|1..8)
+
+THsmdaCounterIdOrZeroOrAll ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The identifcation number of a HSMDA  counter. 
+         The value (0) indicates an undefined counter id.
+         The value (-1) is used to indicate all counters."
+    SYNTAX INTEGER (-1 | 0 | 1..8)
+
+TEgrHsmdaPerPacketOffsetOvr ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value, in bytes, of the override of the adjustment to make
+         to the size of each outgoing packet for accounting.
+         A value of -128 indicates no override."
+    SYNTAX Integer32 (-128 | -32..31)
+
+TIngressHsmdaCounterId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The identifcation number of a HSMDA ingress counter."
+    SYNTAX Unsigned32 (1..8)
+
+TIngressHsmdaCounterIdOrZero ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The identifcation number of a HSMDA ingress counter. 
+         The value 0 indicates an undefined counter id."
+    SYNTAX Unsigned32 (0|1..8)
+
+TEgressHsmdaCounterId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The identifcation number of a HSMDA egress counter."
+    SYNTAX Unsigned32 (1..8)
+
+TEgressHsmdaCounterIdOrZero ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The identifcation number of a HSMDA egress counter. 
+         The value 0 indicates an undefined counter id."
+    SYNTAX Unsigned32 (0|1..8)
+
+TEgrRateModType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The data type TEgrRateModType represents the type of egress-rate
+         modification that is to be applied."
+    SYNTAX     INTEGER  {
+                   none           (1),
+                   aggRateLimit   (2),
+                   namedScheduler (3)
+               }
+
+TPolicyStatementNameOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The name of a policy statement, when an object refers to it."
+    SYNTAX TNamedItemOrEmpty
+
+TmnxVcType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION     "The value of TmnxVcType is an enumerated integer that
+                     indicates a Virtual Circuit (VC) type. 'frDlciMartini(1)'
+                     replaces the old 'frDlci' when used over martini tunnels."
+    SYNTAX      INTEGER {
+                        frDlciMartini(1),
+                        atmSdu(2),
+                        atmCell(3),
+                        ethernetVlan(4),
+                        ethernet(5),
+                        atmVccCell(9),
+                        atmVpcCell(10),
+                        ipipe(11),
+                        satopE1(17),
+                        satopT1(18),
+                        satopE3(19),
+                        satopT3(20),
+                        cesopsn(21),
+                        cesopsnCas(23),
+                        frDlci(25),
+                        mirrorDest(4096)
+                    }
+
+TmnxVcId ::=  TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION     "A 32 bit number is used to identify a VC(Virtual Circuit).
+                     The VC ID cannot be 0."
+    SYNTAX          Unsigned32 (1..4294967295)
+
+TmnxVcIdOrNone ::=  TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION     "A 32 bit number is used to identify a VC(Virtual Circuit).
+                     A value of 0 indicates no VC ID is configured or 
+                     available."
+    SYNTAX          Unsigned32 (0|1..4294967295)
+
+
+-- generic TEXTUAL-CONVENTIONs for common technology (IEEE, IETF)
+
+
+Dot1PPriority ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION
+        "IEEE 802.1p priority.  zero is lowest, seven is highest.
+         -1 means not set"
+    REFERENCE ""
+    SYNTAX      INTEGER (-1 | 0..7)
+
+Dot1PPriorityMask ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION
+        "IEEE 802.1p priority mask.  zero is lowest, seven is highest."
+    REFERENCE ""
+    SYNTAX      INTEGER (0..7)
+
+ServiceAccessPoint ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION
+        "802.2 LLC SAP value, Source and Destination."
+    REFERENCE
+        "assigned numbers:  http://www.iana.org/assignments/ieee-802-numbers"
+    SYNTAX      INTEGER (-1 | 0..255)
+
+TLspExpValue ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION
+        "MPLS Experimental bits. -1 means not set."
+    REFERENCE ""
+    SYNTAX      INTEGER (-1 | 0..7)
+
+TIpProtocol ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "IP protocol number.  well known protocol numbers include ICMP(1),
+         TCP(6), UDP(17).
+
+         -1 means value not set.
+         -2 indicates protocol wildcard for UDP and TCP."
+    REFERENCE "http://www.iana.org/assignments/protocol-numbers"
+    SYNTAX          INTEGER (-2 | -1 | 0..255)
+
+TIpOption ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "IP packet options octet.  explanation of the octet bits:
+
+     IP OPTION NUMBERS
+
+     The Internet Protocol (IP) has provision for optional header fields
+     identified by an option type field.  Options 0 and 1 are exactly one
+     octet which is their type field.  All other options have their one
+     octet type field, followed by a one octet length field, followed by
+     length-2 octets of option data.  The option type field is sub-divided
+     into a one bit copied flag, a two bit class field, and a five bit
+     option number.  These taken together form an eight bit value for the
+     option type field.  IP options are commonly refered to by this value.
+
+
+     Copy Class Number Value Name                Reference
+     ---- ----- ------ ----- ------------------------------- ---------
+        0     0      0     0 EOOL   - End of Options List    [RFC791,JBP]
+        0     0      1     1 NOP    - No Operation           [RFC791,JBP]
+        1     0      2   130 SEC    - Security                  [RFC1108]
+        1     0      3   131 LSR    - Loose Source Route     [RFC791,JBP]
+        0     2      4    68 TS     - Time Stamp             [RFC791,JBP]
+        1     0      5   133 E-SEC  - Extended Security         [RFC1108]
+        1     0      6   134 CIPSO  - Commercial Security           [???]
+        0     0      7     7 RR     - Record Route           [RFC791,JBP]
+        1     0      8   136 SID    - Stream ID              [RFC791,JBP]
+        1     0      9   137 SSR    - Strict Source Route    [RFC791,JBP]
+        0     0     10    10 ZSU    - Experimental Measurement      [ZSu]
+        0     0     11    11 MTUP   - MTU Probe                 [RFC1191]*
+        0     0     12    12 MTUR   - MTU Reply                 [RFC1191]*
+        1     2     13   205 FINN   - Experimental Flow Control    [Finn]
+        1     0     14   142 VISA   - Expermental Access Control [Estrin]
+        0     0     15    15 ENCODE - ???                      [VerSteeg]
+        1     0     16   144 IMITD  - IMI Traffic Descriptor        [Lee]
+        1     0     17   145 EIP    - Extended Internet Protocol[RFC1385]
+        0     2     18    82 TR     - Traceroute        [RFC1393]
+        1     0     19   147 ADDEXT - Address Extension    [Ullmann IPv7]
+        1     0     20   148 RTRALT - Router Alert              [RFC2113]
+        1     0     21   149 SDB    - Selective Directed Broadcast[Graff]
+        1     0     22   150 NSAPA  - NSAP Addresses          [Carpenter]
+        1     0     23   151 DPS    - Dynamic Packet State        [Malis]
+        1     0     24   152 UMP    - Upstream Multicast Pkt. [Farinacci]
+
+     [Note, an asterisk (*) denotes an obsoleted IP Option Number.]
+        "
+    REFERENCE "http://www.iana.org/assignments/ip-parameters"
+    SYNTAX          INTEGER (0..255)
+
+TTcpUdpPort ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The number of a TCP or UDP port.
+         Well known port numbers include
+         ftp-data(20), ftp(21), telnet(23), smtp(25), http(80),
+         pop3(110), nntp(119), snmp(161), snmptrap(162), etc."
+    REFERENCE "http://www.iana.org/assignments/port-numbers"
+    SYNTAX INTEGER (0 | 1..65535)
+
+TOperator ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+       "The operator specifies the manner in which a couple of other
+        MIB objects in the table are supposed to be used.
+
+        Operator        Value1               Value2
+        ----------------------------------------------------
+        none(0)         Any(0)               Any(0)
+        eq(1)           Specified Value      Any(0)
+        range(2)        Starting Value       Ending Value
+        lt(3)           Specified Value      Any(0)
+        gt(4)           Specified Value      Any(0)
+
+        'Any(0)' specifies that, this object can accept any values
+         but would default to 0. "
+    SYNTAX       INTEGER {
+                    none(0),
+                    eq(1),
+                    range(2),
+                    lt(3),
+                    gt(4)
+                 }
+
+TTcpUdpPortOperator ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+       "The operator used for checking on TCP/UDP ports values and ranges"
+    SYNTAX       TOperator
+
+TFrameType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+       "The type of the frame for which this mac filter match criteria is
+        defined.
+    ALCATEL NOTE: 
+            ACCESS:      NA		              USAGE:         NA
+            PERSIST:     NA                           INSRVMOD:    NA
+            RANGE:       1..3, 20            		 DEFVALUE:    NA
+            UNITS:        NA                          SPARSE:        NA
+            DESCR:       The values e802dot2LLC(1), e802dot2SNAP(2), ethernetII(3), any(20) are used. e802dot3(0) is not used
+"
+    SYNTAX       INTEGER {
+                    e802dot3(0),
+                    e802dot2LLC(1),
+                    e802dot2SNAP(2),
+                    ethernetII(3),
+                    -- e802dot1ag(4),
+                    atm(5),
+                    any(20)
+                 }
+
+TQueueId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value of TQueueId specifies the identification number of a
+         queue.  A value of zero (0) indicates that no specific queue 
+         identification has been assigned for this object. When an object
+         of type TQueueId is an SNMP table index, an index value of zero 
+         (0) is not allowed and a noCreation error will be returned."
+    SYNTAX INTEGER (0 | 1..32)
+
+
+TQueueIdOrAll ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value of TQueueIdOrAll specifies the identification number of a
+         queue
+         
+         A value of zero (0) indicates that no specific queue 
+         identification has been assigned for this object.
+
+         A value of (-1) indicates 'all queues'."
+    SYNTAX INTEGER (-1 | 0 | 1..32)
+
+TIngressQueueId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value of TIngressQueueId specifies the identification number 
+         of an ingress queue.  A value of zero (0) indicates that no 
+         specific queue identification has been assigned for this object. 
+         When an object of type TIngressQueueId is an SNMP table index,
+         an index value of zero (0) is not allowed and a noCreation error
+         will be returned."
+    SYNTAX INTEGER (0 | 1..32)
+
+TEgressQueueId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value of TEgressQueueId specifies the identification number 
+         of an egress queue.  A value of zero (0) indicates that no 
+         specific queue identification has been assigned for this object. 
+         When an object of type TEgressQueueId is an SNMP table index,
+         an index value of zero (0) is not allowed and a noCreation error
+         will be returned."
+    SYNTAX INTEGER (0 | 1..8)
+
+TIngressHsmdaQueueId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value of TIngressHsmdaQueueId specifies the identification number 
+         of a HSMDA ingress queue.  A value of zero (0) indicates that no 
+         specific queue identification has been assigned for this object. 
+         When an object of type TIngressHsmdaQueueId is an SNMP table index,
+         an index value of zero (0) is not allowed and a noCreation error
+         will be returned."
+    SYNTAX INTEGER (0 | 1..8)
+
+TEgressHsmdaQueueId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value of TEgressHsmdaQueueId specifies the identification number 
+         of a HSMDA egress queue.  A value of zero (0) indicates that no 
+         specific queue identification has been assigned for this object. 
+         When an object of type TEgressHsmdaQueueId is an SNMP table index,
+         an index value of zero (0) is not allowed and a noCreation error
+         will be returned."
+    SYNTAX INTEGER (0 | 1..8)
+
+THsmdaSchedulerPolicyGroupId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value of THsmdaSchedulerPolicyGroupId specifies the identification 
+         number of a HSMDA scheduler policy group.  A value of zero (0) 
+         indicates that no specific group identification has been assigned for 
+         this object. When an object of type THsmdaSchedulerPolicyGroupId is 
+         an SNMP table index, an index value of zero (0) is not allowed and a 
+         noCreation error will be returned."
+    SYNTAX INTEGER (0 | 1..2)
+
+--
+-- TEXTUAL-CONVENTIONs for Alcatel 7x50 SR series common items
+--
+
+TDSCPName ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The name of a Differential Services Code Point value."
+    SYNTAX TNamedItem
+
+TDSCPNameOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The name of a Differential Services Code Point value."
+    SYNTAX TNamedItemOrEmpty
+
+TDSCPValue ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value of a Differential Services Code Point."
+    SYNTAX INTEGER (0..63)
+
+TDSCPValueOrNone ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value of a Differential Services Code Point (DSCP). A value
+         of -1 means that no DSCP value is configured or available."
+    SYNTAX INTEGER (-1 | 0..63)
+
+TDSCPFilterActionValue ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The value of a Differential Services Code Point. -1 means not set."
+    SYNTAX INTEGER (-1 | 0..255)
+
+TFCName ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The name of a Forwarding Class entry."
+    SYNTAX TNamedItem
+
+TFCNameOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The name of a Forwarding Class entry."
+    SYNTAX TNamedItemOrEmpty
+
+TFCSet ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This data type describes a set of Forwarding Classes."
+    SYNTAX      BITS {
+                       be (0),
+                       l2 (1),
+                       af (2),
+                       l1 (3),
+                       h2 (4),
+                       ef (5),
+                       h1 (6),
+                       nc (7)
+                }
+
+TFCType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This data type enumerates the Forwarding Classes."
+    SYNTAX       INTEGER {
+                       be (0),
+                       l2 (1),
+                       af (2),
+                       l1 (3),
+                       h2 (4),
+                       ef (5),
+                       h1 (6),
+                       nc (7)
+                }
+
+TmnxTunnelType ::= TEXTUAL-CONVENTION
+    STATUS   current
+    DESCRIPTION
+       "The type of this tunnel entity."
+    SYNTAX   INTEGER {
+                 sdp (1),
+                 ldp (2),
+                 rsvp (3),
+                 gre (4),
+                 bypass (5),
+                 invalid (6),
+                 bgp (7)
+                 }
+
+TmnxTunnelID ::= TEXTUAL-CONVENTION
+    STATUS   current
+    DESCRIPTION
+       "The identifying value for a BGP-VPRN tunnel.  Depending on the
+        tunnel type the associated tunnel-id may be an sdp-id, an lsp-id
+        or zero(0)."
+    SYNTAX   Unsigned32
+
+TmnxBgpRouteTarget ::= TEXTUAL-CONVENTION
+    STATUS     current
+    DESCRIPTION
+        "TmnxBgpRouteTarget is an readable string that specifies the
+         extended community name to be accepted by a Route Reflector Server
+         or advertised by the router when reflecting any routes. I.e, it
+         does not apply to routes that are not reflected by the router."
+    SYNTAX     OCTET STRING (SIZE(1..32))
+
+TmnxVPNRouteDistinguisher ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The VPRN route distinguisher is a 8-octet object. It contains a
+         2-octet type field followed by a 6-octet value field. The type
+         field specify how to interpret the value field.
+
+         Type 0 specifies two subfields as a 2-octet administrative field
+         and a 4-octet assigned number subfield.
+
+         Type 1 specifies two subfields as a 4-octet administrative field
+         which must contain an IP address and a 2-octet assigned number
+         subfield.
+
+         Type 2 specifies two subfields as a 4-octet administrative field
+         which contains a 4-octet AS number and a 2-octet assigned number
+         subfield."
+    SYNTAX      OCTET STRING (SIZE (8))
+
+SdpBindId ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION     "The value used to uniquely identify an SDP Binding.
+                     The first four octets correspond to the zero-extended
+                     16-bit SDP ID, while the remaining four octets
+                     correspond to the 32-bit VC ID, both encoded in network
+                     byte order."
+    SYNTAX          OCTET STRING (SIZE (8))
+
+TmnxVRtrMplsLspID ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION     "A unique value, greater than zero, for each Label
+                     Switched Path in the managed system."
+    SYNTAX          Unsigned32 (0..65535)
+
+TPortSchedulerPIR ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The Peak Information Rate (PIR) rate to be used in kbps.
+         The value -1 means maximum rate."
+    SYNTAX      Integer32 (-1 | 1..100000000)
+
+TPortSchedulerCIR ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The Committed Information Rate (CIR) rate to be used in kbps.
+         The value -1 means maximum rate."
+    SYNTAX      Integer32 (-1 | 0..100000000)
+
+TWeight ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The weight of the specified entity while feeding into the parent."
+    SYNTAX       Integer32 (0..100)
+
+TNonZeroWeight ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The weight of the specified entity while feeding into the parent."
+    SYNTAX       Integer32 (1..100)
+
+TPolicerWeight ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The relative weight of the specified entity while feeding into
+         the parent."
+    SYNTAX       Integer32 (1..100)
+
+THsmdaWeight ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The weight of the specified HSMDA entity while feeding into the parent."
+    SYNTAX       Integer32 (1..100)
+
+THsmdaWeightOverride ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The weight of the specified HSMDA entity while feeding into the parent.
+         A value of -2 specifies no override."
+    SYNTAX       Integer32 (-2 | 1..100)
+
+TCIRRate ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The CIR rate to be used in kbps. The value -1 means maximum rate."
+    SYNTAX       Integer32 (-1 | 0..100000000)
+
+THPolCIRRate ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The CIR rate to be used in kbps. The value -1 means maximum rate."
+    SYNTAX       Integer32 (-1 | 0..20000000)
+
+TRateType ::= TEXTUAL-CONVENTION
+    STATUS   current
+    DESCRIPTION
+       "The type of the PIR/CIR rate. The value 'kbps' means the rate is
+        specified in kbps. The value 'percent' means the rate is specified
+        in percentage"
+    SYNTAX   INTEGER {
+                 kbps    (1),
+                 percent (2)
+                 }
+
+TCIRRateOverride ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The CIR rate to be used in kbps. The value -1 means maximum rate.
+         A value of -2 specifies no override."
+    SYNTAX       Integer32 (-2 | -1 | 0..100000000)
+
+THPolCIRRateOverride ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The CIR rate to be used in kbps. The value -1 means maximum rate.
+         A value of -2 specifies no override."
+    SYNTAX       Integer32 (-2 | -1 | 0..20000000)
+
+TCIRPercentOverride ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The CIR percentage rate specified in hundredths of a percent.
+         A value of -2 specifies no override."
+    SYNTAX      Integer32 (-2 | 0..10000)
+
+THsmdaCIRKRate ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The HSMDA CIR rate to be used in Kbps. The value -1 means maximum rate."
+    SYNTAX      Integer32 (-1 | 0..100000000)
+
+THsmdaCIRKRateOverride ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The HSMDA CIR rate to be used in Kbps. The value -1 means maximum rate.
+         A value of -2 specifies no override."
+    SYNTAX      Integer32 (-2 | -1 | 0..100000000)
+
+THsmdaCIRMRate ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The HSMDA CIR rate to be used in Mbps. The value -1 means maximum rate."
+    SYNTAX      Integer32 (-1 | 0..100000)
+
+THsmdaCIRMRateOverride ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The HSMDA CIR rate to be used in Mbps. The value -1 means maximum rate.
+         A value of -2 specifies no override."
+    SYNTAX      Integer32 (-2 | -1 | 0..100000)
+
+TPIRRate ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The PIR rate to be used in kbps. The value -1 means maximum rate."
+    SYNTAX      Integer32 (-1 | 1..100000000)
+
+THPolPIRRate ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The PIR rate to be used in kbps. The value -1 means maximum rate."
+    SYNTAX      Integer32 (-1 | 1..20000000)
+
+TSecondaryShaper10GPIRRate ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The secondary shaper PIR rate to be used in Mbps.
+         The value -1 means maximum rate."
+    SYNTAX      Integer32 (-1 | 1..10000)
+
+TPIRRateOverride ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The PIR rate to be used in kbps. The value -1 means maximum rate.
+         A value of -2 specifies no override."
+    SYNTAX      Integer32 (-2 | -1 | 1..100000000)
+
+THPolPIRRateOverride ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The PIR rate to be used in kbps. The value -1 means maximum rate.
+         A value of -2 specifies no override."
+    SYNTAX      Integer32 (-2 | -1 | 1..20000000)
+
+TPIRPercentOverride ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The PIR percentage rate specified in hundredths of a percent.
+         A value of -2 specifies no override."
+    SYNTAX      Integer32 (-2 | 1..10000)
+
+TPIRRateOrZero ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The PIR rate to be used in kbps. The value -1 means maximum rate.
+         The value 0 means undefined rate."
+    SYNTAX      Integer32 (-1 | 0..100000000)
+
+THsmdaPIRKRate ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The HSMDA PIR rate to be used in Kbps. The value -1 means maximum rate."
+    SYNTAX      Integer32 (-1 | 1..100000000)
+
+THsmdaPIRKRateOverride ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The HSMDA PIR rate to be used in Kbps. The value -1 means maximum rate.
+         A value of -2 specifies no override."
+    SYNTAX      Integer32 (-2 | -1 | 1..100000000)
+
+THsmdaPIRMRate ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The HSMDA PIR rate to be used in Mbps. The value -1 means maximum rate."
+    SYNTAX      Integer32 (-1 | 1..100000)
+
+THsmdaPIRMRateOverride ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The HSMDA PIR rate to be used in Mbps. The value -1 means maximum rate.
+         A value of -2 specifies no override."
+    SYNTAX      Integer32 (-2 | -1 | 1..100000)
+
+TmnxDHCP6MsgType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The DHCP6 messagetype."
+    SYNTAX INTEGER {
+               dhcp6MsgTypeSolicit      (1),
+               dhcp6MsgTypeAdvertise    (2),
+               dhcp6MsgTypeRequest      (3),
+               dhcp6MsgTypeConfirm      (4),
+               dhcp6MsgTypeRenew        (5),
+               dhcp6MsgTypeRebind       (6),
+               dhcp6MsgTypeReply        (7),
+               dhcp6MsgTypeRelease      (8),
+               dhcp6MsgTypeDecline      (9),
+               dhcp6MsgTypeReconfigure  (10),
+               dhcp6MsgTypeInfoRequest  (11),
+               dhcp6MsgTypeRelayForw    (12),
+               dhcp6MsgTypeRelayReply   (13),
+	       dhcp6MsgTypeLeaseQuery   (14),
+	       dhcp6MsgTypeLeaseQueryReply (15),
+	       dhcp6MsgTypeLeaseQueryDone (16),
+	       dhcp6MsgTypeLeaseQueryData (17),
+               dhcp6MsgTypeMaxValue     (18)
+           }
+
+TmnxOspfInstance ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION     "A number used to identify an instance of OSPF." 
+    SYNTAX          Unsigned32 (0..31)
+
+TmnxBGPFamilyType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The value of TmnxBGPFamilyType specifies the AFI-SAFI family for
+         BGP peer."
+    SYNTAX      BITS {
+                    ipv4Unicast     (0),
+                    ipv4Multicast   (1),
+                    ipv4UastMcast   (2),
+                    ipv4MplsLabel   (3),
+                    ipv4Vpn         (4),
+                    ipv6Unicast     (5),
+                    ipv6Multicast   (6),
+                    ipv6UcastMcast  (7),
+                    ipv6MplsLabel   (8),
+                    ipv6Vpn         (9),
+                    l2Vpn           (10),
+                    ipv4Mvpn        (11)
+                }
+
+TmnxIgmpGroupFilterMode ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxIgmpGroupFilterMode describes the filter-mode of
+         a group.
+
+         In 'include(1)' mode, reception of packets sent to the specified
+         multicast address is requested only from those IPv4 Source addresses
+         listed in the corresponding source-list.
+
+         In 'exclude(2)' mode, reception of packets sent to the given multicast
+         address is requested from all IPv4 Source addresses, except those
+         listed in the corresponding source-list (if any)."
+    SYNTAX INTEGER {
+                include (1),
+                exclude (2)
+            }
+
+TmnxIgmpGroupType ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxIgmpGroupType describes how a multicast group is
+         learned."
+    SYNTAX  INTEGER {
+                static(1),
+                dynamic(2)
+            }
+
+TmnxIgmpVersion ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxIgmpVersion denotes the version of the IGMP protocol:
+         - 'version1(1)': means version 1 of the IGMP protocol
+         - 'version2(2)': means version 2 of the IGMP protocol
+         - 'version3(3)': means version 3 of the IGMP protocol."
+    SYNTAX  INTEGER {
+                version1(1),
+                version2(2),
+                version3(3)
+            }
+
+TmnxMldGroupFilterMode ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxMldGroupFilterMode describes the filter-mode of a
+         group.
+
+         In 'include(1)' mode, reception of packets sent to the specified
+         multicast address is requested only from those IPv6 source addresses
+         listed in the corresponding source-list.
+
+         In 'exclude(2)' mode, reception of packets sent to the given multicast
+         address is requested from all IPv6 source addresses, except those
+         listed in the corresponding source-list (if any)."
+    SYNTAX INTEGER {
+                include (1),
+                exclude (2)
+            }
+
+TmnxMldGroupType ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxMldGroupType describes how a multicast group is
+         learned."
+    SYNTAX  INTEGER {
+                static(1),
+                dynamic(2)
+            }
+
+TmnxMldVersion ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxMldVersion denotes the version of the MLD protocol:
+         - 'version1(1)': means version 1 of the MLD protocol
+         - 'version2(2)': means version 2 of the MLD protocol"
+    SYNTAX  INTEGER {
+                version1(1),
+                version2(2)
+            }
+
+TmnxManagedRouteStatus ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxManagedRouteStatus denotes the status of a Managed Route."
+    SYNTAX
+           INTEGER {
+                installed               (0),
+                notYetInstalled         (1),
+                wrongAntiSpoofType      (2),
+                outOfMemory             (3),
+                shadowed                (4),
+                routeTableFull          (5),
+                parentInterfaceDown     (6),
+                hostInactive            (7),
+                enhancedSubMgmtRequired (8),
+                deprecated1             (9)   -- was wholesaleNotSupported   (9)
+           }
+
+-- 
+-- Textual conventions for GSMP
+--
+TmnxAncpString ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The TmnxAncpString data type contains a valid ancp string."
+    SYNTAX DisplayString (SIZE (1..63))
+
+TmnxAncpStringOrZero ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The TmnxAncpStringOrZero data type contains a valid ancp string.
+        An empty string indicates that no ANCP string is defined."
+    SYNTAX DisplayString (SIZE (0..63))
+
+-- 
+-- Textual conventions for Multicast Address Family
+--
+
+TmnxMulticastAddrFamily ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The data type TmnxMulticastAddrFamily denotes the family for
+         multicast protocol."
+    SYNTAX      INTEGER {
+                    ipv4Multicast (0),
+                    ipv6Multicast (1)
+                }
+--
+-- Textual conventions for subscriber mgmt
+-- 
+
+TmnxAsciiSpecification ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxAsciiSpecification is a format string
+         that specifies how to form a target ASCII string.
+         
+         The format is as follows:
+
+        <ascii-specification> ::= <char-specification>+
+
+        <char-specification>  ::= <ascii-char> | <char-origin>
+
+        <char-origin>         ::= '%' <origin> 
+
+         <ascii-char> refers to a printable ASCII character.
+
+         Examples and supported char-origin specifiers are supplied with the
+         object definitions."
+    SYNTAX DisplayString (SIZE (0..255))
+
+TmnxMacSpecification ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxMacSpecification is a string of ASCII characters
+         that specifies how to format a string that represents a MAC address.
+         
+         The format is as follows:
+
+        <mac-specification> ::= <alpha-string> [<delimiter-char>]
+
+        <alpha-string>      ::= <ucase-alpha>+ | <lcase-alpha>+
+        <ucase-alpha>       ::= 'A' | 'B' | 'B' ... | 'Z'
+        <lcase-alpha>       ::= 'a' | 'b' | 'c' ... | 'z'
+
+        <delimiter-char>    any ASCII character that is not an <alpha-char>
+                            or a decimal digit
+
+        Only the number of alphabetic characters and the case is relevant.
+        Examples:
+        
+        'ab:'               00:0c:f1:99:85:b8  Alcatel-Lucent 7xxx style
+        'XY-'               00-0C-F1-99-85-B8  IEEE canonical style 
+        'mmmm.'             0002.03aa.abff     Cisco style.
+        'xx'                000cf19985b8"
+    SYNTAX DisplayString (SIZE (0..17))
+
+TmnxBinarySpecification ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxBinarySpecification is a string of ASCII characters
+         that specifies how to form a binary number.
+         
+         The format is as follows:
+
+        <binary-specification> ::= <bit-specification>+
+
+        <bit-specification>    ::= '0' | '1' | <bit-origin>
+
+        <bit-origin>           ::= '*' <number-of-bits> <origin> 
+
+        <number-of-bits>       ::= [1..32]
+
+         Examples and supported bit-origin specifiers are supplied with the
+         object definitions."
+    SYNTAX DisplayString (SIZE (0..255))
+
+TmnxDefSubIdSource ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxDefSubIdSource specifies what will be used as
+         the default subscriber identification.
+
+         This value is used in case no other source (like RADIUS) provides a 
+         subscriber identification string.
+
+         If the value of this object is set to 'useSapId', the SAP-id will
+         be used as the default subscriber identification string.
+         
+         If the value of this object is set to 'useString', the value of
+         the string contained in another object will be used as the default  
+         subscriber identification string; that object must be identified 
+         where this datatype is used."
+    SYNTAX  INTEGER {
+                useSapId  (1),
+                useString (2)
+            }
+
+TmnxSubIdentString ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxSubIdentString denotes the subscriber
+         identification string."
+    SYNTAX DisplayString (SIZE (1..32))
+
+TmnxSubIdentStringOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxSubIdentStringOrEmpty denotes the subscriber
+         identification string. The empty string denotes the absence of a
+         subscriber identification string."
+    SYNTAX DisplayString (SIZE (0..32))
+
+TmnxSubProfileString ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxSubProfileString denotes the subscriber
+         profile string."
+    SYNTAX DisplayString (SIZE (1..16))
+
+TmnxSubProfileStringOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxSubProfileStringOrEmpty denotes the subscriber
+         profile string. The empty string denotes the absence of a
+         subscriber profile."
+    SYNTAX DisplayString (SIZE (0..16))
+
+TmnxSlaProfileString ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxSlaProfileString denotes the SLA 
+         profile string."
+    SYNTAX DisplayString (SIZE (1..16))
+
+TmnxSlaProfileStringOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxSlaProfileStringOrEmpty denotes the SLA
+         profile string. The empty string denotes the absence of a
+         SLA profile."
+    SYNTAX DisplayString (SIZE (0..16))
+
+TmnxAppProfileString ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxAppProfileString denotes the application
+         profile string."
+    SYNTAX DisplayString (SIZE (1..16))
+
+TmnxAppProfileStringOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxAppProfileStringOrEmpty denotes the application
+         profile string. The empty string denotes the absence of a
+         application profile."
+    SYNTAX DisplayString (SIZE (0..16))
+
+TmnxSubMgtIntDestIdOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxSubMgtIntDestIdOrEmpty denotes the intermediate
+         destination id. The empty string denotes the absence of an
+         intermediate destination id."
+    SYNTAX DisplayString (SIZE (0..32))
+
+TmnxSubMgtIntDestId ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxSubMgtIntDestId denotes the intermediate 
+         destination id."
+    SYNTAX TmnxSubMgtIntDestIdOrEmpty (SIZE (1..32))
+
+TmnxDefInterDestIdSource ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxDefInterDestIdSource specifies what will be used as
+         the default intermediate destination identifier.
+
+         This value is used in case no other source (like RADIUS) provides an 
+         intermediate destination identifier.
+
+         If the value of this object is set to 'useString', the value of
+         the string contained in another object will be used as the default  
+         intermediate destination identifier; that object must be identified 
+         where this datatype is used.
+         
+         If the value of this object is set to 'useTopQTag', the top q-tag
+         of the ingress SAP will be used as the default subscriber intermediate
+         destination identifier."
+    SYNTAX  INTEGER {
+                useString  (1),
+                useTopQTag (2)
+            }
+
+TmnxSubMgtOrgStrOrZero ::= TEXTUAL-CONVENTION
+     STATUS  current
+     DESCRIPTION
+         "The data type TmnxSubMgtOrgStrOrZero denotes the organization string.
+          The empty string denotes the absence of an organization string."
+     SYNTAX DisplayString (SIZE (0..32))
+
+TmnxSubMgtOrgString ::= TEXTUAL-CONVENTION
+     STATUS  current
+     DESCRIPTION
+         "The data type TmnxSubMgtOrgStrOrZero denotes the organization string."
+     SYNTAX TmnxSubMgtOrgStrOrZero (SIZE (1..32))
+
+
+-- RFC4679 - DSL Forum Vendor-Specific RADIUS Attributes
+
+-- Access Loop Encapsulation
+
+TmnxAccessLoopEncapDataLink ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxAccessLoopEncapDataLink specifies 
+         the data link used by the subscriber on the DSL access loop."
+    SYNTAX  INTEGER {
+                -- notAvailable removed: refer to Errata ID: 597 and TR-101
+                aal5         (0),
+                ethernet     (1)
+            }
+
+TmnxAccessLoopEncaps1 ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxAccessLoopEncaps1 specifies 
+         the encapsulation used by the subscriber on the DSL access loop."
+    SYNTAX  INTEGER {
+                notAvailable         (0),
+                untaggedEthernet     (1),
+                singleTaggedEthernet (2)
+            }
+
+TmnxAccessLoopEncaps2 ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxAccessLoopEncaps2 specifies 
+         the encapsulation used by the subscriber on the DSL access loop."
+    SYNTAX  INTEGER {
+                notAvailable              (0),
+                pppoaLlc                  (1),
+                pppoaNull                 (2),
+                ipoaLlc                   (3),
+                ipoaNull                  (4),
+                ethernetOverAal5LlcFCS    (5),
+                ethernetOverAal5LlcNoFCS  (6),
+                ethernetOverAal5NullFCS   (7),
+                ethernetOverAal5NullNoFCS (8)
+            }
+
+TmnxSubAleOffsetMode ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxSubAleOffsetMode specifies 
+         the way the encapsulation offset of the subscriber 
+         in the DSL access loop is learned by the 7xxx system.
+
+         This offset is used in 7xxx egress shaping, adjusting the subscriber 
+         aggregate rate to account for the fixed encapsulation offset and per 
+         packet variable expansion of the last mile for the specific session 
+         used by the subscriber host.
+         
+         The value 'none' disables the adjustment.
+         
+         While the value is 'auto', the encapsulation offset will be 
+         learned for example from the encapsulation type value signaled 
+         in the Access-loop-encapsulation sub-TLV in the Vendor-Specific 
+         PPPoE Tags or DHCP Relay Options [rfc4679]."
+    SYNTAX  INTEGER {
+                none   (0),
+                auto   (1)
+             -- manual (2)
+            }
+
+TmnxSubAleOffset ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxSubAleOffset specifies 
+         the encapsulation offset value of the subscriber 
+         in the DSL access loop as used by the 7xxx system.
+
+         This offset is used in 7xxx egress shaping in order to
+         accurately shape the end user payload.
+         
+         If the offset mode is equal to 'none', the offset is ignored.
+         
+         If the offset mode is equal to 'auto', the offset is used
+         as a default value for automatic learning."
+    SYNTAX  INTEGER {
+                 none                    (0),
+                 pppoaLlc                (1),
+                 pppoaNull               (2),
+                 pppoeoaLlc              (3),
+                 pppoeoaLlcFcs           (4),
+                 pppoeoaLlcTagged        (5),
+                 pppoeoaLlcTaggedFcs     (6),
+                 pppoeoaNull             (7),
+                 pppoeoaNullFcs          (8),
+                 pppoeoaNullTagged       (9),
+                 pppoeoaNullTaggedFcs    (10),
+                 ipoaLlc                 (11),
+                 ipoaNull                (12),
+                 ipoeoaLlc               (13),
+                 ipoeoaLlcFcs            (14),
+                 ipoeoaLlcTagged         (15),
+                 ipoeoaLlcTaggedFcs      (16),
+                 ipoeoaNull              (17),
+                 ipoeoaNullFcs           (18),
+                 ipoeoaNullTagged        (19),
+                 ipoeoaNullTaggedFcs     (20),
+                 pppoe                   (21),
+                 pppoeTagged             (22),
+                 ipoe                    (23),
+                 ipoeTagged              (24)
+            }
+
+--
+-- Textual conventions for DHCP server
+--
+TmnxDhcpOptionType ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxDhcpOptionType represents how the value
+         of this option is encoded:
+         - 'ipv4 (1)': this option contains an IPv4 address (4 octets)
+         - 'ascii(2)': this option contains seven-bit ASCII characters
+         - 'hex  (3)': this option contains octets. It must be displayed in
+                       hexadecimal format because it contains non-printable
+                       characters."
+    SYNTAX  INTEGER {
+                ipv4(1),
+                ascii(2),
+                hex(3)
+            }
+
+TmnxPppoeUserNameOrEmpty ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The data type TmnxPppoeUserNameOrEmpty denotes the PPPoE username."
+    SYNTAX DisplayString (SIZE (0..128))
+
+--
+-- Textual conventions for Security
+--
+TCpmProtPolicyID ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The data type TCpmProtPolicyID represents the identification number 
+         of a CPM Protection policy.
+        
+         The value '0' indicates that no CPM Protection policy is provisioned."
+    SYNTAX Unsigned32 (0..255)
+
+TCpmProtPolicyIDOrDefault ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The data type TCpmProtPolicyIDOrDefault represents the identification number 
+         of a CPM Protection policy.
+
+         The value of '-1' indicates the system determined default value."
+    SYNTAX Integer32 (-1 | 1..255)
+
+--
+-- Textual conventions for MLPPP QoS
+--
+TMlpppQoSProfileId ::=  TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This textual-convention uniquely identifies MLPPP Bundle QoS
+        profile in the ingress and egress MLPPP QoS profile tables. 
+        The value 0 indicates default MLPPP QoS Profile as applicable to
+        a given H/W"
+    SYNTAX TPolicyID
+
+--
+-- Textual conventions for MLFR QoS
+--
+TMcFrQoSProfileId ::=  TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This textual-convention uniquely identifies Multi-class 
+        Frame-relay QoS profiles in the ingress and egress multi-class 
+        frame-relay QoS profile tables. The value 0 indicates a default 
+        QoS Profile as applicable to a given hardware."
+    SYNTAX TPolicyID
+    
+--
+-- Textual conventions for PPPoE
+--
+TmnxPppoeSessionId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The TmnxPppoeSessionId indicates the 16 bit wide PPPoE session Id."
+    SYNTAX Unsigned32 (0..65535)
+
+TmnxPppoePadoDelay ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The data type TmnxPppoePadoDelay specifies the delay timeout in
+         deci-seconds before sending a PADO (PPPoE Active Discovery Offer)."
+    SYNTAX Unsigned32 (0|1..30)
+
+TmnxPppoeSessionInfoOrigin ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The TmnxPppoeSessionInfoOrigin indicates the originator of the
+         provided information."
+    SYNTAX INTEGER {
+        none             (0),
+        default          (1), -- The default subId, specified in
+                              -- sapSubMgmtDefSubIdent, is used.
+        radius           (2),
+        localUserDb      (3),
+        dhcp             (4),
+        midSessionChange (5)
+    }
+
+TmnxPppoeSessionType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The TmnxPppoeSessionType indicates the type of PPPoE session."
+    SYNTAX INTEGER {
+        local          (1), -- Locally terminated session.
+        localWholesale (2), -- Wholesale/retail session terminating in the
+                            -- wholesale service.
+        localRetail    (3), -- Wholesale/retail session terminating in the 
+                            -- retail service.
+        l2tp           (4)  -- Session is tunneled to an LNS via L2TP.
+    }
+
+--
+-- TEXTUAL-CONVENTIONs for Alcatel 7x50 SR series QoS Elements
+--
+
+TNetworkPolicyID ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "the identification number of a network policy."
+    SYNTAX TPolicyID (1..65535|65536|65537)
+
+TItemScope ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This textual-convention determines some aspects of an item's
+        behavior regarding creation and use, unused entry garbage collection,
+        and automated promulgation by Element Management System to
+        other systems in the service domain.
+
+        TItemScope applies to SAP-ingress, SAP-egress, and Network policies,
+        and to IP filters and MAC filters.
+
+        exclusive:
+
+            When the scope of an item is defined as exclusive, the item can
+            only be applied once, for example to a single SAP.  Attempting
+            to assign the policy to a second SAP is not allowed and will
+            result in an error.  If the item is removed from the exclusive
+            SAP, it will become available for assignment to another
+            exclusive SAP.
+
+            A non-applied exclusive scope policy is a candidate to be removed
+            from the system by a TBD garbage collection command.
+
+            The system default policies cannot be put into the exclusive scope.
+            An error will be generated if scope exclusive is executed in
+            any policies with a policy-id equal to 1.
+
+        template:
+
+            When the scope of an item is defined as template, the item can be
+            applied any number of times.  Policies with template scope
+            will not be considered for deletion by a TBD garbage collection
+            command; all items of scope 'template' must be deleted explicitly.
+
+            The system default policies will always be scope template.
+            An error will occur if a policy-id 1 is attempted to be
+            set to scope exclusive."
+    SYNTAX INTEGER { exclusive(1), template(2) }
+
+TItemMatch  ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "when set to off, the item is not matched.
+         when set to false, packets without the item match the filter.
+         when set to true, packets with the item match the filter."
+    SYNTAX INTEGER { off(1), false(2), true(3) }
+
+TPriority ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "the priority to apply to a packet"
+    SYNTAX INTEGER { low(1), high(2) }
+
+TPriorityOrDefault ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "the priority to apply to a packet.
+         when set to default(3), the priority from the default-action is used."
+    SYNTAX INTEGER { low(1), high(2), default(3) }
+
+TProfile ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "the profile marking of a packet at the ingress."
+    SYNTAX INTEGER { in(1), out(2) }
+
+TDEProfile ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This textual-convention specifies the profile marking of a packet.
+
+        Value of 'in' specifies the in-profile marking.
+
+        Value of 'out' specifies the out-profile marking.
+        
+        Value of 'de' specifies that the profile marking will be based on the DE
+        (Drop-Eligible) bit.  DE bit-value of '0' specifies in-profile and DE
+        bit value of '1' specifies out-profile marking."
+    SYNTAX INTEGER { in (1), out (2), de (3) }
+
+TProfileOrNone ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Profile marking of a packet."
+    SYNTAX INTEGER { none (0), in(1), out(2) }
+
+TAdaptationRule ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The adaptation rule to be applied to calcluate the operational values
+         for the specified entity."
+    SYNTAX       INTEGER {
+                     max    (1),
+                     min    (2),
+                     closest(3)
+                 }
+
+TAdaptationRuleOverride ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The adaptation rule to be applied to calcluate the operational values
+         for the specified entity."
+    SYNTAX       INTEGER {
+                     noOverride (0),
+                     max        (1),
+                     min        (2),
+                     closest    (3)
+                 }
+
+TRemarkType ::=  TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The remarking to be used."
+    SYNTAX       INTEGER {
+                     none       (1),
+                     dscp       (2),
+                     precedence (3)
+                 }
+
+TPrecValue ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The precedence bits as used in the IPv4 header. This constitutes of
+         3 bits and hence can hold the values from 0 to 7."
+    SYNTAX       Integer32 (0..7)
+
+TPrecValueOrNone ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The precedence bits as used in the IPv4 header. This constitutes of
+         3 bits and hence can hold the values from 0 to 7. The value '-1'
+         specifies that the precedence value is undefined/unused."
+    SYNTAX      Integer32 (-1 | 0..7)
+
+TBurstSize ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The amount of buffer space (in kbytes) assigned to a queue.
+         The value -1 means that the actual value is derived from the
+         corresponding buffer policy's default value."
+    SYNTAX       Integer32 (-1 | 0..131072)
+
+TBurstSizeOverride ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The amount of buffer space (in kbytes) assigned to a queue.
+         The value -1 means that the actual value is derived from the
+         corresponding buffer policy's default value.
+         A value of -2 specifies no override."
+    SYNTAX       Integer32 (-2 | -1 | 0..131072)
+
+TBurstPercent ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The percentage of buffer space assigned to a queue that is
+         reserved for some purpose."
+    SYNTAX       Integer32 (0..100)
+
+TBurstHundredthsOfPercent ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The percentage of buffer space assigned to a queue that is
+         reserved for some purpose, defined to two decimal places."
+    SYNTAX      Integer32 (0..10000)
+
+TBurstPercentOrDefault ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The percentage of buffer space assigned to a queue that is
+         reserved for some purpose.
+         The value -1 means that the actual value is derived from the
+         corresponding buffer policy's default value."
+    SYNTAX       Integer32 (-1 | 0..100)
+
+TBurstPercentOrDefaultOverride ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The percentage of buffer space assigned to a queue that is
+         reserved for some purpose.
+
+         The value -1 means that the actual value is derived from the
+         corresponding buffer policy's default value.
+
+         A value of -2 specifies no override."
+    SYNTAX       Integer32 (-2 | -1 | 0..100)
+
+TRatePercent ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The percentage of maximum rate allowed."
+    SYNTAX       Integer32 (0..100)
+
+TPIRRatePercent ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The percentage of maximum PIR rate allowed. A value of 0 is
+         not acceptable, so the range begins at 1."
+    SYNTAX       Integer32 (1..100)
+
+TLevel ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The level of the specified entity while feeding into the parent."
+    SYNTAX      Integer32 (1..8)
+
+TLevelOrDefault ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The level of the specified entity while feeding into the parent.
+         The value 0 is used to denote a default value."
+    SYNTAX       Integer32 (0|1..8)
+
+TQueueMode ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The mode in which the queue is operating.
+
+         If the queue is operating in the 'priority' mode, it is
+         capable of handling traffic differently with two distinct
+         priorities. These priorities are assigned by the stages
+         preceding the queueing framework in the system.
+
+         When the queue is operating in the 'profile' mode, in other
+         words the color aware mode, the queue tries to provide the
+         appropriate bandwidth to the packets with different profiles.
+
+         The profiles are assigned according to the configuration of the
+         forwarding class or the sub-forwarding class.
+
+         In 'priority' mode, the queue does not have the functionality
+         to support the profiled traffic and in such cases the queue
+         will have a degraded performance. However, the converse is not
+         valid and a queue in 'profile' mode should be capable of
+         supporting the different priorities of traffic."
+    SYNTAX       INTEGER {
+                     priority(1),
+                     profile (2)
+                 }
+
+TEntryIndicator ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "Uniquely identifies an entry in a policy or filter table. The
+         value 0 is not a valid entry-id. When used as insertion point
+         the value 0 indicates that entries must be inserted at the very
+         beginning, i.e.before the first entry defined."
+    SYNTAX Unsigned32 (0..65535)
+
+TEntryId ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "uniquely identifies an entry in a policy or filter table.
+         to facilitate insertion of entries in the tables, we recommend
+         assigning entry IDs by 10s:  10, 20, 30, etc. "
+    SYNTAX TEntryIndicator (1..65535)
+
+TMatchCriteria ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "determines whether the entry matches traffic using IP match
+         entries or MAC match entries."
+    SYNTAX  INTEGER { ip(1), mac(2), none(3) }
+
+TAtmTdpDescrType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The TAtmTdpDescrType is an enumerated integer whose value
+         indicates the types of cell loss priority to be used in
+         conjunction with traffic parameters.
+
+        The following values are outlined:
+          Integer Value               Interpretation
+          -------------               ------------------------
+          clp0And1pcr                 PCR applies to CLP 0 and
+                                      CLP 1 cell flows
+          clp0And1pcrPlusClp0And1scr  PCR applies to CLP 0 and
+                                      CLP 1 cell flows.
+                                      SCR applies to CLP 0 and
+                                      CLP 1 cell flows.
+          clp0And1pcrPlusClp0scr      PCR applies to CLP 0 and
+                                      CLP 1 cell flows.
+                                      SCR applies to CLP 0 cell flows.
+          clp0And1pcrPlusClp0scrTag   PCR applies to CLP 0 and
+                                      CLP 1 cell flows.
+                                      SCR applies to CLP 0 cell flows. "
+    SYNTAX INTEGER {
+               clp0And1pcr(0),
+               clp0And1pcrPlusClp0And1scr(1),
+               clp0And1pcrPlusClp0scr(2),
+               clp0And1pcrPlusClp0scrTag(3)
+           }
+
+TDEValue ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This textual-convention specifies the DE (Drop Eligible) bit value.
+        The value of '-1' means DE value is not specified."
+    SYNTAX Integer32 (-1 | 0..1)
+
+TQGroupType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This textual-convention specifies the type of the Queue-Group."
+    SYNTAX INTEGER {
+               port (0),
+               vpls(1)
+           }
+
+TQosOverrideType ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "This textual-convention specifies the type of the Qos Override."
+    SYNTAX INTEGER {
+               queue           (1),
+               policer         (2),
+               aggRateLimit    (3),
+               arbiter         (4),
+               scheduler       (5)
+           }
+
+-- IPSec Textual-conventions
+TmnxIPsecTunnelTemplateId ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION     "A number used to identify an entry in the
+                     tIPsecTnlTempTable." 
+    SYNTAX          Unsigned32 (1..2048)
+ 
+TmnxIPsecTunnelTemplateIdOrZero ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION     "A number used to identify an entry in the
+                     tIPsecTnlTempTable or zero."
+    SYNTAX          Unsigned32 (0..2048)
+ 
+TmnxIkePolicyAuthMethod ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION     "TmnxIkePolicyAuthMethod data type is an enumerated integer
+                     that describes the type of authentication method used."
+    SYNTAX          INTEGER {
+                         psk (1),
+                         hybridX509XAuth (2),
+                         plainX509XAuth  (3),
+                         plainPskXAuth   (4)
+                    }
+
+-- DSTE Textual conventions 
+TmnxRsvpDSTEClassType ::= TEXTUAL-CONVENTION
+STATUS    current
+    DESCRIPTION
+        "TmnxRsvpDSTEClassType is an unsigned integer in the range of (0..7) that defines 
+         the class type (CT)."
+    SYNTAX    Unsigned32 (0..7)    
+ 
+-- Textual-conventions for accounting policy handling
+
+TmnxAccPlcyQICounters ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "This data type describes a set ingress counters for which
+         accounting data can be collected associated with a given queue."
+    SYNTAX BITS {
+               hpo (0),    -- High Packets Offered
+               lpo (1),    -- Low Packets Offered
+               ucp (2),    -- Uncoloured Packets offered
+               hoo (3),    -- High Octets Offered
+               loo (4),    -- Low Octets Offered
+               uco (5),    -- Uncoloured Octets offered
+               apo (6),    -- All Packets Offered
+               aoo (7),    -- All Octets Offered
+               hpd (8),    -- High Packets Dropped
+               lpd (9),   -- Low Packets Dropped
+               hod (10),   -- High Octets Dropped
+               lod (11),   -- Low Octets Dropped
+               ipf (12),   -- In Profile Packets Forwarded
+               opf (13),   -- Out Of Profile Packets Forwarded
+               iof (14),   -- In Profile Octets Forwarded    
+               oof (15)    -- Out Of Profile Octets Forwarded
+           }
+
+TmnxAccPlcyQECounters ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "This data type describes a set egress counters for which
+         accounting data can be collected associated with a given queue."
+    SYNTAX BITS {
+               ipf (0),   -- In Profile Packets Forwarded
+               ipd (1),   -- In Profile Packets Dropped
+               opf (2),   -- Out Of Profile Packets Forwarded
+               opd (3),   -- Out Of Profile Packets Dropped
+               iof (4),   -- In Profile Octets Forwarded    
+               iod (5),   -- In Profile Octets Dropped    
+               oof (6),   -- Out Of Profile Octets Forwarded
+               ood (7)    -- Out Of Profile Octets Dropped
+           }
+
+TmnxAccPlcyOICounters ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "This data type describes a set ingress counters for which
+         accounting data can be collected associated with a given counter."
+    SYNTAX BITS {
+               apo (0),   -- All Packets Offered
+               aoo (1),   -- All Octets Offered
+               hpd (2),   -- High Packets Dropped
+               lpd (3),   -- Low Packets Dropped
+               hod (4),   -- High Octets Dropped
+               lod (5),   -- Low Octets Dropped
+               ipf (6),   -- In Profile Packets Forwarded
+               opf (7),   -- Out Of Profile Packets Forwarded
+               iof (8),   -- In Profile Octets Forwarded    
+               oof (9)   -- Out Of Profile Octets Forwarded
+         }
+
+TmnxAccPlcyOECounters ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "This data type describes a set egress counters for which
+         accounting data can be collected associated with a given counter."
+    SYNTAX BITS {
+               ipf (0),   -- In Profile Packets Forwarded
+               ipd (1),   -- In Profile Packets Dropped
+               opf (2),   -- Out Of Profile Packets Forwarded
+               opd (3),   -- Out Of Profile Packets Dropped
+               iof (4),   -- In Profile Octets Forwarded    
+               iod (5),   -- In Profile Octets Dropped    
+               oof (6),   -- Out Of Profile Octets Forwarded
+               ood (7)    -- Out Of Profile Octets Dropped
+           }
+
+TmnxAccPlcyAACounters ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "This data type describes a set of AA (Application Assurance) 
+         counters for which accounting data can be collected."
+    SYNTAX BITS {
+               any (0),  --  enables reporting when there is a change
+                         --  to any counter
+               sfa (1),  --  allowed flows from sub
+               nfa (2),  --  allowed flows to sub
+               sfd (3),  --  denied flows from sub
+               nfd (4),  --  denied flows to sub
+               saf (5),  --  active flows from sub
+               naf (6),  --  active flows to sub
+               spa (7),  --  total packets from sub
+               npa (8),  --  total packets to sub
+               sba (9),  --  total bytes from sub
+               nba (10), --  total bytes to sub
+               spd (11), --  total discard packets from sub
+               npd (12), --  total discard packets to sub
+               sbd (13), --  total discard bytes from sub
+               nbd (14), --  total discard bytes to sub
+               sdf (15), --  short  duration flows
+               mdf (16), --  medium duration flows
+               ldf (17), --  long   duration flows
+               tfd (18), --  total flow duration
+               tfc (19)  --  total flows completed
+           }
+
+TmnxVdoGrpIdIndex  ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "TmnxVdoGrpIdIndex data type describes the id of a 
+             TIMETRA-VIDEO-MIB::tmnxVdoGrpEntry and is the primary
+             index for the table."
+        SYNTAX      Unsigned32 (1..4)
+
+TmnxVdoGrpId      ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "TmnxVdoGrpId data type describes the identifier for a video 
+             group."
+        SYNTAX      Unsigned32 (0..4)
+
+TmnxVdoGrpIdOrInherit ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "The data type describes the identifier for a video group. A value 
+             of '-1' indicates that identifier will be inherited from another 
+             object that is usually in another mib table."
+        SYNTAX      Integer32 (-1|0..4)
+
+TmnxVdoFccServerMode ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "The TmnxVdoFccServerMode data type is an enumerated integer that 
+             describes the mode of the Fast Channel Change (FCC) server. 
+             
+             A value of 'burst' indicates that the FCC server is enabled 
+             and will send the channel at a nominally faster rate than 
+             the channel was received based on the 
+             TIMETRA-MCAST-PATH-MGMT-MIB::tmnxMcPathVdoPlcyFCCBurst setting.
+
+             A value of 'dent' indicates that the FCC server will selectively 
+             discard frames from the original stream based on the value of
+             TIMETRA-MCAST-PATH-MGMT-MIB::tmnxMcPathVdoPlcyFCCDentThd.
+
+             A value of 'hybrid' indicates that the FCC server will use 
+             combination of 'burst' and 'dent' to send the unicast stream to 
+             the client.
+
+             A value of 'none' indicates that FCC server is disabled."
+        SYNTAX      INTEGER {
+                                none   (0),
+                                burst  (1),
+                                dent   (2),
+                                hybrid (3)
+                            }
+
+TmnxVdoPortNumber ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "The data type describes the port number of an Internet transport 
+            layer protocol."
+        SYNTAX      Unsigned32 (1024..5999 | 6251..65535)
+
+TmnxVdoIfName ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The data type describes the name of a video interface. The name of 
+             a video interface must always start with a letter."
+        SYNTAX      TNamedItem (SIZE(1..30))
+
+TmnxVdoStatInt ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION
+            "The data type TmnxVdoStatInt is an enumerated integer that 
+             specifies the time duration for which the video statistics are
+             being counted. Setting a variable of this type to 'current' causes 
+             the time duration to be set to one second which is the least 
+             allowed value. A value of 'interval' makes it necessary for some 
+             other MIB object to actually quantify the time interval."
+        SYNTAX  INTEGER {
+                    current  (1),
+                    interval (2)
+                }
+
+TmnxVdoOutputFormat ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION
+            "The data type TmnxVdoOutputFormat is an enumerated integer that 
+             specifies the output format of the video stream. Setting a variable 
+             of this type to 'udp' causes the video stream to be of type 'udp' 
+             whereas setting a value of 'rtp-udp' causes the video stream to 
+             be of type 'rtp-udp'."
+        SYNTAX  INTEGER {
+                    udp  (1),
+                    rtp-udp (2)
+                }
+
+TmnxVdoAnalyzerAlarm ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION
+            "The data type TmnxVdoAnalyzerAlarm is an enumerated integer that 
+             specifies the severity of the analyzer state alarm. Setting a 
+             variable of this type to 'none' indicates no error level. A value 
+             of 'tnc' indicates a TNC (Tech Non-Conformance) error level.A value 
+             of 'qos' indicates a QOS (Quality of Service) error level. A value 
+             of 'poa' indicates a POA (Program off Air) error level."
+        SYNTAX  INTEGER {
+                    none   (0),
+                    tnc    (1),
+                    qos    (2),
+                    poa    (3)
+                }
+
+TmnxVdoAnalyzerAlarmStates ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION
+            "The data type TmnxVdoAnalyzerAlarmStates is an octet string that 
+             represents the analyzer state for the past 10 seconds. Setting a 
+             variable of this type to 'good'(00) indicates either there was no 
+             alarm during that second or the state of the stream has been 
+             cleared from a prior errored state. A value of 'tnc'(01)indicates  
+             a TNC (Tech Non-Conformance) error occured during that second. A 
+             value of 'qos'(02) indicates a QOS (Quality of Service) error  
+             occured during that second. A value of 'poa'(03) indicates a POA 
+             (Program off Air) error occured during that second.
+
+             Since the octet string is 10 bytes long, the 10th byte indicates 
+             the most recent state of the stream. Below is how an example stream 
+             would appear. Each byte in the stream holds an alarm state for a
+             second.
+             good (00),  --  stream was good during 1st second
+             tnc  (01),  --  stream had tnc error during 2nd second
+             qos  (02),  --  stream had qos error during 3rd second
+             qos  (02),  --  stream had qos error during 4th second
+             qos  (02),  --  stream had qos error during 5th second
+             good (00),  --  stream error was cleared during 6th second
+             good (00),  --  stream was good during 7th second
+             tnc  (01),  --  stream had tnc error during 8nd second
+             poa  (03),  --  stream had poa error during 9th second
+             good (00)   --  stream error was cleared during 10th second."
+        SYNTAX      OCTET STRING (SIZE (10))
+
+SvcISID ::= TEXTUAL-CONVENTION
+        STATUS      current
+        DESCRIPTION
+            "The SvcISID specifies a 24 bit (0..16777215) service instance
+            identifier for the service. As part of the Provider Backbone Bridging
+            frames, it is used at the destination PE as a demultiplexor field.
+
+            The value of -1 is used to indicate the value of this object is
+            un-specified."
+        SYNTAX          Integer32 (-1 | 0..16777215)
+
+TIngPolicerId ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The data type describes the QoS control policer identifier on
+            ingress side."
+        SYNTAX      Integer32 (1..32)
+
+TIngPolicerIdOrNone ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The data type describes the QoS control policer identifier on
+            ingress side or zero when not specified."
+        SYNTAX      Integer32 (0|1..32)
+
+TEgrPolicerId ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The data type describes the QoS control policer identifier on
+            egress side."
+        SYNTAX      Integer32 (1..8)
+
+TEgrPolicerIdOrNone ::= TEXTUAL-CONVENTION
+        STATUS     current
+        DESCRIPTION
+            "The data type describes the QoS control policer identifier on
+            egress side or zero when not specified."
+        SYNTAX      Integer32 (0|1..8)
+
+TFIRRate ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "The static fair rate to be used in kbps. The value -1 means maximum
+        rate."
+    SYNTAX      Integer32 (-1 | 1..100000000)
+
+TBurstSizeBytes ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The amount of buffer space (in bytes) assigned to a queue.
+         The value -1 means that the actual value is derived from the
+         corresponding buffer policy's default value."
+    SYNTAX       Integer32 (-1 | 0..134217728)
+
+TPlcrBurstSizeBytes ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The amount of buffer space (in bytes) assigned to a queue by policer.
+         The value -1 means that the actual value is derived from the
+         corresponding buffer policy's default value."
+    SYNTAX       Integer32 (-1 | 0..4194304)
+
+TBurstSizeBytesOverride ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The amount of buffer space (in bytes) assigned to a queue.
+         The value -1 means that the actual value is derived from the
+         corresponding buffer policy's default value.
+         A value of -2 specifies no override."
+    SYNTAX       Integer32 (-2 | -1 | 0..134217728)
+
+TPlcrBurstSizeBytesOverride ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The amount of buffer space (in bytes) assigned to a queue by policer.
+         The value -1 means that the actual value is derived from the
+         corresponding buffer policy's default value.
+         A value of -2 specifies no override."
+    SYNTAX       Integer32 (-2 | -1 | 0..4194304)
+
+TmnxBfdSessOperState ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "The TmnxBfdSessOperState data type is an enumerated integer 
+         that describes the values used to identify the operational state of 
+         a BFD session the instance is relying upon for its fast triggering
+         mechanism."
+    SYNTAX  INTEGER {
+        unknown       (1),         
+        connected     (2), -- the BFD connection with the peer is operational
+        broken        (3), -- the BFD connection with the peer has timed out
+        peerDetectsDown(4),-- the peer detects that the BFD connection is down
+        notConfigured  (5),-- the BFD connection with the peer is not configured
+        noResources    (6) -- resource not available
+    }    
+
+TmnxIngPolicerStatMode ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "TmnxIngPolicerStatMode specifies the mode of statistics
+         collected by this ingress policer."
+    SYNTAX       INTEGER {
+                    noStats                  (0),
+                    minimal                  (1),
+                    offeredProfileNoCIR      (2),
+                    offeredTotalCIR          (3),
+                    offeredPrioNoCIR         (4),
+                    offeredProfileCIR        (5),
+                    offeredPrioCIR           (6),
+                    offeredLimitedProfileCIR (7)
+                 }
+
+TmnxIngPolicerStatModeOverride ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "TmnxIngPolicerStatModeOverride specifies the override mode of statistics
+         collected by this ingress policer."
+    SYNTAX       INTEGER {
+                    noOverride               (-1),
+                    noStats                  (0),
+                    minimal                  (1),
+                    offeredProfileNoCIR      (2),
+                    offeredTotalCIR          (3),
+                    offeredPrioNoCIR         (4),
+                    offeredProfileCIR        (5),
+                    offeredPrioCIR           (6),
+                    offeredLimitedProfileCIR (7)
+                 }
+
+TmnxEgrPolicerStatMode ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "TmnxEgrPolicerStatMode specifies the mode of statistics
+         collected by this egress policer."
+    SYNTAX       INTEGER {
+                    noStats             (0),
+                    minimal             (1),
+                    offeredProfileNoCIR (2),
+                    offeredTotalCIR     (3),
+                    offeredProfileCIR   (4)
+                 }
+    
+TmnxEgrPolicerStatModeOverride ::= TEXTUAL-CONVENTION
+STATUS  current
+    DESCRIPTION
+        "TmnxEgrPolicerStatModeOverride specifies the override mode 
+         of statistics collected by this egress policer."
+    SYNTAX       INTEGER {
+                    noOverride          (-1),
+                    noStats             (0),
+                    minimal             (1),
+                    offeredProfileNoCIR (2),
+                    offeredTotalCIR     (3),
+                    offeredProfileCIR   (4)
+                 }
+
+TmnxTlsGroupId ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION
+        "A number used to identify a TLS Group. This ID
+         must be unique within that Service Domain."
+    SYNTAX          Unsigned32 (1..4094)
+
+TSubHostId ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION
+        "A number used to uniquely identify a subscriber host in the system"
+    SYNTAX          Unsigned32
+    
+TDirection  ::= TEXTUAL-CONVENTION
+    STATUS          current
+    DESCRIPTION
+        "TDirection denotes a direction."
+    SYNTAX       INTEGER {
+                    both   (0), 
+                    ingress(1),
+                    egress (2)
+                 }   
+
+TBurstLimit ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "An explicit shaping burst size for a queue.
+         The value of -1 specifies system default value."
+    SYNTAX       Integer32 (-1 | 1..14000000)
+
+TmnxLinkMapProfileId  ::=  TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The data type TmnxLinkMapProfileId describes the link map profile
+        identifier."
+    SYNTAX       INTEGER (1..32)
+
+TmnxLinkMapProfileIdOrZero  ::=  TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+        "The data type TmnxLinkMapProfileId describes the link map profile
+        identifier or zero."
+    SYNTAX       INTEGER (0|1..32)
+
+END

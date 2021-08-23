@@ -1,0 +1,2797 @@
+TIMETRA-DA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+   Unsigned32, Counter32, Counter64, Gauge32
+       FROM SNMPv2-SMI
+
+   MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+       FROM SNMPv2-CONF
+
+   RowStatus, TimeStamp, TruthValue, TEXTUAL-CONVENTION, DisplayString, 
+   MacAddress
+       FROM SNMPv2-TC
+
+   InetAddress, InetAddressType, InetAddressPrefixLength, InetPortNumber
+       FROM INET-ADDRESS-MIB
+
+   timetraSRMIBModules, tmnxSRObjs, tmnxSRConfs, 
+   tmnxSRNotifyPrefix
+       FROM TIMETRA-GLOBAL-MIB
+
+   TItemDescription, TmnxAdminState, TNamedItem, TmnxEnabledDisabled,
+   TNamedItemOrEmpty, TmnxOperState, TLNamedItemOrEmpty
+       FROM TIMETRA-TC-MIB
+
+   ;
+
+timetraDAMIBModule    MODULE-IDENTITY
+    LAST-UPDATED "201106010000Z"
+    ORGANIZATION "Nokia"
+    CONTACT-INFO
+        "Nokia SROS Support
+         Web: http://www.nokia.com"
+    DESCRIPTION
+    "This document is the SNMP MIB module to manage and provision
+    the Delivery Appliance features for Content Delivery Networks (CDN). 
+
+    Copyright 2008-2015 Nokia. All rights reserved.
+    Reproduction of this document is authorized on the condition that
+    the foregoing copyright notice is included.
+
+    This SNMP MIB module (Specification) embodies Nokia's
+    proprietary intellectual property. Nokia retains all title and
+    ownership in the Specification, including any revisions.
+
+    Nokia grants all interested parties a non-exclusive
+    license to use and distribute an unmodified copy of this
+    Specification in connection with management of Nokia products,
+    and without fee, provided this copyright notice and license appear
+    on all copies.
+
+    This Specification is supplied 'as is', and Nokia
+    makes no warranty, either express or implied, as to the use,
+    operation, condition, or performance of the Specification."
+
+--
+--  Revision History
+--
+    REVISION        "201105230000Z"
+    DESCRIPTION     "Rev 0.1                23 May 2011 00:00
+                     Initial version of the TIMETRA-DA-MIB."
+
+    ::= { timetraSRMIBModules 82 }
+
+-- ----------------------------------------------------------------------------
+--  Nokia SROS series Delivery Appliance MIB structure
+-- ----------------------------------------------------------------------------
+tmnxDA                      OBJECT IDENTIFIER ::= { tmnxSRObjs 82 }
+    tmnxDAObjs              OBJECT IDENTIFIER ::= { tmnxDA 1 }
+
+tmnxDAConformance           OBJECT IDENTIFIER ::= { tmnxSRConfs 82 }
+    tmnxDACompliances       OBJECT IDENTIFIER ::= { tmnxDAConformance 1 }
+    tmnxDAGroups            OBJECT IDENTIFIER ::= { tmnxDAConformance 2 }
+
+tmnxDANotifyPrefix          OBJECT IDENTIFIER ::= { tmnxSRNotifyPrefix 82 }
+    tmnxDANotifications     OBJECT IDENTIFIER ::= { tmnxDANotifyPrefix 0 }
+
+-- --------------------------
+--  MIB objects
+-- --------------------------
+
+--
+--  DA Server Group Table
+--
+
+tmnxDASvrGrpTableLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASvrGrpTableLastChanged indicates the sysUpTime at 
+         the time of the last modification to tmnxDASvrGrpTable by adding, 
+         deleting an entry or change to a writable object in the table.
+
+         If no changes were made to the table since the last re-initialization 
+         of the local network management subsystem, then this object contains a 
+         zero value."
+    ::= { tmnxDAObjs 1 }
+
+tmnxDASvrGrpTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDASvrGrpEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "There can be multiple Delivery Appliance (DA) proxy server groups in a 
+         system. One or more caching blades (DA servers) form a server group. A 
+         caching blade can appear in only one server group. The 
+         tmnxDASvrGrpTable has an entry for each such server group in the 
+         system."
+    ::= { tmnxDAObjs 2 }
+
+tmnxDASvrGrpEntry    OBJECT-TYPE
+    SYNTAX          TmnxDASvrGrpEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents a DA server group in the system. Entries can 
+         be created and deleted by the user."
+    INDEX {  
+            tmnxDASvrGrpIndex      
+    }
+    ::= { tmnxDASvrGrpTable 1 }
+
+TmnxDASvrGrpEntry ::= SEQUENCE {
+        tmnxDASvrGrpIndex                  Unsigned32,
+        tmnxDASvrGrpRowStatus              RowStatus,
+        tmnxDASvrGrpLastChanged            TimeStamp,
+        tmnxDASvrGrpCardSlotNumber         BITS,
+        tmnxDASvrGrpAdminState             TmnxAdminState
+    }
+
+tmnxDASvrGrpIndex    OBJECT-TYPE
+    SYNTAX          Unsigned32 (0|1..8)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASvrGrpIndex specifies the server group index for 
+         this server group."
+    ::= { tmnxDASvrGrpEntry 1 }
+
+tmnxDASvrGrpRowStatus    OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASvrGrpRowStatus specifies the row status of this 
+         row in the DA Server Group Table. It is used to create and delete row 
+         entries in this table."
+    ::= { tmnxDASvrGrpEntry 2 }
+
+tmnxDASvrGrpLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASvrGrpLastChanged indicates the timestamp of last
+         change to this row in tmnxDASvrGrpTable."
+    ::= { tmnxDASvrGrpEntry 3 }
+
+tmnxDASvrGrpCardSlotNumber    OBJECT-TYPE
+    SYNTAX BITS {                    
+                    card1  (0), -- numbering must start at zero.
+                    card2  (1),
+                    card3  (2),
+                    card4  (3),
+                    card5  (4),
+                    card6  (5),
+                    card7  (6),
+                    card8  (7),
+                    card9  (8),
+                    card10 (9)
+                }
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The bit value of tmnxDASvrGrpCardSlotNumber specifies the card number 
+         being used by the DA server."
+    DEFVAL { {} }
+    ::= { tmnxDASvrGrpEntry 4 }
+
+tmnxDASvrGrpAdminState    OBJECT-TYPE
+    SYNTAX          TmnxAdminState
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASvrGrpAdminState specifies the desired 
+         administrative state of the DA server-group."
+    DEFVAL { outOfService }
+    ::= { tmnxDASvrGrpEntry 5 }
+
+--
+--  DA Group Table
+--
+
+tmnxDAGrpTableLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpTableLastChanged indicates the sysUpTime at the 
+         time of the last modification to tmnxDAGrpTable by adding, deleting an 
+         entry or change to a writable object in the table.
+
+         If no changes were made to the table since the last re-initialization 
+         of the local network management subsystem, then this object contains a 
+         zero value."
+    ::= { tmnxDAObjs 3 }
+
+tmnxDAGrpTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDAGrpEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The tmnxDAGrpTable has an entry for each virtual Delivery Appliance 
+         (DA) proxy server in a server group. There can be multiple virtual DA 
+         proxy servers within a server group."
+    ::= { tmnxDAObjs 4 }
+
+tmnxDAGrpEntry    OBJECT-TYPE
+    SYNTAX          TmnxDAGrpEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents a virtual DA proxy server. Entries can be 
+         created and deleted by the user."
+    INDEX { 
+            tmnxDAGrpName 
+    }
+    ::= { tmnxDAGrpTable 1 }
+
+TmnxDAGrpEntry ::= SEQUENCE {
+        tmnxDAGrpName                      TNamedItem,
+        tmnxDAGrpRowStatus                 RowStatus,
+        tmnxDAGrpLastChanged               TimeStamp,
+        tmnxDAGrpServerGroupIndex          Unsigned32,
+        tmnxDAGrpAdminState                TmnxAdminState,
+        tmnxDAGrpDescription               TItemDescription,
+        tmnxDAGrpDCAuthCache               INTEGER,
+        tmnxDAGrpDCAdminState              TmnxAdminState,
+        tmnxDAGrpDCIsmLinkName             TNamedItemOrEmpty,
+        tmnxDAGrpDCBootStrapPort           InetPortNumber,
+        tmnxDAGrpDCConnRetryTimer          Unsigned32,
+        tmnxDAGrpDCIdleTimeout             Unsigned32,
+        tmnxDAGrpBytesFromCache            Counter64,
+        tmnxDAGrpBytesNotFromCache         Counter64,
+        tmnxDAGrpObjectsFromCache          Counter64,
+        tmnxDAGrpObjectsNotFromCache       Counter64,
+        tmnxDAGrpErrorByteCount            Counter64,
+        tmnxDAGrpNumberOfOrigins           Counter64,
+        tmnxDAGrpDCAuthCacheHit            Counter64,
+        tmnxDAGrpDCAuthCacheMiss           Counter64,
+        tmnxDAGrpDCDeniedAuth              Counter64,
+        tmnxDAGrpDCAuthMinRTTPerPeer       Counter32,
+        tmnxDAGrpDCAuthAvgRTTPerPeer       Counter32,
+        tmnxDAGrpDCAuthMaxRTTPerPeer       Counter32,
+        tmnxDAGrpDCAuthCacheHitAgg         Counter64,
+        tmnxDAGrpDCAuthCacheMissAgg        Counter64,
+        tmnxDAGrpDCDeniedAuthAgg           Counter64,
+        tmnxDAGrpDCAuthMinRTTPerPeerAgg    Counter32,
+        tmnxDAGrpDCAuthAvgRTTPerPeerAgg    Counter32,
+        tmnxDAGrpDCAuthMaxRTTPerPeerAgg    Counter32
+    }
+
+tmnxDAGrpName    OBJECT-TYPE
+    SYNTAX          TNamedItem
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpName specifies the group name for this virtual 
+         DA proxy server in the specified server group."
+    ::= { tmnxDAGrpEntry 1 }
+
+tmnxDAGrpRowStatus    OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpRowStatus specifies the row status of this 
+         row in the DA group table. It is used to create and delete row entries 
+         in this table.
+
+         The value of the object tmnxDAGrpServerGroupIndex specifies the index 
+         of the server group on which this DA Group must be instantiated. The 
+         value of tmnxDAGrpServerGroupIndex must be specified when the row is 
+         created and cannot be changed while tmnxDAGrpRowStatus is 'active'."
+    ::= { tmnxDAGrpEntry 2 }
+
+tmnxDAGrpLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpLastChanged indicates the timestamp of last
+         change to this row in tmnxDAGrpTable."
+    ::= { tmnxDAGrpEntry 3 }
+
+tmnxDAGrpServerGroupIndex    OBJECT-TYPE
+    SYNTAX          Unsigned32 (0|1..4)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpServerGroupIndex specifies the index of the 
+         server group on which this DA Group must be instantiated. The value of 
+         this object must be specified when the row is created and cannot be 
+         changed while tmnxDAGrpRowStatus is 'active'. An 'inconsistentValue' 
+         error is returned if an attempt is made to set this object 
+         individually."
+    DEFVAL { 0 }
+    ::= { tmnxDAGrpEntry 4 }
+
+tmnxDAGrpAdminState    OBJECT-TYPE
+    SYNTAX          TmnxAdminState
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpAdminState specifies the desired administrative
+         state of the DA group."
+    DEFVAL { outOfService }
+    ::= { tmnxDAGrpEntry 5 }
+
+tmnxDAGrpDescription    OBJECT-TYPE
+    SYNTAX          TItemDescription
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDescription specifies the user provided
+         description string for this DA group entry."
+    DEFVAL { ''H }
+    ::= { tmnxDAGrpEntry 6 }
+
+tmnxDAGrpDCAuthCache    OBJECT-TYPE
+    SYNTAX          INTEGER {
+                               none           (1),
+                               useCache       (2)
+                            }
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthCache specifies what happens when the DA
+         loses connectivity to all DCs in the network. 
+
+         A value of 'none' specifies that the cache is invalidated and all 
+         incoming delivery requests will be rejected.
+    
+         A value of 'useCache' specifies that the DA will continue to use its 
+         cached authorizations until they expire." 
+    DEFVAL { none }
+    ::= { tmnxDAGrpEntry 7 }
+
+tmnxDAGrpDCAdminState    OBJECT-TYPE
+    SYNTAX          TmnxAdminState
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAdminState specifies the desired administrative
+         state of the DA group for this DC."
+    DEFVAL { outOfService }
+    ::= { tmnxDAGrpEntry 8 }
+
+tmnxDAGrpDCIsmLinkName    OBJECT-TYPE
+    SYNTAX          TNamedItemOrEmpty
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCIsmLinkName specifies the Integrated Services 
+         Module (ISM) link name used in the DA group for this DC. The ISM link 
+         is an IP interface in the DA group on the ISM. The ISM link must 
+         already be configured in the DA group before it is assigned to this 
+         object."
+    DEFVAL { ''H }
+    ::= { tmnxDAGrpEntry 9 }
+
+tmnxDAGrpDCBootStrapPort    OBJECT-TYPE
+    SYNTAX          InetPortNumber
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCBootStrapPort specifies the DC port number of 
+         the bootstrap-servers."
+    DEFVAL { 22345 }
+    ::= { tmnxDAGrpEntry 10 }
+
+tmnxDAGrpDCConnRetryTimer    OBJECT-TYPE
+    SYNTAX          Unsigned32 (100..300000)
+    UNITS           "milliseconds"
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCConnRetryTimer specifies in milli-seconds the 
+         amount of time after which the delivery-controller will retry 
+         periodically to establish a connection with its client if not 
+         initially successful."
+    DEFVAL { 1000 }
+    ::= { tmnxDAGrpEntry 11 }
+
+tmnxDAGrpDCIdleTimeout    OBJECT-TYPE
+    SYNTAX          Unsigned32 (10..300)
+    UNITS           "seconds"
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCIdleTimeout specifies the max time for any 
+         outstanding requests to a delivery-controller to be replied. If a reply 
+         is not received within this time after the request was sent, the 
+         DA closes the TCP connection."
+    DEFVAL { 30 }
+    ::= { tmnxDAGrpEntry 12 }
+
+tmnxDAGrpBytesFromCache    OBJECT-TYPE
+    SYNTAX          Counter64
+    UNITS           "bytes"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpBytesFromCache indicates the number of bytes that 
+         are served from the cache."
+    ::= { tmnxDAGrpEntry 13 }
+
+tmnxDAGrpBytesNotFromCache    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpBytesNotFromCache indicates the number of bytes 
+         that are fetched from the server and not served from the cache."
+    ::= { tmnxDAGrpEntry 14 }
+
+tmnxDAGrpObjectsFromCache    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpObjectsFromCache indicates the number of objects 
+         that are served from the cache."
+    ::= { tmnxDAGrpEntry 15 }
+
+tmnxDAGrpObjectsNotFromCache    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpObjectsNotFromCache indicates the number of  
+         objects that are fetched from the server and not served from the 
+         cache."
+    ::= { tmnxDAGrpEntry 16 }
+
+tmnxDAGrpErrorByteCount    OBJECT-TYPE
+    SYNTAX          Counter64
+    UNITS           "megabytes"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpErrorByteCount indicates the number of bytes due 
+         to error responses served from cache."
+    ::= { tmnxDAGrpEntry 17 }
+
+tmnxDAGrpNumberOfOrigins    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpNumberOfOrigins indicates the number of origin 
+         servers."
+    ::= { tmnxDAGrpEntry 18 }
+
+tmnxDAGrpDCAuthCacheHit       OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthCacheHit indicates the number of authorized
+         cache hits."
+    ::= { tmnxDAGrpEntry 19 }
+
+tmnxDAGrpDCAuthCacheMiss      OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthCacheMiss indicates the number of 
+         authorized cache misses."
+    ::= { tmnxDAGrpEntry 20 }
+
+tmnxDAGrpDCDeniedAuth         OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCDeniedAuth indicates the number of denied
+         auth sessions."
+    ::= { tmnxDAGrpEntry 21 }
+
+tmnxDAGrpDCAuthMinRTTPerPeer    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthMinRTTPerPeer indicates the minimum round 
+         trip time per peer."
+    ::= { tmnxDAGrpEntry 22 }
+
+tmnxDAGrpDCAuthAvgRTTPerPeer    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthAvgRTTPerPeer indicates the average round
+         trip time per peer."
+    ::= { tmnxDAGrpEntry 23 }
+
+tmnxDAGrpDCAuthMaxRTTPerPeer    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthMaxRTTPerPeer indicates the maximum round
+         trip time per peer."
+    ::= { tmnxDAGrpEntry 24 }
+
+tmnxDAGrpDCAuthCacheHitAgg      OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthCacheHitAgg indicates the aggregate number 
+         of authorized cache hits."
+    ::= { tmnxDAGrpEntry 25 }
+
+tmnxDAGrpDCAuthCacheMissAgg      OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthCacheMissAgg indicates the aggregate number
+         of authorized cache misses."
+    ::= { tmnxDAGrpEntry 26 }
+
+tmnxDAGrpDCDeniedAuthAgg         OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCDeniedAuthAgg indicates the aggregate number of
+         denied auth sessions."
+    ::= { tmnxDAGrpEntry 27 }
+
+tmnxDAGrpDCAuthMinRTTPerPeerAgg    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthMinRTTPerPeerAgg indicates the aggregate 
+         value of minimum round trip time per peer."
+    ::= { tmnxDAGrpEntry 28 }
+
+tmnxDAGrpDCAuthAvgRTTPerPeerAgg    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthAvgRTTPerPeerAgg indicates the aggregate 
+          value of average round trip time per peer."
+    ::= { tmnxDAGrpEntry 29 }
+
+tmnxDAGrpDCAuthMaxRTTPerPeerAgg    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDCAuthMaxRTTPerPeerAgg indicates the aggregate 
+         value of maximum round trip time per peer."
+    ::= { tmnxDAGrpEntry 30 }
+
+--
+--  DA Group Dns-Server Table
+--
+
+tmnxDAGrpDnsSvrTableLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDnsSvrTableLastChanged indicates the sysUpTime 
+         at the time of the last modification to tmnxDAGrpDnsSvrTable by 
+         adding, deleting an entry or change to a writable object in the table.
+
+         If no changes were made to the table since the last re-initialization 
+         of the local network management subsystem, then this object contains a 
+         zero value."
+    ::= { tmnxDAObjs 5 }
+
+tmnxDAGrpDnsSvrTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDAGrpDnsSvrEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The tmnxDAGrpDnsSvrTable has an entry for each DNS server IP address 
+         within a Delivery Appliance (DA) group network. A user can provision 
+         up to four DNS server IP addresses per DA group."
+    ::= { tmnxDAObjs 6 }
+
+tmnxDAGrpDnsSvrEntry    OBJECT-TYPE
+    SYNTAX          TmnxDAGrpDnsSvrEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents a DNS server IP address within a DA group 
+         network. Entries can be created and deleted by the user. A maximum of 
+         four entries can be configured."
+    INDEX { 
+            tmnxDAGrpName,
+            tmnxDAGrpDnsSvrAddrTyp,
+            tmnxDAGrpDnsSvrAddress 
+    }
+    ::= { tmnxDAGrpDnsSvrTable 1 }
+
+TmnxDAGrpDnsSvrEntry ::= SEQUENCE {
+        tmnxDAGrpDnsSvrAddrTyp             InetAddressType,
+        tmnxDAGrpDnsSvrAddress             InetAddress,
+        tmnxDAGrpDnsSvrRowStatus           RowStatus,
+        tmnxDAGrpDnsSvrLastChanged         TimeStamp
+    }
+
+tmnxDAGrpDnsSvrAddrTyp    OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDnsSvrAddrTyp specifies the address-type of the 
+         DNS server IP address."
+    ::= { tmnxDAGrpDnsSvrEntry 1 }
+
+tmnxDAGrpDnsSvrAddress    OBJECT-TYPE
+    SYNTAX          InetAddress (SIZE(0|4|16))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDnsSvrAddress specifies the IP address of a DNS 
+         server in a DA group."
+    ::= { tmnxDAGrpDnsSvrEntry 2 }
+
+tmnxDAGrpDnsSvrRowStatus    OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDnsSvrRowStatus specifies the row status of this 
+         row in the tmnxDAGrpDnsSvrTable. It is used to create and delete row 
+         entries in this table."
+    ::= { tmnxDAGrpDnsSvrEntry 3 }
+
+tmnxDAGrpDnsSvrLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAGrpDnsSvrLastChanged indicates the timestamp of  
+         last change to this row in tmnxDAGrpDnsSvrTable."
+    ::= { tmnxDAGrpDnsSvrEntry 4 }
+
+--
+--  DA Delivery Controller BootStrap Server Table
+--
+
+tmnxDADCBtStSvrTableLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCBtStSvrTableLastChanged indicates the sysUpTime 
+         at the time of the last modification to tmnxDADCBtStSvrTable by adding, 
+         deleting an entry or change to a writable object in the table.
+
+         If no changes were made to the table since the last re-initialization 
+         of the local network management subsystem, then this object contains a 
+         zero value."
+    ::= { tmnxDAObjs 7 }
+
+tmnxDADCBtStSvrTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDADCBtStSvrEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The tmnxDADCBtStSvrTable has an entry for each Delivery Controller (DC) 
+         bootstrap server. The bootstrap server is used at Delivery Appliance 
+         (DA) initialization. The DA downloads the rest of the DC list from one 
+         of the bootstrap servers. Multiple bootstrap servers can be specified 
+         per DA Group for redundancy purposes."
+    ::= { tmnxDAObjs 8 }
+
+tmnxDADCBtStSvrEntry    OBJECT-TYPE
+    SYNTAX          TmnxDADCBtStSvrEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents a DC bootstrap server. Entries can be created 
+         and deleted by the user."
+    INDEX {  
+            tmnxDAGrpName,
+            tmnxDADCBtStSvrIndex
+    }
+    ::= { tmnxDADCBtStSvrTable 1 }
+
+TmnxDADCBtStSvrEntry ::= SEQUENCE {
+        tmnxDADCBtStSvrIndex               Unsigned32,
+        tmnxDADCBtStSvrRowStatus           RowStatus,
+        tmnxDADCBtStSvrLastChanged         TimeStamp,
+        tmnxDADCBtStSvrAddrType            InetAddressType,
+        tmnxDADCBtStSvrAddress             InetAddress
+    }
+
+tmnxDADCBtStSvrIndex    OBJECT-TYPE
+    SYNTAX          Unsigned32 (0|1..4)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCBtStSvrIndex specifies a unique value which 
+         identifies this bootstrap server entry."
+    ::= { tmnxDADCBtStSvrEntry 1 }
+
+tmnxDADCBtStSvrRowStatus    OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCBtStSvrRowStatus specifies the row status of this 
+         row in the tmnxDADCBtStSvrTable. It is used to create and delete row 
+         entries in this table.
+
+         The value of tmnxDADCBtStSvrAddrType and tmnxDADCBtStSvrAddress must 
+         also be specified when the row is created."
+    ::= { tmnxDADCBtStSvrEntry 2 }
+
+tmnxDADCBtStSvrLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCBtStSvrLastChanged indicates the timestamp of last
+         change to this row in tmnxDADCBtStSvrTable."
+    ::= { tmnxDADCBtStSvrEntry 3 }
+
+tmnxDADCBtStSvrAddrType    OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCBtStSvrAddrType specifies the type of address 
+         represented by tmnxDADCBtStSvrAddress."
+    ::= { tmnxDADCBtStSvrEntry 4 }
+
+tmnxDADCBtStSvrAddress    OBJECT-TYPE
+    SYNTAX          InetAddress (SIZE(1..255))
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCBtStSvrAddress specifies the IP Address or DNS 
+         name of the bootstrap server. If the IP address is an IPv4 address, it 
+         must be specified in the a.b.c.d dotted-decimal notation. An IPv6 
+         address must be specified as defined in RFC1924."
+    ::= { tmnxDADCBtStSvrEntry 5 }
+
+--
+--  DA HTTP Table
+--
+
+tmnxDAHttpTableLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpTableLastChanged indicates the sysUpTime at the 
+         time of the last modification to tmnxDAHttpTable by adding, deleting an 
+         entry or change to a writable object in the table.
+
+         If no changes were made to the table since the last re-initialization 
+         of the local network management subsystem, then this object contains a 
+         zero value."
+    ::= { tmnxDAObjs 9 }
+
+tmnxDAHttpTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDAHttpEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The tmnxDAHttpTable has an entry for each Delivery Appliance (DA) 
+         group. Each row entry specifies the HTTP proxy configuration for this 
+         DA group."
+    ::= { tmnxDAObjs 10 }
+
+tmnxDAHttpEntry    OBJECT-TYPE
+    SYNTAX          TmnxDAHttpEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents the HTTP proxy configuration for a DA group. 
+         Entries can be created and deleted by the user."
+    AUGMENTS  { tmnxDAGrpEntry }
+    ::= { tmnxDAHttpTable 1 }
+
+TmnxDAHttpEntry ::= SEQUENCE {
+        tmnxDAHttpLastChanged              TimeStamp,
+        tmnxDAHttpServerAdminState         TmnxAdminState,
+        tmnxDAHttpServerOperState          TmnxOperState,
+        tmnxDAHttpServerIdleTimeout        Unsigned32,
+        tmnxDAHttpServerViaString          DisplayString,
+        tmnxDAHttpServerStrBWInUse         Counter64,
+        tmnxDAHttpServerXferCompFromOrig   Counter64,
+        tmnxDAHttpServerXferCompFromCach   Counter64,
+        tmnxDAHttpServerXferTimeouts       Gauge32,
+        tmnxDAHttpServerXferFailFromOrig   Gauge32,
+        tmnxDAHttpServerXferFailFromCach   Gauge32,
+        tmnxDAHttpServerValidRequests      Counter64,
+        tmnxDAHttpServerInvalidRequests    Gauge32,
+        tmnxDAHttpServerHostNotSuppted     Gauge32,
+        tmnxDAHttpServerXferProgFromOrig   Counter64,
+        tmnxDAHttpServerXferProgFromCach   Counter64,
+        tmnxDAHttpServerVaryCheckPass      Counter32,
+        tmnxDAHttpServerVaryCheckFail      Counter32,
+        tmnxDAHttpServerCondCheckPass      Counter32,
+        tmnxDAHttpServerCondCheckFail      Counter32,
+        tmnxDAHttpServerExpiredAsset       Counter32,
+        tmnxDAHttpServerRevalidateFail     Counter32,
+        tmnxDAHttpServer1XXOriginCode      Counter64,
+        tmnxDAHttpServer2XXOriginCode      Counter64,
+        tmnxDAHttpServer3XXOriginCode      Counter64,
+        tmnxDAHttpServer4XXOriginCode      Counter64,
+        tmnxDAHttpServer5XXOriginCode      Counter64,
+        tmnxDAHttpServerReqGetMethod       Counter64,
+        tmnxDAHttpServerReqHeadMethod      Counter64,
+        tmnxDAHttpServerReqPutMethod       Counter64,
+        tmnxDAHttpServerReqPostMethod      Counter64,
+        tmnxDAHttpServerReqUnknMethod      Counter64,
+        tmnxDAHttpServer1XXCacheCode       Counter64,
+        tmnxDAHttpServer2XXCacheCode       Counter64,
+        tmnxDAHttpServer3XXCacheCode       Counter64,
+        tmnxDAHttpServer4XXCacheCode       Counter64,
+        tmnxDAHttpServer5XXCacheCode       Counter64,
+        tmnxDAHttpServerAppNotifyFail      Counter64,
+        tmnxDAHttpServerStaleResp          Counter32,
+        tmnxDAHttpIngestAdminState         TmnxAdminState,
+        tmnxDAHttpIngestOperState          TmnxOperState,
+        tmnxDAHttpIngestIsmLinkName        TNamedItemOrEmpty,
+        tmnxDAHttpIngestIdleTimeout        Unsigned32,
+        tmnxDAHttpIngestAssetInBack        Counter32,
+        tmnxDAHttpIngestXferInProg         Gauge32,
+        tmnxDAHttpIngestXferCompleted      Counter64,
+        tmnxDAHttpIngestXferFailed         Gauge32,
+        tmnxDAHttpIngest1XXCountRecd       Counter64,
+        tmnxDAHttpIngest2XXCountRecd       Counter64,
+        tmnxDAHttpIngest3XXCountRecd       Counter64,
+        tmnxDAHttpIngest4XXCountRecd       Counter64,
+        tmnxDAHttpIngest5XXCountRecd       Counter64,
+        tmnxDAHttpIngest2XXMergedCount     Counter32
+    }
+
+tmnxDAHttpLastChanged    OBJECT-TYPE
+    SYNTAX         TimeStamp
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+        "The value of tmnxDAHttpLastChanged indicates the timestamp of last
+         change to this row in tmnxDAHttpTable."
+    ::= { tmnxDAHttpEntry 1 }
+
+tmnxDAHttpServerAdminState    OBJECT-TYPE
+    SYNTAX         TmnxAdminState
+    MAX-ACCESS     read-create
+    STATUS         current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerAdminState specifies the desired 
+         administrative state of the HTTP server's configuration for this DA 
+         group."
+    DEFVAL { outOfService }
+    ::= { tmnxDAHttpEntry 2 }
+
+tmnxDAHttpServerOperState    OBJECT-TYPE
+    SYNTAX         TmnxOperState
+    MAX-ACCESS     read-only
+    STATUS         current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerOperState indicates the current 
+         operational state of the HTTP server's configuration for this DA 
+         group."
+    ::= { tmnxDAHttpEntry 3 }
+
+tmnxDAHttpServerIdleTimeout    OBJECT-TYPE
+    SYNTAX          Unsigned32 (10..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerIdleTimeout specifies the time interval 
+         after which the http-server will timeout and close the HTTP connection 
+         if there has been no activity on that connection for that time."
+    DEFVAL { 120 }
+    ::= { tmnxDAHttpEntry 4 }
+
+tmnxDAHttpServerViaString    OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerViaString specifies the HTTP via header."
+    DEFVAL { "7750-Delivery-Appliance" }
+    ::= { tmnxDAHttpEntry 5 }
+
+tmnxDAHttpServerStrBWInUse    OBJECT-TYPE
+    SYNTAX          Counter64
+    UNITS           "kbps"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerStrBWInUse indicates the amount of 
+         bandwidth that is used by the HTTP server while streaming content.
+
+         This object follows the behavior of a gauge64 in that its value can 
+         increase or decrease with time."
+    ::= { tmnxDAHttpEntry 6 }
+
+tmnxDAHttpServerXferCompFromOrig    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerXferCompFromOrig indicates the number of
+         HTTP transfers from origin that have been completed by the HTTP 
+         server."
+    ::= { tmnxDAHttpEntry 7 }
+
+tmnxDAHttpServerXferCompFromCach    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerXferCompFromCach indicates the number of
+         HTTP transfers from cache that have been completed by the HTTP server."
+    ::= { tmnxDAHttpEntry 8 }
+
+tmnxDAHttpServerXferTimeouts    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerXferTimeouts indicates the number of 
+         HTTP server sessions that timed out due to inactivity."
+    ::= { tmnxDAHttpEntry 9 }
+
+tmnxDAHttpServerXferFailFromOrig    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerXferFailFromOrig indicates the number of 
+         HTTP transfers from origin that failed when the HTTP server was 
+         transferring HTTP content."
+    ::= { tmnxDAHttpEntry 10 }
+
+tmnxDAHttpServerXferFailFromCach    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerXferFailFromCach indicates the number of 
+         HTTP transfers from cache that failed when the HTTP server was 
+         transferring HTTP content."
+    ::= { tmnxDAHttpEntry 11 }
+
+tmnxDAHttpServerValidRequests    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerValidRequests indicates the number of 
+         valid HTTP requests that were received by the HTTP server."
+    ::= { tmnxDAHttpEntry 12 }
+
+tmnxDAHttpServerInvalidRequests    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerInvalidRequests indicates the number of 
+         HTTP requests with parsing errors that were received by the HTTP 
+         server."
+    ::= { tmnxDAHttpEntry 13 }
+
+tmnxDAHttpServerHostNotSuppted    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerHostNotSuppted indicates the number of 
+         times the HTTP server rejected the request because the requested 
+         host is not supported."
+    ::= { tmnxDAHttpEntry 14 }
+
+tmnxDAHttpServerXferProgFromOrig    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerXferProgFromOrig indicates the number of 
+         bytes in the process of transfer from the origin.
+
+         This object follows the behavior of a gauge64 in that its value can 
+         increase or decrease with time."
+    ::= { tmnxDAHttpEntry 15 }
+
+tmnxDAHttpServerXferProgFromCach    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerXferProgFromCach indicates the number of 
+         bytes in the process of transfer from the cache.
+
+         This object follows the behavior of a gauge64 in that its value can 
+         increase or decrease with time."
+    ::= { tmnxDAHttpEntry 16 }
+
+tmnxDAHttpServerVaryCheckPass    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerVaryCheckPass indicates the number of 
+         requests from client passing the vary header check in the cache."
+    ::= { tmnxDAHttpEntry 17 }
+
+tmnxDAHttpServerVaryCheckFail    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerVaryCheckFail indicates the number of 
+         requests from client failing the vary header check in the cache."
+    ::= { tmnxDAHttpEntry 18 }
+
+tmnxDAHttpServerCondCheckPass    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerCondCheckPass indicates the number of 
+         requests from client passing the HTTP conditional header check in the 
+         cache."
+    ::= { tmnxDAHttpEntry 19 }
+
+tmnxDAHttpServerCondCheckFail    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerCondCheckFail indicates the number of 
+         requests from client failing the HTTP conditional header check in the 
+         cache."
+    ::= { tmnxDAHttpEntry 20 }
+
+tmnxDAHttpServerExpiredAsset    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerExpiredAsset indicates the number of 
+         requests from client failing the expiry check in the cache."
+    ::= { tmnxDAHttpEntry 21 }
+
+tmnxDAHttpServerRevalidateFail    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerRevalidateFail indicates the number of 
+         304 responses from origin failing revalidation criteria in the cache."
+    ::= { tmnxDAHttpEntry 22 }
+
+tmnxDAHttpServer1XXOriginCode    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServer1XXOriginCode indicates the count of the 
+         number of 1XX responses from the origin."
+    ::= { tmnxDAHttpEntry 23 }
+
+tmnxDAHttpServer2XXOriginCode    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServer2XXOriginCode indicates the count of the 
+         number of 2XX responses from the origin."
+    ::= { tmnxDAHttpEntry 24 }
+
+tmnxDAHttpServer3XXOriginCode    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServer3XXOriginCode indicates the count of the  
+         number of 3XX responses from the origin."
+    ::= { tmnxDAHttpEntry 25 }
+
+tmnxDAHttpServer4XXOriginCode    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServer4XXOriginCode indicates the count of the  
+         number of 4XX responses from the origin."
+    ::= { tmnxDAHttpEntry 26 }
+
+tmnxDAHttpServer5XXOriginCode    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServer5XXOriginCode indicates the count of the  
+         number of 5XX responses from the origin."
+    ::= { tmnxDAHttpEntry 27 }
+
+tmnxDAHttpServerReqGetMethod    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerReqGetMethod indicates the number of get 
+         requests received from the client."
+    ::= { tmnxDAHttpEntry 28 }
+
+tmnxDAHttpServerReqHeadMethod    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerReqHeadMethod indicates the number of head 
+         requests received from client."
+    ::= { tmnxDAHttpEntry 29 }
+
+tmnxDAHttpServerReqPutMethod    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerReqPutMethod indicates the number of put 
+         requests received from client."
+    ::= { tmnxDAHttpEntry 30 }
+
+tmnxDAHttpServerReqPostMethod    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerReqPostMethod indicates the number of 
+         post requests received from client."
+    ::= { tmnxDAHttpEntry 31 }
+
+tmnxDAHttpServerReqUnknMethod    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerReqUnknMethod indicates the number of 
+         unknown requests received from client."
+    ::= { tmnxDAHttpEntry 32 }
+
+tmnxDAHttpServer1XXCacheCode    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServer1XXCacheCode indicates the count of the 
+         number of 1XX responses from the cache."
+    ::= { tmnxDAHttpEntry 33 }
+
+tmnxDAHttpServer2XXCacheCode    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServer2XXCacheCode indicates the count of the 
+         number of 2XX responses from the cache."
+    ::= { tmnxDAHttpEntry 34 }
+
+tmnxDAHttpServer3XXCacheCode    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServer3XXCacheCode indicates the count of the  
+         number of 3XX responses from the cache."
+    ::= { tmnxDAHttpEntry 35 }
+
+tmnxDAHttpServer4XXCacheCode    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServer4XXCacheCode indicates the count of the  
+         number of 4XX responses from the cache."
+    ::= { tmnxDAHttpEntry 36 }
+
+tmnxDAHttpServer5XXCacheCode    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServer5XXCacheCode indicates the count of the  
+         number of 5XX responses from the cache."
+    ::= { tmnxDAHttpEntry 37 }
+
+tmnxDAHttpServerAppNotifyFail    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerAppNotifyFail indicates the number of 
+         times the application is unable to notify about the completion of 
+         request processing."
+    ::= { tmnxDAHttpEntry 38 }
+
+tmnxDAHttpServerStaleResp    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpServerStaleResp indicates the number of 
+         stale responses served from the cache."
+    ::= { tmnxDAHttpEntry 39 }
+
+tmnxDAHttpIngestAdminState    OBJECT-TYPE
+    SYNTAX          TmnxAdminState
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngestAdminState specifies the desired 
+         administrative state of the HTTP proxy's ingest configuration for this 
+         DA group."
+    DEFVAL { outOfService }
+    ::= { tmnxDAHttpEntry 40 }
+
+tmnxDAHttpIngestOperState    OBJECT-TYPE
+    SYNTAX          TmnxOperState
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngestOperState indicates the current 
+         operational state of the HTTP proxy's ingest configuration for this 
+         DA group."
+    ::= { tmnxDAHttpEntry 41 }
+
+tmnxDAHttpIngestIsmLinkName    OBJECT-TYPE
+    SYNTAX          TNamedItemOrEmpty
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngestIsmLinkName specifies the Integrated 
+         Services Module (ISM) link name used for HTTP ingest connections to 
+         the origin server. The ISM link is an IP interface in the DA group on 
+         the ISM. The ISM link must already be configured in the DA group 
+         before it is assigned to this object."
+    DEFVAL { ''H }
+    ::= { tmnxDAHttpEntry 42 }
+
+tmnxDAHttpIngestIdleTimeout    OBJECT-TYPE
+    SYNTAX          Unsigned32 (10..65535)
+    UNITS           "seconds"
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngestIdleTimeout specifies the time interval 
+         after which the HTTP proxy will timeout and close the HTTP connection 
+         if there has been no activity from the origin server on that 
+         connection for that time."
+    DEFVAL { 120 }
+    ::= { tmnxDAHttpEntry 43 }
+
+tmnxDAHttpIngestAssetInBack    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngestAssetInBack indicates the number of 
+         assets that are proactively fetched by the cache from origin server 
+         to remain in sync with the origin server."
+    ::= { tmnxDAHttpEntry 44 }
+
+tmnxDAHttpIngestXferInProg    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngestXferInProg indicates the number of 
+         HTTP ingest transfers in progress from the origin server to the HTTP 
+         proxy."
+    ::= { tmnxDAHttpEntry 45 }
+
+tmnxDAHttpIngestXferCompleted    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngestXferCompleted indicates the number of HTTP 
+         ingest transfers completed from the origin server to the HTTP proxy."
+    ::= { tmnxDAHttpEntry 46 }
+
+tmnxDAHttpIngestXferFailed    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngestXferFailed indicates the number of 
+         HTTP ingest transfers that failed from the origin server to the HTTP
+         proxy."
+    ::= { tmnxDAHttpEntry 47 }
+
+tmnxDAHttpIngest1XXCountRecd    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngest1XXCountRecd indicates the count of type  
+         1XX that were received by the HTTP proxy from the origin 
+         server."
+    ::= { tmnxDAHttpEntry 48 }
+
+tmnxDAHttpIngest2XXCountRecd    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngest2XXCountRecd indicates the count of type  
+         2XX that were received by the HTTP proxy from the origin 
+         server."
+    ::= { tmnxDAHttpEntry 49 }
+
+tmnxDAHttpIngest3XXCountRecd    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngest3XXCountRecd indicates the count of type  
+         3XX that were received by the HTTP proxy from the origin 
+         server."
+    ::= { tmnxDAHttpEntry 50 }
+
+tmnxDAHttpIngest4XXCountRecd    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngest4XXCountRecd indicates the count of type  
+         4XX that were received by the HTTP proxy from the origin 
+         server."
+    ::= { tmnxDAHttpEntry 51 }
+
+tmnxDAHttpIngest5XXCountRecd    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngest5XXCountRecd indicates the count of type  
+         5XX that were received by the HTTP proxy from the origin 
+         server."
+    ::= { tmnxDAHttpEntry 52 }
+
+tmnxDAHttpIngest2XXMergedCount  OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAHttpIngest2XXMergedCount indicates the merged count 
+         of 2XX responses."
+    ::= { tmnxDAHttpEntry 53 }
+
+--
+--  DA ISM Link Table
+--
+
+tmnxDAIsmLinkTableLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkTableLastChanged indicates the sysUpTime at 
+         the time of the last modification to tmnxDAIsmLinkTable by adding, 
+         deleting an entry or change to a writable object in the table.
+
+         If no changes were made to the table since the last re-initialization 
+         of the local network management subsystem, then this object contains a 
+         zero value."
+    ::= { tmnxDAObjs 11 }
+
+tmnxDAIsmLinkTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDAIsmLinkEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The tmnxDAIsmLinkTable has an entry for each ISM-link within a group 
+         configured in the Delivery Appliance (DA). Multiple IP ISM-links in 
+         the same group are assumed to belong to the same network. IP ISM-links 
+         in different groups are currently assumed to belong to different 
+         networks."
+    ::= { tmnxDAObjs 12 }
+
+tmnxDAIsmLinkEntry    OBJECT-TYPE
+    SYNTAX          TmnxDAIsmLinkEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents an Integrated Services 
+         Module (ISM) link within a group configured in the Delivery Appliance
+        (DA). Entries can be created and deleted by the user."
+    INDEX {  
+            tmnxDAGrpName,
+            tmnxDAIsmLinkName
+    }
+    ::= { tmnxDAIsmLinkTable 1 }
+
+TmnxDAIsmLinkEntry ::= SEQUENCE {
+        tmnxDAIsmLinkName                  TNamedItem,
+        tmnxDAIsmLinkRowStatus             RowStatus,
+        tmnxDAIsmLinkLastChanged           TimeStamp,
+        tmnxDAIsmLinkAddrType              InetAddressType,
+        tmnxDAIsmLinkAddress               InetAddress,
+        tmnxDAIsmLinkAddrPrefixLength      InetAddressPrefixLength,
+        tmnxDAIsmLinkDescription           TItemDescription,
+        tmnxDAIsmLinkHttpd                 TruthValue,
+        tmnxDAIsmLinkHttpListenPort        InetPortNumber,
+        tmnxDAIsmLinkIpMtu                 Unsigned32,
+        tmnxDAIsmLinkQtag                  Unsigned32,
+        tmnxDAIsmLinkMacAddress            MacAddress,
+        tmnxDAIsmLinkAdminState            TmnxAdminState,
+        tmnxDAIsmLinkOperState             TmnxOperState,
+        tmnxDAIsmLinkBindings              BITS
+    }
+
+tmnxDAIsmLinkName    OBJECT-TYPE 
+    SYNTAX          TNamedItem
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAIsmLinkName specifies the ISM-link name within a 
+         group in the DA."
+    ::= { tmnxDAIsmLinkEntry 1 }
+
+tmnxDAIsmLinkRowStatus    OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkRowStatus specifies the row status of this 
+         row in the tmnxDAIsmLinkTable. It is used to create and delete row 
+         entries in this table."
+    ::= { tmnxDAIsmLinkEntry 2 }
+
+tmnxDAIsmLinkLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkLastChanged indicates the timestamp of last
+         change to this row in tmnxDAIsmLinkTable."
+    ::= { tmnxDAIsmLinkEntry 3 }
+
+tmnxDAIsmLinkAddrType    OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkAddrType specifies the address-type of the 
+         ISM-link address used in the DA group."
+    DEFVAL { unknown }
+    ::= { tmnxDAIsmLinkEntry 4 }
+
+tmnxDAIsmLinkAddress    OBJECT-TYPE
+    SYNTAX          InetAddress (SIZE(0|4|16))
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkAddress specifies the IP address used for the 
+         ISM-link address in the DA group."
+    DEFVAL { ''H }
+    ::= { tmnxDAIsmLinkEntry 5 }
+
+tmnxDAIsmLinkAddrPrefixLength    OBJECT-TYPE 
+    SYNTAX          InetAddressPrefixLength
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAIsmLinkAddrPrefixLength specifies the prefix length 
+         of the ISM-link address used in the DA group."
+    DEFVAL { 0 }
+    ::= { tmnxDAIsmLinkEntry 6 }
+
+tmnxDAIsmLinkDescription    OBJECT-TYPE 
+    SYNTAX          TItemDescription
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAIsmLinkDescription specifies the user provided
+         description string for this ISM-link within the DA group."
+    DEFVAL { ''H }
+    ::= { tmnxDAIsmLinkEntry 7 }
+
+tmnxDAIsmLinkHttpd    OBJECT-TYPE
+    SYNTAX          TruthValue
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkHttpd specifies if the HTTP server should be 
+         enabled on this ISM-link."
+    DEFVAL { true }
+    ::= { tmnxDAIsmLinkEntry 8 }
+
+tmnxDAIsmLinkHttpListenPort    OBJECT-TYPE
+    SYNTAX          InetPortNumber
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkHttpListenPort specifies the HTTP listner 
+         port number on this ISM-link if HTTPD is enabled on this ISM-link."
+    DEFVAL { 80 }
+    ::= { tmnxDAIsmLinkEntry 9 }
+
+tmnxDAIsmLinkIpMtu    OBJECT-TYPE 
+    SYNTAX          Unsigned32 (512..9212)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAIsmLinkIpMtu specifies the Maximum Transmission Unit
+         (MTU) value for this ISM-link within the DA group."
+    DEFVAL { 1500 }
+    ::= { tmnxDAIsmLinkEntry 10 }
+
+tmnxDAIsmLinkQtag    OBJECT-TYPE 
+    SYNTAX          Unsigned32 (0..4095)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAIsmLinkQtag specifies the ISM-link identifier for 
+         this ISM-link within the DA group."
+    DEFVAL { 0 }
+    ::= { tmnxDAIsmLinkEntry 11 }
+
+tmnxDAIsmLinkMacAddress    OBJECT-TYPE
+    SYNTAX          MacAddress
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of the object tmnxDAIsmLinkMacAddress specifies the MAC 
+         address for this ISM-link within the DA group. By default the system 
+         will use an internally generated MAC address."
+    DEFVAL { '000000000000'H }
+    ::= { tmnxDAIsmLinkEntry 12 }
+
+tmnxDAIsmLinkAdminState    OBJECT-TYPE
+    SYNTAX          TmnxAdminState
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkAdminState specifies the desired 
+         administrative state of the ISM-link used in the DA group."
+    DEFVAL { outOfService }
+    ::= { tmnxDAIsmLinkEntry 13 }
+
+tmnxDAIsmLinkOperState    OBJECT-TYPE
+    SYNTAX          TmnxOperState
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkOperState indicates the current operational 
+         state of the ISM-link used in the DA group."
+    ::= { tmnxDAIsmLinkEntry 14 }
+
+tmnxDAIsmLinkBindings    OBJECT-TYPE
+    SYNTAX BITS {                    
+                    deliveryController  (0),
+                    httpIngest          (1),
+                    dnsClient           (2)
+                }
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkBindings indicates whether the ism-link is 
+         configured on the delivery-controller, http-ingest and dns-client. If
+         the bit for an entity is set, it indicates that the ism-link has been 
+         configured on that entity. If the bit for an entity is unset it 
+         indicates that the ism-link is not configured on the entity."
+    ::= { tmnxDAIsmLinkEntry 15 }
+
+--
+--  DA ISM-link Arp Table
+--
+
+tmnxDAIsmLinkArpTableLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkArpTableLastChanged indicates the sysUpTime 
+         at the time of the last modification to tmnxDAIsmLinkArpTable by 
+         adding, deleting an entry or change to a writable object in the table.
+
+         If no changes were made to the table since the last re-initialization 
+         of the local network management subsystem, then this object contains a 
+         zero value."
+    ::= { tmnxDAObjs 13 }
+
+tmnxDAIsmLinkArpTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDAIsmLinkArpEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The tmnxDAIsmLinkArpTable has an entry for each ARP address of an 
+         interface within a Delivery Appliance (DA) group."
+    ::= { tmnxDAObjs 14 }
+
+tmnxDAIsmLinkArpEntry    OBJECT-TYPE
+    SYNTAX          TmnxDAIsmLinkArpEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents an ARP address of an interface within a DA 
+         group. Entries can be created and deleted by the user."
+    INDEX {  
+            tmnxDAGrpName,
+            tmnxDAIsmLinkName,
+            tmnxDAIsmLinkArpAddrType,
+            tmnxDAIsmLinkArpAddress
+    }
+    ::= { tmnxDAIsmLinkArpTable 1 }
+
+TmnxDAIsmLinkArpEntry ::= SEQUENCE {
+        tmnxDAIsmLinkArpAddrType           InetAddressType,
+        tmnxDAIsmLinkArpAddress            InetAddress,
+        tmnxDAIsmLinkArpRowStatus          RowStatus,
+        tmnxDAIsmLinkArpLastChanged        TimeStamp,
+        tmnxDAIsmLinkArpMacAddr            MacAddress,
+        tmnxDAIsmLinkArpType               TruthValue
+    }
+
+tmnxDAIsmLinkArpAddrType    OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkArpAddrType specifies the ARP address-type of 
+         the interface used in the DA group."
+    ::= { tmnxDAIsmLinkArpEntry 1 }
+
+tmnxDAIsmLinkArpAddress    OBJECT-TYPE
+    SYNTAX          InetAddress (SIZE(0|4|16))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkArpAddress specifies the ARP address of the
+         interface used in the DA group."
+    ::= { tmnxDAIsmLinkArpEntry 2 }
+
+tmnxDAIsmLinkArpRowStatus    OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkArpRowStatus specifies the row status of this 
+         row in the tmnxDAIsmLinkArpTable. It is used to create and delete row 
+         entries in this table."
+    ::= { tmnxDAIsmLinkArpEntry 3 }
+
+tmnxDAIsmLinkArpLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAIsmLinkArpLastChanged indicates the timestamp of 
+         last change to this row in tmnxDAIsmLinkArpTable."
+    ::= { tmnxDAIsmLinkArpEntry 4 }
+
+tmnxDAIsmLinkArpMacAddr    OBJECT-TYPE
+    SYNTAX          MacAddress
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of the object tmnxDAIsmLinkArpMacAddr specifies the MAC 
+         address for this ARP interface within the DA group."
+    DEFVAL { '000000000000'H }
+    ::= { tmnxDAIsmLinkArpEntry 5 }
+
+tmnxDAIsmLinkArpType    OBJECT-TYPE
+    SYNTAX          TruthValue
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of the object tmnxDAIsmLinkArpType indicates if the ARP entry 
+         is static or dynamic. When the value of tmnxDAIsmLinkArpType is  'true' 
+         the ARP entry is dynamic and when it is  'false' the ARP entry is 
+         static."
+    ::= { tmnxDAIsmLinkArpEntry 6 }
+
+--
+--  DA Static Route Table
+--
+
+tmnxDAStRouteTableLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAStRouteTableLastChanged indicates the sysUpTime at 
+         the time of the last modification to tmnxDAStRouteTable by adding, 
+         deleting an entry or change to a writable object in the table.
+
+         If no changes were made to the table since the last re-initialization 
+         of the local network management subsystem, then this object contains a 
+         zero value."
+    ::= { tmnxDAObjs 15 }
+
+tmnxDAStRouteTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDAStRouteEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The tmnxDAStRouteTable has an entry for each static-route address of an 
+         interface within a Delivery Appliance (DA) group."
+    ::= { tmnxDAObjs 16 }
+
+tmnxDAStRouteEntry  OBJECT-TYPE
+    SYNTAX          TmnxDAStRouteEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents a static-route address of an interface within 
+         a DA group. Entries can be created and deleted by the user."
+    INDEX {  
+            tmnxDAGrpName,
+            tmnxDAStRouteAddrType,
+            tmnxDAStRouteAddress,
+            tmnxDAStRoutePrefixLength,
+            tmnxDAStRouteNextHopAddrType,
+            tmnxDAStRouteNextHopAddress
+    }
+    ::= { tmnxDAStRouteTable 1 }
+
+TmnxDAStRouteEntry ::= SEQUENCE {
+        tmnxDAStRouteAddrType              InetAddressType,
+        tmnxDAStRouteAddress               InetAddress,
+        tmnxDAStRoutePrefixLength          InetAddressPrefixLength,
+        tmnxDAStRouteNextHopAddrType       InetAddressType,
+        tmnxDAStRouteNextHopAddress        InetAddress,
+        tmnxDAStRouteRowStatus             RowStatus,
+        tmnxDAStRouteLastChanged           TimeStamp,
+        tmnxDAStRouteMetric                Unsigned32,
+        tmnxDAStRouteOperState             TmnxOperState
+    }
+
+tmnxDAStRouteAddrType    OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAStRouteAddrType specifies the static-route
+         address-type for a static-route the user wishes to create."
+    ::= { tmnxDAStRouteEntry 1 }
+
+tmnxDAStRouteAddress    OBJECT-TYPE
+    SYNTAX          InetAddress (SIZE(0|4|16))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAStRouteAddress specifies the route address for 
+         which the user wishes to create a static-route."
+    ::= { tmnxDAStRouteEntry 2 }
+
+tmnxDAStRoutePrefixLength    OBJECT-TYPE 
+    SYNTAX          InetAddressPrefixLength
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAStRoutePrefixLength specifies the prefix length 
+         of the static-route address."
+    ::= { tmnxDAStRouteEntry 3 }
+
+tmnxDAStRouteNextHopAddrType    OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAStRouteNextHopAddrType specifies the next-hop 
+         address-type for the static-route."
+    ::= { tmnxDAStRouteEntry 4 }
+
+tmnxDAStRouteNextHopAddress    OBJECT-TYPE
+    SYNTAX          InetAddress (SIZE(0|4|16))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAStRouteNextHopAddress specifies the next-hop 
+         address for the specified static-route."
+    ::= { tmnxDAStRouteEntry 5 }
+
+tmnxDAStRouteRowStatus    OBJECT-TYPE
+    SYNTAX          RowStatus
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAStRouteRowStatus specifies the row status of this 
+         row in the tmnxDAStRouteTable. It is used to create and delete row 
+         entries in this table."
+    ::= { tmnxDAStRouteEntry 6 }
+
+tmnxDAStRouteLastChanged    OBJECT-TYPE
+    SYNTAX          TimeStamp
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAStRouteLastChanged indicates the timestamp of last
+         change to this row in tmnxDAStRouteTable."
+    ::= { tmnxDAStRouteEntry 7 }
+
+tmnxDAStRouteMetric    OBJECT-TYPE 
+    SYNTAX          Unsigned32 (0..65535)
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAStRouteMetric specifies the route metric of the 
+         static-route."
+    DEFVAL { 0 }
+    ::= { tmnxDAStRouteEntry 8 }
+
+tmnxDAStRouteOperState    OBJECT-TYPE
+    SYNTAX          TmnxOperState
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDAStRouteOperState indicates the operational state of 
+         this static-route."
+    ::= { tmnxDAStRouteEntry 9 }
+
+--
+--  DA Server Group Card Table
+--
+
+tmnxDASGCardTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDASGCardEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "There can be multiple Delivery Appliance (DA) proxy server groups in a 
+         system. One or more caching blades (DA servers) form a server group. A 
+         card can only be part of a single server group. The tmnxDASGCardTable 
+         has an entry for a card if it is associated with a server group in 
+         the system."
+    ::= { tmnxDAObjs 17 }
+
+tmnxDASGCardEntry    OBJECT-TYPE
+    SYNTAX          TmnxDASGCardEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents a DA server-group card entry in the system."
+    INDEX {  
+            tmnxDASGCardNumber      
+    }
+    ::= { tmnxDASGCardTable 1 }
+
+TmnxDASGCardEntry ::= SEQUENCE {
+        tmnxDASGCardNumber                 Unsigned32,
+        tmnxDASGCardSvrGrp                 Unsigned32,
+        tmnxDASGCardUpTime                 Gauge32,
+        tmnxDASGCardTotNumClientTCPConn    Counter32,
+        tmnxDASGCardTotNumServerTCPConn    Counter32,
+        tmnxDASGCardClientTCPConnEstab     Counter64,
+        tmnxDASGCardServerTCPConnEstab     Counter64,
+        tmnxDASGCardClientTCPConnClosed    Counter64,
+        tmnxDASGCardServerTCPConnClosed    Counter64,
+        tmnxDASGCardTCPSynToOriginRetry    Counter64,
+        tmnxDASGCardCliTCPFarEndClosed     Counter64,
+        tmnxDASGCardSrvrTCPFarEndClosed    Counter64,
+        tmnxDASGCardCliTCPLocalEndClosed   Counter64,
+        tmnxDASGCardSrvTCPLocalEndClosed   Counter64,
+        tmnxDASGCardUsedStorageCpcty       Counter64,
+        tmnxDASGCardRemStorageCpcty        Counter64,
+        tmnxDASGCardNumberOfAssets         Gauge32,
+        tmnxDASGCardNumberOfOrigins        Gauge32,
+        tmnxDASGCardNumberOfURIs           Gauge32,
+        tmnxDASGCardECCBlockCorrections    Gauge32,
+        tmnxDASGCardECCBlockFailures       Gauge32,
+        tmnxDASGCardPercentBadBlocks       Gauge32, 
+        tmnxDASGCardFPGATotPktsSent        Counter64,
+        tmnxDASGCardFPGATotBytesSent       Counter64,
+        tmnxDASGCardFPGATotPktsRecd        Counter64,
+        tmnxDASGCardFPGATotBytesRecd       Counter64,
+        tmnxDASGCardFPGAUnderflowErrors    Gauge32,
+        tmnxDASGCardFPGAOverflowErrors     Gauge32,
+        tmnxDASGCardOperState              TmnxOperState
+    }
+
+tmnxDASGCardNumber    OBJECT-TYPE
+    SYNTAX          Unsigned32
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardNumber specifies the card number in the 
+         chassis that is associated with the DA server-group." 
+    ::= { tmnxDASGCardEntry 1 }
+
+tmnxDASGCardSvrGrp    OBJECT-TYPE
+    SYNTAX          Unsigned32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardSvrGrp specifies the server-group that is 
+         associated with the card." 
+    ::= { tmnxDASGCardEntry 2 }
+
+tmnxDASGCardUpTime    OBJECT-TYPE
+    SYNTAX          Gauge32
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardUpTime indicates the uptime of the card within
+         this DA server-group."
+    ::= { tmnxDASGCardEntry 3 }
+
+tmnxDASGCardTotNumClientTCPConn    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardTotNumClientTCPConn indicates the total number
+         of TCP client connections for the card within this DA server-group."
+    ::= { tmnxDASGCardEntry 4 }
+
+tmnxDASGCardTotNumServerTCPConn    OBJECT-TYPE
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardTotNumServerTCPConn indicates the total number
+         of server TCP connections for the card within this DA server-group."
+    ::= { tmnxDASGCardEntry 5 }
+
+tmnxDASGCardClientTCPConnEstab    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardClientTCPConnEstab indicates the number of 
+         TCP client connections that have been established for the card within 
+         this DA server-group."
+    ::= { tmnxDASGCardEntry 6 }
+
+tmnxDASGCardServerTCPConnEstab    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardServerTCPConnEstab indicates the number of TCP 
+         server connections that have been established for the card within this
+         DA server-group."
+    ::= { tmnxDASGCardEntry 7 }
+
+tmnxDASGCardClientTCPConnClosed    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardClientTCPConnClosed indicates the number of 
+         TCP client connections that have been closed for the card within this 
+         DA server-group."
+    ::= { tmnxDASGCardEntry 8 }
+
+tmnxDASGCardServerTCPConnClosed    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardServerTCPConnClosed indicates the number of 
+         TCP server connections that have been closed for the card within this 
+         DA server-group."
+    ::= { tmnxDASGCardEntry 9 }
+
+tmnxDASGCardTCPSynToOriginRetry    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardTCPSynToOriginRetry indicates the number of 
+         TCP retries that have been made for the card within this DA 
+         server-group."
+    ::= { tmnxDASGCardEntry 10 }
+
+tmnxDASGCardCliTCPFarEndClosed    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardCliTCPFarEndClosed indicates the number of 
+         TCP client connections that have been closed at the receiving end for 
+         the card within this DA server-group."
+    ::= { tmnxDASGCardEntry 11 }
+
+tmnxDASGCardSrvrTCPFarEndClosed    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardSrvrTCPFarEndClosed indicates the number of 
+         TCP server connections that have been closed at the receiving end for 
+         the card within this DA server-group."
+    ::= { tmnxDASGCardEntry 12 }
+
+tmnxDASGCardCliTCPLocalEndClosed    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardCliTCPLocalEndClosed indicates the number of 
+         TCP client connections that have been closed locally for the card 
+         within this DA server-group."
+    ::= { tmnxDASGCardEntry 13 }
+
+tmnxDASGCardSrvTCPLocalEndClosed    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardSrvTCPLocalEndClosed indicates the number of 
+         TCP server connections that have been closed locally for the card 
+         within this DA server-group."
+    ::= { tmnxDASGCardEntry 14 }
+
+tmnxDASGCardUsedStorageCpcty    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardUsedStorageCpcty indicates the amount of used 
+         storage capacity for the card within this DA server-group."
+    ::= { tmnxDASGCardEntry 15 }
+
+tmnxDASGCardRemStorageCpcty    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardRemStorageCpcty indicates the amount of 
+         remaining storage capacity that can be used for the card within this 
+         DA server-group."
+    ::= { tmnxDASGCardEntry 16 }
+
+tmnxDASGCardNumberOfAssets    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardNumberOfAssets indicates the number of assets 
+         for the card within this DA server-group."
+    ::= { tmnxDASGCardEntry 17 }
+
+tmnxDASGCardNumberOfOrigins    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardNumberOfOrigins indicates the number of 
+         origin servers connected to this card within this DA server-group."
+    ::= { tmnxDASGCardEntry 18 }
+
+tmnxDASGCardNumberOfURIs    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardNumberOfURIs indicates the number of URI's 
+         that are connected to this card within this DA server-group."
+    ::= { tmnxDASGCardEntry 19 }
+
+tmnxDASGCardECCBlockCorrections    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardECCBlockCorrections indicates the number of 
+         ECC block corrections for the card within this DA server-group."
+    ::= { tmnxDASGCardEntry 20 }
+
+tmnxDASGCardECCBlockFailures    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardECCBlockFailures indicates the number of ECC 
+         block failures for the card within this DA server-group."
+    ::= { tmnxDASGCardEntry 21 }
+
+tmnxDASGCardPercentBadBlocks    OBJECT-TYPE
+    SYNTAX          Gauge32
+    UNITS           "hundredths of a percent"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardPercentBadBlocks indicates the percent 
+         amount of bad blocks on the card within this DA server-group."
+    ::= { tmnxDASGCardEntry 22 }
+
+tmnxDASGCardFPGATotPktsSent    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardFPGATotPktsSent indicates the total number of 
+         packets sent to the FPGA by connections on this card within this DA 
+         server-group."
+    ::= { tmnxDASGCardEntry 23 }
+
+tmnxDASGCardFPGATotBytesSent    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardFPGATotBytesSent indicates the total number of 
+         bytes sent to the FPGA by connections on this card within this 
+         DA server-group."
+    ::= { tmnxDASGCardEntry 24 }
+
+tmnxDASGCardFPGATotPktsRecd    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardFPGATotPktsRecd indicates the total number of 
+         packets received from the FPGA by connections on this card within this 
+         DA server-group."
+    ::= { tmnxDASGCardEntry 25 }
+
+tmnxDASGCardFPGATotBytesRecd    OBJECT-TYPE
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardFPGATotBytesRecd indicates the total number of 
+         bytes received from the FPGA by connections on this card within this 
+         DA server-group."
+    ::= { tmnxDASGCardEntry 26 }
+
+tmnxDASGCardFPGAUnderflowErrors    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardFPGAUnderflowErrors indicates the number of 
+         FPGA underflow errors that occured with connections on the card within 
+         this DA server-group"
+    ::= { tmnxDASGCardEntry 27 }
+
+tmnxDASGCardFPGAOverflowErrors    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardFPGAOverflowErrors indicates the number of 
+         FPGA overflow errors that occured with connections on the card within 
+         this DA server-group."
+    ::= { tmnxDASGCardEntry 28 }
+
+tmnxDASGCardOperState    OBJECT-TYPE
+    SYNTAX          TmnxOperState
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDASGCardOperState indicates the current operational 
+         state of the card within this DA server-group."
+    ::= { tmnxDASGCardEntry 29 }
+
+--
+--  DA Delivery Controller Interface Table
+--
+
+tmnxDADCIntfTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDADCIntfEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The tmnxDADCIntfTable has an entry for each Delivery Controller (DC) 
+         interface end-point."
+    ::= { tmnxDAObjs 18 }
+
+tmnxDADCIntfEntry    OBJECT-TYPE
+    SYNTAX          TmnxDADCIntfEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents a DC interface end-point."
+    INDEX {  
+            tmnxDAGrpName,
+            tmnxDADCIntfType,
+            tmnxDADCIntfRowId
+    }
+    ::= { tmnxDADCIntfTable 1 }
+
+TmnxDADCIntfEntry ::= SEQUENCE {
+        tmnxDADCIntfType                INTEGER,
+        tmnxDADCIntfRowId               Unsigned32,
+        tmnxDADCIntfIPAddrType          InetAddressType,
+        tmnxDADCIntfIPAddress           InetAddress,
+        tmnxDADCIntfPort                InetPortNumber,
+        tmnxDADCIntfDestAddrType        InetAddressType,
+        tmnxDADCIntfDestAddress         InetAddress,
+        tmnxDADCIntfDestPort            InetPortNumber,
+        tmnxDADCIntfServerIndex         Gauge32,
+        tmnxDADCIntfFQDNType            InetAddressType,
+        tmnxDADCIntfFQDN                InetAddress,
+        tmnxDADCIntfAdminState          TmnxAdminState,
+        tmnxDADCIntfOperState           TmnxOperState,
+        tmnxDADCIntfIPUpTime            Gauge32,
+        tmnxDADCIntfIdleTime            Gauge32,
+        tmnxDADCIntfRetry               Gauge32,
+        tmnxDADCIntfTimeToLive          Gauge32,
+        tmnxDADCIntfEtag                TLNamedItemOrEmpty,
+        tmnxDADCIntfInterval            Gauge32,
+        tmnxDADCIntfPingReqTxCount      Counter32,
+        tmnxDADCIntfPingResRxCount      Counter32,
+        tmnxDADCIntfReqMsgTxCount       Counter64,
+        tmnxDADCIntfResMsgRxCount       Counter64,
+        tmnxDADCIntfDecodeErrors        Counter32,
+        tmnxDADCIntfConnectionBounce    Counter32,
+        tmnxDADCIntfRemoteClose         Counter32,
+        tmnxDADCIntfNoResponse          Counter32
+    }
+
+tmnxDADCIntfType    OBJECT-TYPE
+    SYNTAX          INTEGER {
+                              service        (1),
+                              config         (2),
+                              health         (3),
+                              job            (4),
+                              metadata       (5),
+                              auth           (6),
+                              event          (7)
+                           }
+
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfType indicates the type of interface asociated 
+         with the delivery controller."
+    ::= { tmnxDADCIntfEntry 1 }
+
+tmnxDADCIntfRowId   OBJECT-TYPE
+    SYNTAX          Unsigned32 (1..4294967295)
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfRowId indicates a unique row id associated 
+         with the delivery controller."
+    ::= {tmnxDADCIntfEntry 2 }
+
+tmnxDADCIntfIPAddrType    OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfIPAddrType indicates the type of address 
+         represented by tmnxDADCIntfIPAddress."
+    ::= { tmnxDADCIntfEntry 3 }
+
+tmnxDADCIntfIPAddress    OBJECT-TYPE
+    SYNTAX          InetAddress (SIZE(0|4|16))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfIPAddress indicates the IP Address of the
+         interface of the delivery controller."
+    ::= { tmnxDADCIntfEntry 4 }
+
+tmnxDADCIntfPort    OBJECT-TYPE
+    SYNTAX          InetPortNumber
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfPort indicates the port of the interface 
+         associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 5 }
+
+tmnxDADCIntfDestAddrType    OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfDestAddrType indicates the type of address 
+         represented by tmnxDADCIntfDestAddress."
+    ::= { tmnxDADCIntfEntry 6 }
+
+tmnxDADCIntfDestAddress    OBJECT-TYPE
+    SYNTAX          InetAddress (SIZE(0|4|16))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfDestAddress indicates the destination IP 
+         address of the interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 7 }
+
+tmnxDADCIntfDestPort    OBJECT-TYPE
+    SYNTAX          InetPortNumber
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfDestPort indicates the destination-port of the 
+         interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 8 }
+
+tmnxDADCIntfServerIndex    OBJECT-TYPE
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfServerIndex indicates the internal server 
+         index of the delivery controller."
+    ::= { tmnxDADCIntfEntry 9 }
+
+tmnxDADCIntfFQDNType    OBJECT-TYPE
+    SYNTAX          InetAddressType
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfFQDNType indicates the type of address 
+         represented by tmnxDADCIntfFQDN."
+    ::= { tmnxDADCIntfEntry 10 }
+
+tmnxDADCIntfFQDN    OBJECT-TYPE
+    SYNTAX          InetAddress (SIZE(1..255))
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfFQDN indicates the Fully Qualified Domain 
+         Name (FQDN) of the interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 11 }
+
+tmnxDADCIntfAdminState    OBJECT-TYPE
+    SYNTAX          TmnxAdminState
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfAdminState indicates the administrative state 
+         of the interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 12 }
+
+tmnxDADCIntfOperState    OBJECT-TYPE
+    SYNTAX          TmnxOperState
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+        "The value of tmnxDADCIntfOperState indicates the operational state of 
+         the interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 13 }
+
+tmnxDADCIntfIPUpTime    OBJECT-TYPE 
+    SYNTAX          Gauge32 
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfIPUpTime indicates the up time for the 
+         interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 14 }
+
+tmnxDADCIntfIdleTime    OBJECT-TYPE 
+    SYNTAX          Gauge32 
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfIdleTime indicates the idle time for the 
+         interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 15 }
+
+tmnxDADCIntfRetry    OBJECT-TYPE 
+    SYNTAX          Gauge32 
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfRetry indicates the retry time for the 
+         interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 16 }
+
+tmnxDADCIntfTimeToLive    OBJECT-TYPE 
+    SYNTAX          Gauge32 (0..255)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfTimeToLive indicates Time To Live (TTL) for 
+         the interface entry associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 17 }
+
+tmnxDADCIntfEtag    OBJECT-TYPE 
+    SYNTAX          TLNamedItemOrEmpty 
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfEtag indicates the Etag value for the 
+         interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 18 }
+
+tmnxDADCIntfInterval    OBJECT-TYPE 
+    SYNTAX          Gauge32 
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfInterval indicates the interval for the 
+         interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 19 }
+
+tmnxDADCIntfPingReqTxCount    OBJECT-TYPE 
+    SYNTAX          Counter32 
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfPingReqTxCount indicates the number of ping 
+         requests transmitted for the interface associated with the delivery 
+         controller."
+    ::= { tmnxDADCIntfEntry 20 }
+
+tmnxDADCIntfPingResRxCount    OBJECT-TYPE 
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfPingResRxCount indicates the number of ping 
+         response counts received for the interface associated with the delivery 
+         controller."
+    ::= { tmnxDADCIntfEntry 21 }
+
+tmnxDADCIntfReqMsgTxCount    OBJECT-TYPE 
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfReqMsgTxCount indicates the number of 
+         interface request messages transmitted for the interface associated 
+         with the delivery controller."
+    ::= { tmnxDADCIntfEntry 22 }
+
+tmnxDADCIntfResMsgRxCount    OBJECT-TYPE 
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfResMsgRxCount indicates the number of 
+         interface request messages received for the interface associated 
+         with the delivery controller."
+    ::= { tmnxDADCIntfEntry 23 }
+
+tmnxDADCIntfDecodeErrors    OBJECT-TYPE 
+    SYNTAX          Counter32 
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfDecodeErrors indicates the number of decode 
+         errors for the interface associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 24 }
+
+tmnxDADCIntfConnectionBounce    OBJECT-TYPE 
+    SYNTAX          Counter32 
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfConnectionBounce indicates the number of 
+         bounced connections for the interface associated with the delivery 
+         controller."
+    ::= { tmnxDADCIntfEntry 25 }
+
+tmnxDADCIntfRemoteClose    OBJECT-TYPE 
+    SYNTAX          Counter32 
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfRemoteClose indicates the number of 
+         connections remotely closed for the interface associated with the 
+         delivery controller."
+    ::= { tmnxDADCIntfEntry 26 }
+
+tmnxDADCIntfNoResponse    OBJECT-TYPE 
+    SYNTAX          Counter32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDADCIntfNoResponse indicates the number of 
+         non-responsive interfacs associated with the delivery controller."
+    ::= { tmnxDADCIntfEntry 27 }
+
+--
+--  DA Group Origin Server Table
+--
+ 
+tmnxDAGrpOrigSvrTable    OBJECT-TYPE
+    SYNTAX          SEQUENCE OF TmnxDAGrpOrigSvrEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "The tmnxDAGrpOrigSvrTable has an entry for each dns-name for which a 
+         request is made to the origin server."
+    ::= { tmnxDAObjs 19 }
+
+tmnxDAGrpOrigSvrEntry    OBJECT-TYPE
+    SYNTAX          TmnxDAGrpOrigSvrEntry
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION
+        "Each row entry represents an entry for each dns-name for which a 
+         request is made to the origin server."
+    INDEX {  
+            tmnxDAGrpName,
+            tmnxDAGrpOrigSvrName
+    }
+    ::= { tmnxDAGrpOrigSvrTable 1 }
+
+TmnxDAGrpOrigSvrEntry ::= SEQUENCE {
+        tmnxDAGrpOrigSvrName                DisplayString,
+        tmnxDAGrpOrigSvrNumOfIPUsed         Gauge32,
+        tmnxDAGrpOrigSvrDnsTTL              Gauge32,
+        tmnxDAGrpOrigSvrNumObjRec           Counter64,
+        tmnxDAGrpOrigSvrNumObjRecFail       Counter64,
+        tmnxDAGrpOrigSvrNumCurTCPConn       Gauge32
+    }
+
+tmnxDAGrpOrigSvrName    OBJECT-TYPE 
+    SYNTAX          DisplayString (SIZE (1..94))
+    MAX-ACCESS      not-accessible
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAGrpOrigSvrName indicates the Fully Qualified Domain
+         name (FQDN) of the origin server. The length of the FQDN is restricted
+         to 94 characters."
+    ::= { tmnxDAGrpOrigSvrEntry 1 }
+
+tmnxDAGrpOrigSvrNumOfIPUsed    OBJECT-TYPE 
+    SYNTAX          Gauge32
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAGrpOrigSvrNumOfIPUsed indicates the number of 
+         dns-addresses which can be used to reach the origin server."
+    ::= { tmnxDAGrpOrigSvrEntry 2 }
+
+tmnxDAGrpOrigSvrDnsTTL    OBJECT-TYPE 
+    SYNTAX          Gauge32 (0..255)
+    UNITS           "seconds"
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAGrpOrigSvrDnsTTL indicates Time To Live (TTL) for 
+         an entry in the cache after which it needs to be re-fetched from the 
+         origin server."
+    ::= { tmnxDAGrpOrigSvrEntry 3 }
+
+tmnxDAGrpOrigSvrNumObjRec    OBJECT-TYPE 
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAGrpOrigSvrNumObjRec indicates the number objects 
+         received by the cache from the origin server."
+    ::= { tmnxDAGrpOrigSvrEntry 4 }
+
+tmnxDAGrpOrigSvrNumObjRecFail    OBJECT-TYPE 
+    SYNTAX          Counter64
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAGrpOrigSvrNumObjRecFail indicates the number of 
+         objects the cache failed to receive from the origin server."
+    ::= { tmnxDAGrpOrigSvrEntry 5 }
+
+tmnxDAGrpOrigSvrNumCurTCPConn    OBJECT-TYPE 
+    SYNTAX          Gauge32 
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION 
+        "The value of tmnxDAGrpOrigSvrNumCurTCPConn indicates the number of  
+         current TCP connections to the origin server."
+    ::= { tmnxDAGrpOrigSvrEntry 6 }
+
+-- ----------------------------------------------
+-- Compliance Statements
+-- ----------------------------------------------
+
+tmnxDAV11v0Compliance    MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for management of cdn features on version 11.0 
+         of the Nokia SROS series systems."
+    MODULE      --this module
+        MANDATORY-GROUPS {
+            tmnxDAV11v0Group
+        }
+    ::= { tmnxDACompliances 1 }
+
+-- ----------------------------------------------
+-- Units of Conformance
+-- ----------------------------------------------
+
+tmnxDAV11v0Group    OBJECT-GROUP
+    OBJECTS {
+                 tmnxDASvrGrpTableLastChanged,
+                 tmnxDASvrGrpRowStatus,
+                 tmnxDASvrGrpLastChanged,
+                 tmnxDASvrGrpCardSlotNumber,
+                 tmnxDASvrGrpAdminState,
+                 tmnxDAGrpTableLastChanged,
+                 tmnxDAGrpRowStatus,
+                 tmnxDAGrpLastChanged,
+                 tmnxDAGrpServerGroupIndex,
+                 tmnxDAGrpAdminState,
+                 tmnxDAGrpDescription,                 
+                 tmnxDAGrpDCAuthCache,                 
+                 tmnxDAGrpDCAdminState,
+                 tmnxDAGrpDCIsmLinkName,
+                 tmnxDAGrpDCBootStrapPort,
+                 tmnxDAGrpDCConnRetryTimer,
+                 tmnxDAGrpDCIdleTimeout,  
+                 tmnxDAGrpBytesFromCache,
+                 tmnxDAGrpBytesNotFromCache,
+                 tmnxDAGrpObjectsFromCache,
+                 tmnxDAGrpObjectsNotFromCache,
+                 tmnxDAGrpErrorByteCount,
+                 tmnxDAGrpNumberOfOrigins,
+                 tmnxDAGrpDnsSvrTableLastChanged,
+                 tmnxDAGrpDnsSvrRowStatus,
+                 tmnxDAGrpDnsSvrLastChanged,
+                 tmnxDADCBtStSvrTableLastChanged,
+                 tmnxDADCBtStSvrRowStatus,
+                 tmnxDADCBtStSvrLastChanged,
+                 tmnxDADCBtStSvrAddrType,
+                 tmnxDADCBtStSvrAddress,
+                 tmnxDAHttpTableLastChanged,                 
+                 tmnxDAHttpLastChanged,
+                 tmnxDAHttpServerAdminState,
+                 tmnxDAHttpServerOperState,
+                 tmnxDAHttpServerIdleTimeout,
+                 tmnxDAHttpServerViaString,
+                 tmnxDAHttpServerStrBWInUse,
+                 tmnxDAHttpServerXferCompFromOrig,
+                 tmnxDAHttpServerXferCompFromCach,
+                 tmnxDAHttpServerXferTimeouts,
+                 tmnxDAHttpServerXferFailFromOrig,
+                 tmnxDAHttpServerXferFailFromCach,
+                 tmnxDAHttpServerValidRequests,
+                 tmnxDAHttpServerInvalidRequests,
+                 tmnxDAHttpServerHostNotSuppted,
+                 tmnxDAHttpServerXferProgFromOrig,
+                 tmnxDAHttpServerXferProgFromCach,
+                 tmnxDAHttpServerVaryCheckPass,
+                 tmnxDAHttpServerVaryCheckFail,
+                 tmnxDAHttpServerCondCheckPass,
+                 tmnxDAHttpServerCondCheckFail,
+                 tmnxDAHttpServerExpiredAsset,                 
+                 tmnxDAHttpServerRevalidateFail,
+                 tmnxDAHttpServer1XXOriginCode,
+                 tmnxDAHttpServer2XXOriginCode,
+                 tmnxDAHttpServer3XXOriginCode,
+                 tmnxDAHttpServer4XXOriginCode,
+                 tmnxDAHttpServer5XXOriginCode,
+                 tmnxDAHttpServerReqGetMethod,
+                 tmnxDAHttpServerReqHeadMethod,
+                 tmnxDAHttpServerReqPutMethod,
+                 tmnxDAHttpServerReqPostMethod,
+                 tmnxDAHttpServerReqUnknMethod,
+                 tmnxDAHttpServer1XXCacheCode,
+                 tmnxDAHttpServer2XXCacheCode,
+                 tmnxDAHttpServer3XXCacheCode,
+                 tmnxDAHttpServer4XXCacheCode,
+                 tmnxDAHttpServer5XXCacheCode,
+                 tmnxDAHttpServerAppNotifyFail,
+                 tmnxDAHttpServerStaleResp,
+                 tmnxDAHttpIngestAdminState,
+                 tmnxDAHttpIngestOperState,
+                 tmnxDAHttpIngestIsmLinkName,
+                 tmnxDAHttpIngestIdleTimeout,
+                 tmnxDAHttpIngestAssetInBack,
+                 tmnxDAHttpIngestXferInProg,
+                 tmnxDAHttpIngestXferCompleted,
+                 tmnxDAHttpIngestXferFailed,
+                 tmnxDAHttpIngest1XXCountRecd,
+                 tmnxDAHttpIngest2XXCountRecd,
+                 tmnxDAHttpIngest3XXCountRecd,
+                 tmnxDAHttpIngest4XXCountRecd,
+                 tmnxDAHttpIngest5XXCountRecd,
+                 tmnxDAHttpIngest2XXMergedCount,
+                 tmnxDAIsmLinkTableLastChanged,
+                 tmnxDAIsmLinkRowStatus,
+                 tmnxDAIsmLinkLastChanged,
+                 tmnxDAIsmLinkAddrType,
+                 tmnxDAIsmLinkAddress,
+                 tmnxDAIsmLinkAddrPrefixLength,
+                 tmnxDAIsmLinkDescription,
+                 tmnxDAIsmLinkHttpd,
+                 tmnxDAIsmLinkHttpListenPort,
+                 tmnxDAIsmLinkIpMtu,
+                 tmnxDAIsmLinkQtag,
+                 tmnxDAIsmLinkMacAddress,
+                 tmnxDAIsmLinkAdminState,
+                 tmnxDAIsmLinkOperState,
+                 tmnxDAIsmLinkBindings,
+                 tmnxDAIsmLinkArpTableLastChanged,
+                 tmnxDAIsmLinkArpRowStatus,
+                 tmnxDAIsmLinkArpLastChanged,
+                 tmnxDAIsmLinkArpMacAddr,
+                 tmnxDAIsmLinkArpType,
+                 tmnxDAStRouteTableLastChanged,
+                 tmnxDAStRouteRowStatus,
+                 tmnxDAStRouteLastChanged,                 
+                 tmnxDAStRouteMetric,
+                 tmnxDAStRouteOperState,
+                 tmnxDASGCardSvrGrp,
+                 tmnxDASGCardUpTime,
+                 tmnxDASGCardTotNumClientTCPConn,
+                 tmnxDASGCardClientTCPConnEstab,
+                 tmnxDASGCardClientTCPConnClosed,
+                 tmnxDASGCardTCPSynToOriginRetry,
+                 tmnxDASGCardCliTCPFarEndClosed,
+                 tmnxDASGCardCliTCPLocalEndClosed,
+                 tmnxDASGCardUsedStorageCpcty,
+                 tmnxDASGCardRemStorageCpcty,
+                 tmnxDASGCardNumberOfAssets,
+                 tmnxDASGCardNumberOfOrigins,
+                 tmnxDASGCardNumberOfURIs,
+                 tmnxDASGCardECCBlockCorrections,
+                 tmnxDASGCardECCBlockFailures,
+                 tmnxDASGCardPercentBadBlocks, 
+                 tmnxDASGCardFPGATotPktsSent,
+                 tmnxDASGCardFPGATotBytesSent,
+                 tmnxDASGCardFPGATotPktsRecd,
+                 tmnxDASGCardFPGATotBytesRecd,
+                 tmnxDASGCardFPGAUnderflowErrors,
+                 tmnxDASGCardFPGAOverflowErrors,
+                 tmnxDASGCardOperState,
+                 tmnxDADCIntfIPAddrType,
+                 tmnxDADCIntfIPAddress,
+                 tmnxDADCIntfPort,
+                 tmnxDADCIntfDestAddrType,
+                 tmnxDADCIntfDestAddress,
+                 tmnxDADCIntfDestPort,
+                 tmnxDADCIntfServerIndex,
+                 tmnxDADCIntfFQDNType,
+                 tmnxDADCIntfFQDN,
+                 tmnxDADCIntfAdminState,
+                 tmnxDADCIntfOperState,
+                 tmnxDADCIntfIPUpTime,
+                 tmnxDADCIntfIdleTime,
+                 tmnxDADCIntfRetry,
+                 tmnxDADCIntfTimeToLive,
+                 tmnxDADCIntfEtag,
+                 tmnxDADCIntfInterval,
+                 tmnxDADCIntfPingReqTxCount,
+                 tmnxDADCIntfPingResRxCount,
+                 tmnxDADCIntfReqMsgTxCount,
+                 tmnxDADCIntfResMsgRxCount,
+                 tmnxDADCIntfDecodeErrors,
+                 tmnxDADCIntfConnectionBounce,
+                 tmnxDADCIntfRemoteClose,
+                 tmnxDADCIntfNoResponse,
+                 tmnxDAGrpOrigSvrNumOfIPUsed,
+                 tmnxDAGrpOrigSvrDnsTTL,
+                 tmnxDAGrpOrigSvrNumObjRec,
+                 tmnxDAGrpOrigSvrNumObjRecFail,
+                 tmnxDAGrpOrigSvrNumCurTCPConn,
+                 tmnxDAGrpDCAuthCacheHit,
+                 tmnxDAGrpDCAuthCacheMiss,
+                 tmnxDAGrpDCDeniedAuth,
+                 tmnxDAGrpDCAuthMinRTTPerPeer,
+                 tmnxDAGrpDCAuthAvgRTTPerPeer,
+                 tmnxDAGrpDCAuthMaxRTTPerPeer,
+                 tmnxDASGCardTotNumServerTCPConn,
+                 tmnxDASGCardServerTCPConnEstab,
+                 tmnxDASGCardServerTCPConnClosed,
+                 tmnxDASGCardSrvrTCPFarEndClosed,
+                 tmnxDASGCardSrvTCPLocalEndClosed,
+                 tmnxDAGrpDCAuthCacheHitAgg,
+                 tmnxDAGrpDCAuthCacheMissAgg,
+                 tmnxDAGrpDCDeniedAuthAgg,
+                 tmnxDAGrpDCAuthMinRTTPerPeerAgg,
+                 tmnxDAGrpDCAuthAvgRTTPerPeerAgg,
+                 tmnxDAGrpDCAuthMaxRTTPerPeerAgg
+            }
+    STATUS      current
+    DESCRIPTION
+        "The group of objects supporting management of Delivery Appliance 
+         features on version 11.0 of the Nokia SROS series systems."
+    ::= { tmnxDAGroups 1 }
+
+END

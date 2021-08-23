@@ -1,0 +1,851 @@
+TL1-SECU-MIB DEFINITIONS ::= BEGIN
+
+-- ===========================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied,
+--  with respect to the sufficiency, accuracy, or utility of any information
+--  or opinion contained herein. Alcatel-Lucent expressly advises that any
+--  use of for any purpose or reliance upon this technical reference is at
+--  the risk of the user and that Alcatel-Lucent shall not be liable for any
+--  damage or injury incurred by any person arising out of the sufficiency,
+--  accuracy, or utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these
+--  products and to withdraw any or all of them at any future time.
+--
+--  Copyright (C) 2010, Alcatel-Lucent. All Rights Reserved.
+-- ===========================================================================
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED   "201408270000Z"
+--  ORGANIZATION   "Alcatel-Lucent"
+--  CONTACT-INFO
+--
+--          Email:  asam.mibsupport@alcatel.be"
+--
+--  DESCRIPTION
+--        "This MIB module defines TL1 security objects."
+--
+--  REVISION "201408270000Z"  27-AUG-2014
+--  DESCRIPTION
+--        "Editor:   Sakthivel Chidambaram
+--         Changes:  Initial version"
+-- ========================================================================
+
+    IMPORTS
+      OBJECT-TYPE FROM RFC-1212
+      enterprises FROM RFC1155-SMI
+      DisplayString FROM RFC1213-MIB
+      RowStatus FROM SNMPv2-TC
+    ;
+
+    alcatel OBJECT IDENTIFIER ::= { enterprises 637 }
+    asd     OBJECT IDENTIFIER ::= { alcatel 61 }
+    asam    OBJECT IDENTIFIER ::= { asd 1 }
+
+    tl1SecuMib  OBJECT IDENTIFIER ::= { asam 100 }
+
+AluTL1ExpiryStatus ::=  INTEGER { notExpired(1), expired(2) }
+
+-- ================================================================
+aluTL1SecuUserTable     OBJECT-TYPE  
+        SYNTAX          SEQUENCE OF AluTL1SecuUserEntry
+        ACCESS          not-accessible  
+        STATUS          mandatory  
+        DESCRIPTION     "Per-user TL1 security objects.
+
+
+                      ALCATEL NOTE:
+                          TABLESIZE:  21
+                          DESCR:      NA"
+
+::= { tl1SecuMib 1 }
+  
+aluTL1SecuUserEntry    OBJECT-TYPE  
+        SYNTAX          AluTL1SecuUserEntry
+        ACCESS          not-accessible
+        STATUS          mandatory  
+        DESCRIPTION     "An entry in the table, containing security
+                         information for a user.
+
+                         A user with ALL privilege codes set to 7 is
+                         termed a SUPERUSER, and has full access to all
+                         commands.
+
+                         One row is initialized by software. It
+                         is the SUPERUSER entry. This entry is managed by
+                         the SNMP manager same as any other entry in the
+                         table."
+
+    INDEX       { aluTL1SecuUserName }
+    ::= { aluTL1SecuUserTable 1 }  
+  
+AluTL1SecuUserEntry ::=  
+        SEQUENCE {  
+                aluTL1SecuUserName                 DisplayString, 
+                aluTL1SecuUserRowStatus            RowStatus,
+                aluTL1SecuUserPassword             DisplayString,
+                aluTL1SecuUserPrivMaint            INTEGER,
+                aluTL1SecuUserPrivProv             INTEGER,
+                aluTL1SecuUserPrivSecu             INTEGER,
+                aluTL1SecuUserPrivTest             INTEGER,
+                aluTL1SecuUserPasswordAgeIntvl     INTEGER,
+                aluTL1SecuUserUseridAgeIntvl       INTEGER,
+                aluTL1SecuUserAutoLogoff           INTEGER
+        }  
+
+aluTL1SecuUserName  OBJECT-TYPE
+    SYNTAX          DisplayString (SIZE (1..10))
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "User's name.
+
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    NA       INSRVMOD:   NA
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuUserEntry 1 }
+
+aluTL1SecuUserRowStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "This object is used to create a new row or delete an
+                     existing row in this table. The possible valid values are:
+                         (1) active
+                         (2) notInService 
+                         (4) createdAndGo
+                         (6) destroy
+                     To create an entry in this table, this object should be set to
+                     CreateAndGo. To delete an entry from this table, RowStatus
+                     should be set to Destroy value by the SNMP manager.
+                     This object does not support the dribble-mode.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA
+                 USAGE:      NA
+                 PERSIST:    YES
+                 INSRVMOD:   NA
+                 RANGE:      active | notInService | createAndGo | destroy
+                 DEFVALUE:   NA
+                 UNITS:      NA
+                 SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuUserEntry 2 }
+
+aluTL1SecuUserPassword OBJECT-TYPE
+    SYNTAX          DisplayString (SIZE (6..32))
+    ACCESS          read-write 
+    STATUS          mandatory
+    DESCRIPTION     "Clear text of user's password.
+
+                     The input password string may be from 6 to 32 characters
+                     long. It must include at least one numeric, one symbolic,
+                     and one alpha character. Input is case sensitive and may
+                     be in mixed case. The valid character set for the input
+                     password string is the following:
+
+                     1. Upper and lower case alphabetical characters.
+
+                     2. Decimal numbers 0 through 9.
+
+                     3. Special characters: 
+
+                        _ underscore 
+                        + addition or plus sign 
+                        % percent sign 
+                        # number or pound sign 
+                        - hyphen or dash sign 
+                        ~ tilda 
+                        @ at sign 
+                        < less than bracket 
+                        > greater than bracket
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    NO       INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      This is WOM (Write Only Memory)"
+
+    ::= { aluTL1SecuUserEntry 3 }
+
+aluTL1SecuUserPrivMaint OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "User's privilege level for maintenance commands.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this category.
+                     If not specified, privilege code of 1 is assumed.
+
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   1
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuUserEntry 4 }
+
+aluTL1SecuUserPrivProv OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "User's privilege level for provisioning commands.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this category.
+                     If not specified, privilege code of 1 is assumed.
+
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   1
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuUserEntry 5 }
+
+aluTL1SecuUserPrivSecu OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "User's privilege level for security commands.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this category.
+                     If not specified, privilege code of 1 is assumed.
+
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   1
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuUserEntry 6 }
+
+aluTL1SecuUserPrivTest OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "User's privilege level for test commands.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this category.
+                     If not specified, privilege code of 1 is assumed.
+
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   1
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuUserEntry 7 }
+
+aluTL1SecuUserPasswordAgeIntvl OBJECT-TYPE
+    SYNTAX          INTEGER (0..365)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Password age-out interval in days.
+                     A value of zero disables aging.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   30
+                 UNITS:      days     SPARSE:     NA
+                 DESCR:      NA"
+
+    DEFVAL          { 30 }
+    ::= { aluTL1SecuUserEntry 8 }
+
+aluTL1SecuUserUseridAgeIntvl OBJECT-TYPE
+    SYNTAX          INTEGER (0..365)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Username age-out interval in days.
+                     A value of zero disables aging.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   60
+                 UNITS:      days     SPARSE:     NA
+                 DESCR:      NA"
+
+    DEFVAL          { 60 }
+    ::= { aluTL1SecuUserEntry 9 }
+
+aluTL1SecuUserAutoLogoff OBJECT-TYPE
+    SYNTAX          INTEGER { disable(1), enable(2) }
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Allow or inhibit automatic logout when inactive.
+
+                     disable(1) - Disable use of Timeout.
+                     enable(2) - Do not disable use of timeout. (DEFAULT)
+
+                     This parameter controls the use of user inactivity
+                     timeout configured for aluTL1SecuPortTimeoutInterval.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   enable(2)
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    DEFVAL          { enable }
+    ::= { aluTL1SecuUserEntry 10 }
+
+
+-- ================================================================
+aluTL1SecuCommandTable  OBJECT-TYPE  
+        SYNTAX          SEQUENCE OF AluTL1SecuCommandEntry
+        ACCESS          not-accessible  
+        STATUS          mandatory  
+        DESCRIPTION     "Per-command TL1 security objects.
+
+             TABLESIZE:  DEP number of TL1 commands supported
+             DESCR:      NA"
+
+::= { tl1SecuMib 2 }
+
+aluTL1SecuCommandEntry  OBJECT-TYPE  
+        SYNTAX          AluTL1SecuCommandEntry
+        ACCESS          not-accessible  
+        STATUS          mandatory  
+        DESCRIPTION     "An entry in the table, containing security
+                         information for a command."
+
+    INDEX       { aluTL1SecuCommandVerbMod }
+    ::= { aluTL1SecuCommandTable 1 }  
+  
+AluTL1SecuCommandEntry ::=  
+        SEQUENCE {
+                aluTL1SecuCommandVerbMod           DisplayString,
+                aluTL1SecuCommandPrivMaint         INTEGER,
+                aluTL1SecuCommandPrivProv          INTEGER,
+                aluTL1SecuCommandPrivSecu          INTEGER,
+                aluTL1SecuCommandPrivTest          INTEGER
+        }
+
+aluTL1SecuCommandVerbMod OBJECT-TYPE
+    SYNTAX          DisplayString (SIZE (3..30))
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "Command verb and modifiers.
+
+                    <verb>[-modifier][-modifier]
+
+                     These are TL1 commands. For example, the TL1 command
+                     ENT-PONIGMPCHN. The verb is ENT. The modifier is
+                     PONIGMPCHN. This command only has one modifier.
+
+                     The TL1 command RTRV-PROFILE-BW. The verb is RTRV. The
+                     first modifier is PROFILE. The second modifier is BW.
+                     This command has two modifiers.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    NA       INSRVMOD:   NA
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuCommandEntry 1 }  
+
+aluTL1SecuCommandPrivMaint OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Command's privilege level for maintenance.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this
+                     category.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuCommandEntry 2 }  
+
+aluTL1SecuCommandPrivProv OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Command's privilege level for provisioning.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this
+                     category.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuCommandEntry 3 }  
+
+aluTL1SecuCommandPrivSecu OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Command's privilege level for security.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this
+                     category.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuCommandEntry 4 }  
+
+aluTL1SecuCommandPrivTest OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Command's privilege level for test.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuCommandEntry 5 }  
+
+-- ================================================================
+aluTL1SecuPortTable   OBJECT-TYPE  
+        SYNTAX          SEQUENCE OF AluTL1SecuPortEntry
+        ACCESS          not-accessible  
+        STATUS          mandatory  
+        DESCRIPTION     "Per-port TL1 security objects.
+
+             TABLESIZE:  2
+             DESCR:      Local craft interface
+                         Remote craft interface"
+
+::= { tl1SecuMib 3 }
+
+aluTL1SecuPortEntry    OBJECT-TYPE  
+        SYNTAX          AluTL1SecuPortEntry
+        ACCESS          not-accessible  
+        STATUS          mandatory  
+        DESCRIPTION     "An entry in the table, containing security
+                         information for a port."
+
+    INDEX       { aluTL1SecuPortIndex }
+    ::= { aluTL1SecuPortTable 1 }  
+
+AluTL1SecuPortEntry ::=  
+        SEQUENCE {  
+                aluTL1SecuPortIndex                INTEGER,  
+                aluTL1SecuPortPrivMaint            INTEGER,
+                aluTL1SecuPortPrivProv             INTEGER,
+                aluTL1SecuPortPrivSecu             INTEGER,
+                aluTL1SecuPortPrivTest             INTEGER,
+                aluTL1SecuPortAlarmDurationHours   INTEGER,
+                aluTL1SecuPortAlarmDurationMinutes INTEGER,
+                aluTL1SecuPortAlarmDurationSeconds INTEGER,
+                aluTL1SecuPortMinLoginInterval     INTEGER,
+                aluTL1SecuPortMaxInvalidLogins     INTEGER,
+                aluTL1SecuPortTimeoutInterval      INTEGER
+        }  
+
+aluTL1SecuPortIndex OBJECT-TYPE
+    SYNTAX          INTEGER { localCraft(1),remoteCraft(2) }
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "Index of one port's data.
+
+                    localCraft = serial port, Telnet, SSH
+                    remoteCraft = UDP
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    NA       INSRVMOD:   NA
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 1 }
+
+aluTL1SecuPortPrivMaint OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Port's privilege level for maintenance commands.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this
+                     category. 
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 2 }
+
+aluTL1SecuPortPrivProv OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Port's privilege level for provisioning commands.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this
+                     category.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 3 }
+
+aluTL1SecuPortPrivSecu OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Port's privilege level for security commands.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this
+                     category.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 4 }
+
+aluTL1SecuPortPrivTest OBJECT-TYPE
+    SYNTAX          INTEGER (0..7)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Port's privilege level for test commands.
+
+                     The value is an integer between 0..7, where 7 is
+                     the highest level.
+
+                     A value of 0 disables the use of commands in this
+                     category.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 5 }
+
+aluTL1SecuPortAlarmDurationHours OBJECT-TYPE
+    SYNTAX          INTEGER (0..23)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Duration of alarm condition, hours portion.
+
+                     The time interval over which the port will be
+                     locked out due to an intrusion alert.
+ 
+                     The function is disabled when: 
+                     aluTL1SecuPortAlarmDurationHours = 0
+                     aluTL1SecuPortAlarmDurationMinutes = 0
+                     aluTL1SecuPortAlarmDurationSeconds = 0
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      hours    SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 6 }
+
+aluTL1SecuPortAlarmDurationMinutes OBJECT-TYPE
+    SYNTAX          INTEGER (0..59)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Duration of alarm condition, minutes portion.
+
+                     The time interval over which the port will be
+                     locked out due to an intrusion alert.
+ 
+                     The function is disabled when: 
+                     aluTL1SecuPortAlarmDurationHours = 0
+                     aluTL1SecuPortAlarmDurationMinutes = 0
+                     aluTL1SecuPortAlarmDurationSeconds = 0
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      minutes  SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 7 }
+
+aluTL1SecuPortAlarmDurationSeconds OBJECT-TYPE
+    SYNTAX          INTEGER (0..59)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Duration of alarm condition, seconds portion.
+
+                     The time interval over which the port will be
+                     locked out due to an intrusion alert.
+ 
+                     The function is disabled when: 
+                     aluTL1SecuPortAlarmDurationHours = 0
+                     aluTL1SecuPortAlarmDurationMinutes = 0
+                     aluTL1SecuPortAlarmDurationSeconds = 0
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      seconds  SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 8 }
+
+aluTL1SecuPortMinLoginInterval OBJECT-TYPE
+    SYNTAX          INTEGER (0..9)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Minimum interval between logins, in seconds.
+
+                     The minimum interval between consecutive login
+                     attempts.
+
+                     The value is 0..9 seconds. The value 0 disables
+                     this feature.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      seconds  SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 9 }
+
+aluTL1SecuPortMaxInvalidLogins OBJECT-TYPE
+    SYNTAX          INTEGER (0..15)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Maximum number of invalid logins.
+
+                     The maximum number of invalid login attempts
+                     before declaring an intrusion alert.
+
+                     The value is 0..15.
+
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 10 }
+
+aluTL1SecuPortTimeoutInterval OBJECT-TYPE
+    SYNTAX          INTEGER (0..360)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Port timeout interval in minutes.
+
+                     Timeout value for a user session. If the user
+                     is idle for longer than this period, the session
+                     is automatically terminated.
+
+                     The value is 0..360 minutes. The value 0 disables
+                     this feature.
+
+                     A modification in this parameter takes effect only
+                     at the subsequent logon.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   NA
+                 UNITS:      minutes  SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuPortEntry 11 }
+
+-- ================================================================
+aluTL1SecuSystemInfo OBJECT IDENTIFIER ::= { tl1SecuMib 4 }
+   
+aluTL1SecuSystemGracePeriod OBJECT-TYPE
+    SYNTAX          INTEGER (0..10)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Number of logins allowed after password has expired.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   0
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuSystemInfo 1 }
+   
+aluTL1SecuSystemPasswordWarningPeriod OBJECT-TYPE
+    SYNTAX          INTEGER (0..60)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Number of days to warn of a future password expiration.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   7
+                 UNITS:      days     SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuSystemInfo 2 }
+   
+aluTL1SecuSystemMinPasswordLength OBJECT-TYPE
+    SYNTAX          INTEGER (6..32)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Minimum number of characters allowed in a password.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   6
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuSystemInfo 3 }
+   
+aluTL1SecuSystemPasswordHistoryLength OBJECT-TYPE
+    SYNTAX          INTEGER (0..36)
+    ACCESS          read-write
+    STATUS          mandatory
+    DESCRIPTION     "Number of most recent passwords which may not be reused.
+
+             ALCATEL NOTE:
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    YES      INSRVMOD:   YES
+                 RANGE:      NA       DEFVALUE:   1
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuSystemInfo 4 }
+
+aluTL1SecuSystemAdminState OBJECT-TYPE
+    SYNTAX          INTEGER {
+                            enabled(1),
+                            disabled(2)
+                            }
+    ACCESS          read-only
+    STATUS          mandatory
+    DESCRIPTION     "The Administrative State of TL1 security management.
+
+                     enabled(1)
+                     Read/write access to user security tables is granted
+                     to the SNMP manager.
+
+                     disabled(2)
+                     Read/write access to user security tables is not granted
+                     to the SNMP manager.
+
+                     This object can always be read by the SNMP manager. The
+                     value of this object is controlled by the implementation
+                     software.
+
+                     When aluTL1SecuSystemAdminState = disabled or
+                     (aluTL1SecuSystemAdminState = enabled and SNMP
+                     transactions are NOT SNMPv3 with authentication and privacy),
+                     the SNMP manager will receive error-status = noSuchName when
+                     attempting to access this MIB.
+
+             ALCATEL NOTE (from the perspective of the SNMP manager): 
+                 ACCESS:     NA       USAGE:      NA
+                 PERSIST:    NO       INSRVMOD:   NA
+                 RANGE:      NA       DEFVALUE:   disabled(2)
+                 UNITS:      NA       SPARSE:     NA
+                 DESCR:      NA"
+
+    ::= { aluTL1SecuSystemInfo 5}
+
+
+
+END
+

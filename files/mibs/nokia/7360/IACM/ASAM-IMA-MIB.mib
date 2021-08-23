@@ -1,0 +1,1221 @@
+-- ASAM-IMA-MIB
+
+-- =============================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel will not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein will be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2004, Alcatel. All Rights Reserved.
+-- =============================================================================
+
+--  CONTACT-INFO "Marc Van Vlimmeren"
+--  MODULE-IDENTITY
+--  LAST-UPDATED "2010-10-21"
+--  ORGANIZATION "Alcatel"
+--  ORIGINATOR "Liu Tao B"
+
+--  Postal:
+
+-- =============================================================================
+--
+--  HISTORY:
+--
+--
+--  Date: 2010-10-21  -  version: 3FE20282AAAA_V4.3.0.0.0
+--  Editor: Liu Tao B
+-- 
+-- =============================================================================
+
+ASAM-IMA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+    asam
+        FROM SYSTEM-MIB
+    TruthValue
+        FROM SNMPv2-TC
+    Gauge
+        FROM RFC1155-SMI
+    imaGroupIndex, imaLinkIfIndex
+        FROM IMA-MIB;
+
+-- asamImaMIB MODULE-IDENTITY
+-- 
+--     LAST-UPDATED "9806101500Z"
+-- 
+--     ORGANIZATION "Alcatel Telecom"
+-- 
+--     CONTACT-INFO
+--         "Rajesh Abbi
+-- 
+--             Postal : Alcatel Network Systems
+--                      2912 Wake Forest Road,
+--                      Raleigh, NC 27609-7860
+-- 
+--             Tel    : +1 (919) 850-6194
+--             Fax    : +1 (919) 850-6670
+-- 
+--             E-mail : abbira@aur.alcatel.com"
+-- 
+--     DESCRIPTION
+--         "This MIB module supports extended configuration and    
+--          performance parameters for the IMA facilities in the ASAM."
+-- 
+--     ::= { asam 17 }
+
+asamImaMIB OBJECT IDENTIFIER ::= { asam 17 }
+
+
+ImaCacBehaviourType ::=  INTEGER {
+                                 standard(1),
+                                 non-standard(2)
+                                 }
+
+
+-- the IMA Group Current Table
+
+-- The IMA Group current table contains various statistics being
+-- collected for the current 15 minute interval for IMA Groups.
+
+imaGroupCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ImaGroupCurrentEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The IMA Group Current table."
+    ::= { asamImaMIB 1 }
+
+imaGroupCurrentEntry OBJECT-TYPE
+    SYNTAX  ImaGroupCurrentEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the IMA Group Current table."
+    INDEX   { imaGroupCurrentIndex }
+    ::= { imaGroupCurrentTable 1 }
+
+ImaGroupCurrentEntry ::=
+    SEQUENCE {
+        imaGroupCurrentIndex           INTEGER,
+        imaGroupCurrentTimeElapsed     INTEGER,
+        imaGroupCurrentValidIntervals  INTEGER,
+        imaGroupCurrentUASs            Gauge,
+        imaGroupCurrentFCs             Gauge,
+        imaGroupCurrentInvalidDataFlag INTEGER
+    }
+
+imaGroupCurrentIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies  the
+         IMA Group   to which this entry is applica-
+         ble.  The interface identified by a  particular
+         value  of  this  index is the same interface as
+         identified by the same value as a imaGroupIndex
+         object instance."
+    ::= { imaGroupCurrentEntry 1 }
+
+imaGroupCurrentTimeElapsed OBJECT-TYPE
+    SYNTAX  INTEGER (0..899)
+    ACCESS  read-only 
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of seconds that have elapsed  since
+         the  beginning of the current error-measurement
+         period."
+    ::= { imaGroupCurrentEntry 2 }
+
+imaGroupCurrentValidIntervals OBJECT-TYPE
+    SYNTAX  INTEGER (0..32)
+    ACCESS  read-only 
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of  previous  intervals  for  which
+         valid data was collected.  The value will be 32
+         unless the interface was brought on-line within
+         the last  8 hours, in which case the value will
+         be the number of complete 15  minute  intervals
+         the since interface has been online."
+    ::= { imaGroupCurrentEntry 3 }
+
+imaGroupCurrentUASs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unavailable Seconds, encountered  by
+         this IMA Group in the current 15 minute interval."
+    ::= { imaGroupCurrentEntry 4 }
+
+imaGroupCurrentFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of failures encountered by the near-end
+         interface of this IMA Group in the current 15 minute 
+         interval."
+    ::= { imaGroupCurrentEntry 5 }
+
+imaGroupCurrentInvalidDataFlag OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding PM data.
+It is set to 1 when the PM data is incomplete or invalid and set to 0 when the PM data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (900 seconds for a 15 minutes interval, 86400 seconds for a 24 hour interval), or 
+- the data is incomplete in the accumulation period (for instance because a transmission failure prevent far-end data collection)
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1        DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { imaGroupCurrentEntry 6}
+
+-- the IMA Group Interval
+
+-- The IMA Group Interval Table contains various statistics
+-- collected for each IMA Group over the previous  8 hours of
+-- operation.  The past  8 hours are broken into 32 completed
+-- 15 minute intervals.
+
+imaGroupIntervalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ImaGroupIntervalEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The IMA Group Interval table."
+    ::= { asamImaMIB 2 }
+
+imaGroupIntervalEntry OBJECT-TYPE
+    SYNTAX  ImaGroupIntervalEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the IMA Group Interval table."
+    INDEX   { imaGroupIntervalIndex, imaGroupIntervalNumber }
+    ::= { imaGroupIntervalTable 1 }
+
+ImaGroupIntervalEntry ::=
+    SEQUENCE {
+        imaGroupIntervalIndex  INTEGER,
+        imaGroupIntervalNumber INTEGER,
+        imaGroupIntervalUASs   Gauge,
+        imaGroupIntervalFCs    Gauge,
+        imaGroupIntervalInvalidDataFlag INTEGER
+    }
+
+imaGroupIntervalIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies  the
+         IMA Group   to which this entry is applica-
+         ble.  The interface identified by a  particular
+         value  of  this  index is the same interface as
+         identified by the same value as a imaGroupIndex
+         object instance."
+    ::= { imaGroupIntervalEntry 1 }
+
+imaGroupIntervalNumber OBJECT-TYPE
+    SYNTAX  INTEGER (1..32)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A number between 1 and 32, where 1 is the most
+         recently completed 15 minute interval and 32 is
+         the least recently completed 15 minutes  inter-
+         val   (assuming   that  all  32  intervals  are
+         valid)."
+    ::= { imaGroupIntervalEntry 2 }
+
+imaGroupIntervalUASs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unavailable Seconds encountered by 
+         this IMA Group in one of the previous 32, indi-
+         vidual 15 minute, intervals."
+    ::= { imaGroupIntervalEntry 3 }
+
+imaGroupIntervalFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of failures encountered by this IMA 
+         Group in one of the previous 32, individual 15 
+         minute, intervals."
+    ::= { imaGroupIntervalEntry 4 }
+
+imaGroupIntervalInvalidDataFlag OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding PM data.
+It is set to 1 when the PM data is incomplete or invalid and set to 0 when the PM data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (900 seconds for a 15 minutes interval, 86400 seconds for a 24 hour interval), or 
+- the data is incomplete in the accumulation period (for instance because a transmission failure prevent far-end data collection)
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1        DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { imaGroupIntervalEntry 5}
+
+
+-- The IMA Group Far End Group
+
+-- Implementation of this group is optional for all systems
+-- that support IMA Groups.
+-- The IMA Group Far End Group consists of two tables:
+--   IMA Group Far End Current
+--   IMA Group Far End Interval
+
+-- The IMA Group Far End Current Table
+
+-- The IMA Group Far End Current table contains various statistics
+-- being collected for the current 15 minute interval.
+-- The statistics are collected from the far end messages on the
+-- IMA Control Protocol (ICP) Link.  The definitions are the same 
+-- as described for the near-end information.
+
+imaGroupFarEndCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ImaGroupFarEndCurrentEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The IMA Group Far End Current table."
+    ::= { asamImaMIB 3 }
+
+imaGroupFarEndCurrentEntry OBJECT-TYPE
+    SYNTAX  ImaGroupFarEndCurrentEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the IMA Group Far End Current table."
+    INDEX   { imaGroupFarEndCurrentIndex }
+    ::= { imaGroupFarEndCurrentTable 1 }
+
+ImaGroupFarEndCurrentEntry ::=
+    SEQUENCE {
+        imaGroupFarEndCurrentIndex   INTEGER,
+        imaGroupFarEndTimeElapsed    INTEGER,
+        imaGroupFarEndValidIntervals INTEGER,
+        imaGroupFarEndCurrentFCs     Gauge,
+        imaGroupFarEndCurrentInvalidDataFlag INTEGER
+    }
+
+imaGroupFarEndCurrentIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies  the
+         IMA Group  to which this entry is applicable.  
+         The interface identified by a  particular
+         value  of  this  index is the same interface as
+         identified by the same value  an  imaGroupIndex
+         object instance."
+    ::= { imaGroupFarEndCurrentEntry 1 }
+
+imaGroupFarEndTimeElapsed OBJECT-TYPE
+    SYNTAX  INTEGER (0..899)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of seconds that  have  elapsed
+         since the beginning of the far end current
+         error-measurement period."
+    ::= { imaGroupFarEndCurrentEntry 2 }
+
+imaGroupFarEndValidIntervals OBJECT-TYPE
+    SYNTAX  INTEGER (0..32)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of previous far end  intervals
+         for  which  valid data was collected.  The
+         value will be 32 unless the interface  was
+         brought  online  within the last  8 hours,
+         in which case the value will be the number
+         of  complete  15  minute far end intervals
+         since the interface has been online."
+    ::= { imaGroupFarEndCurrentEntry 3 }
+
+imaGroupFarEndCurrentFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of far-end failure events encountered  
+         by this IMA Group interface in the current 15
+         minute interval."
+            ::= { imaGroupFarEndCurrentEntry 4 }
+
+imaGroupFarEndCurrentInvalidDataFlag OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding PM data.
+It is set to 1 when the PM data is incomplete or invalid and set to 0 when the PM data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (900 seconds for a 15 minutes interval, 86400 seconds for a 24 hour interval), or 
+- the data is incomplete in the accumulation period (for instance because a transmission failure prevent far-end data collection)
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1        DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { imaGroupFarEndCurrentEntry 5}
+
+
+-- The IMA Group Far End Interval Table
+
+-- The IMA Group Far End Interval Table contains various statistics
+-- collected for each IMA Group over the previous  8 hours of
+-- operation.  The past  8 hours are broken into 32
+-- completed 15 minute intervals.
+
+imaGroupFarEndIntervalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ImaGroupFarEndIntervalEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The IMA Group Far End Interval table."
+    ::= { asamImaMIB 4 }
+
+imaGroupFarEndIntervalEntry OBJECT-TYPE
+    SYNTAX  ImaGroupFarEndIntervalEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the IMA Group Far End Interval table."
+    INDEX   { imaGroupFarEndIntervalIndex,
+              imaGroupFarEndIntervalNumber }
+    ::= { imaGroupFarEndIntervalTable 1 }
+
+ImaGroupFarEndIntervalEntry ::=
+    SEQUENCE {
+        imaGroupFarEndIntervalIndex  INTEGER,
+        imaGroupFarEndIntervalNumber INTEGER,
+        imaGroupFarEndIntervalFCs    Gauge,
+        imaGroupFarEndIntervalInvalidDataFlag INTEGER
+    }
+
+imaGroupFarEndIntervalIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies  the
+         IMA Group  interface  to which this entry is applica-
+         ble.  The interface identified by a  particular
+         value  of  this  index is the same interface as
+         identified by the same value as a imaGroupIndex
+         object instance."
+    ::= { imaGroupFarEndIntervalEntry 1 }
+
+imaGroupFarEndIntervalNumber OBJECT-TYPE
+    SYNTAX  INTEGER (1..32)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A number between 1 and 32, where 1 is the most
+         recently completed 15 minute interval and 32 is
+         the least recently completed 15 minutes  inter-
+         val   (assuming   that  all  32  intervals  are
+         valid)."
+    ::= { imaGroupFarEndIntervalEntry 2 }
+
+imaGroupFarEndIntervalFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of far-end failure events encountered 
+         by this IMA Group in one of the previous 32, 
+         individual 15 minute, intervals."
+    ::= { imaGroupFarEndIntervalEntry 3 }
+
+imaGroupFarEndIntervalInvalidDataFlag OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding PM data.
+It is set to 1 when the PM data is incomplete or invalid and set to 0 when the PM data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (900 seconds for a 15 minutes interval, 86400 seconds for a 24 hour interval), or 
+- the data is incomplete in the accumulation period (for instance because a transmission failure prevent far-end data collection)
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1        DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { imaGroupFarEndIntervalEntry 4}
+
+-- the IMA Link Current Table
+
+-- The IMA Link current table contains various statistics being
+-- collected for the current 15 minute interval for IMA Links.
+
+imaLinkCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ImaLinkCurrentEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The IMA Link Current table."
+    ::= { asamImaMIB 5 }
+
+imaLinkCurrentEntry OBJECT-TYPE
+    SYNTAX  ImaLinkCurrentEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the IMA Link Current table."
+    INDEX   { imaLinkCurrentIndex }
+    ::= { imaLinkCurrentTable 1 }
+
+ImaLinkCurrentEntry ::=
+    SEQUENCE {
+        imaLinkCurrentIndex          INTEGER,
+        imaLinkCurrentTimeElapsed    INTEGER,
+        imaLinkCurrentValidIntervals INTEGER,
+        imaLinkCurrentIVs            Gauge,
+        imaLinkCurrentOIFs           Gauge,
+        imaLinkCurrentSESs           Gauge,
+        imaLinkCurrentUASs           Gauge,
+        imaLinkCurrentTxUUSs         Gauge,
+        imaLinkCurrentRxUUSs         Gauge,
+        imaLinkCurrentTxFCs          Gauge,
+        imaLinkCurrentRxFCs          Gauge,
+        imaLinkCurrentTxStuffs       Gauge,
+        imaLinkCurrentRxStuffs       Gauge,
+        imaLinkCurrentInvalidDataFlag  INTEGER
+    }
+
+imaLinkCurrentIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies  the
+         IMA Link   to which this entry is applica-
+         ble.  The interface identified by a  particular
+         value  of  this  index is the same interface as
+         identified by the same value as a imaLinkIfIndex
+         object instance."
+    ::= { imaLinkCurrentEntry 1 }
+
+imaLinkCurrentTimeElapsed OBJECT-TYPE
+    SYNTAX  INTEGER (0..899)
+    ACCESS  read-only 
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of seconds that have elapsed  since
+         the  beginning of the current error-measurement
+         period."
+    ::= { imaLinkCurrentEntry 2 }
+
+imaLinkCurrentValidIntervals OBJECT-TYPE
+    SYNTAX  INTEGER (0..32)
+    ACCESS  read-only 
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of  previous  intervals  for  which
+         valid data was collected.  The value will be 32
+         unless the interface was brought on-line within
+         the last  8 hours, in which case the value will
+         be the number of complete 15  minute  intervals
+         the since interface has been online."
+    ::= { imaLinkCurrentEntry 3 }
+
+imaLinkCurrentIVs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of IMA Violation events, encountered
+         by this IMA Link in the current 15 minute 
+         interval."
+    ::= { imaLinkCurrentEntry 4 }
+
+imaLinkCurrentOIFs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Out of IMA Frame events, encountered
+         by this IMA Link in the current 15 minute interval."
+    ::= { imaLinkCurrentEntry 5 }
+
+imaLinkCurrentSESs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Severely Errored Seconds, encountered
+         by this IMA Link in the current 15 minute interval."
+    ::= { imaLinkCurrentEntry 6 }
+
+imaLinkCurrentUASs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unavailable Seconds, encountered  by
+         this IMA Link in the current 15 minute interval."
+    ::= { imaLinkCurrentEntry 7 }
+
+imaLinkCurrentTxUUSs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unusable Seconds, encountered  by
+         the transmit side of this IMA Link in the current 
+         15 minute interval."
+    ::= { imaLinkCurrentEntry 8 }
+
+imaLinkCurrentRxUUSs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unusable Seconds, encountered  on
+         the receive side of this IMA Link in the current 
+         15 minute interval."
+    ::= { imaLinkCurrentEntry 9 }
+
+imaLinkCurrentTxFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of failure events encountered on the 
+         transmit side of the near-end interface of this 
+         IMA Link in the current 15 minute interval."
+    ::= { imaLinkCurrentEntry 10 }
+
+imaLinkCurrentRxFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of failure events encountered on the 
+         receive side of the near-end interface of this 
+         IMA Link in the current 15 minute interval."
+    ::= { imaLinkCurrentEntry 11 }
+
+imaLinkCurrentTxStuffs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of IMA stuff events encountered on the
+         transmit side of the near-end interface of this
+         IMA Link in the current 15 minute interval."
+    ::= { imaLinkCurrentEntry 12 }
+
+imaLinkCurrentRxStuffs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of IMA stuff events encountered on the
+         receive side of the near-end interface of this
+         IMA Link in the current 15 minute interval."
+    ::= { imaLinkCurrentEntry 13 }
+
+imaLinkCurrentInvalidDataFlag OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding PM data.
+It is set to 1 when the PM data is incomplete or invalid and set to 0 when the PM data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (900 seconds for a 15 minutes interval, 86400 seconds for a 24 hour interval), or 
+- the data is incomplete in the accumulation period (for instance because a transmission failure prevent far-end data collection)
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1        DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { imaLinkCurrentEntry 14}
+
+-- the IMA Link Interval
+
+-- The IMA Link Interval Table contains various statistics
+-- collected for each IMA Link over the previous  8 hours of
+-- operation.  The past  8 hours are broken into 32 completed
+-- 15 minute intervals.
+
+imaLinkIntervalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ImaLinkIntervalEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The IMA Link Interval table."
+    ::= { asamImaMIB 6 }
+
+imaLinkIntervalEntry OBJECT-TYPE
+    SYNTAX  ImaLinkIntervalEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the IMA Link Interval table."
+    INDEX   { imaLinkIntervalIndex, imaLinkIntervalNumber }
+    ::= { imaLinkIntervalTable 1 }
+
+ImaLinkIntervalEntry ::=
+    SEQUENCE {
+        imaLinkIntervalIndex    INTEGER,
+        imaLinkIntervalNumber   INTEGER,
+        imaLinkIntervalIVs      Gauge,
+        imaLinkIntervalOIFs     Gauge,
+        imaLinkIntervalSESs     Gauge,
+        imaLinkIntervalUASs     Gauge,
+        imaLinkIntervalTxUUSs   Gauge,
+        imaLinkIntervalRxUUSs   Gauge,
+        imaLinkIntervalTxFCs    Gauge,
+        imaLinkIntervalRxFCs    Gauge,
+        imaLinkIntervalTxStuffs Gauge,
+        imaLinkIntervalRxStuffs Gauge,
+        imaLinkIntervalInvalidDataFlag  INTEGER
+    }
+
+imaLinkIntervalIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies  the
+         IMA Link   to which this entry is applica-
+         ble.  The interface identified by a  particular
+         value  of  this  index is the same interface as
+         identified by the same value as a imaLinkIfIndex
+         object instance."
+    ::= { imaLinkIntervalEntry 1 }
+
+imaLinkIntervalNumber OBJECT-TYPE
+    SYNTAX  INTEGER (1..32)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A number between 1 and 32, where 1 is the most
+         recently completed 15 minute interval and 32 is
+         the least recently completed 15 minutes  inter-
+         val   (assuming   that  all  32  intervals  are
+         valid)."
+    ::= { imaLinkIntervalEntry 2 }
+
+imaLinkIntervalIVs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of IMA Violation events, encountered
+         by this IMA Link during this 15 minute 
+         interval."
+    ::= { imaLinkIntervalEntry 3 }
+
+imaLinkIntervalOIFs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Out of IMA Frame events, encountered
+         by this IMA Link during this 15 minute interval."
+    ::= { imaLinkIntervalEntry 4 }
+
+imaLinkIntervalSESs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Severely Errored Seconds, encountered
+         by this IMA Link during this 15 minute interval."
+    ::= { imaLinkIntervalEntry 5 }
+
+imaLinkIntervalUASs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unavailable Seconds, encountered  by
+         this IMA Link during this 15 minute interval."
+    ::= { imaLinkIntervalEntry 6 }
+
+imaLinkIntervalTxUUSs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unusable Seconds, encountered  by
+         the transmit side of this IMA Link in the current 
+         15 minute interval."
+    ::= { imaLinkIntervalEntry 7 }
+
+imaLinkIntervalRxUUSs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unusable Seconds, encountered  on
+         the receive side of this IMA Link in the current 
+         15 minute interval."
+    ::= { imaLinkIntervalEntry 8 }
+
+imaLinkIntervalTxFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of failure events encountered on the 
+         transmit side of the near-end interface of this 
+         IMA Link during this 15 minute interval."
+    ::= { imaLinkIntervalEntry 9 }
+
+imaLinkIntervalRxFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of failure events encountered on the 
+         receive side of the near-end interface of this 
+         IMA Link during this 15 minute interval."
+    ::= { imaLinkIntervalEntry 10 }
+
+imaLinkIntervalTxStuffs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of IMA stuff events encountered on the
+         transmit side of the near-end interface of this
+         IMA Link during this 15 minute interval."
+    ::= { imaLinkIntervalEntry 11 }
+
+imaLinkIntervalRxStuffs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of IMA stuff events encountered on the
+         receive side of the near-end interface of this
+         IMA Link during this 15 minute interval."
+    ::= { imaLinkIntervalEntry 12 }
+
+imaLinkIntervalInvalidDataFlag OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding PM data.
+It is set to 1 when the PM data is incomplete or invalid and set to 0 when the PM data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (900 seconds for a 15 minutes interval, 86400 seconds for a 24 hour interval), or 
+- the data is incomplete in the accumulation period (for instance because a transmission failure prevent far-end data collection)
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1        DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { imaLinkIntervalEntry 13}
+
+-- The IMA Link Far End Link
+
+-- Implementation of this group is optional for all systems
+-- that support IMA Links.
+-- The IMA Link Far End Link consists of two tables:
+--   IMA Link Far End Current
+--   IMA Link Far End Interval
+
+-- The IMA Link Far End Current Table
+
+-- The IMA Link Far End Current table contains various statistics
+-- being collected for the current 15 minute interval.
+-- The statistics are collected from the far end messages on the
+-- IMA Control Protocol (ICP) Link.  The definitions are the same 
+-- as described for the near-end information.
+
+imaLinkFarEndCurrentTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ImaLinkFarEndCurrentEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The IMA Link Far End Current table."
+    ::= { asamImaMIB 7 }
+
+imaLinkFarEndCurrentEntry OBJECT-TYPE
+    SYNTAX  ImaLinkFarEndCurrentEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the IMA Link Far End Current table."
+    INDEX   { imaLinkFarEndCurrentIndex }
+    ::= { imaLinkFarEndCurrentTable 1 }
+
+ImaLinkFarEndCurrentEntry ::=
+    SEQUENCE {
+        imaLinkFarEndCurrentIndex   INTEGER,
+        imaLinkFarEndTimeElapsed    INTEGER,
+        imaLinkFarEndValidIntervals INTEGER,
+        imaLinkFarEndCurrentSESs    Gauge,
+        imaLinkFarEndCurrentUASs    Gauge,
+        imaLinkFarEndCurrentTxUUSs  Gauge,
+        imaLinkFarEndCurrentRxUUSs  Gauge,
+        imaLinkFarEndCurrentTxFCs   Gauge,
+        imaLinkFarEndCurrentRxFCs   Gauge,
+        imaLinkFarEndCurrentInvalidDataFlag   INTEGER
+    }
+
+imaLinkFarEndCurrentIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies  the
+         IMA Link  to which this entry is applicable.  
+         The interface identified by a  particular
+         value  of  this  index is the same interface as
+         identified by the same value  an  imaLinkIfIndex
+         object instance."
+    ::= { imaLinkFarEndCurrentEntry 1 }
+
+imaLinkFarEndTimeElapsed OBJECT-TYPE
+    SYNTAX  INTEGER (0..899)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of seconds that  have  elapsed
+         since the beginning of the far end current
+         error-measurement period."
+    ::= { imaLinkFarEndCurrentEntry 2 }
+
+imaLinkFarEndValidIntervals OBJECT-TYPE
+    SYNTAX  INTEGER (0..32)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of previous far end  intervals
+         for  which  valid data was collected.  The
+         value will be 32 unless the interface  was
+         brought  online  within the last  8 hours,
+         in which case the value will be the number
+         of  complete  15  minute far end intervals
+         since the interface has been online."
+    ::= { imaLinkFarEndCurrentEntry 3 }
+
+imaLinkFarEndCurrentSESs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Severely Errored Seconds, encountered
+         by this IMA Link in the current 15 minute interval."
+    ::= { imaLinkFarEndCurrentEntry 4 }
+
+imaLinkFarEndCurrentUASs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unavailable Seconds, encountered  by
+         this IMA Link in the current 15 minute interval."
+    ::= { imaLinkFarEndCurrentEntry 5 }
+
+imaLinkFarEndCurrentTxUUSs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unusable Seconds, encountered  by
+         the transmit side of this IMA Link in the current 
+         15 minute interval."
+    ::= { imaLinkFarEndCurrentEntry 6 }
+
+imaLinkFarEndCurrentRxUUSs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unusable Seconds, encountered  on
+         the receive side of this IMA Link in the current 
+         15 minute interval."
+    ::= { imaLinkFarEndCurrentEntry 7 }
+
+imaLinkFarEndCurrentTxFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of failure events encountered on the 
+         transmit side of the far-end interface of this 
+         IMA Link in the current 15 minute interval."
+    ::= { imaLinkFarEndCurrentEntry 8 }
+
+imaLinkFarEndCurrentRxFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of failure events encountered on the 
+         receive side of the far-end interface of this 
+         IMA Link in the current 15 minute interval."
+    ::= { imaLinkFarEndCurrentEntry 9 }
+
+imaLinkFarEndCurrentInvalidDataFlag OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding PM data.
+It is set to 1 when the PM data is incomplete or invalid and set to 0 when the PM data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (900 seconds for a 15 minutes interval, 86400 seconds for a 24 hour interval), or 
+- the data is incomplete in the accumulation period (for instance because a transmission failure prevent far-end data collection)
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1        DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { imaLinkFarEndCurrentEntry 10}
+
+-- The IMA Link Far End Interval Table
+
+-- The IMA Link Far End Interval Table contains various statistics
+-- collected for each IMA Link over the previous  8 hours of
+-- operation.  The past  8 hours are broken into 32
+-- completed 15 minute intervals.
+
+imaLinkFarEndIntervalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ImaLinkFarEndIntervalEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The IMA Link Far End Interval table."
+    ::= { asamImaMIB 8 }
+
+imaLinkFarEndIntervalEntry OBJECT-TYPE
+    SYNTAX  ImaLinkFarEndIntervalEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the IMA Link Far End Interval table."
+    INDEX   { imaLinkFarEndIntervalIndex,
+              imaLinkFarEndIntervalNumber }
+    ::= { imaLinkFarEndIntervalTable 1 }
+
+ImaLinkFarEndIntervalEntry ::=
+    SEQUENCE {
+        imaLinkFarEndIntervalIndex   INTEGER,
+        imaLinkFarEndIntervalNumber  INTEGER,
+        imaLinkFarEndIntervalSESs    Gauge,
+        imaLinkFarEndIntervalUASs    Gauge,
+        imaLinkFarEndIntervalTxUUSs  Gauge,
+        imaLinkFarEndIntervalRxUUSs  Gauge,
+        imaLinkFarEndIntervalTxFCs   Gauge,
+        imaLinkFarEndIntervalRxFCs   Gauge,
+        imaLinkFarEndIntervalInvalidDataFlag  INTEGER
+    }
+
+imaLinkFarEndIntervalIndex OBJECT-TYPE
+    SYNTAX  INTEGER (1..2147483647)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The index value which uniquely identifies  the
+         IMA Link  interface  to which this entry is applica-
+         ble.  The interface identified by a  particular
+         value  of  this  index is the same interface as
+         identified by the same value as a imaLinkIfIndex
+         object instance."
+    ::= { imaLinkFarEndIntervalEntry 1 }
+
+imaLinkFarEndIntervalNumber OBJECT-TYPE
+    SYNTAX  INTEGER (1..32)
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "A number between 1 and 32, where 1 is the most
+         recently completed 15 minute interval and 32 is
+         the least recently completed 15 minutes  inter-
+         val   (assuming   that  all  32  intervals  are
+         valid)."
+    ::= { imaLinkFarEndIntervalEntry 2 }
+
+imaLinkFarEndIntervalSESs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Severely Errored Seconds, encountered
+         by this IMA Link during this 15 minute interval."
+    ::= { imaLinkFarEndIntervalEntry 3 }
+
+imaLinkFarEndIntervalUASs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unavailable Seconds, encountered  by
+         this IMA Link during this 15 minute interval."
+    ::= { imaLinkFarEndIntervalEntry 4 }
+
+imaLinkFarEndIntervalTxUUSs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unusable Seconds, encountered  by
+         the transmit side of this IMA Link during this 
+         15 minute interval."
+    ::= { imaLinkFarEndIntervalEntry 5 }
+
+imaLinkFarEndIntervalRxUUSs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of Unusable Seconds, encountered  on
+         the receive side of this IMA Link during this 
+         15 minute interval."
+    ::= { imaLinkFarEndIntervalEntry 6 }
+
+imaLinkFarEndIntervalTxFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of failure events encountered on the 
+         transmit side of the far-end interface of this 
+         IMA Link during this 15 minute interval."
+    ::= { imaLinkFarEndIntervalEntry 7 }
+
+imaLinkFarEndIntervalRxFCs OBJECT-TYPE
+    SYNTAX  Gauge
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "The number of failure events encountered on the 
+         receive side of the far-end interface of this 
+         IMA Link during this 15 minute interval."
+    ::= { imaLinkFarEndIntervalEntry 8 }
+
+imaLinkFarEndIntervalInvalidDataFlag OBJECT-TYPE
+    SYNTAX              INTEGER (0..1)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+              " This object indicates the validity of the corresponding PM data.
+It is set to 1 when the PM data is incomplete or invalid and set to 0 when the PM data is complete and valid. 
+The data is incomplete or invalid mean:
+- the measured time deviates by more than 10 seconds from the nominal interval duration (900 seconds for a 15 minutes interval, 86400 seconds for a 24 hour interval), or 
+- the data is incomplete in the accumulation period (for instance because a transmission failure prevent far-end data collection)
+
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1        DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+::= { imaLinkFarEndIntervalEntry 9}
+
+-- The IMA Group Extension Table
+
+-- The IMA Group Extension Table Link contains the configured
+-- "ImaCacBehaviour" information.
+
+imaGroupExtensionTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF ImaGroupExtensionEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "The IMA Group Extension table."
+    ::= { asamImaMIB 9 }
+
+imaGroupExtensionEntry OBJECT-TYPE
+    SYNTAX  ImaGroupExtensionEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "An entry in the IMA Group Extension table."
+    INDEX   { imaGroupIndex }
+    ::= { imaGroupExtensionTable 1 }
+
+ImaGroupExtensionEntry ::=
+    SEQUENCE {
+        imaCacBehaviour   ImaCacBehaviourType
+    }
+
+imaCacBehaviour OBJECT-TYPE
+    SYNTAX  ImaCacBehaviourType
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+        "This parameter defines the IMA CAC behaviour, i.e.
+non-standard or standard CAC behaviour."
+DEFVAL { standard }
+    ::= { imaGroupExtensionEntry 1 }
+
+
+END
+

@@ -1,0 +1,449 @@
+PMFILE-MIB DEFINITIONS ::= BEGIN
+
+-- ===========================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilization of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2006, Alcatel. All Rights Reserved.
+-- ===========================================================================
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED "200610241200Z"
+--  ORGANIZATION "Alcatel"
+--  CONTACT-INFO "email: asam.mibsupport@alcatel.be"
+--  DESCRIPTION
+--     "The ASAM PM File MIB is a vendor-specific MIB that is
+--      used to manage the PM file related function of the ASAM subsystem in the ESAM.
+--
+-- ===========================================================================
+--  REVISION "201508101200Z"
+--  DESCRIPTION
+--     "Version: 3FE62663AAAA_E1.0.0.0
+--      Editor: Jason Chen
+--      Changes:
+--      * Object pmFileUploadClientUsername has been made obsolete for ALU02111936.
+--      * Object pmFileUploadClientPassword has been made obsolete for ALU02111936.
+--
+-- ===========================================================================
+--  REVISION "201320031200Z"
+--  DESCRIPTION
+--     "Version: 3FE62663AAAA_E1.0.0.0
+--      Editor: Dharmaraj Gurusamy
+--      Changes: Increased the TABLE SIZE of pmFileUploadTable for ALU00909644"
+--
+-- ===========================================================================
+--  REVISION "201103111200Z"
+--  DESCRIPTION
+--     "Version: 3FE62663AAAA_E1.0.0.0
+--      Editor: GE Weimin
+--      Changes: Update the MIB definition according to new Review Comments"
+--
+-- ===========================================================================
+--  REVISION "201103071200Z"
+--  DESCRIPTION
+--     "Version: 3FE62663AAAA_E1.0.0.0
+--      Editor: GE Weimin
+--      Changes: Update the MIB definition according to Review Comments"
+--
+-- ===========================================================================
+--  REVISION "201101131200Z"
+--  DESCRIPTION
+--     "Version: 3FE62663AAAA_E1.0.0.0
+--      Editor: GE Weimin
+--      Changes: creation of new PM File Upload MIB for ISAM R4.3."
+--
+-- =============================================================================
+
+   IMPORTS OBJECT-TYPE		    FROM RFC-1212
+           IpAddress                FROM RFC1155-SMI
+           DisplayString, RowStatus,
+           TruthValue               FROM SNMPv2-TC
+           asam                     FROM SYSTEM-MIB;
+           
+   pmFileMIB OBJECT IDENTIFIER ::= { asam 99 }
+   
+--===================================================================
+--PM DataFile Upload Table
+--===================================================================
+    pmFileUploadTable OBJECT-TYPE
+	  SYNTAX SEQUENCE OF PMFileUploadEntry
+	  ACCESS not-accessible
+	  STATUS mandatory
+	  DESCRIPTION
+		"The Performance Monitoring File Upload Table allows to enable the 
+		VoIP / DSL performance monitoring counter reporting by means of SFTP file 
+		upload. The configuration of an entry in this table enables the VoIP / DSL
+		PM counter reporting by means of SFTP file upload. The deletion of an 
+		entry in this table disables the VoIP / DSL PM counter reporting by means 
+		of SFTP file upload. Autonomous SFTP upload needs explicitly to be 
+		enabled/disabled. Manual SFTP upload becomes automatically enabled 
+		when creating an entry in the table. Index values (1 = VOICE, 2 = DSL) allow
+        to enable the VoIP and DSL performance monitoring counters'collection 
+ 		ALCATEL NOTE: 
+		SUPPORT:  YES 
+		TABLESIZE: 2"
+	  ::= { pmFileMIB 1 }
+
+	pmFileUploadEntry OBJECT-TYPE
+	  SYNTAX PMFileUploadEntry
+	  ACCESS not-accessible
+	  STATUS mandatory
+	  DESCRIPTION
+		"An entry in the Performance Monitoring File Upload Table.
+        ALCATEL NOTE:
+          SUPPORT:  YES "
+	  INDEX  { pmFileUploadIndex }
+	  ::= { pmFileUploadTable  1 }
+
+	PMFileUploadEntry ::=  
+	  SEQUENCE {
+	  pmFileUploadIndex
+		        INTEGER,
+      pmFileUploadRowStatus
+				RowStatus,
+      pmFileUploadPrimaryServerAddr
+				IpAddress,
+      pmFileUploadPath
+				OCTET STRING,
+      pmFileUploadProgress
+				INTEGER,
+      pmFileUploadError
+				INTEGER,
+      pmFileUploadClientUsername
+				OCTET STRING,
+      pmFileUploadClientPassword
+				OCTET STRING,
+	  pmFileUploadIntervalType
+				INTEGER,
+      pmFileAutoUpload
+				INTEGER,
+      pmFileUploadRetryNum
+				INTEGER,
+      pmFileUploadMaxDelay
+				INTEGER,
+      pmFileUploadIntervalNum
+				INTEGER
+        }
+
+	pmFileUploadIndex OBJECT-TYPE
+	  SYNTAX INTEGER 
+	  ACCESS read-only
+	  STATUS mandatory
+	  DESCRIPTION
+		"This index is the unique internal identifier of this pmFile Upload Entry. 
+        1 = Voice, 2 = DSL
+		ALCATEL-LUCENT NOTE:
+		  ACCESS:     NA
+          USAGE:       NA
+		  PERSIST:  	YES
+		  INSRVMOD: 	NA
+		  RANGE:	(1..2)
+		  DEFVALUE:  NA
+		  UNITS:	NA
+          SPARSE:    NO	"
+	  ::= { pmFileUploadEntry 1 }
+
+
+    pmFileUploadRowStatus OBJECT-TYPE
+      SYNTAX RowStatus 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "The status of this conceptual row.
+        The RowStatus TC requires that this DESCRIPTION clause
+        states under which circumstances other objects in this row
+        can be modified.  The value of this object has no effect on
+        whether other objects in this conceptual row can be modified.
+        A conceptual row can always be made active.
+        ALCATEL-LUCENT NOTE:
+          ACCESS:     READ-WRITE
+          USAGE:      MAND
+          PERSIST:  	NO
+          INSRVMOD:   YES
+          RANGE:	1 | 4 | 6	-- active (1), createAndGo (4), destroy (6)
+          DEFVALUE: 	NA
+          UNITS:	NA
+          SPARSE:    NO "
+      ::= { pmFileUploadEntry 2 }
+
+    pmFileUploadPrimaryServerAddr OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "IP address of the primary SFTP file server.	
+        ALCATEL-LUCENT NOTE:
+          ACCESS:     READ-WRITE
+          USAGE:      NA
+          PERSIST:    YES
+          INSRVMOD:   YES
+          RANGE:      NA
+          DEFVALUE:   NA
+          UNITS:      NA	
+          SPARSE:    NO				"
+      ::= { pmFileUploadEntry 3 }
+
+    pmFileUploadPath OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (0..127))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+      	"The path to be addressed for PM file upload . The directory to be specified is the 
+      	sub-directory below the root directory (the first or top-most directory in a hierarchy) . 
+      	The name of the sub-directory must not (not allowed to ) start with '/' but must end with a '/'.
+		The sub-directory is a mandatory input. The system does not assume any default sub-directory name. 
+      	ALCATEL-LUCENT NOTE:
+      	  ACCESS:     READ-WRITE
+          USAGE:      NA
+          PERSIST:  	YES
+      	  INSRVMOD: 	YES
+          RANGE:      SIZE (0..127)
+      	  DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:    NO					"
+      ::= { pmFileUploadEntry 4 }
+
+    pmFileUploadProgress OBJECT-TYPE
+      SYNTAX INTEGER
+        {
+		   idle (1),
+           ongoing (2),
+           finishedAndSuccessful (3),
+           finishedButFailed (4)
+        }      
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+        "Progress of the PM Data file uploading process . 
+		idle: The system did start-up. No PM File Upload triggered yet 
+		ongoing: PM File Upload ongoing 
+		finishedAndSuccessful: The PM File Upload has successfully completed 
+		finishedAndFailed: The PM File Upload failed 
+		Once a PM file uplaod has been triggered, the final Upload Progress State ('FinishedAndSuccessful' 
+		or 'FinishedAndFailed') will be kept maintained until the next PM file upload is triggered. 
+		Once a subsequent PM file upload has started, the Upload Progress State will change from 
+		'FinishedAndSuccessful' or 'FinishedAndFailed' to 'ongoing' .
+        ALCATEL-LUCENT NOTE:
+          ACCESS:     READ-ONLY
+          USAGE:      NA
+          PERSIST:    NO
+          INSRVMOD:   NA
+          RANGE:      1 | 2 | 3 |4
+          DEFVALUE:   NA
+          UNITS:      NA	
+          SPARSE:     NO			"
+      ::= { pmFileUploadEntry 5 }
+
+    pmFileUploadError OBJECT-TYPE
+      SYNTAX INTEGER 
+        {
+           noError (1),
+           fileNotExist (2),
+           uploadServerNotAvailable (3),
+           userNameOrPasswordNotCorrect (4),
+           accessViolation (5),
+           internalApplicationError (6),
+           notDefined (7)
+        }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+        "The root cause of a failing PM data file upload . 
+		noError: PM File uplaod successful 
+		fileNotExist: Requested PM file doesn't exist (any longer) on the ISAM-V system disk 
+		uploadServerNotAvailable: Impossible to connect to SFTP File Server. 
+		usernameOrPasswordNotCorrect: The Username or Password do not match 
+		accessViolation: Access viloation for configured sub-directory 
+		internalApplicationError: Internal Application error 
+		notDefined: Other error
+        ALCATEL-LUCENT NOTE:
+          ACCESS:     READ-ONLY
+          USAGE:      NA
+          PERSIST:    NO
+          INSRVMOD:   NA
+          RANGE:      (1..6) 
+          DEFVALUE:   NA
+          UNITS:      NA	
+          SPARSE:     NO			"
+      ::= { pmFileUploadEntry 6 }
+
+    pmFileUploadClientUsername OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (0..32))
+      ACCESS read-write
+      STATUS obsolete
+      DESCRIPTION
+      	"Client username the system has to use when setting up a session with 
+      	an external SFTP server.
+      	ALCATEL-LUCENT NOTE:
+      	  ACCESS:     READ-WRITE
+          USAGE:      NA
+          PERSIST:  	YES
+      	  INSRVMOD: 	YES
+          RANGE:      SIZE (0..32)
+      	  DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:    NO			"
+      ::= { pmFileUploadEntry 7 }
+
+    pmFileUploadClientPassword OBJECT-TYPE
+      SYNTAX OCTET STRING (SIZE (0..32))
+      ACCESS read-write
+      STATUS obsolete
+      DESCRIPTION
+      	"Client password the system has to use when setting up a session with 
+      	an external SFTP server. 
+        Note: the user is able to specify the client password via this object 
+        but the password will not be displayed in cleartext when reading the object. 
+      	ALCATEL-LUCENT NOTE:
+      	  ACCESS:     READ-WRITE
+          USAGE:      NA
+          PERSIST:  	YES
+      	  INSRVMOD: 	YES
+          RANGE:      SIZE (0..32)
+      	  DEFVALUE:   NA
+          UNITS:      NA
+          SPARSE:    NO						"
+      ::= { pmFileUploadEntry 8 }
+
+    pmFileUploadIntervalType OBJECT-TYPE
+      SYNTAX INTEGER 
+        {
+          fifteen-min(1),
+          twenty-four-hour(2)
+        }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "The type of interval to be used to transfer the PM counters.
+        PM counters collected based on the 15-min history interval framework 
+        may be transferred or PM counters collected based on the 1-day history 
+        interval may be transferred. 
+        ALCATEL-LUCENT NOTE:
+          ACCESS:     READ-WRITE
+          USAGE:      NA
+          PERSIST:    YES
+          INSRVMOD:   YES
+          RANGE:      1 | 2
+          DEFVALUE:   NA
+          UNITS:      NA	
+          SPARSE:     NO		"
+      ::= { pmFileUploadEntry 9 }
+
+    pmFileAutoUpload OBJECT-TYPE
+      SYNTAX INTEGER 
+        {
+          enabled (1),
+          disabled (2)
+        }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "It point out whether AutoUpload function enabled or not.
+        Enabled -- AutoUpload function enabled in the system.
+        Disabled -- AutoUpload function disabled in the system.
+        ALCATEL-LUCENT NOTE:
+          ACCESS:     READ-WRITE
+          USAGE:      NA
+          PERSIST:    YES
+          INSRVMOD:   YES
+          RANGE:      1 | 2
+          DEFVALUE:   disabled(2)
+          UNITS:      NA	
+          SPARSE:     NO		"
+      DEFVAL { disabled }          
+      ::= { pmFileUploadEntry 10 }
+      
+    pmFileUploadRetryNum OBJECT-TYPE
+      SYNTAX INTEGER (0..5)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "The number of PM file uplaod retries in case the initial PM file uplaod failed. All retries 
+        will be done within the same 15-min interval as the 15-min interval in which the initial PM 
+        file upload failed. The several retries will be randomly spread over this 15-min interval.
+        ALCATEL-LUCENT NOTE:
+          ACCESS:     READ-WRITE
+          USAGE:      NA
+          PERSIST:    YES
+          INSRVMOD:   YES
+          RANGE:      (0..5)
+          DEFVALUE:   3
+          UNITS:      NA	
+          SPARSE:     NO		"
+      DEFVAL { 3 }
+      ::= { pmFileUploadEntry 11 }
+      
+    pmFileUploadMaxDelay OBJECT-TYPE
+      SYNTAX INTEGER (0..400)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "The max delay period expressed in seconds for PM file upload after PM data 
+        file ready(1 min after interval expiry). The system will Randomly calculate 
+        a delay time within the configured maximum delay period.
+        ALCATEL-LUCENT NOTE:
+          ACCESS:     READ-WRITE
+          USAGE:      NA
+          PERSIST:    YES
+          INSRVMOD:   YES
+          RANGE:      (0..400)
+          DEFVALUE:   400
+          UNITS:      seconds	
+          SPARSE:     NO		"
+      DEFVAL { 400 }           
+      ::= { pmFileUploadEntry 12 }
+
+    pmFileUploadIntervalNum OBJECT-TYPE
+      SYNTAX INTEGER (1..96) 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "The interval number for which a PM file must be uploaded. This object applies only to 
+        the manually triggered PM file upload. The value may range from 1 up to 96 for the 15-min 
+        interval PM counter files (as actually a maximum of 16 15-min PM files - the 16 most recent 
+        PM files of VoIP counters and 8 most recent PM files of DSL - are archived) and from 1 up to 3 for the 1-day PM counter files (as actually a
+        maximum of 3 1-day PM files - the 3 most recent PM files of VoIP counters and 2 most recent PM files of DSL counters - are archived).
+        Some clarification about the history interval numbering concept : 
+		The historic Interval numbering scheme is based on the FIFO Mechanism: The history registers 
+		are organized as a FIFO buffer. When an interval has ended, the current register is pushed 
+		on the top of the buffer; i.e. the first history register (interval number = 1). The values 
+		in each successive history register are pushed down one register in the stack. The oldest value 
+		at the bottom of the stack is discarded in case all registers are used. The same concept is 
+		applied to the archival of the PM files on the system disk. The configured value is not 
+		persistently stored in the database. A read command will always return a value 1.
+        ALCATEL-LUCENT NOTE:
+          ACCESS:     READ-WRITE
+          USAGE:      NA
+          PERSIST:    NO
+          INSRVMOD:   YES
+          RANGE:      (1..96)
+          DEFVALUE:   NA
+          UNITS:      NA	
+          SPARSE:     NO		"
+      ::= { pmFileUploadEntry 13 }
+
+END

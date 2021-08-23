@@ -1,0 +1,716 @@
+AI-MIB DEFINITIONS ::= BEGIN
+
+-- =============================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied,
+--  with respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel-Lucent expressly advises that any use of
+--  for any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel-Lucent shall not be liable for any damage or
+--  injury incurred by any person arising out of the sufficiency, accuracy,
+--  or utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products
+--  and to withdraw any or all of them at any future time.
+--  Copyright (C) 2011, Alcatel-Lucent. All Rights Reserved.
+-- =============================================================================
+--  MODULE-IDENTITY
+--     LAST-UPDATED "20120125000Z" ## 25 January 2012
+--     ORGANIZATION  
+--         "Alcatel-Lucent"
+--     CONTACT-INFO 
+--         "Email:  asam.mibsupport@alcatel-lucent.com"
+--     DESCRIPTION 
+--         "This MIB module is implemented in Alcatel-Lucent's
+--          ISAM for the Application intelligence (AI) functionality"
+--     REVISION    "20120125"
+--     DESCRIPTION 
+--        "Version: 3FE62689EAAA_V4.4.0.2.0
+--         Editor: Ludwig Pauwels
+--         Changes:  
+--            Initial version to start from."
+
+IMPORTS
+    Counter, Gauge
+        FROM RFC1155-SMI
+    OBJECT-TYPE
+        FROM RFC-1212
+    asam
+        FROM SYSTEM-MIB
+    RowStatus
+        FROM SNMPv2-TC
+    EqptSlotIndex 
+        FROM ASAM-EQUIP-MIB	
+    InetAddressType,                                                            
+    InetAddress,
+    InetAddressPrefixLength
+        FROM INET-ADDRESS-MIB 
+    Uri255
+        FROM URI-TC-MIB; 
+
+-- asam OBJECT IDENTIFIER ::= { iso(1) identified-organization(3)
+--                              dod(6) internet(1) private(4)
+--                              enterprises(1) alcatel(637) asd(61)
+--                              asam(1)}
+
+aiMIB OBJECT IDENTIFIER 
+    ::= { asam 101 }
+
+AiVirtualPlatform 
+    ::= INTEGER (0..65535)
+
+AiAdminState 
+    ::= INTEGER { unlocked(1), locked(2) }
+
+AiOperState
+    ::= INTEGER { enabled(1), disabled(2) }
+
+AiMngtVLAN
+    ::= INTEGER (1..4093)
+
+AiApplicationName 
+    ::= OCTET STRING (SIZE(1..31))
+
+AiApplicationNr 
+    ::= INTEGER(1..65535)
+
+AiApplInstallState
+    ::= INTEGER { noaction(1), successful(2), scheduled(3), inprogress(4), 
+                  perm-fail(5)  }
+
+AiApplInstallErrCause
+    ::= OCTET STRING (SIZE(1..63))
+
+aiPlatf OBJECT IDENTIFIER
+    ::= { aiMIB 1 }
+
+-- =============================================================================
+-- Table that contains the parameters to control the availability of the AI 
+-- Platforms and optionally gives external OAM access to the AI Platforms
+-- =============================================================================
+
+aiPlatfTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AiPlatfEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION 
+        "This table contains data to control the availability of AI platforms. 
+         The AI support of the system is provided by multiple individual platform
+	 instances, e.g hosted on multiple boards.
+         The table definition allows to support multiple individual instances
+         on a single board, e.g. by using multiple processors or multicore 
+	 processors.
+         This is reflected in the index of the table:
+           aiPlatfSlot: identifies the Slot that hosts the AI Platform
+           aiPlatfVirtualPlatform: identifies the Virtual Platform within the 
+	                           slot.
+         It also contains the data to provide external OAM access to the AI 
+	 platform.
+         ALCATEL-LUCENT NOTE:
+           TABLESIZE: DEP [AI capability of boards plugged into the system]
+           DESCR: NA"
+    ::= { aiPlatf 1 }
+
+aiPlatfEntry OBJECT-TYPE
+    SYNTAX      AiPlatfEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION 
+        "An entry in the aiPlatfTable contains the configuration data
+         of one AI platform instance.
+         Entry existence in this table is managed by an external actor through 
+         the use of a rowStatus. "
+    INDEX {aiPlatfSlot, aiPlatfVirtualPlatform}
+    ::= { aiPlatfTable 1 }
+
+AiPlatfEntry ::= SEQUENCE {
+    aiPlatfSlot                   EqptSlotIndex,
+    aiPlatfVirtualPlatform        AiVirtualPlatform,
+    aiPlatfRowStatus              RowStatus,
+    aiPlatfAdminState             AiAdminState,
+    aiPlatfOperState              AiOperState,
+    aiPlatfOamAdminState          AiAdminState,
+    aiPlatfOamOperState           AiOperState,
+    aiPlatfOamVlan                AiMngtVLAN,
+    aiPlatfOamIpAddressType       InetAddressType, 
+    aiPlatfOamIpAddress           InetAddress,
+    aiPlatfOamPrefixLength        InetAddressPrefixLength,
+    aiPlatfOamDefaultGateway      InetAddress
+}
+
+aiPlatfSlot OBJECT-TYPE
+    SYNTAX EqptSlotIndex 
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "A unique value to identify a slot position.
+         ALCATEL NOTE:
+           ACCESS:     NA                    		USAGE:      MAND
+           PERSIST:    NO                    		INSRVMOD:   NO
+           RANGE:      DEP [shelf type dependent]	DEFVALUE:   NA
+           UNITS:      NA                    		SPARSE:     NA
+           DESCR:      NA"
+      ::= { aiPlatfEntry 1 }
+
+aiPlatfVirtualPlatform OBJECT-TYPE
+    SYNTAX AiVirtualPlatform
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "A unique value to identify the AI platform within the board
+         plugged in the slot as identified by aiPlatfSlot. 
+         The number starts from 1 and increases to the number of AI 
+         platforms supported by the board.
+         ALCATEL NOTE:
+           ACCESS:     NA                    	USAGE:      MAND
+           PERSIST:    NO                    	INSRVMOD:   NO
+           RANGE:      DEP [board dependent]	DEFVALUE:   NA
+           UNITS:      NA                    	SPARSE:     NA
+           DESCR:      NA"
+      ::= { aiPlatfEntry 2 }
+
+
+aiPlatfRowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "This object allows to create and delete rows / table entries 
+         and it indicates the status of an existing row / table entry.
+         To create a new row the actor shall write the value to createAndGo(4).
+         The creation is accepted only when the identified HW is AI capable.
+         When the system created the row in the table it will have the value 
+         active(1).
+         To remove a row from the table the actor shall set the value to 
+         destroy(6) which has as result that the identified AI platform will 
+         not longer be available.
+         In case there were applications installed on the platform (see 
+	 aiPlatfApplTable), then a request to destroy the AI platform will be 
+	 rejected.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      MAND
+           PERSIST:    NA                    INSRVMOD:   NO
+           RANGE:      1,4,6                 DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NA
+           DESCR:      NA"
+    ::= { aiPlatfEntry 3 }
+
+aiPlatfAdminState OBJECT-TYPE
+    SYNTAX      AiAdminState
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object is used to unlock or lock the AI Platform.
+         - Unlocking AI will result in bootstrapping (bringing up) the AI 
+	   platform.
+           It is possible to create a new row with the status unlocked.
+         - Locking AI will result in bringing down the AI platform.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      OPT
+           PERSIST:    YES                   INSRVMOD:   YES
+           RANGE:      NA                    DEFVALUE:   locked
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfEntry 4 }
+
+aiPlatfOperState OBJECT-TYPE
+    SYNTAX      AiOperState
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object reports on the operational status of the AI platform.
+         - enabled:  the AI platform is up and running,
+         - disabled: the AI platform is not operational.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      NA
+           PERSIST:    NA                    INSRVMOD:   NA
+           RANGE:      NA                    DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfEntry 5 }
+
+aiPlatfOamAdminState OBJECT-TYPE
+    SYNTAX      AiAdminState
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION 
+        "in case the AI platform is unlocked (aiPlatfAdminState=unlocked), and it
+	 is operational(aiPlatfOperState = enabled), then
+	 this object is used to administratively unlock or lock the external 
+	 OAM access for the AI Platform.
+         - Unlocking OAM has as effect that the AI platform provides a direct 
+	   external OAM mngt interface with the parameters as configured in this
+	   table (OamVlan, OamIpAddress, ..., then the value of all of these
+	   parameters is needed, possibly being the default value) 
+	   (only in case the aiPlatfAdminState itself is unlocked)
+         - Locking OAM will result in an AI platform without a dedicated OAM 
+	   management interface. Then the AI platform can be managed only through
+	   the traditional ISAM management interface. I.e. packets shall be 
+	   addressed to the ISAM management IP address and ISAM relay functions 
+	   forwards the packet to the AI platform. 
+         e.g. an SNMP relay based on a context identifier / community string.
+         Locking OAM is a mandatory pre-condition to modify any of the
+         other OAM parameters.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      OPT
+           PERSIST:    YES                   INSRVMOD:   YES
+           RANGE:      NA                    DEFVALUE:   locked
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfEntry 6 }
+
+aiPlatfOamOperState OBJECT-TYPE
+    SYNTAX      AiOperState
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object reports on the operational status of the ext OAM of the AI platform.
+         - enabled:  the external OAM stack of the AI platform is up and running,
+         - disabled: the external OAM stack of AI platform is not operational.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      NA
+           PERSIST:    NA                    INSRVMOD:   NA
+           RANGE:      NA                    DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfEntry 7 }
+
+aiPlatfOamVlan OBJECT-TYPE
+    SYNTAX        AiMngtVLAN
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "This object gives the Mngt VLAN that can be used to communicate to 
+         the AI platform.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      OPT
+           PERSIST:    YES                   INSRVMOD:   NO
+           RANGE:      1..4093               DEFVALUE:   4093
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfEntry 8 }
+
+aiPlatfOamIpAddressType OBJECT-TYPE
+    SYNTAX        InetAddressType
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "This object gives the format of the IPaddress used in communication
+         to the AI platform.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      OPT
+           PERSIST:    YES                   INSRVMOD:   NO
+           RANGE:      ipv4                  DEFVALUE:   ipv4
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfEntry 9 }
+
+aiPlatfOamIpAddress OBJECT-TYPE
+    SYNTAX        InetAddress
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "This object gives the IP address of the AI platform.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      OPT
+           PERSIST:    YES                   INSRVMOD:   NO
+           RANGE:      NA                    DEFVALUE:   0x00000000
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfEntry 10 }
+
+aiPlatfOamPrefixLength OBJECT-TYPE
+    SYNTAX        InetAddressPrefixLength
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "This object gives the IP subnet used by the AI platform.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      OPT
+           PERSIST:    YES                   INSRVMOD:   NO
+           RANGE:      ipv4: 0..30           DEFVALUE:   0
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfEntry 11 }
+
+aiPlatfOamDefaultGateway OBJECT-TYPE
+    SYNTAX        InetAddress
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "This object gives the default gateway IP address used by the AI 
+         platform.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      OPT
+           PERSIST:    YES                   INSRVMOD:   NO
+           RANGE:      NA                    DEFVALUE:   0x00000000
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfEntry 12 }
+
+-- =============================================================================
+-- Table that contains the parameters to manage the applications that can be 
+-- installed 
+-- =============================================================================
+
+aiApplTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AiApplEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION 
+        "This table contains the applications that can be installed on AI 
+	 Platform(s)
+         ALCATEL-LUCENT NOTE:
+           TABLESIZE: DEP [20]
+           DESCR: NA"
+    ::= { aiPlatf 2 }
+
+aiApplEntry OBJECT-TYPE
+    SYNTAX      AiApplEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION 
+        "An entry in the aiApplTable contains data for Applications.
+         Entry existence in this table is managed by an external actor through 
+         the use of a rowStatus."
+    INDEX {aiApplName}
+    ::= { aiApplTable 1 }
+
+AiApplEntry ::= SEQUENCE {
+    aiApplName                AiApplicationName,
+    aiApplRowStatus           RowStatus,
+    aiApplUri                 Uri255,
+    aiApplUsageCounter        Gauge,
+    aiApplEmbeddedName        AiApplicationName,
+    aiApplNumber              AiApplicationNr
+
+}
+
+aiApplName OBJECT-TYPE
+    SYNTAX      AiApplicationName
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION 
+        "A name for the application. 
+         It is the unique name that identifies the downloadable item towards
+	 the Server hosting all downloadable items.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      MAND
+           PERSIST:    YES                   INSRVMOD:   NO
+           RANGE:      NA                    DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiApplEntry 1 }
+
+aiApplRowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "This object allows to create and delete rows / table entries 
+         and it indicates the status of an existing row / table entry.
+         To create a new row the actor shall write the value to createAndGo(4).
+         When the system created the row in the table it will have the value 
+         active(1).
+         To remove a row from the table the actor shall set the value to 
+         destroy(6) which has as result that the identified application will 
+         not longer be available.
+         In case the application is planned for usage (see aiPlatfApplTable),
+         then a request to destroy the application will be rejected.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      MAND
+           PERSIST:    NA                    INSRVMOD:   NO
+           RANGE:      1,4,6                 DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NA
+           DESCR:      NA"
+    ::= { aiApplEntry 2 }
+
+aiApplUri OBJECT-TYPE
+    SYNTAX      Uri255
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION 
+        "The uri specifies from where and how the SW can be downloaded.
+         The format is as defined in IETF RFC 5017 / 3986.
+	 Together the uri & the name identify uniquely the downloadable item. 
+         In case the application is planned for usage (see aiPlatfApplTable),
+         then a request to modify this uri will be accepted only when all
+	 planned usage is locked (aiPlatfApplAdminState), i.e. when the 
+	 application is not downloaded/installed from this Uri.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      OPT
+           PERSIST:    YES                   INSRVMOD:   NO
+           RANGE:      NA                    DEFVALUE:   empty string
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiApplEntry 3 }
+
+aiApplUsageCounter OBJECT-TYPE
+    SYNTAX      Gauge
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "The counter counts the number of times the application is used.
+         This corresponds with the number of entries for this application in 
+	 the table aiPlatfApplTable.
+         If the counter is greater than 0, then this Application may NOT be 
+	 deleted. 
+         If the value is 0, then this Application is 'not in use', and can be 
+	 deleted.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      NA
+           PERSIST:    NA                    INSRVMOD:   NA
+           RANGE:      NA                    DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiApplEntry 4 }
+
+aiApplEmbeddedName OBJECT-TYPE
+    SYNTAX      AiApplicationName
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+	"Is the name for the application as retrieved from the downloadable 
+	 item. (from a platform on which the application has been successfully 
+	 installed. Is an empty string in case there is no platform on which
+	 the application has been successfully installed.)
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      NA
+           PERSIST:    NA                    INSRVMOD:   NA
+           RANGE:      NA                    DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiApplEntry 5 }
+
+aiApplNumber OBJECT-TYPE
+    SYNTAX      AiApplicationNr
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "The application nummer is a unique number assigned to every application.
+	 The number is assigned by the system itself.
+	 It is stored persistent to assure the same value applies also after a 
+	 system reset. 
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      NA
+           PERSIST:    YES                   INSRVMOD:   NA
+           RANGE:      NA                    DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiApplEntry 6 }
+
+
+-- =============================================================================
+-- Table that contains the parameters to manage the applications 
+-- to be installed on the AI Platforms
+-- =============================================================================
+
+aiPlatfApplTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AiPlatfApplEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION 
+        "This table contains the applications to be installed on the AI 
+	 Platform(s).
+         Note that one AI Platform can run multiple applications.
+         ALCATEL-LUCENT NOTE:
+           TABLESIZE: DEP [entries in applTable * 2]
+           DESCR: NA"
+    ::= { aiPlatf 3 }
+
+aiPlatfApplEntry OBJECT-TYPE
+    SYNTAX      AiPlatfApplEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION 
+        "An entry in the aiPlatfApplTable contains the configuration data
+         of one AI platform instance.
+         Entry existence in this table is managed by an external actor through 
+         the use of a rowStatus. "
+    INDEX {aiPlatfApplSlot, aiPlatfApplVirtualPlatform, aiPlatfApplName}
+    ::= { aiPlatfApplTable 1 }
+
+AiPlatfApplEntry ::= SEQUENCE {
+    aiPlatfApplSlot                EqptSlotIndex,
+    aiPlatfApplVirtualPlatform     AiVirtualPlatform,
+    aiPlatfApplName                AiApplicationName,
+    aiPlatfApplRowStatus           RowStatus,
+    aiPlatfApplAdminState          AiAdminState,
+    aiPlatfApplInstallState        AiApplInstallState,
+    aiPlatfApplInstallErrCause     AiApplInstallErrCause
+}
+
+aiPlatfApplSlot OBJECT-TYPE
+    SYNTAX EqptSlotIndex 
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "A unique value to identify a slot position.
+	 The Slot+VirtualPlatform must match an entry in the aiPlatfTable.
+         ALCATEL NOTE:
+           ACCESS:     NA                    		USAGE:      MAND
+           PERSIST:    NO                    		INSRVMOD:   NO
+           RANGE:      DEP [shelf type dependent]	DEFVALUE:   NA
+           UNITS:      NA                    		SPARSE:     NA
+           DESCR:      NA"
+      ::= { aiPlatfApplEntry 1 }
+
+aiPlatfApplVirtualPlatform OBJECT-TYPE
+    SYNTAX AiVirtualPlatform
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "A unique value to identify the AI platform within the board
+         plugged in the slot as identified by aiPlatfSlot. 
+         The number starts from 1 and increases to the number of AI 
+         platforms supported by the board.
+	 The Slot+VirtualPlatform must match an entry in the aiPlatfTable.
+         ALCATEL NOTE:
+           ACCESS:     NA                    	USAGE:      MAND
+           PERSIST:    NO                    	INSRVMOD:   NO
+           RANGE:      DEP [board dependent]	DEFVALUE:   NA
+           UNITS:      NA                    	SPARSE:     NA
+           DESCR:      NA"
+      ::= { aiPlatfApplEntry 2 }
+
+aiPlatfApplName OBJECT-TYPE
+    SYNTAX AiApplicationName
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "A unique value to identify the Application within the AI platform.
+	 The name must match an entry in the aiApplTable.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      MAND
+           PERSIST:    NO                    INSRVMOD:   NO
+           RANGE:      NA                    DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NA
+           DESCR:      NA"
+      ::= { aiPlatfApplEntry 3 }
+
+
+aiPlatfApplRowStatus OBJECT-TYPE
+    SYNTAX        RowStatus
+    ACCESS        read-write
+    STATUS        mandatory
+    DESCRIPTION
+        "This object allows to create and delete rows / table entries 
+         and it indicates the status of an existing row / table entry.
+         To create a new row the actor shall write the value to createAndGo(4).
+         When the system created the row in the table it will have the value 
+         active(1).
+         The creation is accepted only when 
+         - the identified AI platform exists in the aiPlatfTable, and when
+         - the identified application exists in the table aiApplTable.
+         To remove a row from the table the actor shall set the value to 
+         destroy(6) which has as result that the identified application will 
+         not longer be installed on the AI Platform.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      MAND
+           PERSIST:    NA                    INSRVMOD:   NO
+           RANGE:      1,4,6                 DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NA
+           DESCR:      NA"
+    ::= { aiPlatfApplEntry 4 }
+
+aiPlatfApplAdminState OBJECT-TYPE
+    SYNTAX      AiAdminState
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object is used to unlock or lock an AI application on that 
+	 platform.
+         - Unlocking will result in attempting to download and install the 
+	   Application on the AI platform. The result of this attempt is
+	   available in the objects aiPlatfApplInstallState and possibly 
+	   aiPlatfApplInstallErrCause. If these reveal a permanent failure, 
+	   then the system will not make further attempts to download / install
+	   the application on this platform. If these reveal a transient 
+	   failure then the system will regularly make autonomous retries of 
+	   the download / installation until a permament state is reached,
+	   being successful or perm-fail.
+         - Locking will result in uninstalling and removing the Application.
+         Re-download/install the application shall happen through locking 
+	 followed by unlocking. 
+	 It is possible to create a new row with the status unlocked.
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      OPT
+           PERSIST:    YES                   INSRVMOD:   YES
+           RANGE:      NA                    DEFVALUE:   locked
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfApplEntry 5 }
+
+aiPlatfApplInstallState OBJECT-TYPE
+    SYNTAX      AiApplInstallState
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object reports on the status of the application
+         as downloaded/installed on the AI platform.
+	 
+         When the aiPlatfApplAdminState = locked:
+	 The object has one of the following values:
+	   noaction  : there is no download/installation requested 
+	   
+	 When the aiPlatfApplAdminState = unlocked: a download/installation is 
+	 requested.
+	 The object has one of the following values:
+           successful: the AI application is downloaded and installed.
+	   transient:  transient situation
+	               There is no ongoing attempt to download or to install. 
+		       If there has been a previously failed attempt, the 
+		       ErrCause gives more information on the last failure.
+		       After some time the system will autonomously (re-)execute 
+		       the download/installation process.
+           inprogress: the AI application is not dowloaded or not installed, but 
+	               a download/installation process is ongoing (could be an
+		       automatic retry), 
+		       If there has been a previously failed attempt, the 
+		       ErrCause gives more information on the last failure.
+	   perm_fail:  permanent-failure
+	               The AI application failed to be downloaded or installed, 
+	               and there is no ongoing attempt to download or to install.
+		       The system will not make further attempts. 
+	               The ErrCause object provides more information on the 
+		       failure reason. 
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      NA
+           PERSIST:    NA                    INSRVMOD:   NA
+           RANGE:      NA                    DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfApplEntry 6 }
+
+aiPlatfApplInstallErrCause OBJECT-TYPE
+    SYNTAX      AiApplInstallErrCause
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object provides more information on the download/installation 
+	 failure. 
+         ALCATEL NOTE:
+           ACCESS:     NA                    USAGE:      NA
+           PERSIST:    NA                    INSRVMOD:   NA
+           RANGE:      NA                    DEFVALUE:   NA
+           UNITS:      NA                    SPARSE:     NO
+           DESCR:      NA"
+    ::= { aiPlatfApplEntry 7 }
+
+END -- end of module AI-MIB.

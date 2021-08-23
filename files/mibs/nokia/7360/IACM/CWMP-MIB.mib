@@ -1,0 +1,261 @@
+CWMP-MIB DEFINITIONS ::= BEGIN
+IMPORTS 
+    Counter, Gauge, IpAddress
+        FROM RFC1155-SMI
+    OBJECT-TYPE
+        FROM RFC-1212
+    asam
+        FROM SYSTEM-MIB
+    RowStatus
+        FROM SNMPv2-TC
+    EqptSlotIndex 
+        FROM ASAM-EQUIP-MIB	
+    InetAddressType,                                                            
+    InetAddress,
+    InetAddressPrefixLength
+        FROM INET-ADDRESS-MIB 
+    Uri255
+        FROM URI-TC-MIB;      
+	   
+cwmpMIB OBJECT IDENTIFIER ::= { asam 108 }
+
+CwmpPlatform   ::= INTEGER (0..65535)
+
+InterfaceIndex ::= INTEGER (1..2147483647)
+TimeCounter ::= INTEGER (1..2147483647)
+
+aiNatStaticPortTable 	OBJECT-TYPE
+	SYNTAX		SEQUENCE OF AiNatStaticPortTableEntry
+	ACCESS	 not-accessible
+	STATUS 		mandatory
+	DESCRIPTION
+		"NAT static table."
+	::= {cwmpMIB 1 }
+
+aiNatStaticPortTableEntry	OBJECT-TYPE
+	SYNTAX			AiNatStaticPortTableEntry
+	ACCESS		not-accessible
+	STATUS			mandatory
+	DESCRIPTION
+		"NAT static table entry."
+	INDEX { aiNatStaticPortIndex}
+	::= {aiNatStaticPortTable 1}
+
+AiNatStaticPortTableEntry ::= SEQUENCE {
+      aiNatStaticPortIndex                  InterfaceIndex,
+      aiNatStaticPortRowStatus		       RowStatus,      
+      aiNatStaticPortLocalAddr              IpAddress,
+      aiNatStaticPortLocalPort			   CwmpPlatform,     
+      aiNatStaticPortGlobalAddr             IpAddress,
+      aiNatStaticPortGlobalPort   		   CwmpPlatform   
+	}
+
+aiNatStaticPortIndex 	OBJECT-TYPE
+	SYNTAX	InterfaceIndex
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION 
+	" When a row is created, you must specify a free index, the index contains the serial number of the ONT.
+		 The index is ONU id, maximum active indexes is (232-1)"
+
+	::= { aiNatStaticPortTableEntry 1 }
+
+aiNatStaticPortRowStatus	OBJECT-TYPE
+	SYNTAX	RowStatus
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		" "
+	::= { aiNatStaticPortTableEntry 2 }
+
+aiNatStaticPortLocalAddr	OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"Local address used for static port translation."
+	::= { aiNatStaticPortTableEntry 3 }
+
+aiNatStaticPortLocalPort	OBJECT-TYPE
+	SYNTAX	CwmpPlatform -- RANGE
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"Local port used for static port translation."
+	::= { aiNatStaticPortTableEntry 4 }
+
+aiNatStaticPortGlobalAddr	OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Global address used for static port translation.
+		 Will be set by agent"
+	::= { aiNatStaticPortTableEntry 5 }
+
+aiNatStaticPortGlobalPort	OBJECT-TYPE
+	SYNTAX	CwmpPlatform -- RANGE
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Global port used for static port translation.
+		 Will be set by agent"
+	::= { aiNatStaticPortTableEntry 6 }
+
+aiNatPortAgingTime  OBJECT-TYPE
+    SYNTAX  TimeCounter
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+         " The value of the object aiNatPortAgingTime specifies
+	      the length in seconds that will be assigned to a lease.
+        There is only creating a record, adding a record for nat table,
+       and the time used to lease a valid record instead of deleting it.
+	    The range of the vale is from 60 seconds to 240 seconds.
+      If not defined, the default lease time is 120 seconds."
+    DEFVAL {120}
+::= { cwmpMIB 2 }
+
+ipAddressPool OBJECT IDENTIFIER ::= { cwmpMIB 3 }
+aiSubnetStartDynAddrRange OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"
+		 This is the start address in the subnet from which dynamic addresses are allocated
+		 The router address if part of the range is excluded.
+		 When no set, it will be set to the first address in the subnet
+		 e.g for subnet 10.10.0.0/24 then it will be 10.10.0.1
+		"
+	 ::= { ipAddressPool 1 }
+
+aiSubnetStopDynAddrRange OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"This is the end address in the subnet from which dynamic addresses are allocated
+		 The router address if part of the range is excluded
+		 When no set, it will be set to the last address in the subnet
+		 e.g for subnet 10.10.0.0/24 then it will be 10.10.0.254
+		"
+	::= { ipAddressPool 2 }
+
+aiNatDynPortTable	OBJECT-TYPE
+	SYNTAX			SEQUENCE OF AiNatDynPortTableEntry
+	ACCESS		 not-accessible
+	STATUS			mandatory
+	DESCRIPTION
+		"NAT dynamic table."
+	::= { cwmpMIB 4 }
+
+aiNatDynPortTableEntry	OBJECT-TYPE
+	SYNTAX			    AiNatDynPortTableEntry
+	ACCESS		    not-accessible
+	STATUS			    mandatory
+	DESCRIPTION
+		"NAT dynamic table entry."
+	INDEX { aiNatDynPortLocalAddr, aiNatDynPortLocalPort }	
+	::= { aiNatDynPortTable 1 }
+	
+AiNatDynPortTableEntry ::= SEQUENCE
+ {
+	    aiNatDynPortLocalAddr            IpAddress,
+      aiNatDynPortLocalPort			       CwmpPlatform,      
+      aiNatDynPortGlobalAddr           IpAddress,
+      aiNatDynPortGlobalPort   		     CwmpPlatform      
+ }
+
+aiNatDynPortLocalAddr	OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"Local address used for dynamic port translation."
+	::= { aiNatDynPortTableEntry 1 }
+
+aiNatDynPortLocalPort	OBJECT-TYPE
+	SYNTAX	CwmpPlatform -- RANGE
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+		"Local port used for dynamic port translation."
+	::= { aiNatDynPortTableEntry 2 }
+
+aiNatDynPortGlobalAddr	OBJECT-TYPE
+	SYNTAX	IpAddress
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Global address used for dynamic port translation.
+		 Will be set by agent"
+	::= { aiNatDynPortTableEntry 3 }
+
+aiNatDynPortGlobalPort	OBJECT-TYPE
+	SYNTAX	CwmpPlatform   -- RANGE
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION 
+		"Global port used for dynamic port translation.
+		 Will be set by agent"
+	::= { aiNatDynPortTableEntry 4 }
+	
+aiNatDhcp OBJECT IDENTIFIER ::= { cwmpMIB 5 }
+aiNatDhcpLeaseTime  OBJECT-TYPE	
+  SYNTAX  TimeCounter
+  ACCESS  read-write
+  STATUS  mandatory
+  DESCRIPTION
+      "	  The value of the object aiNatDhcpLeaseTime specifies
+	  the length in seconds that will be assigned to a lease. 	  
+	  The range of the value is from 300s to 259200s.
+    The default lease time is 43200seconds.
+     "
+  DEFVAL {43200}
+ ::= { aiNatDhcp 1 }
+ 
+ aiNatDhcpReloadConfig  OBJECT-TYPE
+	 SYNTAX  INTEGER {
+                notApplicable (1),
+		            doRestart(2)
+		     }
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION 
+	   " Setting this to doRestart causes the action to restart the DHCP server.
+		 GETs and GETNEXTs on aiNatDhcpReloadConfig return 'not-applicable'. "
+   ::= { aiNatDhcp 2 }
+
+cwmpMgnt OBJECT IDENTIFIER ::= { cwmpMIB 6 }
+cwmpAdminStatus OBJECT-TYPE
+    SYNTAX INTEGER {
+         unlocked(1),              
+         locked(2)  }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION 
+        "  This object is used to unlock or lock CWMP application on core2/3 of FX-7360 NT.
+         - Unlocking will result in attempting to bootstrap CWMP image on core2/3
+         - Locking will result in stopping CWMP image running on core2/3  
+         ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..2
+             PERSIST: YES   DEFVALUE: 2    UNITS: -  "
+   ::= { cwmpMgnt 1 }
+cwmpOperStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+         enabled(1),              
+         disabled(2)         
+      }
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        " This object identifies whether or not the CWMP on core2/3 is
+          capable of performing its normal functions. 
+ 
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: 2    UNITS: -"
+    ::= { cwmpMgnt 2 }
+
+END

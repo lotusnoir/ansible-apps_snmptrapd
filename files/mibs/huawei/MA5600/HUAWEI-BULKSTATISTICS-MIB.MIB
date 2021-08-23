@@ -1,0 +1,923 @@
+-- ============================================================================
+-- Copyright (C) by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- Description: Huawei bulk statistics mib defintion,inculde bulk file management and bulk ftp-client management.
+--              The bulk file provides a way of data exchange between the host and the NMS. This mib describes objects in the bulk file.
+--		The bulk ftp-client provides a way of NMS starts up file transmission. 
+-- Reference: 
+-- Version: V1.04
+-- History: yubiao60006284 ,2006-2-28
+-- ============================================================================
+
+	HUAWEI-BULKSTATISTICS-MIB DEFINITIONS ::= BEGIN
+		IMPORTS
+			huaweiUtility
+				FROM HUAWEI-MIB
+                        IpAddress, Integer32, Unsigned32, Counter64, 
+			BITS, OBJECT-TYPE, MODULE-IDENTITY, OBJECT-IDENTITY, NOTIFICATION-TYPE			
+				FROM SNMPv2-SMI					
+			RowStatus, TruthValue, DisplayString
+				FROM SNMPv2-TC;
+		
+		hwBulkStatistics MODULE-IDENTITY
+			LAST-UPDATED "200412310900Z"
+			ORGANIZATION "Huawei Technologies Co., Ltd."
+			CONTACT-INFO
+				"Floot 5 ,Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,   P.R.C.
+				http://www.huawei.com
+				Zip:518129"
+			DESCRIPTION
+				" huawei bulk statistics mib defintion."
+			::= { huaweiUtility 103 }
+		
+		hwBulkFile  OBJECT IDENTIFIER ::= { hwBulkStatistics 1 }
+			
+		hwBulkFileMgmt OBJECT IDENTIFIER ::= { hwBulkFile 1 }
+				
+		hwBulkFileCopyMax OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Maximum number of the bulk files that are allowed to back up.
+				 When the bulk file is created successfully, 
+				 the NMS will get the bulk file from the devices periodically. 
+				 It is required that the host device back up the bulk file in periods.
+				 Because the system resources are limited, this node defines
+				 the maximum of backup files.When it hits, the earliest backup
+				 file will be overwritten by new ones.If the hwBulkFileTable
+				 is not empty, modification to this node value is not allowed.
+				"
+			DEFVAL { 3 }
+			::= { hwBulkFileMgmt 1 }
+		
+		hwBulkFileTableNextIndex OBJECT-TYPE
+			SYNTAX  Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Next available index for table hwBulkFileTable.
+				 IF no available index, the value will be filled with '-1'. "
+			::= { hwBulkFileMgmt 2 }
+			
+		hwBulkFileCount     OBJECT-TYPE
+			SYNTAX  Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The total number of the bulk file currently."
+			::= { hwBulkFileMgmt 3 }          
+			
+----------File management table
+		hwBulkFileTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBulkFileEntry
+			MAX-ACCESS  not-accessible
+			STATUS current
+			DESCRIPTION
+				" Bulk file management table, providing creat/modify/delete operations.
+				To create a bulk file, you need create a related record in this table, and add object nodes in the hwBulkObjectTable.
+				If you delete a record, the node records in the hwBulkObjectTable and all backup files will be also deleted."
+			::= { hwBulkFileMgmt 4 }
+		
+		hwBulkFileEntry OBJECT-TYPE
+			SYNTAX HwBulkFileEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" "
+			INDEX { hwBulkFileIndex }
+			::= { hwBulkFileTable 1 }
+		
+		HwBulkFileEntry ::= SEQUENCE {
+		    hwBulkFileIndex  Integer32,
+			hwBulkFileName  OCTET STRING,
+			hwBulkFileStorage INTEGER,
+			hwBulkFileFormat INTEGER,
+			hwBulkFileCollectInterval INTEGER,
+			hwBulkFileNmsGetInterval INTEGER,			
+			hwBulkFileStatus INTEGER,      
+			hwBulkFileCurrDirectoryPath OCTET STRING,
+			hwBulkFileObjectMainType INTEGER,
+			hwBulkFileObjectSubType INTEGER,
+			hwBulkFileRowStatus RowStatus,
+			hwBulkFileColNumMode INTEGER
+			}
+		
+		 hwBulkFileIndex OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Index of bulk file,a unique identifier for a bulk file."
+			::= { hwBulkFileEntry 1 }
+
+		hwBulkFileName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..255))
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" Bulk file name.
+				  If you specify a path in the file name, this file is invalid."
+			::= { hwBulkFileEntry 2 }
+ 		
+		hwBulkFileStorage OBJECT-TYPE
+			SYNTAX INTEGER{ ephemeral(1), volatile(2), permanent(3) }
+			MAX-ACCESS read-create
+			STATUS current        
+			DESCRIPTION
+				" Bulk file dumping mode:
+				ephemeral(1)  data file of small volume. It applies to be read once.
+				volatile(2)   saved in memory. Easy to lose.
+				permanent(3)  saved in hard disk. Keep well.
+				"
+			DEFVAL {permanent}
+			::= { hwBulkFileEntry 3 }
+		
+		hwBulkFileFormat OBJECT-TYPE
+			SYNTAX INTEGER{ standardBER(1), bulkASCII(2) }
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" Bulk file formats:
+				standardBER(1)     standard SNMP ASN.1 BER
+				bulkASCII(2)       readable ASCII"
+			DEFVAL {bulkASCII}
+			::= { hwBulkFileEntry 4 }
+		
+		hwBulkFileCollectInterval OBJECT-TYPE
+			SYNTAX INTEGER{ fifteenMinutes(1), thirtyMinutes(2), oneHour(3) }
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" Interval of sampling node value:				
+				fifteenMinutes(1)   Every 15 minutes
+				thirtyMinutes(2)    Every 30 minutes
+				oneHour(3)          Every 1 hour				
+				"
+			DEFVAL {fifteenMinutes}
+			::= { hwBulkFileEntry 5 }
+		
+		hwBulkFileNmsGetInterval OBJECT-TYPE
+			SYNTAX INTEGER{hour(1), thirtyMinutes(2), fifteenMinutes(3)}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" Interval of NMS reading bulk files. It must be no less than the writing interval.
+				hour(1):            The NMS gets files every one hour.The host system backs up data at 0 minute every one hour. 
+				thirtyMinutes(2):  The NMS gets files every 30 minutes.The host system backs up data at every 30 minutes.
+				fifteenMinutes(3):  The NMS gets files every 15 minutes.The host system backs up data at every 15 minutes.
+								    It suggests that the NMS waits for a few minutes after the host system backs up data, and then read the file from the host system.
+				"
+			DEFVAL {hour}
+			::= { hwBulkFileEntry 6 }
+			
+		hwBulkFileStatus OBJECT-TYPE
+			SYNTAX INTEGER{ ready(1), create(2), running(3), nospace(4), noMem(5), writeErr(6), stopped(7) }
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" Bulk file status:
+				The node status changes to ready after the initial record is created successfully. But the file is still not created by then.
+				The file is created after objects related to the file are created successfully.
+				The node status changes to running after the file is created successfully. The NMS cannot operate the file by then.
+				The system only writes data to the files in the running status.
+				ready(1)	This signifies that task is running and data should be collected i.e. create the file to transfer to NMS.
+				create(2)	Start creating the file. If succeeds, the status changes to running. If fails, it changes error status.
+				running(3)	The file is created successfully. The system is writing data to this file. You cannot modify/delete the file. This value cannot be sent.
+				nospace(4)	Creating or writing the file failed. The cause is no free space in hard disk. This value cannot be sent.
+				noMem(5)	Creating or writing the file failed. The cause is no free memory. This value cannot be sent.
+				writeErr(6)	Unknown error. The file cannot be written.
+				stopped(7)	This state means that system should not create
+				            file for this record. This signifies that the task is suspended.
+				            If this value is set when in the running status, then writing file is
+				            stopped. The system will back up the current data.
+				            "
+ 		::= { hwBulkFileEntry 7 }
+		
+		hwBulkFileCurrDirectoryPath OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..31))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Path of the directory where current file is stored"
+			::= { hwBulkFileEntry 8 }   
+
+		hwBulkFileObjectMainType OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Identify main-type of object.Device will static all port according to 
+				to hwBulkFileObjectMainType and hwBulkFileObjectSubType if these two leafs are not null.
+				The values of hwBulkFileObjectMainType and hwBulkFileObjectSubType should match as follow list:
+				--------------------------------------                                                                 
+				ulMainType   ulSubType     Note                                                                        
+				---------------------------------------                                                                
+				   1           101         Device                                                                      
+				   3           113         V5 Interface user frame                                                     
+				   4           100         Borad                                                                       
+				   4           101         Memory                                                                      
+				   6           105         ADSL port(only support ADSL2+)                                              
+				   6           108         E1 port                                                                     
+				   6           109         Ethernet port                                                               
+				   6           110         VDSL port                                                                   
+				   6           113         V5 user                                                                     
+				   6           119         ATM port                                                                    
+				   6           126         SHDSL port                                                                  
+				   6           141         DS3 port                                                                    
+				   6           173         Ethernet port                                                               
+				   6           1080        E1 port                                                                     
+				   6           108000      E1 port                                                                     
+				   112         0           Vcl flux                                                                    
+				   112         1           Vpl flux                                                                    
+				   114         1           V5 interface                                                                
+				   114         2           2M link                                                                     
+				   114         3           Logic C channel                                                             
+				   120         0           VLAN                                                                        
+				   127         1           IMA group                                                                   
+				   127         2           IMA link                                                                    
+				   145         0           MG                                                                          
+				   153         0           L2UA link                                                                   
+				   153         1           L2UA link                                                                   
+				---------------------------------------"                                                               
+			::= { hwBulkFileEntry 9 } 
+			
+		hwBulkFileObjectSubType OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Identify sub-type of object.Device will static all port according to 
+				to hwBulkFileObjectMainType and hwBulkFileObjectSubType if these two leafs are not null.
+				The values of hwBulkFileObjectMainType and hwBulkFileObjectSubType should match as follow list:
+				--------------------------------------                   
+				ulMainType   ulSubType     Note                          
+				---------------------------------------                  
+				   1           101         Device                        
+				   3           113         V5 Interface user frame       
+				   4           100         Borad                         
+				   4           101         Memory                        
+				   6           105         ADSL port(only support ADSL2+)
+				   6           108         E1 port                       
+				   6           109         Ethernet port                 
+				   6           110         VDSL port                     
+				   6           113         V5 user                       
+				   6           119         ATM port                      
+				   6           126         SHDSL port                    
+				   6           141         DS3 port                      
+				   6           173         Ethernet port                 
+				   6           1080        E1 port                       
+				   6           108000      E1 port                       
+				   112         0           Vcl flux                      
+				   112         1           Vpl flux                      
+				   114         1           V5 interface                  
+				   114         2           2M link                       
+				   114         3           Logic C channel               
+				   120         0           VLAN                          
+				   127         1           IMA group                     
+				   127         2           IMA link                      
+				   145         0           MG                            
+				   153         0           L2UA link                     
+				   153         1           L2UA link                     
+				---------------------------------------"
+			::= { hwBulkFileEntry 10 } 
+					
+		hwBulkFileRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" Row operation node . Running status cannot be deleted."
+			::= { hwBulkFileEntry 11 } 
+			
+    	hwBulkFileColNumMode OBJECT-TYPE
+			SYNTAX INTEGER{ reportLastSection(1), not-reportLastSection(2)}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"reportLastSection(1)	The number of Bulkfile section is hwBulkFileNmsGetInterval/hwBulkFileCollectInterval + 1.
+				not-reportLastSection(2)	The number of Bulkfile section is hwBulkFileNmsGetInterval/hwBulkFileCollectInterval."
+			DEFVAL {reportLastSection}
+			::= { hwBulkFileEntry 12 }  
+			
+		hwBulkSaveFileTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBulkSaveFileEntry
+			MAX-ACCESS  not-accessible
+			STATUS current
+			DESCRIPTION
+				" Bulk save file table. "
+			::= { hwBulkFileMgmt 5 }
+		
+		hwBulkSaveFileEntry OBJECT-TYPE
+			SYNTAX HwBulkSaveFileEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" "
+			INDEX { hwBulkFileIndex,hwBulkSaveFileIndex }
+			::= { hwBulkSaveFileTable 1 }
+		
+		HwBulkSaveFileEntry ::= SEQUENCE {
+		    hwBulkSaveFileIndex  Integer32,
+			hwBulkSaveFileTime INTEGER
+			}
+			
+		 hwBulkSaveFileIndex OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" Index of bulk file copy ,a unique identifier for a bulk save file."
+			::= { hwBulkSaveFileEntry 1 }
+			
+		hwBulkSaveFileTime OBJECT-TYPE
+			SYNTAX INTEGER (0..1439)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Index of bulk file and index of save where current file is stored,a unique time for a bulk file."
+			::= { hwBulkSaveFileEntry 2 }
+			
+----------End of file management table
+		
+		hwBulkObjectMgmt OBJECT IDENTIFIER ::= { hwBulkFile 2 }
+       
+----------OID management table in the bulk file
+		hwBulkOIDTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBulkOIDEntry
+			MAX-ACCESS  not-accessible
+			STATUS current
+			DESCRIPTION
+				" OID management table in the bulk file,
+				  Prerequisite for the operation is that the 
+				  bulk file is listed in the hwBulkFileTable 
+				  and the file state is ready."
+			::= { hwBulkObjectMgmt 1 }
+		
+		hwBulkOIDEntry OBJECT-TYPE
+			SYNTAX HwBulkOIDEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" "
+			INDEX { hwBulkFileIndex, 
+			        IMPLIED hwBulkOID }
+			::= { hwBulkOIDTable 1 }
+		
+		HwBulkOIDEntry ::= SEQUENCE {  
+			hwBulkOID OBJECT IDENTIFIER,
+			hwBulkOIDRowStatus RowStatus
+			}
+					
+		hwBulkOID OBJECT-TYPE
+			SYNTAX OBJECT IDENTIFIER
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" OID of a statistics nodes,
+				 excluding index for the get operation."
+			::= { hwBulkOIDEntry 1 }
+
+--This node will be deleted , as device need't calculate difference value, nms only wants absolute value.
+--		hwBulkOIDIsStatistical OBJECT-TYPE
+--			SYNTAX INTEGER{ absolute(1), difference(2)}
+--			MAX-ACCESS read-create
+--			STATUS current
+--			DESCRIPTION
+--				" Judge whether the objects of bulk files are statistic or others. 
+--				absolute(1):      The objects are not statistics. The datum is absolute value.  
+--				difference(2):    The objects are statistics. The datum is difference value.
+--				"
+--			::= { hwBulkOIDEntry 2 }			
+                              
+		hwBulkOIDRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" Row operation node."
+			::= { hwBulkOIDEntry 2  }
+			
+----------Object management table in the bulk file
+  	
+  		hwBulkIndexMgmt OBJECT IDENTIFIER ::= { hwBulkFile 3 }
+	
+		hwBulkObjectIndexCount OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Total number of the object's index."
+			::= { hwBulkIndexMgmt 1 }
+
+		hwBulkObjectTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HWBulkObjectEntry
+			MAX-ACCESS  not-accessible
+			STATUS current
+			DESCRIPTION
+				" Object management table in the bulk file,
+				  providing add/modify/delete operations.
+				  Prerequisite for the operation is that the 
+				  bulk file is listed in the hwBulkFileTable 
+				  and the file state is ready."
+			::= { hwBulkIndexMgmt 2 }
+		
+		hwBulkObjectEntry OBJECT-TYPE
+			SYNTAX HWBulkObjectEntry 
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" "
+			INDEX { hwBulkFileIndex,hwBulkObjectIndex }
+			::= { hwBulkObjectTable 1 }
+		
+		HWBulkObjectEntry ::= SEQUENCE {
+			hwBulkObjectIndex Integer32,
+			hwBulkObjectOIDIndex OCTET STRING,
+			hwBulkObjectLength Integer32,
+			hwBulkObjectRowStatus RowStatus
+			}
+		
+		hwBulkObjectIndex OBJECT-TYPE
+			SYNTAX Integer32  
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Object index in the Bulk file.
+				  A unique identifier for a record,
+				  indicating the sequence of objects."
+			::= { hwBulkObjectEntry 1 }
+		
+		hwBulkObjectOIDIndex OBJECT-TYPE
+			SYNTAX OCTET STRING(SIZE (1..20))
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" Start index of objects in a task,
+				  for each task there can be many start index.In order
+				  to get a value , a complete OID can be formed by adding the hwBulkOID in 
+				  hwBulkOIDTable and the hwBulkObjectOIDIndex from hwBulkObjectTable.
+				"
+			::= { hwBulkObjectEntry 2 }
+
+		hwBulkObjectLength OBJECT-TYPE
+		        SYNTAX Integer32
+		        MAX-ACCESS read-create
+		        STATUS current
+		        DESCRIPTION
+		        " Number of continueous Objects. 
+		          The default value is 1, meanning only this object's value will be collected."
+		        DEFVAL {1}
+			::= { hwBulkObjectEntry 3 }		                               
+		                                                   				
+		hwBulkObjectRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" Row operation node."
+			::= { hwBulkObjectEntry 4 }
+
+
+----------End of object management
+
+        hwBulkFTPClient       OBJECT IDENTIFIER ::= { hwBulkStatistics 2 }
+        
+   	hwFTPClientMgmt       OBJECT IDENTIFIER ::= { hwBulkFTPClient 1 }
+
+----------FTP client management table
+
+        hwFTPClientTableNextIndex OBJECT-TYPE
+			SYNTAX  Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Next available index for table FTPClientTable.	
+				 IF no available index, the value will be filled with '-1'. "
+			::= { hwFTPClientMgmt 1 }
+			
+	hwFTPClientTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwFTPClientEntry
+			MAX-ACCESS  not-accessible
+			STATUS current
+			DESCRIPTION
+				" FTP client management table, providing add/modify/delete operations.
+				  The host severs as client, while the NMS as server.
+				"
+			::= { hwFTPClientMgmt 2 }
+		
+		hwFTPClientEntry OBJECT-TYPE
+			SYNTAX HwFTPClientEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" "
+			INDEX { hwFTPClientIndex }
+			::= { hwFTPClientTable 1 }
+		
+		HwFTPClientEntry ::= SEQUENCE {
+			hwFTPClientIndex INTEGER,
+			hwFTPClientMode INTEGER,
+			hwFTPClientOper INTEGER,
+			hwFTPClientFileName OCTET STRING,  
+			hwFTPDestFileName OCTET STRING,  
+			hwFTPClientServerIP IpAddress,
+			hwFTPClientUserName OCTET STRING,
+			hwFTPClientPasswd OCTET STRING,       
+			hwFTPClientIfIndex INTEGER,
+			hwFTPClientState INTEGER,
+			hwFTPClientRowStatus RowStatus
+			}
+		
+		hwFTPClientIndex OBJECT-TYPE
+			SYNTAX INTEGER (1..4)
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" FTP client index, an unique identifier of a record."
+			::= { hwFTPClientEntry 1 }
+		
+		hwFTPClientMode OBJECT-TYPE
+		        SYNTAX INTEGER{ ftp(1), tftp(2) }
+		        MAX-ACCESS read-create
+		        STATUS current
+		        DESCRIPTION
+		                " FTP mode: ftp(1), tftp(2)"
+			::= { hwFTPClientEntry 2 }
+		
+		hwFTPClientOper OBJECT-TYPE
+		        SYNTAX INTEGER{ putBinary(1) }
+		        MAX-ACCESS read-create
+		        STATUS current
+		        DESCRIPTION
+		                " FTP operations:  putBinary(1)"
+			::= { hwFTPClientEntry 3 }
+		
+		hwFTPClientFileName OBJECT-TYPE
+		        SYNTAX OCTET STRING (SIZE (1..255))
+		        MAX-ACCESS read-create
+		        STATUS current
+		        DESCRIPTION
+				" Source file name, inculding a path."
+			::= { hwFTPClientEntry 4 }
+		
+		hwFTPDestFileName OBJECT-TYPE
+		        SYNTAX OCTET STRING (SIZE (1..255))
+		        MAX-ACCESS read-create
+		        STATUS current
+		        DESCRIPTION
+				" Destination file name,including path. 
+				  If no path file is created in root directory of FTP/TFTP"
+			::= { hwFTPClientEntry 5 }
+		hwFTPClientServerIP OBJECT-TYPE
+		        SYNTAX IpAddress
+		        MAX-ACCESS read-create
+		        STATUS current
+		        DESCRIPTION
+		                " IP address of the FTP Server."
+			::= { hwFTPClientEntry 6 }
+		
+		hwFTPClientUserName OBJECT-TYPE
+		        SYNTAX OCTET STRING (SIZE (1..31))
+		        MAX-ACCESS read-create
+		        STATUS current
+		        DESCRIPTION
+		                " User name for FTP connection. For the TFTP mode, this field is invalid."
+		        DEFVAL  { ''H }
+			::= { hwFTPClientEntry 7 }
+		
+		hwFTPClientPasswd OBJECT-TYPE
+		        SYNTAX OCTET STRING (SIZE (1..15))
+		        MAX-ACCESS read-create
+		        STATUS current
+		        DESCRIPTION
+		               " Password for FTP connection. For the TFTP mode, this field is invalid."
+		        DEFVAL      { ''H }
+			::= { hwFTPClientEntry 8 }  
+			
+		hwFTPClientIfIndex OBJECT-TYPE
+				SYNTAX INTEGER
+				MAX-ACCESS read-create
+				STATUS current
+				DESCRIPTION 
+					"IfIndex in the bulk file,in order to get all data with IfIndex as object's index.
+					If the IfIndex equals to zero,the final file will be filled with all data in current memory."  
+			::= { hwFTPClientEntry 9 }
+		
+		hwFTPClientState OBJECT-TYPE
+		        SYNTAX INTEGER { running(1), success(2), fileOpenFail(3), unreachableServerIp(4),
+		                    linkFailed(5),authenticateFailed(6), fileReadFailed(7), fileWriteFailed(8),
+		                     failed(9)}
+		        MAX-ACCESS read-only
+		        STATUS current
+		        DESCRIPTION
+		               " FTP operation status:                                                                              
+		               running(1): FTP is running. If you set this node as running, the FTP will be started.                
+		               success(2): FTP completed successfully.                                                              
+		               fileOpenFail(3): FTP failed. The cause is file open failure.                                         
+		               unreachableServerIp(4): FTP failed. The cause is that the IP address of the server is not reachable. 
+		               linkFailed(5): FTP failed. The cause is connecting to server failed.                                 
+		               authenticateFailed(6): FTP failed. The cause is authenticating failed.For FTP mode only.             
+		               fileReadFailed(7): FTP failed. The cause is reading file failed.                                     
+		               fileWriteFailed(8): FTP failed. The cause is writing file failed.
+		               failed(9):FTP failed,General error."  
+		                                                
+			::= { hwFTPClientEntry 10 }
+		
+		hwFTPClientRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" Row operation node."
+			::= { hwFTPClientEntry 11 }
+
+-----------------hwCfgInfoCollect
+
+                hwCfgInfoCollect MODULE-IDENTITY
+			LAST-UPDATED "200711111923Z"
+			ORGANIZATION "Huawei Technologies Co., Ltd."
+			CONTACT-INFO
+				"Floot 1 ,Block 1, R&D Building,
+				Huawei Xi'an Haixing Production Base,
+				xi'an,   P.R.C.
+				http://www.huawei.com
+				Zip:518129"
+			DESCRIPTION
+				" huawei cfginfo collection mib defintion."
+			::= { huaweiUtility 121 }
+
+-----------------hwCollectSet
+
+                hwCollectSet       OBJECT IDENTIFIER ::= { hwCfgInfoCollect 1 }
+                
+                hwCollectSetTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwCollectSetEntry
+			MAX-ACCESS  not-accessible
+			STATUS current
+			DESCRIPTION
+				" nms collect information table, providing add/modify/delete operations.
+				  The host severs as client, while the NMS as server.
+				"
+			::= { hwCollectSet 1 }
+		
+		hwCollectSetEntry OBJECT-TYPE
+			SYNTAX HwCollectSetEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" "
+			INDEX { IMPLIED hwCollectTableName }
+			::= { hwCollectSetTable 1 }
+		
+		HwCollectSetEntry ::= SEQUENCE {
+			hwCollectTableName OCTET STRING,
+			hwCollectOID OCTET STRING,
+			hwCollectTableRowStatus RowStatus
+			}
+                
+                hwCollectTableName OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..32))
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"the table name"
+			::= { hwCollectSetEntry 1 }
+			
+		hwCollectOID OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..128))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Information of the OIDs"
+			::= { hwCollectSetEntry 2 }
+			
+		hwCollectTableRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"							
+				Row status:mainly to support the OIDS addition , modify and deletion.
+				4 - addition
+				6 - deletion
+				7 - modify
+				"
+			::= { hwCollectSetEntry 3 }
+			
+------------------hwCollectOperationSet
+
+                hwCollectOperationSet       OBJECT IDENTIFIER ::= { hwCfgInfoCollect 2 }
+                
+                hwCollectState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				idle(1),
+				collecting(2),
+				waitfetch(3),
+				tranfering(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Operation status of the information collect.
+				1 - idle
+				2 - collecting
+				3 - waitfetch
+				4 - tranfering
+				"
+			::= { hwCollectOperationSet 1 }
+                
+                hwCollectOperation OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				begin(1),
+				stop(2)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"				
+				Administration operation of the information collect.
+				1 - begin
+				2 - stop
+				"
+			::= { hwCollectOperationSet 2 }
+			
+		hwCollectTableInfo OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..255))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Information of the table"
+			::= { hwCollectOperationSet 3 }
+			
+
+			
+		----hwBackupCollectInfoParaTable"for singapore telecom BMS efficency optimize"
+		hwBackupCollect       OBJECT IDENTIFIER ::= { hwCfgInfoCollect 3 }
+		
+		hwBackupCollectInfoParaTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBackupCollectInfoParaEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				backup collectinfo parameter table
+				"
+			::= { hwBackupCollect 1 }
+		
+		hwBackupCollectInfoParaEntry OBJECT-TYPE
+			SYNTAX HwBackupCollectInfoParaEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Backup collectinfo parameter table entry
+				"
+			INDEX { hwBackupCollectInfoRequestID }
+			::= { hwBackupCollectInfoParaTable 1 }
+		
+		HwBackupCollectInfoParaEntry ::= SEQUENCE { 
+				hwBackupCollectInfoServerIpAddr
+					IpAddress,
+				hwBackupCollectInfoMode
+					INTEGER,
+				hwBackupCollectInfoFileName
+					DisplayString,
+				hwBackupCollectInfoUserName
+					DisplayString,
+				hwBackupCollectInfoPassword
+					DisplayString,
+				hwBackupCollectInfoRequestID
+					Integer32
+			 }
+
+		hwBackupCollectInfoServerIpAddr OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the IP address of Server
+				"
+			::= { hwBackupCollectInfoParaEntry 1 }
+		
+		hwBackupCollectInfoMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				tftp(1),
+				modem(2),
+				ftp(3),
+                                sftp(5),
+				other(6)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Load protocol:tftp and MODEM currently supported
+				"
+			::= { hwBackupCollectInfoParaEntry 2 }
+		
+		hwBackupCollectInfoFileName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..127))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Backup file name 
+				"
+			::= { hwBackupCollectInfoParaEntry 3 }
+		
+		hwBackupCollectInfoUserName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..31))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The backup user name,which is necessary in FTP mode  and SFTP mode
+				while unnecessary in TFTP mode. 
+				"
+			::= { hwBackupCollectInfoParaEntry 4 }
+		
+		hwBackupCollectInfoPassword OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..16))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The backup user password, which is necessary in FTP mode and SFTP mode,
+				while unnecessary in TFTP mode.
+				"
+			::= { hwBackupCollectInfoParaEntry 5 }
+			
+		hwBackupCollectInfoRequestID OBJECT-TYPE
+			SYNTAX Integer32 
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the request index for xml	
+				"
+			::= { hwBackupCollectInfoParaEntry 6 }
+		
+		----end of hwBackupCollectInfoParaTable
+		
+		hwCfgInfoQuery OBJECT IDENTIFIER ::= { hwCfgInfoCollect 4 }
+		
+		
+		hwCfgInfoQueryTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwCfgInfoQueryEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Description."
+			::= { hwCfgInfoQuery 1 }
+		
+		hwCfgInfoQueryEntry OBJECT-TYPE
+			SYNTAX HwCfgInfoQueryEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Description."
+			INDEX { hwQueryCondition, IMPLIED hwQueryContent }
+			::= { hwCfgInfoQueryTable 1 }
+		
+		HwCfgInfoQueryEntry ::=
+			SEQUENCE { 
+				hwQueryCondition
+					OCTET STRING,
+				hwQueryContent
+					OCTET STRING,
+				hwQueryResult
+					OCTET STRING
+			 }
+
+		hwQueryCondition OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..256))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Condition index string."
+			::= { hwCfgInfoQueryEntry 1 }
+		
+		hwQueryContent OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..256))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Table string."
+			::= { hwCfgInfoQueryEntry 2 }
+		
+		hwQueryResult OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (1..8192))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Query result."
+			::= { hwCfgInfoQueryEntry 3 }
+END
+

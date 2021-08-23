@@ -1,0 +1,2021 @@
+E1-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+    RowStatus, TruthValue, DisplayString
+        FROM SNMPv2-TC
+    Counter, enterprises, TimeTicks
+        FROM RFC1155-SMI
+    ifIndex
+        FROM ITF-MIB
+    asam
+        FROM SYSTEM-MIB
+    NetworkTimeInSeconds
+        FROM ASAM-TC-MIB;
+
+
+asamDsx1E1MIB OBJECT IDENTIFIER ::= { asam 16 }
+
+e1MIB OBJECT IDENTIFIER ::= { asamDsx1E1MIB 3 }
+
+E1LineCoding ::= INTEGER {
+	ami(1),
+	hdb3(2)
+}
+
+E1FramingMode ::= INTEGER {
+	unframed(1),
+	framed(2) 
+}
+
+E1TransmitClockSource ::= INTEGER {
+	external(1),
+	internal(2)
+}
+
+E1LoopbackType ::= INTEGER {
+	noLoop(1),
+        local-Payload(2),
+  	remote-Payload(3),
+	remote-Line(4),
+	local-Line(5)
+}
+
+E1BERTestPattern ::= INTEGER {
+	framed-twoPow11(1),	-- Framed Pseudo-random repeating test pattern with 2^11 bits
+	framed-twoPow15(2),     -- Framed Pseudo-random repeating test pattern with 2^15 bits
+        unframed-twoPow11(3),	-- Unframed Pseudo-random repeating test pattern with 2^11 bits
+	unframed-twoPow15(4),  -- Unframed Pseudo-random repeating test pattern with 2^15 bits
+	none(5)			-- Default Value
+}
+
+E1BERTestStatus ::= INTEGER {
+	none(1),
+	running(2),
+	aborted(3),
+	completed(4)
+}
+
+E1SignalMode ::= INTEGER {
+                   none(1),
+                   robbedBit(2),
+                   bitOriented(3),
+                   messageOriented(4),
+                   other(5)
+}
+
+E1LineImpedanceMode ::= INTEGER {
+                   unbalanced75ohms(1),
+                   balanced120ohms(2)
+}
+
+E1CRCEnable ::= INTEGER {
+				disable(1),
+				enable(2)
+}
+
+E1MultiframingEnable ::= INTEGER {
+				disable(1),
+				enable(2)
+}
+
+E1SegmentSide ::= INTEGER {
+				nearEnd(1),
+				farEnd(2)
+}
+
+
+-- Groups in e1MIB
+
+e1Configuration OBJECT IDENTIFIER ::= { e1MIB 1 }
+e1Status        OBJECT IDENTIFIER ::= { e1MIB 2 }
+e1Performance   OBJECT IDENTIFIER ::= { e1MIB 3 }
+e1Diagnostic    OBJECT IDENTIFIER ::= { e1MIB 4 }
+
+-- Textual conventions
+
+
+-- E1 configuration table
+-- ======================
+e1ConfigTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF E1ConfigEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This table supports overall configuration of the E1 interface.
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of E1 lines]
+            DESCR:       "
+ ::= { e1Configuration 1 }
+
+e1ConfigEntry OBJECT-TYPE
+    SYNTAX E1ConfigEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+	 "An entry in this table represents a single E1 interface.
+ 	  The E1 configuration is associated with single E1 interface 
+          in the ifTable. The entry is indexed by the ifIndex of corresponding 
+          E1 interface
+
+	ALCATEL NOTE: Interfaces in ISAM are manually provisioned.
+         Entries exist in this table for all available
+         interfaces in the system, however entries are
+r        only 'provisioned' based on the e1RowStatus of this
+         entry."
+
+    INDEX   { ifIndex }
+::= { e1ConfigTable 1 }
+
+
+E1ConfigEntry ::=
+          SEQUENCE {
+			e1RowStatus			RowStatus,
+			e1LineCoding			E1LineCoding,
+			e1FramingMode		E1FramingMode,
+			e1EnableCRC			E1CRCEnable,
+			e1EnableMultiFraming	E1MultiframingEnable,
+			e1TransmitClockSource 	E1TransmitClockSource,
+			e1SignalMode      E1SignalMode,
+			e1LineImpedance   E1LineImpedanceMode,
+			e1AdminState		 INTEGER
+     	 }
+
+
+e1RowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION
+        "This object controls the configuration of the associated entry
+         in this table, and thereby the associated SHDSL interface.
+         See description of RowStatus for syntax & behavior.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       notInService | active
+            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+    DESCR:       :       In the ISAM system, entries in this table
+         may NOT be created/deleted by a manager.
+
+         Entries are created in this table when 'shdslSpanOperationalMode'
+	is set to 'tdm'. Number of entries in this table is equal to
+	number of lines set to TDM mode. If 'shdslSpanOperationalMode' of
+	any E1 line is set to other than 'tdm', the specific row corresponds
+	to that line is deleted from this table.
+"
+
+::= { e1ConfigEntry 1 }
+
+
+e1LineCoding OBJECT-TYPE
+	SYNTAX  E1LineCoding
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Encoding type of this interface.
+		
+		   ami - Specifies Alternate Mark Inversion (AMI) as the linecode type
+		   hdb3 - Specifies high-density binary 3 (HDB3) as the linecode type. This is the default for E1 lines.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: YES			INSRVMOD: NA
+			RANGE: ami | hdb3			DEFVALUE: hdb3
+			UNITS: NA			SPARSE:  NO
+			DESCR: NA 							"	
+	
+	DEFVAL {hdb3}
+::= { e1ConfigEntry 2 }
+
+
+e1FramingMode OBJECT-TYPE
+	SYNTAX  E1FramingMode
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Specifies framing of e1 interface.
+			unframed - Unframed E1.
+			framed - Framed E1 type.
+             
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: YES			INSRVMOD: NA
+			RANGE: unframed|framed		DEFVALUE: unframed
+			UNITS: NA			SPARSE:  NO
+			DESCR:NA								"
+	
+	DEFVAL {unframed}
+::= { e1ConfigEntry 3 }
+
+
+e1EnableCRC OBJECT-TYPE
+	SYNTAX  E1CRCEnable
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Whether to enable or disable CRC4 for this e1 interface.
+		   disable - no CRC4
+		   enable - Enables CRC4.
+		 This setting makes sense only if e1FramingMode to be set to 'framed'.
+             
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: YES			INSRVMOD: NA
+			RANGE: disable | enable		DEFVALUE: disable
+			UNITS: NA			SPARSE:  NO
+			DESCR: NA				"
+	
+	DEFVAL {disable}
+::= { e1ConfigEntry 4 }
+
+
+e1EnableMultiFraming OBJECT-TYPE
+	SYNTAX  E1MultiframingEnable
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Specifies if multi framing to be used. 
+		  disable - No multi framing.
+		  enable - Enable multi framing.
+		
+		This parameter needs e1FramingMode to be set to 'framed'.
+
+             
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: YES			INSRVMOD: NA
+			RANGE: disable | enable		DEFVALUE: disable
+			UNITS: NA			SPARSE:  NO
+			DESCR: NA	 "
+	
+	DEFVAL {disable}
+::= { e1ConfigEntry 5 }
+
+
+e1TransmitClockSource OBJECT-TYPE
+	SYNTAX  E1TransmitClockSource
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Specifies clock source to be used for this e1 interface.
+		   external - Specifies that the network clock source is used. This is the default.
+		   internal - Specifies that the internal clock source is used.
+             
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: YES			INSRVMOD: NA
+			RANGE: external | internal	DEFVALUE: external
+			UNITS: NA			SPARSE:  NO
+			DESCR: NA "
+	
+	DEFVAL {external}
+::= { e1ConfigEntry 6 }
+
+
+e1SignalMode OBJECT-TYPE
+	SYNTAX  E1SignalMode
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"'none' indicates that no bits are reserved for
+          signaling on this channel.
+
+          'robbedBit' indicates that DS1 Robbed Bit Signaling
+          is in use.
+
+          'bitOriented' indicates that E1 Channel Associated
+          Signaling is in use.
+
+          'messageOriented' indicates that Common Channel
+          Signaling is in use on either channel 16 of
+          an E1 link or channel 24 of a DS1.
+
+		 others if the mode is different from the ones 
+		 Specified above.
+		
+		Note: e1SignalMode is NOT supported.FR - ALU02327678             
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: YES			INSRVMOD: NA
+			RANGE: 1..5 		DEFVALUE: none
+			UNITS: NA			SPARSE:  NO
+			DESCR: NA "
+	
+	DEFVAL {none}
+::= { e1ConfigEntry 7 }
+
+
+e1LineImpedance OBJECT-TYPE
+	SYNTAX  E1LineImpedanceMode
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Nominal line impedance.             
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: YES			INSRVMOD: NA
+			RANGE: unbalanced75ohms|balanced120ohms    
+			DEFVALUE: balanced120ohms
+			UNITS: NA			SPARSE:  NO
+			DESCR: NA "
+	
+	DEFVAL {balanced120ohms}
+::= { e1ConfigEntry 8 }
+
+e1AdminState  OBJECT-TYPE
+    SYNTAX      INTEGER{
+				 up(1),
+            	    down(2)
+		}
+   ACCESS      read-write
+   STATUS      mandatory
+   DESCRIPTION
+         "This object specifies the admin state E1 interface.
+
+        ALCATEL NOTE:
+        ACCESS:      NA          USAGE:       OPT
+        PERSIST:     YES         INSRVMOD:    NA
+        RANGE:       up|down
+        DEFVALUE:    down
+        UNITS:       NA          SPARSE:      NO
+        DESCR:       NA"
+    DEFVAL {down}
+ ::= { e1ConfigEntry 9 }
+
+
+--E1 Operational Table
+--====================
+
+e1OperationalTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF E1OperationalEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This table contains the operational parameters for the provisioned E1 interface.
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of E1 lines]
+            DESCR:       "
+ ::= { e1Status 1 }
+
+e1OperationalEntry OBJECT-TYPE
+    SYNTAX  E1OperationalEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+	    "An entry in this table represents the status of single E1 interface.
+		The entry is indexed by the ifIndex of corresponding E1 interface"
+
+    INDEX   { ifIndex }
+::= { e1OperationalTable 1 }
+
+
+E1OperationalEntry ::=
+          SEQUENCE {
+		    e1ActualDatarate		INTEGER,
+			e1ActualLineCoding		E1LineCoding,
+			e1ActualFramingMode		E1FramingMode,
+			e1ActualCRC			E1CRCEnable,
+			e1ActualMultiframing	        E1MultiframingEnable,
+			e1ActualTransmitClockSource 	E1TransmitClockSource,
+			e1OperationalStatus			INTEGER,
+			e1ActualLineImpedance	E1LineImpedanceMode
+     }
+
+
+e1ActualDatarate OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"Retrieves Actual datarate on this e1 interface.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: 192..2048			DEFVALUE: NA
+			UNITS: kb/s			SPARSE:  NA
+			DESCR: The data rate will be a multiple of 64 kb/s.
+                    While the E1 line is not activated,
+                    the value of this object is 0.
+        "
+::= { e1OperationalEntry 1 }
+
+
+e1ActualLineCoding OBJECT-TYPE
+	SYNTAX  E1LineCoding
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"Retrieves the actual Encoding type of this interface.
+		
+		   ami - Specifies Alternate Mark Inversion (AMI) as the linecode type
+		   hdb3 - Specifies high-density binary 3 (HDB3) as the linecode type.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA  
+        "
+	
+	
+::= { e1OperationalEntry 3 }
+
+e1ActualFramingMode OBJECT-TYPE
+	SYNTAX  E1FramingMode
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"Retrieves the framing of e1 interface.
+			unframed - Unframed E1.
+			framed - Framed E1 type.
+
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA  
+        "
+	
+	
+::= { e1OperationalEntry 4 }
+
+e1ActualCRC OBJECT-TYPE
+	SYNTAX  E1CRCEnable
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"CRC4 setting of this e1 interface.
+		   disable - no CRC4
+		   enable - Enables CRC4.
+
+
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA 
+        "
+	
+	
+::= { e1OperationalEntry 5 }
+
+e1ActualMultiframing OBJECT-TYPE
+	SYNTAX  E1MultiframingEnable 
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"Specifies if multi framing is used. 
+		  disable - No multi framing.
+		  enable - Enable multi framing.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA 
+        "
+	
+	
+::= { e1OperationalEntry 6 }
+
+e1ActualTransmitClockSource OBJECT-TYPE
+	SYNTAX  E1TransmitClockSource
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"Specifies clock source of this e1 interface.
+		   external - Specifies that the network clock source is used. This is the default.
+		   internal - Specifies that the internal clock source is used.
+
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA 
+        "
+	
+	
+::= { e1OperationalEntry 7 }
+
+e1OperationalStatus OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"shows the line status of the e1 interface.
+		active(1) - Specifies the line is in active state.
+         	noactive(2) - Specifies the line is in not in service.	        
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: active | noactive			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA 
+        "
+	
+	
+::= { e1OperationalEntry 8 }
+
+e1ActualLineImpedance OBJECT-TYPE
+	SYNTAX  E1LineImpedanceMode
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"shows the actual line impedance of the e1 interface.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: YES			INSRVMOD: NA
+			RANGE: unbalanced75ohms|balanced120ohms
+			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA
+        "
+	
+	
+::= { e1OperationalEntry 10 }
+
+
+--E1 Performance Tables
+--=====================
+
+e1Curr15MinTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF E1Curr15MinEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This table contains 15 minutes counters for provisioned E1 interfaces.
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of E1 lines]
+            DESCR:       "
+ ::= { e1Performance 1 }
+
+e1Curr15MinEntry OBJECT-TYPE
+    SYNTAX E1Curr15MinEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+	    "An entry in this table represents 15 Min PM counter values of single E1 interface.
+		The entry is indexed by the ifIndex and e1Curr15MinSegmentSide of corresponding E1 interface"
+
+		
+
+    INDEX   {ifIndex,e1Curr15MinSegmentSide}
+::= { e1Curr15MinTable 1 }
+
+
+E1Curr15MinEntry ::=
+		SEQUENCE {
+			e1Curr15MinSegmentSide					E1SegmentSide,
+			e1Curr15MinTimeElapsed			INTEGER,
+			e1Curr15MinES					Counter,
+			e1Curr15MinSES					Counter,
+			e1Curr15MinSEFS			        Counter,
+			e1Curr15MinUAS					Counter,
+			e1Curr15MinCSS					Counter,
+			e1Curr15MinPCV					Counter,
+			e1Curr15MinLES					Counter,
+			e1Curr15MinBES					Counter,
+			e1Curr15MinLCV					Counter,
+			e1Curr15MinValidIntervals       INTEGER,
+			e1Curr15MinInvalidDataFlag		INTEGER
+		}
+		
+e1Curr15MinSegmentSide  OBJECT-TYPE
+    SYNTAX  E1SegmentSide
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This object identifies the particular side(near-end/far-end)
+		of an E1 interface.
+	NOTE: far-end PM data collection is not supported for E1
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       nearEnd | farEnd
+            DEFVALUE:    nearEnd
+            UNITS:       NA           SPARSE:      NA
+			DESCR:       NA"
+
+	 DEFVAL {nearEnd}
+    ::= { e1Curr15MinEntry 1 }
+	
+e1Curr15MinTimeElapsed OBJECT-TYPE
+    SYNTAX       INTEGER (0..900)
+    ACCESS   	 read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Total elapsed seconds in the current 15-minute interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..900       DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 2 }
+
+e1Curr15MinES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Errored Seconds (ES) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 3 }
+
+
+e1Curr15MinSES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Seconds (SES) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 4 }
+
+
+e1Curr15MinSEFS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Framed Seconds (SEFS) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 5 }
+
+
+e1Curr15MinUAS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Unavailable Seconds (UAS) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 6 }
+
+
+e1Curr15MinCSS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Controlled Slip Seconds (CSS) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 7 }
+
+e1Curr15MinPCV OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Path Code Violation (PCV) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 8 }
+
+
+e1Curr15MinLES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Line Error Seconds (LES) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 9 }
+
+
+e1Curr15MinBES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Bursty Error Seconds (BES) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 10 }
+
+e1Curr15MinLCV OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Line Code Violation (LCV) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 12 }
+
+e1Curr15MinValidIntervals      OBJECT-TYPE
+    SYNTAX              INTEGER (0..96)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "The number of previous intervals for which data has been
+         stored. In normal conditions the value of this object equals the
+         maximum number of intervals supported by the system. If the 
+         the relevant device was brought online more recently,
+         the value will be the number of complete 15 minute
+         intervals the device has been online. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..96        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+	::= {e1Curr15MinEntry 13}
+
+e1Curr15MinInvalidDataFlag OBJECT-TYPE
+    SYNTAX       INTEGER (0..1)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        " This flag indicates the validity of the corresponding PM data 
+        in current 15 minutes. If the measured time deviates by more than
+		10 seconds from the nominal interval duration (900 seconds for 
+		a 15 minutes interval), then the data is seen as invalid. 
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1           DEFVALUE:   NA
+            UNITS:       NA      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr15MinEntry 14 }
+
+
+e1Curr1DayTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF E1Curr1DayEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This table contains 1 day counters for provisioned E1 interfaces.
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of E1 lines]
+            DESCR:       "
+ ::= { e1Performance 2 }
+
+e1Curr1DayEntry OBJECT-TYPE
+    SYNTAX E1Curr1DayEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+	    "An entry in this table represents 1 day PM counter values of single E1 interface.
+		The entry is indexed by the ifIndex and e1Curr1DaySegmentSide of corresponding E1 interface"
+
+		
+
+    INDEX   { ifIndex,e1Curr1DaySegmentSide}
+::= { e1Curr1DayTable 1 }
+
+
+E1Curr1DayEntry ::=
+		SEQUENCE {
+			e1Curr1DaySegmentSide					E1SegmentSide,
+			e1Curr1DaysTimeElapsed 			INTEGER,
+			e1Curr1DayES					Counter,
+			e1Curr1DaySES					Counter,
+			e1Curr1DaySEFS			        Counter,
+			e1Curr1DayUAS					Counter,
+			e1Curr1DayCSS					Counter,
+			e1Curr1DayPCV					Counter,
+			e1Curr1DayLES					Counter,
+			e1Curr1DayBES					Counter,
+			e1Curr1DayLCV					Counter,
+			e1Curr1DayValidIntervals       INTEGER,
+			e1Curr1DayInvalidDataFlag		INTEGER
+		}
+		
+e1Curr1DaySegmentSide  OBJECT-TYPE
+    SYNTAX  E1SegmentSide
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This object identifies the particular side(near-end/far-end)
+		of an E1 interface.
+	  NOTE: far-end PM data collection is not supported for E1
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       nearEnd | farEnd
+            DEFVALUE:    nearEnd
+            UNITS:       NA           SPARSE:      NA
+			DESCR:       NA"
+
+	 DEFVAL {nearEnd}
+    ::= { e1Curr1DayEntry 1 }
+	
+e1Curr1DaysTimeElapsed OBJECT-TYPE
+    SYNTAX       INTEGER (0..86400)
+    ACCESS   	 read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Number of seconds that have elapsed since the
+        beginning of the current 1-day interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..86400     DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 2 }
+
+e1Curr1DayES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Errored Seconds (ES) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 3 }
+
+
+e1Curr1DaySES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Seconds (SES) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 4 }
+
+
+e1Curr1DaySEFS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Framed Seconds (SEFS) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 5 }
+
+
+e1Curr1DayUAS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Unavailable Seconds (UAS) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 6 }
+
+
+e1Curr1DayCSS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Controlled Slip Seconds (CSS) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 7 }
+
+e1Curr1DayPCV OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Path Code Violation (PCV) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 8 }
+
+
+e1Curr1DayLES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Line Error Seconds (LES) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 9 }
+
+
+e1Curr1DayBES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Bursty Error Seconds (BES) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 10 }
+
+
+e1Curr1DayLCV OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Line Code Violation (LCV) in the current 15-minute 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 12 }
+
+e1Curr1DayValidIntervals      OBJECT-TYPE
+    SYNTAX              INTEGER (0..30)
+    ACCESS              read-only
+    STATUS              mandatory
+    DESCRIPTION 
+       "The number of previous intervals for which data has been
+         stored. In normal conditions the value of this object equals the
+         maximum number of intervals supported by the system. If the 
+         the relevant device was brought online more recently,
+         the value will be the number of complete 1 day
+         intervals the device has been online. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..30        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+	::= {e1Curr1DayEntry 13}
+
+e1Curr1DayInvalidDataFlag OBJECT-TYPE
+    SYNTAX       INTEGER (0..1)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "This flag indicates the validity of the corresponding PM data 
+        in current day. If the measured time deviates by more than 10 seconds from 
+        the nominal interval duration (86400 seconds for a 24 hour interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period 
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { e1Curr1DayEntry 14 }
+
+
+e115MinIntervalTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF E115MinIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table provides one row for each E1 interface
+        performance data collection interval. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of E1 lines * 2 (near-end, far-end) * number of 15Min intervals (32)]
+            DESCR:  "
+    ::= { e1Performance 3 }
+
+e115MinIntervalEntry OBJECT-TYPE
+    SYNTAX      E115MinIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry in the e115MinIntervalTable."
+    INDEX { ifIndex, e115MinIntervalSegmentSide, e115MinIntervalNumber}
+    ::= { e115MinIntervalTable 1 }
+
+E115MinIntervalEntry ::=
+    SEQUENCE
+    {
+	e115MinIntervalSegmentSide						E1SegmentSide,
+    e115MinIntervalNumber         INTEGER,
+    e115MinIntervalMoniSecs         INTEGER,
+    e115MinIntervalES					Counter,
+	e115MinIntervalSES					Counter,
+	e115MinIntervalSEFS			        Counter,
+	e115MinIntervalUAS					Counter,
+	e115MinIntervalCSS					Counter,
+	e115MinIntervalPCV					Counter,
+	e115MinIntervalLES					Counter,
+	e115MinIntervalBES					Counter,
+	e115MinIntervalLCV					Counter,
+    e115MinIntervalInvalidDataFlag INTEGER,
+    e115MinIntervalTimeStamp      NetworkTimeInSeconds
+    }
+	
+e115MinIntervalSegmentSide  OBJECT-TYPE
+    SYNTAX  E1SegmentSide
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This object identifies the particular side(near-end/far-end)
+		of an E1 interface.
+	NOTE: far-end PM data collection is not supported for E1
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       nearEnd | farEnd
+            DEFVALUE:    nearEnd
+            UNITS:       NA           SPARSE:      NA
+			DESCR:       NA"
+
+	 DEFVAL {nearEnd}
+    ::= { e115MinIntervalEntry 1 }
+
+e115MinIntervalNumber OBJECT-TYPE
+    SYNTAX      INTEGER(1..96)
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Performance Data Interval number. 1 is the the most recent
+        previous interval; interval 96 is 24 hours ago. Intervals
+        2..96 are optional.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       1..32        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       Only 32 previous 15-Min intervals are kept"
+    ::= { e115MinIntervalEntry 2 }
+
+	
+e115MinIntervalMoniSecs OBJECT-TYPE
+    SYNTAX       INTEGER (0..900)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "The amount of time in the 15-Min interval over which
+        the performance monitoring information is actually
+        counted.  This value will be the same as the interval
+        duration except in a situation where performance
+        monitoring data could not be collected for any reason.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..900       DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 3 }
+
+e115MinIntervalES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Errored Seconds (ES) during the 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 4 }
+
+
+e115MinIntervalSES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Seconds (SES) during the 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 5 }
+
+
+e115MinIntervalSEFS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Framed Seconds (SEFS) during the 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 6 }
+
+
+e115MinIntervalUAS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Unavailable Seconds (UAS) during the 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 7 }
+
+
+e115MinIntervalCSS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Controlled Slip Seconds (CSS) during the 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 8 }
+
+e115MinIntervalPCV OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Path Code Violation (PCV) during the 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 9 }
+
+
+e115MinIntervalLES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Line Error Seconds (LES) during the 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 10 }
+
+
+e115MinIntervalBES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Bursty Error Seconds (BES) during the 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 11 }
+
+e115MinIntervalLCV OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Line Code Violation (LCV) during the 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 13 }
+	
+	
+e115MinIntervalInvalidDataFlag OBJECT-TYPE
+    SYNTAX     INTEGER (0..1)
+    ACCESS     read-only
+    STATUS     mandatory
+    DESCRIPTION
+       "This flag indicates the validity of the corresponding PM data
+        in previous 15-minutes interval. If the measured time deviates by more than 10 seconds from
+        the nominal interval duration (900 seconds for a 15 minutes interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { e115MinIntervalEntry 14 }
+
+e115MinIntervalTimeStamp OBJECT-TYPE
+    SYNTAX      NetworkTimeInSeconds
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Network time in seconds indicating the start of the interval.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+	::= { e115MinIntervalEntry 15 }
+
+e11DayIntervalTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF E11DayIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "This table provides one row for each E1 interface
+        performance data collection interval. 
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of E1 lines * 2 (near-end, far-end) * number of 1Day intervals (1)]
+            DESCR:  "
+    ::= { e1Performance 4 }
+
+e11DayIntervalEntry OBJECT-TYPE
+    SYNTAX      E11DayIntervalEntry
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "An entry in the e11DayIntervalTable."
+    INDEX { ifIndex, e11DayIntervalSegmentSide, e11DayIntervalNumber}
+    ::= { e11DayIntervalTable 1 }
+
+E11DayIntervalEntry ::=
+    SEQUENCE
+    {
+	e11DayIntervalSegmentSide		E1SegmentSide,
+    	e11DayIntervalNumber         		INTEGER,
+	e11DayIntervalMoniSecs         		INTEGER,
+	e11DayIntervalES			Counter,
+	e11DayIntervalSES			Counter,
+	e11DayIntervalSEFS			Counter,
+	e11DayIntervalUAS			Counter,
+	e11DayIntervalCSS			Counter,
+	e11DayIntervalPCV			Counter,
+	e11DayIntervalLES			Counter,
+	e11DayIntervalBES			Counter,
+	e11DayIntervalLCV			Counter,
+    e11DayIntervalInvalidDataFlag 		INTEGER,
+    e11DayIntervalTimeStamp      		NetworkTimeInSeconds
+    }
+	
+e11DayIntervalSegmentSide  OBJECT-TYPE
+    SYNTAX  E1SegmentSide
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This object identifies the particular side(near-end/far-end)
+		of an E1 interface.
+	NOTE: far-end PM data collection is not supported for E1
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NA
+            RANGE:       nearEnd | farEnd
+            DEFVALUE:    nearEnd
+            UNITS:       NA           SPARSE:      NA
+			DESCR:       NA"
+
+	 DEFVAL {nearEnd}
+    ::= { e11DayIntervalEntry 1 }
+
+
+e11DayIntervalNumber OBJECT-TYPE
+    SYNTAX      INTEGER(1..30)
+    ACCESS  not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "History Data Interval number. Interval 1 is the
+        the most recent previous day; interval 30 is 30
+        days ago. Intervals 2..30 are optional.
+
+        ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       1            DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       Only most recent previous 1-day interval is kept"
+    ::= { e11DayIntervalEntry 2 }
+
+	
+e11DayIntervalMoniSecs OBJECT-TYPE
+    SYNTAX       INTEGER (0..86400)
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "The amount of time in the 1-day interval over which
+        the performance monitoring information is actually
+        counted.  This value will be the same as the interval
+        duration except in a situation where performance
+        monitoring data could not be collected for any reason.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..86400     DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 3 }
+
+e11DayIntervalES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Errored Seconds (ES) during the 1-day 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 4 }
+
+
+e11DayIntervalSES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Seconds (SES) during the 1-day 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 5 }
+
+
+e11DayIntervalSEFS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Severely Errored Framed Seconds (SEFS) during the 1-day 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 6 }
+
+
+e11DayIntervalUAS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Unavailable Seconds (UAS) during the 1-day 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 7 }
+
+
+e11DayIntervalCSS OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Controlled Slip Seconds (CSS) during the 1-day 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 8 }
+
+e11DayIntervalPCV OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Path Code Violation (PCV) during the 1-day 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 9 }
+
+
+e11DayIntervalLES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Line Error Seconds (LES) during the 1-day 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 10 }
+
+
+e11DayIntervalBES OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Bursty Error Seconds (BES) during the 1-day 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 11 }
+
+e11DayIntervalLCV OBJECT-TYPE
+    SYNTAX       Counter
+    ACCESS   read-only
+    STATUS       mandatory
+    DESCRIPTION
+        "Count of Line Code Violation (LCV) during the 1-day 
+        interval. 
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA      SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 13 }
+	
+	
+e11DayIntervalInvalidDataFlag OBJECT-TYPE
+    SYNTAX     INTEGER (0..1)
+    ACCESS     read-only
+    STATUS     mandatory
+    DESCRIPTION
+       "This flag indicates the validity of the corresponding PM data
+        in previous day interval. If the measured time deviates by more than 10 seconds from
+        the nominal interval duration (86400 seconds for a 24 hour interval), then
+        the data is seen as invalid. And the data is seen as incomplete in the accumulation period
+        (for instance because a transmission failure prevent far-end data collection).
+        The flag is set to 1 when the PM data is incomplete or invalid and set to 0
+        when the PM data is complete and valid.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       0..1         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA"
+    ::= { e11DayIntervalEntry 14 }
+
+e11DayIntervalTimeStamp OBJECT-TYPE
+    SYNTAX      NetworkTimeInSeconds
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION
+        "Network time in seconds indicating the start of the interval.
+
+         ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    0
+            UNITS:       seconds      SPARSE:      NA
+            DESCR:       NA"
+	::= { e11DayIntervalEntry 15 }
+
+
+--E1 Diagnostic Tables
+--====================
+
+e1DiagConfigTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF E1DiagConfigEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This table configures E1 related diagnostic parameters for a particular  interfaces.
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of E1 lines]
+            DESCR:       "
+ ::= { e1Diagnostic 1 }
+
+e1DiagConfigEntry OBJECT-TYPE
+    SYNTAX E1DiagConfigEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+	    "An entry in this table represents E1 related diagnostic configuration of E1 interface.
+		The entry is indexed by the ifIndex of corresponding E1 interface"
+
+		
+
+    INDEX   { ifIndex }
+::= { e1DiagConfigTable 1 }
+
+
+E1DiagConfigEntry ::=
+		SEQUENCE {
+			e1EnableBERTest	INTEGER,
+			e1BERTestPattern	E1BERTestPattern,
+			e1BERTestIntervalTime	INTEGER,
+			e1LoopbackType	E1LoopbackType
+		}
+
+e1EnableBERTest OBJECT-TYPE
+	SYNTAX  INTEGER {
+				disable(1),
+				enable(2),
+				abort(3)
+			}
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"This parameter triggers the BER test on this e1 interface. Status of this BERT will 
+                 be displayed in the status table. Value of this parameter will not be retained .
+                 disable - disable BER test
+                 enable  - enables BER test.
+		 abort   - abort BER test.
+             
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: 1..3			DEFVALUE: disable
+			UNITS: NA			SPARSE:  NO
+			DESCR: NA 
+"
+	
+	DEFVAL {disable}
+::= { e1DiagConfigEntry 1 }
+
+e1BERTestPattern OBJECT-TYPE
+	SYNTAX  E1BERTestPattern
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"This parameter sets BER test pattern to one of below:
+		framed-twoPow11   - Framed Pseudo-random repeating test pattern with 2^11 bits
+		framed-twoPow15   - Framed Pseudo-random repeating test pattern with 2^15 bits
+                unframed-twoPow11 - Unframed Pseudo-random repeating test pattern with 2^11 bits
+		unframed-twoPow15 - Unframed Pseudo-random repeating test pattern with 2^15 bits
+		none 		  - Default Value.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: 1..5			DEFVALUE: none
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA 
+"
+	
+::= { e1DiagConfigEntry 2 }
+
+
+e1BERTestIntervalTime OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Maximum time allowed for BER test in minutes.
+             
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: 0..4095			DEFVALUE: 0
+			UNITS: mins			SPARSE:  NA
+			DESCR: NA 
+"
+	
+::= { e1DiagConfigEntry 3 }
+
+
+e1LoopbackType OBJECT-TYPE
+	SYNTAX  E1LoopbackType
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"loopback configuration of this e1 interface is
+		 mix-match of local and remote with payload and line loop i.e. 
+			1 - noLoop
+			2 - local-payload
+			3 - remote-payload
+			4 - remote-line
+			5 - local-line
+		
+		  noLoop - No loopback setting
+
+		  local-payload -This is payload loop at STU-C.The received signal at 
+		  this interface is looped through the device.  
+                  Typically the received signal is looped back for 
+                  retransmission after it has passed through the device's framing function.
+ 
+		 remote-payload - This is payload loop at STU-R.The received signal at 
+                 this interface is looped through the device.  
+		 Typically the received signal is looped back for 
+  		 retransmission after it has passed through the device's framing function.
+		 
+		  remote-line -  This is Line Loop at STU-R. The received signal at this 
+		  interface does not go through the device (minimum penetration) but is
+                  looped back out.
+		
+		  local-line - Thsi is Line Loop at STU-C. The received signal at this 
+		  interface does not go through the device (minimum penetration) but is
+                  looped back out.
+
+		
+		  NOTE: local-Line loopback is not supported. 
+             
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  OPT
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: 1..4			DEFVALUE: 0
+			UNITS: NA			SPARSE:  NO
+			DESCR: NA 
+"
+	
+	DEFVAL {0}
+::= { e1DiagConfigEntry 4 }
+
+
+e1DiagStatusTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF E1DiagStatusEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+        "This table contain E1 related diagnostic status of E1 interfaces.
+
+         ALCATEL NOTE:
+            TABLESIZE:   DEP [number of E1 lines]
+            DESCR:       "
+ ::= { e1Diagnostic 2 }
+
+e1DiagStatusEntry OBJECT-TYPE
+    SYNTAX E1DiagStatusEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+	    "An entry in this table represents E1 related diagnostic status of E1 interface.
+		The entry is indexed by the ifIndex of corresponding E1 interface"
+
+		
+
+    INDEX   { ifIndex }
+::= { e1DiagStatusTable 1 }
+
+
+E1DiagStatusEntry ::=
+		SEQUENCE {
+			e1ActualBERTestStatus	E1BERTestStatus,
+			e1ActualBERTestPattern	E1BERTestPattern,
+			e1ActualBERTestElapsedTime	INTEGER,
+			e1BitErrors			INTEGER,
+			e1BitsReceived		INTEGER,
+			e1ActualLoopBack		E1LoopbackType
+		}
+
+e1ActualBERTestStatus OBJECT-TYPE
+	SYNTAX  E1BERTestStatus
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"Indicates current status of this e1 BER test.
+			None      - no test started
+			Running   - BERT started and running
+			Aborted   - BERT aborted before completion
+			Completed - BERT completed.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA 
+        "
+	
+	
+::= { e1DiagStatusEntry 1 }
+
+
+e1ActualBERTestPattern OBJECT-TYPE
+	SYNTAX  E1BERTestPattern
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"BER test pattern used on this E1 interface.
+		framed-twoPow11 - Framed Pseudo-random repeating test pattern with 2^11 bits
+		framed-twoPow15 - Framed Pseudo-random repeating test pattern with 2^15 bits
+                unframed-twoPow11 - Unframed Pseudo-random repeating test pattern with 2^11 bits
+		unframed-twoPow15 - Unframed Pseudo-random repeating test pattern with 2^15 bits
+		none		  - Default Value
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA 
+        "
+	
+	
+::= { e1DiagStatusEntry 2 }
+
+
+e1ActualBERTestElapsedTime OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-only
+	STATUS  mandatory
+
+	DESCRIPTION
+		"Time elapsed in seconds.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: seconds			SPARSE:  NA
+			DESCR: NA 
+        "
+	
+	
+::= { e1DiagStatusEntry 3 }
+
+
+e1BitErrors OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-only
+	STATUS  mandatory
+DESCRIPTION
+		"Number of error bits.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA 
+        "
+	
+	
+::= { e1DiagStatusEntry 4 }
+
+
+e1BitsReceived OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-only
+	STATUS  mandatory
+DESCRIPTION
+		"Number of bits received.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: kb			SPARSE:  NA
+			DESCR: NA 
+        "
+	
+	
+::= { e1DiagStatusEntry 5 }
+
+e1ActualLoopBack OBJECT-TYPE
+	SYNTAX  E1LoopbackType
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+		"loopback configuration of this e1 interface is
+                 mix-match of local and remote with payload and line loop i.e. 
+                        1 - noLoop
+                        2 - local-payload
+                        3 - remote-payload
+                        4 - remote-line
+                        5 - local-line
+                
+                  noLoop - No loopback setting
+
+                  local-payload -This is payload loop at STU-C.The received signal at 
+                  this interface is looped through the device.  
+                  Typically the received signal is looped back for 
+                  retransmission after it has passed through the device's framing function.
+ 
+                 remote-payload - This is payload loop at STU-R.The received signal at 
+                 this interface is looped through the device.  
+                 Typically the received signal is looped back for 
+                 retransmission after it has passed through the device's framing function.
+                 
+                  remote-line -  This is Line Loop at STU-R. The received signal at this 
+                  interface does not go through the device (minimum penetration) but is
+                  looped back out.
+                
+                  local-line - Thsi is Line Loop at STU-C. The received signal at this 
+                  interface does not go through the device (minimum penetration) but is
+                  looped back out.
+
+                
+                  NOTE: local-Line loopback is not supported.
+
+		ALCATEL NOTE:
+			ACCESS: NA			USAGE:  NA
+			PERSIST: NO			INSRVMOD: NA
+			RANGE: NA			DEFVALUE: NA
+			UNITS: NA			SPARSE:  NA
+			DESCR: NA 
+        "
+	
+	
+::= { e1DiagStatusEntry 6 }
+
+
+END
+

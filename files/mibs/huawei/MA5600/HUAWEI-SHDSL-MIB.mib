@@ -1,0 +1,318 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V1.00
+-- History:
+--  
+-- ============================================================================
+	HUAWEI-SHDSL-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			huaweiUtility			
+				FROM HUAWEI-MIB			
+			RowStatus				
+				FROM SNMPv2-TC			
+			Integer32, Unsigned32, OBJECT-TYPE			
+				FROM SNMPv2-SMI
+			hdsl2ShdslSpanStatusEntry
+				FROM HDSL2-SHDSL-LINE-MIB
+	    hdsl2ShdslSpanConfProfileEntry
+				FROM HDSL2-SHDSL-LINE-MIB;
+				
+		hwShdsl   MODULE-IDENTITY
+			LAST-UPDATED "200312280900Z"
+			ORGANIZATION "Fix-Net Dept, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floor 5, Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,   P.R.C.
+				http://www.huawei.com
+				Zip: 518129
+				"
+			DESCRIPTION " The HUAWEI SHDSL MIB,which expand from RFC2662 ADSL-MIB."
+			::= { huaweiUtility 35  } 
+
+		
+		hwShdslPortBindConfTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwShdslPortBindConfEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+			 " 
+			 shdsl port bing configuration Table
+                         "
+			::= { hwShdsl  2 }
+		
+		hwShdslPortBindConfEntry OBJECT-TYPE
+			SYNTAX HwShdslPortBindConfEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				The entry of hwShdslPortBindConfTable. 
+				hwShdslGroupIndex should be equal to hwShdslIfIndexFirst.
+				hwShdslIfIndexFirst is the fisrt ifindex of the binding group.
+				hwShdslIfIndexSecond is the second ifindex of the binding group.
+				When binding SHDSL port, RowStatus should be createAndGo(4).
+				When unbinding SHDSL port, RowStatus should be destroy(6).
+                                "
+			INDEX { hwShdslGroupIndex }
+			::= { hwShdslPortBindConfTable 1 }
+		
+		HwShdslPortBindConfEntry ::=
+			SEQUENCE { 
+				hwShdslGroupIndex
+					Unsigned32,
+				hwShdslIfIndexFirst
+					Unsigned32,
+				hwShdslIfIndexSecond
+					Unsigned32,
+				hwShdslPortBindRowStatus
+					RowStatus
+			 }
+
+		hwShdslGroupIndex OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Group index of the binding group. 
+			        "
+			::= { hwShdslPortBindConfEntry 1 }
+		
+		hwShdslIfIndexFirst OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Fisrt ifindex of the binding group.
+				Should be specified when binding SHDSL port.
+				"
+			::= { hwShdslPortBindConfEntry 2 }
+		
+		hwShdslIfIndexSecond OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Second ifindex of the binding group.
+				Should be specified when binding SHDSL port.
+				"
+			::= { hwShdslPortBindConfEntry 3 }
+		
+		hwShdslPortBindRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				rowStatus, which support the createAndGo and destroy.
+				"
+			::= { hwShdslPortBindConfEntry 4 }     
+		hwShdslPortBindTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwShdslPortBindEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This table supports the configuration of port type in the SLC and SLF board"
+			::= { hwShdsl  3 }
+		
+		hwShdslPortBindEntry OBJECT-TYPE
+			SYNTAX HwShdslPortBindEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 " "
+			INDEX { hwShdslPortBindPriPort }
+			::= { hwShdslPortBindTable 1 }
+		
+		HwShdslPortBindEntry ::=
+			SEQUENCE { 
+				hwShdslPortBindPriPort
+					INTEGER,
+				hwShdslPortBindType
+					INTEGER,
+				hwShdslPortBindPortList
+					Unsigned32,
+				hwShdslBindRowStatus
+					RowStatus
+
+			 }
+			 
+		hwShdslPortBindPriPort OBJECT-TYPE
+			SYNTAX INTEGER				
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION"SHDSL bind primary port"
+			::= { hwShdslPortBindEntry 1 }
+
+        hwShdslPortBindType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				m-pair(1),
+				efm(2)
+				}				
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION"SHDSL bind type"
+			::= { hwShdslPortBindEntry 2 }			
+			
+		hwShdslPortBindPortList OBJECT-TYPE
+			SYNTAX Unsigned32				
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION"SHDSL bind ports cover bits."
+			::= { hwShdslPortBindEntry 3 }
+
+		hwShdslBindRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Bind operation type£¬shdsl-port-bind(4) means bind,  shdsl-port-unbind(6) means undo the bind.
+				"
+			::= { hwShdslPortBindEntry 4 }
+
+ 	    hdsl2ShdslStatusCurrLoopAtten  OBJECT-TYPE
+		    SYNTAX      Unsigned32
+		    UNITS       "0.1 dB"
+		    MAX-ACCESS  read-only
+		    STATUS      current
+		    DESCRIPTION
+		      "Contains the current loop attenuation value in the HDSL2/SHDSL span. 
+		       It ranges from 0 to 1270 units of 0.1 dB. (Physical values are 0 to 127 dB)."
+		    ::= { hdsl2ShdslSpanStatusEntry 65535 }
+		
+		 hdsl2ShdslStatusCurrSNRMargin  OBJECT-TYPE
+		    SYNTAX      Integer32
+		    UNITS       "0.1 dB"
+		    MAX-ACCESS  read-only
+		    STATUS      current
+		    DESCRIPTION
+		      "Contains the current snr margin  value in the HDSL2/SHDSL span. It
+		       ranges from -1270 to 1270 units of 0.1 dB. (Physical values are
+		       -127 to 127 dB)."
+		    ::= { hdsl2ShdslSpanStatusEntry 65536 }
+     
+	   hdsl2ShdslStatusCurrPbo OBJECT-TYPE
+  	    SYNTAX      Integer32
+     		UNITS       "0.1dB"     
+     	MAX-ACCESS  read-only
+     	STATUS      current  
+     		DESCRIPTION
+     		  "Actual Power Back-Off"
+     		::= { hdsl2ShdslSpanStatusEntry 65537 } 
+        
+      hwhdsl2ShdslModulationMode OBJECT-TYPE
+        SYNTAX      INTEGER
+                    {
+                    TCPAM-16(1),
+                    TCPAM-32(2)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "Contains the current modulation mode in the HDSL2/SHDSL span,
+           as reported in an Equipment Response message."
+        ::= { hdsl2ShdslSpanStatusEntry 65538 }   
+        
+     hwhdsl2ShdslSpanConfPathMode OBJECT-TYPE
+        SYNTAX      INTEGER
+                    {
+                    ATM(1),
+                    PTM(2)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+          "This object defines path mode of line, M-Pair bonding ports 
+           can only work in ATM mode, EFM bonding ports work in PTM mode."
+        DEFVAL      { ATM }
+        ::= { hdsl2ShdslSpanConfProfileEntry 65535 }           
+     
+     hwhdsl2ShdslSpanConfModulationMode OBJECT-TYPE
+        SYNTAX      INTEGER
+                    {
+                    TCPAM-16(1),
+                    TCPAM-32(2),
+                    AUTO(3)
+                    }
+        MAX-ACCESS  read-create
+        STATUS      current
+        DESCRIPTION
+           "This object defines the modulation mode in the HDSL2/SHDSL span."
+        DEFVAL      { AUTO }
+        ::= { hdsl2ShdslSpanConfProfileEntry 65536 }
+        
+    hwShdslChipsetModeTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF hwShdslChipsetModeEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This table supports the configuration of the chipset mode of SHDSL board"
+			::= { hwShdsl  4 }
+		
+	hwShdslChipsetModeEntry OBJECT-TYPE
+			SYNTAX hwShdslChipsetModeEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 " "
+			INDEX { hwShdslFrameID, hwShdslSlotID, hwShdslChipsetID }
+			::= { hwShdslChipsetModeTable 1 }
+		
+	hwShdslChipsetModeEntry ::=
+			SEQUENCE {      
+				hwShdslFrameID
+					INTEGER,
+				hwShdslSlotID
+					INTEGER,
+				hwShdslChipsetID
+					INTEGER,
+				hwShdslChipsetMode
+					INTEGER
+			 }
+			 
+	hwShdslFrameID OBJECT-TYPE
+			SYNTAX INTEGER				
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+			"FrameID, the frame id of the device"
+			::= { hwShdslChipsetModeEntry 1 }
+                                                 
+	hwShdslSlotID OBJECT-TYPE
+			SYNTAX INTEGER				
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+			"SlotID, the slot id of the device"
+			::= { hwShdslChipsetModeEntry 2 }         
+			
+	hwShdslChipsetID OBJECT-TYPE
+			SYNTAX INTEGER				
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+			"ChipsetID, the chipset id of the board"
+			::= { hwShdslChipsetModeEntry 3 }
+                                                 
+    hwShdslChipsetMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				atm(1),
+				ptm(2)
+				}				
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+			"SHDSL Chipset Mode, the pathmode of the chipset"
+			::= { hwShdslChipsetModeEntry 4 }			
+			   
+	END
+
+

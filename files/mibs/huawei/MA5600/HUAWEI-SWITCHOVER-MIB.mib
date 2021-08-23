@@ -1,0 +1,494 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V3.04
+-- History:
+-- liu chenglong 2003-04-28 Added IPR Decriptions and 
+-- updated all MIB version to V3.04
+-- ============================================================================
+	HUAWEI-SWITCHOVER-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			huaweiUtility			
+			       FROM HUAWEI-MIB	
+			TimeTicks
+                      	       FROM RFC1155-SMI		
+			OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE			
+			       FROM SNMPv2-SMI;
+	
+	
+		hwSwitchOver MODULE-IDENTITY 
+			LAST-UPDATED "200304280900Z"
+			ORGANIZATION "Fix-Net Dept, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floor 5, Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,   P.R.C.
+				http://www.huawei.com
+				Zip: 518057
+				"
+			DESCRIPTION 
+				"huawei swictch over  mib."
+			REVISION "200302280900Z"
+			DESCRIPTION 
+				"V1.00  initialized  by IAS 
+				"
+			::= { huaweiUtility 22 }
+		
+	
+--
+-- Type definitions
+--
+	
+		Time ::= OCTET STRING
+		
+	
+--
+-- Node definitions
+--
+	
+		switchoverMibObject OBJECT IDENTIFIER ::= { hwSwitchOver 1 }
+		hwDataswitchover OBJECT IDENTIFIER ::= { switchoverMibObject 1 }
+		
+		hwQrydatasyncondition OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				synccompleteness(1),                                      -- synchronization complete
+				flashsyncincompleteness(2),                               -- operation (loading/backuping/ duplicating/saving/...) is being performed   
+				configbasicdatasyncincompleteness(3),			  -- configuration data or basic operation data synchronized incompletely.
+				syncswitchoff(4),					  -- the synchronization switch off.
+				peerboardfailure(5),					  -- the standby board doesn't exist or fail.
+				dynamicdatasyncincompleteness(6),			  -- dynamic service data synchronization is incomplete
+				patchinconsistent(7),					  -- patch files of active board and standby board are inconsistent.
+				patchinconsistentdynamicdatasyncincompleteness(8)         -- patch files of active board and standby board are inconsistent and dynamic service data synchronization is incomplete.
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" "
+			::= { hwDataswitchover 1 }
+		
+		
+		hwswitchoverAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER { 
+					switch(1)					
+				       }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Command of manually switchover: If the peer board doesn't exist or clock subboard is exceptional, system will return an error. Otherwise, it will return success. It's advised to query the value of hwQrydatasyncondition before setting this value. If the returned value of hwQrydatasyncondition is 1, the operation is reasonable. This command will take no effect when the values of hwAutoswitchoverSwitchStatus, hwAutoswitchoverTime,
+				hwAutoswitchoverCycle and hwDayNo are set at the same time, and the original values of them will remain unchanged.				
+				"
+			::= { hwDataswitchover 2 }
+		
+		
+		hwDataSYNSWStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2),
+				abnormal(3)      --system  abnormity,switch is on but can't synchronize data and does not support setting.
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The switch of data synchronizing			
+				"
+			DEFVAL { 2 }
+			::= { hwDataswitchover 3 }
+		
+		hwDataSave OBJECT IDENTIFIER ::= { switchoverMibObject 2 }
+		
+
+		hwAutoSaveSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The switch of data saving automatically.
+				"
+			DEFVAL { 2 }
+			::= { hwDataSave 1 }
+		
+		
+		hwAutoSaveCycle OBJECT-TYPE
+			SYNTAX TimeTicks(60000..60480000)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The period of data saving automatically.				
+				"
+			DEFVAL { 360000 }
+			::= { hwDataSave 2 }
+		
+		
+		hwImmediateSave OBJECT-TYPE
+			SYNTAX INTEGER { 
+					saveDBBDRN(1)					
+				       }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The command of data and buildrun saving immediately.
+				"
+			::= { hwDataSave 3 }
+			
+		hwAutoSaveTimeSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The switch of data saving automatically by absolute time.
+				"
+			DEFVAL { 2 }
+			::= { hwDataSave 4 }
+			
+		hwAutoSaveTime OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The time of data saving automatically.				
+				"
+			DEFVAL { 0 }
+			::= { hwDataSave 5 }	
+		
+		hwSaveData OBJECT-TYPE
+			SYNTAX INTEGER { 
+					savedata(1)					
+				       }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The command of data saving immediately.
+				"
+			::= { hwDataSave 6 }
+			
+	  hwSaveConfiguration OBJECT-TYPE
+			SYNTAX INTEGER { 
+					saveconfiguration(1)					
+				       }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The command of buildrun saving immediately.
+				"
+			::= { hwDataSave 7 }
+			
+	  hwSaveRequestID OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The identity of SaveTask for XML
+				"
+			::= { hwDataSave 8 }			
+
+	   hwActiveConfiguration OBJECT-TYPE
+			SYNTAX INTEGER { 
+					activeConfiguration(1),
+					activeStandbyConfiguration(2)					
+				       }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Activate configuration,
+				Activate standby configuration
+				"
+			::= { hwDataSave 9 }
+		
+		hwActiveConfigurationResult OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				partialFailure(1),
+				success(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The result of Configuration Actived. 1 is there are some unexecutive commands , and 2 is there are not any unexecutive commands.
+				"
+			DEFVAL { 2 }
+			::= { hwDataSave 10 }
+
+		hwAutoSaveCfgChangedtimer OBJECT-TYPE
+			SYNTAX TimeTicks(30000..8640000)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				
+				"
+			DEFVAL { 180000 }
+			::= { hwDataSave 11 }
+
+		hwAutoSaveType OBJECT-TYPE
+			SYNTAX INTEGER
+					{
+						database(1),
+						configuration(2),
+						all(3)
+					}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				
+				"
+			DEFVAL { database }
+			::= { hwDataSave 12 }		
+
+		hwRollBack OBJECT IDENTIFIER ::= { switchoverMibObject 3 }
+		
+
+		hwRollBackOper OBJECT-TYPE
+			SYNTAX INTEGER { 
+					rollback(1)
+				       }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"				
+				"
+			::= { hwRollBack 1 }
+		
+		
+		hwDuplicate OBJECT IDENTIFIER ::= { switchoverMibObject 4 }
+		
+		hwSynDataAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				program(1),
+				data(2),
+				resLocal(3),
+				resGeneral(4),
+				configuration(5),
+				packetfile(6)				
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Duplicate correlative content from active board to standby board.				
+				"
+			::= { hwDuplicate 1 }
+			
+		hwDuplicateProcess OBJECT-TYPE
+			SYNTAX Integer32 (0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The Process of duplicate : 0¡«100.
+				
+				¸´ÖÆ½ø¶È£º0¡«100¡£
+				"
+			::= { hwDuplicate 2 }
+
+		hwCloneRequestID OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the request index for operation info table"
+			::= { hwDuplicate 3 }
+
+		hwSwitchOverTraps OBJECT IDENTIFIER ::= { hwSwitchOver 2 }
+		
+		
+		hwSwitchOverTrapsOids OBJECT IDENTIFIER ::= { hwSwitchOverTraps 0 }
+		
+
+		hwDataSaveFailAlarm NOTIFICATION-TYPE
+			OBJECTS { hwTrapSaveResult }
+			STATUS current
+			DESCRIPTION 
+				"Data saving fails.
+				"
+			::= { hwSwitchOverTrapsOids 1 }
+		
+		
+		hwDataSaveSuccessAlarm NOTIFICATION-TYPE
+			STATUS current
+			DESCRIPTION 
+				"Data saving completes.
+				"
+			::= { hwSwitchOverTrapsOids 2 }
+		
+		
+		hwDuplicateAdminFailAlarm NOTIFICATION-TYPE
+			OBJECTS { hwSynDataAdminStatus, hwTrapDuplicateResult }
+			STATUS current
+			DESCRIPTION 
+				"Duplication fails.	
+				"
+			::= { hwSwitchOverTrapsOids 3 }
+		
+		
+		hwDuplicateSuccessAlarm NOTIFICATION-TYPE
+			OBJECTS { hwSynDataAdminStatus }
+			STATUS current
+			DESCRIPTION 
+				"Duplication completes.
+				"
+			::= { hwSwitchOverTrapsOids 4 }
+		
+		
+		hwSwitchoverFailAlarm NOTIFICATION-TYPE
+			OBJECTS { hwTrapSwitchoverResult }
+			STATUS current
+			DESCRIPTION 
+				"
+				switchOver fails.
+				"
+			::= { hwSwitchOverTrapsOids 5 }
+		
+		
+		hwSwitchoverSuccessAlarm NOTIFICATION-TYPE
+			STATUS current
+			DESCRIPTION 
+				"SwitchOver fails.
+				"
+			::= { hwSwitchOverTrapsOids 6 }
+		
+		
+		hwSwitchOverTrapCauseOids OBJECT IDENTIFIER ::= { hwSwitchOverTraps 2 }
+		
+		
+		hwTrapSaveResult OBJECT-TYPE
+			SYNTAX INTEGER { mutexOperRunning(1),    -- The exclusive operation is in process.
+			                 dbErrorLoadNewData(2),  -- The system is loading new configuration data. Saving is unnecessary.
+			                 dbErrorLoadEraseData(3) -- The system is clearing the data. Saving is prohibited.
+			               }
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"Definition node of the save failure reason.
+				"
+			::= { hwSwitchOverTrapCauseOids 1 }
+		
+		
+		hwTrapSwitchoverResult OBJECT-TYPE
+			SYNTAX INTEGER {
+					mutexOperRunning(1),       --The exclusive operation is in process.
+					synCommunicationFault(2),  --The main board and standby board is faulty or the backboard does not exist.
+					synSoftVersionConsist(3),  --The software versions of the main board and standby board is not consistent.
+					synClockWrong(4)           --The backboard clock is faulty.
+			                }
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"Definition node of the switchover failure reason.
+				"
+			::= { hwSwitchOverTrapCauseOids 2 }
+		
+		
+		hwTrapDuplicateResult OBJECT-TYPE
+			SYNTAX INTEGER{
+					mutexOperRunning(1),        -- The exclusive operation is in process.
+					dbSpareDBInitFail(2)        -- The configuration data of the main processing unit of the specified slot is not consistent with the host, or the configuration data CRC fail.
+				       }
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"
+				Definition node of duplication failure reason.
+				"
+			::= { hwSwitchOverTrapCauseOids 3 }
+		
+			hwSwitchOverControl OBJECT IDENTIFIER ::= { hwSwitchOver 3 }
+		
+		hwSwitchOverStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Status of switchover function: on-enabled, off-disabled.
+				"
+			::= { hwSwitchOverControl 1 }
+		
+		hwSwitchOverPeriod OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				day(1),
+				week(2),
+				month(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Period of SwitchOver: day-one day, week-one week, month-one month.
+				"
+			::= { hwSwitchOverControl 2 }
+		
+		hwSwitchOverInverseDayNo OBJECT-TYPE
+			SYNTAX Integer32 (1..31)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Days since the periodic switchover has been started. Its value scope depends on the value of node hwSwitchOverPeriod.
+                                When hwSwitchOverPeriod is set to day, the default value of this node is 1;
+				When hwSwitchOverPeriod is set to week, the value scope of this node is 1-7; 
+				When hwSwitchOverPeriod is set to month, the value scope of this node is 1-31.
+				 "
+			::= { hwSwitchOverControl 3 }
+		
+		hwSwitchOverTime OBJECT-TYPE
+			SYNTAX Time
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Time when switchover will happen. Time is set by a string with format of hh:mm:ss.
+				The string scope of hh is from 00 to 23; The string scope of mm is from 00 to 59;
+				The string scope of ss is from 00 to 59.
+				"
+			::= { hwSwitchOverControl 4 }
+			
+		hwAutoSwitchOverStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Status of auto switchover function: on-enabled, off-disabled.
+				"
+			::= { hwSwitchOverControl 5 }			
+
+	END
+
+
+
+

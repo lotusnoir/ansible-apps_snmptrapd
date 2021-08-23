@@ -1,0 +1,201 @@
+ONT-MIB DEFINITIONS ::= BEGIN
+
+-- ==========================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied,
+--  with respect to the sufficiency, accuracy, or utility of any information
+--  or opinion contained herein. Alcatel-Lucent expressly advises that any
+--  use of for any purpose or reliance upon this technical reference is at
+--  the risk of the user and that Alcatel-Lucent shall not be liable for any
+--  damage or injury incurred by any person arising out of the sufficiency,
+--  accuracy, or utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these
+--  products and to withdraw any or all of them at any future time.
+--  Copyright (C) 2001-2009, Alcatel-Lucent. All Rights Reserved.
+-- ===========================================================================
+-- 
+--  MODULE-IDENTITY
+--  LAST-UPDATED "201308080000Z"
+--  ORGANIZATION "Alcatel-Lucent"
+--  CONTACT-INFO "email: asam.mibsupport@alcatel-lucent.com"
+-- 
+
+-- =============================================================================
+
+   IMPORTS OBJECT-TYPE		  FROM RFC-1212
+           DisplayString, RowStatus,
+           TruthValue               FROM SNMPv2-TC
+           asam                     FROM SYSTEM-MIB
+           AsamAlarmSeverityType    FROM ASAM-ALARM-MIB
+           AsamNextProfileIndex,
+           AsamProfileRefCount,
+           AsamProfilePointer,
+           AsamProfileIndex,
+           AsamProfileName          FROM ASAM-TC-MIB ;
+           
+   -- asam OBJECT IDENTIFIER ::= { iso(1) identified-organization(3) dod(6)
+   --                              internet(1) private(4) enterprises(1)
+   --                              alcatel(637) asd(61) asam(1) }
+   
+   ontMIB OBJECT IDENTIFIER ::= { asam 105 }
+     
+   
+   gponUplink OBJECT IDENTIFIER ::= { ontMIB 1 }
+
+
+   -- Note on appliques:
+   --
+   -- The ONT MIB is only used to manage appliques that are contained
+   -- in ONT.  Appliques that are contained in OLT cannot be managed.  
+   -- Therefore, whenever this MIB mentions an "applique", it is implicitly 
+   -- understood that this applique is contained in the applique area of ONT. 
+
+
+   
+   --  ==================================================================
+   --  |                     START ASAM FIELDS                          |
+   --  ==================================================================
+
+      gponUplinkIdentifierAuthentication OBJECT IDENTIFIER ::={ gponUplink 1 }   
+                 
+       gponUplinkIdentifierAuthenticationLoid OBJECT-TYPE
+               SYNTAX OCTET STRING (SIZE(1..24))
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+               "24 bytes Logical ONU Identifier, filled by ASCII code.
+
+               ALCATEL NOTE:
+               SUPPORT: YES   INSRVMOD: NA        RANGE: see above
+               PERSIST: YES    DEFVALUE: 'Nokia'          UNITS: - "
+
+       ::={ gponUplinkIdentifierAuthentication 1}        
+
+       gponUplinkIdentifierAuthenticationPassword OBJECT-TYPE
+               SYNTAX OCTET STRING (SIZE(1..12))
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+               "12 bytes Logical ONU Identifier, filled by ASCII code.
+
+               ALCATEL NOTE:
+               SUPPORT: YES   INSRVMOD: NA        RANGE: see above
+               PERSIST: YES    DEFVALUE: 'Nokia'          UNITS: - "
+
+       ::={ gponUplinkIdentifierAuthentication 2}
+
+       gponUplinkIdentifierAuthenticationLoidReAuth OBJECT-TYPE
+               SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+             }
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+       "to enable/disable the LOID based re-authentication, triggered by ONU operator.
+
+       ALCATEL NOTE:
+       SUPPORT: YES   INSRVMOD: NA        RANGE: see above
+       PERSIST: NO DEFVALUE: 1          UNITS: - "
+
+       ::={ gponUplinkIdentifierAuthentication 3}
+
+       gponUplinkIdentifierAuthenticationLoidAuthStatus OBJECT-TYPE
+               SYNTAX INTEGER {
+                initStatus(0),
+                authPass(1),
+                loidNotExist(2),
+                pwdNotMatch(3),
+                loidConflicts(4)
+             }
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+               "the status of LOID based re-authentication. 
+               initStatus is the init status after gpon reset. 
+               authPass means authentication is succeeded. 
+               loidNotExist means LOID is unregistered in olt. 
+               pwdNotMatch means passward is unmatch to loid. 
+               loidConflicts means olt had recieve this LOID's Authenticating by other ont already.
+
+               ALCATEL NOTE:
+               SUPPORT: YES   INSRVMOD: NA        RANGE: see above
+               PERSIST: NO    DEFVALUE: 0       UNITS: - "
+
+       ::={ gponUplinkIdentifierAuthentication 4}
+
+       gponUplinkIdentifierAuthenticationSlidMode OBJECT-TYPE
+               SYNTAX INTEGER {
+                ascii(0),
+                hexadecimal(1)
+             }
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+               "Used to specify (for the entire OLT) how to interpret
+               entry and display of the fields in the GPON MIB that
+               relate to Subscriber Location ID (SLID). 
+        
+               0 = ASCII mode.
+               1 = Hexadecimal mode.
+        
+               Default = 0 = ASCII mode.
+               ALCATEL NOTE:
+               SUPPORT: YES   INSRVMOD: NA        RANGE: see above
+               PERSIST: YES    DEFVALUE: 0        UNITS: - "
+
+       ::={ gponUplinkIdentifierAuthentication 5}
+
+       gponUplinkIdentifierAuthenticationSlid OBJECT-TYPE
+               SYNTAX  OCTET STRING (SIZE(0..20))
+               ACCESS read-write
+               STATUS mandatory
+               DESCRIPTION
+               "Subscriber Location ID (SLID) of the ONT.
+
+               ALCATEL NOTE:
+               SUPPORT: YES   INSRVMOD: NA        RANGE: see above
+               PERSIST: YES    DEFVALUE: 'WILDCARD'     UNITS: - "
+
+       ::={ gponUplinkIdentifierAuthentication 6}
+
+       gponUplinkIdentifierRegisterStatus OBJECT-TYPE
+               SYNTAX INTEGER {
+                               initStatus(0),
+                        succeed(1),
+                        fail(2),
+                        ongoing(3)              
+                }
+               ACCESS read-only
+               STATUS mandatory
+               DESCRIPTION
+       "the status of register. 
+       initStatus is the init status after gpon reset. 
+       succeed means ont register to olt successfully. 
+       fail means olt reject ont's registering. 
+       ongoing means the registering just do now.
+
+       ALCATEL NOTE:
+       SUPPORT: YES   INSRVMOD: NA        RANGE: see above
+       PERSIST: NO             DEFVALUE: 0        UNITS: - "
+       ::={ gponUplinkIdentifierAuthentication 7}
+
+END
+

@@ -1,0 +1,117 @@
+-- ============================================================================
+-- Copyright (C) 2004 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description:IASV300R001 IPDSLAM MAC 池管理MIB文件
+-- Version:    V1.00
+-- History:
+-- yuedongsheng created.   2004-07-05 
+-- 		
+-- ============================================================================
+
+HUAWEI-DSLAM-MACPOOL-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	OBJECT-TYPE, MODULE-IDENTITY, Integer32		
+		FROM SNMPv2-SMI	       
+		PhysAddress ,RowStatus                              
+		FROM SNMPv2-TC
+		huaweiUtility			
+		FROM HUAWEI-MIB;       
+				
+hwIpDslamMacPoolMIB MODULE-IDENTITY
+	LAST-UPDATED "200407050900Z"
+	ORGANIZATION "Fix-Net Dept, Huawei Technologies Co.,Ltd."
+	CONTACT-INFO 
+		"Floor 5 ,Block 4, R&D Building,
+		Huawei Longgang Production Base,
+		Shenzhen,   P.R.C.
+		http://www.huawei.com
+		Zip:518057
+		"
+	DESCRIPTION 
+		"huawei IPDSLAM Mac Pool mib "
+    ::= { huaweiUtility 43}
+    
+    -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	-- 设置IPOA、PPPOA用户源MAC地址池
+	-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	  hwIpDslamMacPool OBJECT-TYPE
+	      SYNTAX      SEQUENCE OF HwIpDslamMacPoolEntry
+	      MAX-ACCESS  not-accessible
+	      STATUS      current
+	      DESCRIPTION
+	          "
+	          Set the source mac pool of the IPOA and the PPPOA user .
+	          "
+	      ::= { hwIpDslamMacPoolMIB 1 }
+
+	  hwIpDslamMacPoolEntry OBJECT-TYPE
+	      SYNTAX      HwIpDslamMacPoolEntry
+	      MAX-ACCESS  not-accessible
+	      STATUS      current
+	      DESCRIPTION
+	          "
+	          Set the IPOA and the PPPOA user source mac pool. 
+	          "
+	      INDEX { hwIpDslamMacPoolIndex }
+	      ::= { hwIpDslamMacPool 1 }
+
+	  HwIpDslamMacPoolEntry ::= SEQUENCE {
+			hwIpDslamMacPoolIndex		Integer32,
+			hwIpDslamMacPoolBegin		PhysAddress,
+			hwIpDslamMacPoolScope		Integer32,
+			hwIpDslamMacPoolRemain		Integer32,
+                  	hwIpDslamMacPoolRowStatus	RowStatus
+			                             }
+	                                      
+	  hwIpDslamMacPoolIndex OBJECT-TYPE
+		SYNTAX       Integer32(0..19)
+		MAX-ACCESS   read-only
+		STATUS       current
+		DESCRIPTION
+			     "
+			     The index of the ethernet source mac pool.
+			     "
+		::= { hwIpDslamMacPoolEntry 1 }   
+		 
+	  hwIpDslamMacPoolBegin OBJECT-TYPE
+		SYNTAX       PhysAddress
+		MAX-ACCESS   read-create
+		STATUS       current
+		DESCRIPTION
+			     "
+			     The initiative MAC address of the ethernet source mac pool.
+			     "
+		::= { hwIpDslamMacPoolEntry 2 }
+		
+	  hwIpDslamMacPoolScope OBJECT-TYPE
+		SYNTAX       Integer32(1..1024)
+		MAX-ACCESS   read-create
+		STATUS       current
+		DESCRIPTION
+			     "
+			     The scope of the ethernet source mac pool.
+			     "
+		::= { hwIpDslamMacPoolEntry 3 }
+		
+	  hwIpDslamMacPoolRemain OBJECT-TYPE
+		SYNTAX       Integer32(0..1024)
+		MAX-ACCESS   read-only
+		STATUS       current
+		DESCRIPTION
+			     "
+			     The remained number of the ethernet source mac pool.
+			     "
+		::= { hwIpDslamMacPoolEntry 4 }
+		
+	  hwIpDslamMacPoolRowStatus OBJECT-TYPE
+		SYNTAX       RowStatus
+		MAX-ACCESS   read-create
+		STATUS       current
+		DESCRIPTION
+		            "
+		            Row status.Add or delete a table item.
+		            "
+		::= { hwIpDslamMacPoolEntry 5 }		      
+END
+    

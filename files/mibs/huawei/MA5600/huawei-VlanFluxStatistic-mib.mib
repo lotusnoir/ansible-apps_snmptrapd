@@ -1,0 +1,145 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description:  
+-- Reference:  
+-- Version: V1.00
+-- History:
+-- ============================================================================
+
+	HUAWEI-VLAN-FLUX-STATISTIC-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			Counter64		
+				FROM SNMPv2-SMI			
+			hwVlanMngObject, hwVlanIndex
+				FROM HUAWEI-VLAN-MIB;			
+--			MODULE-IDENTITY, OBJECT-IDENTITY			
+--				FROM SNMPv2-SMI	
+				
+--			
+-- hwVlanFlowAccountTable
+--
+		hwVlanFlowAccountTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwVlanFlowAccountEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"   "
+			::= { hwVlanMngObject 14 }
+			
+		hwVlanFlowAccountEntry OBJECT-TYPE
+		SYNTAX HwVlanFlowAccountEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"   "
+			INDEX { hwVlanIndex, hwInnerVlanID  }
+			::= { hwVlanFlowAccountTable 1 }
+			
+		HwVlanFlowAccountEntry ::=
+		SEQUENCE { 
+			hwInnerVlanID
+				INTEGER,
+			hwUpFlowAccountByte
+				Unsigned32,
+			hwDownFlowAccountByte
+				Unsigned32,
+			hwUpFlowAccountPacket
+				Unsigned32,
+			hwDownFlowAccountPacket
+				Unsigned32, 
+			hwUpStreamPacket
+				Counter64,  
+			hwDownStreamPacket
+				Counter64,
+			hwFlowAccountAdminStatus
+				INTEGER
+			 }
+
+		hwInnerVlanID OBJECT-TYPE
+			SYNTAX INTEGER (1..4095)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"It is according to the label of a pvc when for vlan
+				with its attribute stacking, and it is represented by 
+				the number in the range 1 to 4095. If get the statistic
+				information for vlan marked by hwVlanIndex only, it
+				must be set to -1."
+			::= { hwVlanFlowAccountEntry 1 }
+			
+		hwUpFlowAccountByte OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"It is statistic of data flow from user to server, and 
+				sign how many octets have been transfered."
+			::= { hwVlanFlowAccountEntry 2 }
+			
+		hwDownFlowAccountByte OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"It is statistic of data flow from server to user, and 
+				sign how many octets have been received."
+			::= { hwVlanFlowAccountEntry 3 }
+			
+		hwUpFlowAccountPacket OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"It is statistic of data flow from user to server, and 
+				sign how many packets have been transfered, and they are
+				packets of ethernet."
+			::= { hwVlanFlowAccountEntry 4 }
+			
+		hwDownFlowAccountPacket OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"It is statistic of data flow from server to user, and 
+				sign how many packets have been received, and they are
+				packets of ethernet."
+			::= { hwVlanFlowAccountEntry 5 }       
+			
+		hwUpStreamPacket OBJECT-TYPE
+			SYNTAX Counter64
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"It is statistic of data flow from user to server, and 
+				sign how many packets have been transfered, and they are
+				packets of ethernet."
+			::= { hwVlanFlowAccountEntry 6 }      
+			
+		hwDownStreamPacket OBJECT-TYPE
+			SYNTAX Counter64
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"It is statistic of data flow from server to user, and 
+				sign how many packets have been received, and they are
+				packets of ethernet."
+			::= { hwVlanFlowAccountEntry 7 }
+			
+		hwFlowAccountAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				    reset(0),
+				    resetacl(1),
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"the variable is used to decide which operation will be done
+				when set from SNMP. The supported operation now is reset, 
+				that is to clear the statistics of vlan to 0.
+				"
+			::= { hwVlanFlowAccountEntry 8 }
+	
+	END

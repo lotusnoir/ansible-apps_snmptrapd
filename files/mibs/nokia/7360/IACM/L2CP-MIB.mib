@@ -1,0 +1,1344 @@
+L2CP-MIB DEFINITIONS ::= BEGIN
+
+-- L2CP-MIB
+-- =============================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied,
+--  with respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel-Lucent expressly advises that any use of
+--  for any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel-Lucent shall not be liable for any damage or
+--  injury incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products
+--  and to withdraw any or all of them at any future time.
+--  Copyright (C) 2007, Alcatel-Lucent. All Rights Reserved.
+-- =============================================================================
+--  MODULE-IDENTITY
+--  LAST-UPDATED "201204120000Z"
+--  ORGANIZATION "Alcatel"
+--  CONTACT-INFO
+--
+--          "Email:  asam.mibsupport@alcatel-lucent.be"
+--
+--  DESCRIPTION
+--       "Alcatel proprietary Layer 2 Control Protocol (L2CP) MIB."
+--
+--  REVISION "201409080000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V5.2.0.0.1
+--         Editor:   Senthilkumar Rameshbapu
+--         Changes:  for RCR ALU01891829 
+--            * Port ALU01889548 to support RFC6320 to Mainstream "
+--  
+--  REVISION "201204120000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V4.4.0.0.1
+--         Editor:   Sowrirajan Padmanabhan 
+--         Changes:  for RCR ALU01754395 "ANCP support for NSLT-B"
+--            * add SHDSL support for l2cpInterfaceConfigTable "
+
+--  REVISION "201103140000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V4.3.0.0.2
+--         Editor:   Luc Gijselinck 
+--         Changes:  for RCR ALU00220851 ANCP - set Partition ID field
+--            * change default l2cpSessionConfigSignalPartitionId"
+--
+--  REVISION "201101260000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V4.3.0.0.1
+--         Editor:   Luc Gijselinck 
+--         Changes:  for RCR ALU00220851 ANCP - set Partition ID field
+--            * add l2cpSessionConfigSignalPartitionId"
+--   
+--  REVISION "201011060000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V4.1.0.0.3
+--         Editor:   Filip Martin 
+--         Changes:  
+--            * Change default value of Alive timer from 100 to 250"
+--  
+--  REVISION "200919060000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V4.1.0.0.1
+--         Editor:   Paul Reynders
+--         Changes:  
+--            * VrfIndex is defined as unsigned 32-bit integer,
+--              with differences in use, depending on ISAM NT type
+--              i.e. SHUB-based versus IHUB-based."
+--  
+--  REVISION "200712070000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V3.6.0.0.1
+--         Editor:   Paul Reynders
+--         Changes:  
+--            * PartitionId range 0..127
+--            * table size of l2cpInterfaceConfigTable and
+--              of l2cpCurrentPartitionTable depend on the number 
+--              of planned XDSL boards"
+--  
+--  REVISION "200707160000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V3.6.0.0.0
+--         Editor:   Paul Reynders
+--         Changes:  
+--            * support of extra value for l2cpDslamPartitionType
+--            * table size of l2cpSessionConfigTable is 1..32
+--            * new object: l2cpCurrentSessionDslamIpAddressType
+--            * new table: l2cpInterfaceConfigTable
+--            * new table: l2cpCurrentPartitionTable
+--            * editorial comments in WebLib on 3HH-03169-AAAA-PBZZA"
+--
+--  REVISION "200601110000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V2.4.0.1.3
+--         Editor:   Paul Reynders
+--         Changes:  
+--            * change default value of l2cpSessionConfigGsmpRetryTimer"
+--
+--  REVISION "200601110000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V2.4.0.1.2
+--         Editor:   Jan Duym
+--         Changes:  
+--            * dummy merge with main build"
+--  
+--  REVISION "200512090000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V2.4.0.1.1
+--         Editor:   Paul Reynders
+--         Changes:  
+--            * correction of syntax errors
+--            * deletion of object l2cpAccessLoopProtocolFormat
+--            * change range of l2cpSessionConfigTcpRetryTimer
+--            * change range of l2cpSessionConfigGsmpRetryTimer
+--            * editorial improvements of some ALCATEL NOTES"
+--  
+--  REVISION "200512010000Z"
+--  DESCRIPTION
+--        "Version:  3FE27269AAAA_V2.4.0.1.0
+--         Editor:   Paul Reynders
+--         Changes:  Initial Version"
+-- =============================================================================
+
+
+IMPORTS
+        OBJECT-TYPE
+            FROM RFC-1212
+        Counter, Gauge
+            FROM RFC1155-SMI
+        InetAddress, InetAddressType, InetPortNumber
+            FROM INET-ADDRESS-MIB
+        NetworkTimeInSeconds
+            FROM ASAM-TC-MIB
+        RowStatus, TruthValue
+            FROM SNMPv2-TC
+        asam
+            FROM SYSTEM-MIB
+;
+
+-- asam OBJECT IDENTIFIER ::= { iso(1) identified-organization(3)
+--                             dod(6) internet(1) private(4)
+--                             enterprises(1) alcatel(637) asd(61)
+--                             asam(1)}
+
+    --**************************************************************
+    -- Textual Conventions
+    --**************************************************************
+
+    Uint32 ::= Gauge (0..4294967295) -- a 32 bit unsigned integer
+
+    GsmpNameType ::= OCTET STRING (SIZE(6))
+--  GsmpNameType ::= TEXTUAL-CONVENTION
+--      STATUS         current
+--      DESCRIPTION
+--          "The Name is a 48-bit quantity.
+--          A 48-bit IEEE 802 MAC address, if
+--          available, may be used."
+--      SYNTAX           OCTET STRING (SIZE(6))
+
+    GsmpPartitionType ::= INTEGER {
+                                   noPartition(1),
+                                   fixedPartitionRequest(2),
+                                   fixedPartitionAssigned(3)
+                                   }
+--  GsmpPartitionType ::= TEXTUAL-CONVENTION
+--      STATUS           current
+--      DESCRIPTION
+--          "Defining if partitions are used and how the partition id
+--          is negotiated. "
+--      SYNTAX           INTEGER {
+--                                 noPartition(1),
+--                                 fixedPartitionRequest(2),
+--                                 fixedPartitionAssigned(3)
+--                                 }
+
+    GsmpPartitionIdType ::= OCTET STRING (SIZE(1))
+--  GsmpPartitionIdType ::= TEXTUAL-CONVENTION
+--      STATUS         current
+--      DESCRIPTION
+--          "A 8-bit quantity. The format of the Partition ID is not
+--          defined in GSMP. If desired, the Partition ID can be
+--          divided into multiple sub-identifiers within a single
+--          partition. For example: the Partition ID could be
+--          subdivided into a 6-bit partition number and a 2-bit
+--          sub-identifier which would allow a switch to support 64
+--          partitions with 4 available IDs per partition."
+--        SYNTAX         OCTET STRING (SIZE(1))
+
+    GsmpVersion ::= INTEGER(1..15)
+    GsmpSubVersion ::= INTEGER(1..15)
+--  GsmpVersion ::= TEXTUAL-CONVENTION
+--        STATUS          current
+--        DESCRIPTION
+--            "The version numbers defined for the GSMP protocol.
+--             The version numbers used are defined in the
+--             specifications of the respective protocol,
+--             1 - GSMPv1.1 [RFC1987]
+--             2 - GSMPv2.0 [RFC2397]
+--             3 - GSMPv3   [RFC3292]
+--             Other numbers may be defined for other versions
+--             of the GSMP protocol."
+--        SYNTAX          Unsigned32
+
+
+    --**************************************************************
+    -- L2CP MIB Definition
+    --**************************************************************
+
+    l2cpMIB  OBJECT IDENTIFIER ::= { asam 61 }
+
+
+    --**************************************************************
+    -- L2CP MIB Objects
+    --**************************************************************
+
+    l2cpObjects OBJECT IDENTIFIER ::= { l2cpMIB 1 }
+
+    l2cpDslamPartitionType OBJECT-TYPE
+        SYNTAX          GsmpPartitionType
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "If the DSLAM supports partitioning, then this parameter 
+             may be set to fixedPartitionAssigned (3), and then scope of 
+             each L2CP session is a partition of the DSLAM. If the DSLAM
+             does not support partitioning, then this parameter must be set
+             to noPartition (1).
+        ALCATEL NOTE:
+             ACCESS:    read-write
+             PERSIST:   YES
+             INSRVMOD:  YES
+             RANGE:     1..3
+             DEFVALUE:  1
+             UNITS:     NA
+             "
+        ::= { l2cpObjects 1 }
+
+    --**************************************************************
+    -- L2CP SESSION CONFIGURATION table
+    --**************************************************************
+
+    l2cpSessionConfigTable OBJECT-TYPE
+        SYNTAX          SEQUENCE OF L2cpSessionConfigEntry
+        ACCESS          not-accessible
+        STATUS          mandatory
+        DESCRIPTION
+             "This table represents the Dslam sessions. 
+             An entry in this table needs to be configured
+             (created) before a GSMP session might be started.
+        ALCATEL NOTE:
+             TABLESIZE: 1..32
+             INSRVMOD:  YES
+             "
+        ::= { l2cpObjects 2 }
+
+    l2cpSessionConfigEntry OBJECT-TYPE
+        SYNTAX          L2cpSessionConfigEntry
+        ACCESS          not-accessible
+        STATUS          mandatory
+        DESCRIPTION
+             "An entry in the table showing the data for a 
+             specific actual or yet_to_be_established session.
+             If partitions are used, one session corresponds to 
+             one specific Dslam partition.
+             "
+        INDEX { l2cpSessionConfigSessionId }
+        ::= { l2cpSessionConfigTable 1 }
+
+    L2cpSessionConfigEntry ::= SEQUENCE {
+        l2cpSessionConfigSessionId                INTEGER,
+        l2cpSessionConfigRowStatus                RowStatus,
+        l2cpSessionConfigGsmpVersion              GsmpVersion,
+        l2cpSessionConfigGsmpSubVersion           GsmpSubVersion,
+        l2cpSessionConfigEncapsulationType        INTEGER,
+        l2cpSessionConfigCapabilities             Uint32,
+        l2cpSessionConfigAliveTimer               INTEGER,
+        l2cpSessionConfigPortReportShaper         INTEGER,
+        l2cpSessionConfigAggregateReportShaper    INTEGER,
+        l2cpSessionConfigTcpRetryTimer            INTEGER,
+        l2cpSessionConfigGsmpRetryTimer           INTEGER,
+        l2cpSessionConfigDslamName                GsmpNameType,
+        l2cpSessionConfigPartitionId              GsmpPartitionIdType,
+        l2cpSessionConfigWindowSize               INTEGER,
+        l2cpSessionConfigBrasIpAddressType        InetAddressType,
+        l2cpSessionConfigBrasIpAddress            InetAddress,
+        l2cpSessionConfigTcpIpEncapPortNumber     InetPortNumber,
+        l2cpSessionConfigVrfId                    Uint32,
+        l2cpSessionConfigSignalPartitionId        TruthValue
+        }
+
+    l2cpSessionConfigSessionId OBJECT-TYPE
+        SYNTAX          INTEGER(1..255)
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "A index to distinguish between 
+             different sessions.  
+             The Dslam operator must allocate a value for SessionId
+             when creating a new row using l2cpSessionConfigRowStatus.
+             Then the system creates a row in this l2cpSessionConfigTable
+             with as row index the SessionId value allocated by the operator.
+             After this, the operator can not modify the value of SessionId.
+        ALCATEL NOTE:
+             ACCESS:    not applicable
+             USAGE:     NA
+             PERSIST:   NA
+             INSRVMOD:  NO
+             RANGE:     1..255 (this  is larger than actual TABLESIZE)
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 1 }
+
+    l2cpSessionConfigRowStatus OBJECT-TYPE
+        SYNTAX          RowStatus
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "An object that allows entries in this table to
+             be created and deleted using the
+             RowStatus convention.
+        ALCATEL NOTE:
+             ACCESS:    read-write
+             USAGE:     MAND
+             PERSIST:   NA
+             INSRVMOD:  YES
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+          ::= { l2cpSessionConfigEntry 2 }
+
+    l2cpSessionConfigGsmpVersion OBJECT-TYPE
+        SYNTAX          GsmpVersion
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The maximum version number of the GSMP protocol that
+             may be used in this session.
+        ALCATEL NOTE:
+             ACCESS:    read-create (only value 3 supported)
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  3
+             UNITS:     NA
+             SPARSE:    NO
+             "
+       ::= { l2cpSessionConfigEntry 3 }
+
+    l2cpSessionConfigGsmpSubVersion OBJECT-TYPE
+        SYNTAX          GsmpSubVersion
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The maximum subversion number of the GSMP protocol that
+             may be used in this session.
+        ALCATEL NOTE:
+             ACCESS:    read-create (values 1 & 2 are supported)
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  1
+             UNITS:     NA
+             SPARSE:    NO
+             "
+       ::= { l2cpSessionConfigEntry 4 }
+
+    l2cpSessionConfigEncapsulationType OBJECT-TYPE
+        SYNTAX          INTEGER {
+                            atm(1),
+                            eth(2),
+                            tcp(3)
+                        }
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "Required encapsulation for this session.
+        ALCATEL NOTE:
+             ACCESS:    read-create (only value 3 supported)
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  3
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 5 }
+
+    l2cpSessionConfigCapabilities OBJECT-TYPE
+        SYNTAX          Uint32
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "L2CP capabilities supported by the DSLAM in this session.
+             The value is zero if no capabilities are supported.
+             Bit 1 is set if Access Topology Discovery is supported.
+             Bit 2 is set if Line Configuration is supported.
+             Bit 3 is set if Transactional Multicast is supported.
+             Bit 4 is set if Layer 2 OAM is supported.
+             Example: if Access Topology Discovery, Line Configuration and 
+             Layer 2 OAM all are supported, the value must be '1011'B=11
+        ALCATEL NOTE:
+             ACCESS:    read-create (only value 9 supported)
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  9
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 6 }
+
+    l2cpSessionConfigAliveTimer OBJECT-TYPE
+        SYNTAX          INTEGER(1..255)
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The timer specifies the nominal time between
+             periodic adjacency protocol messages generated
+             by the DSLAM. It is a constant for the duration 
+             of a GSMP session. The timer is specified in
+             units of 100ms.
+        ALCATEL NOTE:
+             ACCESS:    read-write
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  YES
+             RANGE:     1..255
+             DEFVALUE:  250 (=25s)
+             UNITS:     100ms
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 7 }
+
+    l2cpSessionConfigPortReportShaper OBJECT-TYPE
+        SYNTAX          INTEGER(1..255)
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The timer specifies the nominal time between
+             2 EventReport messages related to the same port. 
+             It is a constant for the duration of a GSMP session. 
+             The timer is specified in units of 100ms.
+        ALCATEL NOTE:
+             ACCESS:    read-create
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     1..255
+             DEFVALUE:  10 (=1s)
+             UNITS:     100ms
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 8 }
+
+    l2cpSessionConfigAggregateReportShaper OBJECT-TYPE
+        SYNTAX          INTEGER(1..2550)
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The timer specifies the nominal time between
+             2 EventReport messages related to any port. 
+             It is a constant for the duration of a GSMP session. 
+             The timer is specified in units of 10ms.
+        ALCATEL NOTE:
+             ACCESS:    read-create
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     1..2550
+             DEFVALUE:  10 (=0.1s)
+             UNITS:     10ms
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 9 }
+
+    l2cpSessionConfigTcpRetryTimer OBJECT-TYPE
+        SYNTAX          INTEGER(0..255)
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The timer specifies the nominal time between
+             2 TCP connection setup attempts done by DSLAM. 
+             The timer is specified in units of 100ms.
+             A value 0 means that the DSLAM will NOT 
+             initiate nor setup the TCP connection.
+             NB 1: TCP connection must be setup before
+                   starting the L2CP session.
+             NB 2: whatever the setting of this timer, 
+                   DSLAM shall not accept that the BRAS
+                   initiates the setup of the TCP connection.
+        ALCATEL NOTE:
+             ACCESS:    read-write
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  YES
+             RANGE:     0..255
+             DEFVALUE:  10 (=1s)
+             UNITS:     100ms
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 10 }
+
+    l2cpSessionConfigGsmpRetryTimer OBJECT-TYPE
+        SYNTAX          INTEGER(0..255)
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The timer specifies the nominal time between
+             2 GSMP/L2CP connection setup attempts. 
+             The timer is specified in units of 100ms.
+             A value 0 means that the DSLAM will NOT 
+             spontaneously trigger a GSMP/L2CP session.
+             NB: whatever the setting of this timer, 
+                 DSLAM shall always listen for L2CP setup.
+        ALCATEL NOTE:
+             ACCESS:    read-write
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  YES
+             RANGE:     0..255
+             DEFVALUE:  10 (=1s)
+             UNITS:     100ms
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 11 }
+
+    l2cpSessionConfigDslamName OBJECT-TYPE
+        SYNTAX          GsmpNameType
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The name of the DSLAM. The first three octets must be an
+             Organisationally Unique Identifier (OUI) that identifies
+             the manufacturer of the DSLAM. This can be (one of) the 
+             MAC address(es) of the DSLAM on the network side. It may not 
+             change during the GSMP session.
+             When set to zero, the DSLAM shall autonomously decide on 
+             using the most appropriate DSLAM MAC address. Then the
+             actually used DSLAM name can be read from 
+             l2cpCurrentSessionDslamName.
+        ALCATEL NOTE:
+             ACCESS:    read-create
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  '000000000000'H
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= {l2cpSessionConfigEntry 12 }
+
+    l2cpSessionConfigPartitionId OBJECT-TYPE
+        SYNTAX          GsmpPartitionIdType
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The Id for this session's specific DSLAM partition.
+             
+        ALCATEL NOTE:
+             ACCESS:    read-create
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     0..127
+             DEFVALUE:  0
+             UNITS:     NA
+             SPARSE:    NO
+             "
+       ::= { l2cpSessionConfigEntry 13 }
+
+    l2cpSessionConfigWindowSize OBJECT-TYPE
+        SYNTAX          INTEGER(1..65535)
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The maximum number of unacknowledged request messages
+             that may be transmitted by the controller without the
+             possibility of loss. This field is used to prevent
+             request messages from being lost in the DSLAM because of
+             overflow in the receive buffer. The field is a hint to
+             the controller.
+        ALCATEL NOTE:
+             ACCESS:    read-create (only value 10 supported)
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  10
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 14 }
+
+    l2cpSessionConfigBrasIpAddressType OBJECT-TYPE
+        SYNTAX          InetAddressType
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The type of address in l2cpSessionConfigBrasIpAddress.
+        ALCATEL NOTE:
+             ACCESS:    read-create (only IPv4 supported)
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  IPv4
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 15 }
+
+    l2cpSessionConfigBrasIpAddress OBJECT-TYPE
+        SYNTAX          InetAddress
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The IPv4 or IPv6 address used for
+             the GSMP session peer (=BRAS).
+        ALCATEL NOTE:
+             ACCESS:    read-create
+             USAGE:     MAND
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  none
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 16 }
+
+    l2cpSessionConfigTcpIpEncapPortNumber OBJECT-TYPE
+        SYNTAX          InetPortNumber
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "The TCP port number used for the TCP session
+             establishment to the GSMP peer.
+        ALCATEL NOTE:
+             ACCESS:    read-create
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  6068
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 17 }
+
+    l2cpSessionConfigVrfId OBJECT-TYPE
+        SYNTAX          Uint32
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "  SHUB-based Systems:
+             In case encapsulation type is TCP/IP, 
+             this is the VRF containing own IP address and route table
+             to be used for the connectivity to the GSMP peer.
+             Only value 0 supported.
+                IHUB-based Systems:
+             This is the Service ID of the (virtual) router containing the
+             IP interface to be used for the connectivity to the GSMP peer.
+             Values in the range 1-2147483646 are supported for virtual router
+             services (VPRN, IES); 
+             value 0 is supported for the Base Router,
+             value 0x7FFFFFFF=2147483647 is supported for the VPLS Management
+             router.
+        ALCATEL NOTE:
+             ACCESS:    read-create
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  0
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 18 }
+
+    l2cpSessionConfigSignalPartitionId OBJECT-TYPE
+        SYNTAX          TruthValue
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "Whether or not the PartitionId is signalled towards the
+             BRAS in the protocol messages. According to the standard,
+             it should, but some BRAS don't support it.
+        ALCATEL NOTE:
+             ACCESS:    read-create
+             USAGE:     OPT
+             PERSIST:   YES
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  false
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpSessionConfigEntry 19 }
+
+    --**************************************************************
+    -- L2CP CURRENT SESSION table
+    --**************************************************************
+
+    l2cpCurrentSessionTable OBJECT-TYPE
+        SYNTAX          SEQUENCE OF L2cpCurrentSessionEntry
+        ACCESS          not-accessible
+        STATUS          mandatory
+        DESCRIPTION
+             "This table gives actual information of the Dslam sessions.
+             An row in this table is created respectively deleted together
+             when the corresponding row in the l2cpDslamTable is created
+             respectively deleted.
+        ALCATEL NOTE:
+             TABLESIZE: 1..255
+             INSRVMOD:  NO
+             "
+        ::= { l2cpObjects 3 }
+
+    l2cpCurrentSessionEntry OBJECT-TYPE
+        SYNTAX          L2cpCurrentSessionEntry
+        ACCESS          not-accessible
+        STATUS          mandatory
+        DESCRIPTION
+             "An entry in the table showing the data for a 
+             specific actual session.
+             "
+        INDEX { l2cpSessionConfigSessionId }
+        ::= { l2cpCurrentSessionTable 1 }
+
+    L2cpCurrentSessionEntry ::= SEQUENCE {
+        l2cpCurrentSessionState                  INTEGER,
+        l2cpCurrentSessionGsmpVersion            GsmpVersion,
+        l2cpCurrentSessionGsmpSubVersion         GsmpSubVersion,
+        l2cpCurrentSessionDslamName              GsmpNameType,
+        l2cpCurrentSessionDslamPartitionId       GsmpPartitionIdType,
+        l2cpCurrentSessionBrasName               GsmpNameType,
+        l2cpCurrentSessionVrfId                  Uint32,
+        l2cpCurrentSessionDslamIpAddress         InetAddress,
+        l2cpCurrentSessionBrasIpAddressType      InetAddressType,
+        l2cpCurrentSessionBrasIpAddress          InetAddress,
+        l2cpCurrentSessionDslamInstance          INTEGER,
+        l2cpCurrentSessionBrasInstance           INTEGER,
+        l2cpCurrentSessionCapabilities           Uint32,
+        l2cpCurrentSessionStartUptime            NetworkTimeInSeconds,
+        l2cpCurrentSessionStatSentMessages       Counter,
+        l2cpCurrentSessionStatReceivedValidMessages Counter,
+        l2cpCurrentSessionStatDiscardedMessages  Counter,
+        l2cpCurrentSessionDslamIpAddressType     InetAddressType
+        }
+
+    l2cpCurrentSessionState OBJECT-TYPE
+        SYNTAX          INTEGER {
+                            null(1),
+                            synsent(2),
+                            synrcvd(3),
+                            estab(4)
+                        }
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The state of this session.
+             The NULL state is returned if the proper encapsulation
+             data is not yet configured, if the row is not in active
+             status or if the session is in NULL state as defined in
+             the GSMP specification.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+          ::= { l2cpCurrentSessionEntry 1 }
+
+    l2cpCurrentSessionGsmpVersion OBJECT-TYPE
+        SYNTAX          GsmpVersion
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The actual version number of the GSMP protocol that
+             is used in this session.
+             This object has value 0 if l2cpCurrentSessionState is not estab(4).
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+       ::= { l2cpCurrentSessionEntry 2 }
+
+    l2cpCurrentSessionGsmpSubVersion OBJECT-TYPE
+        SYNTAX          GsmpSubVersion
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The maximum subversion number of the GSMP protocol that
+             may be used in this session.
+             This object has value 0 if l2cpCurrentSessionState is not estab(4).
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+       ::= { l2cpCurrentSessionEntry 3 }
+
+    l2cpCurrentSessionDslamName OBJECT-TYPE
+        SYNTAX          GsmpNameType
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The name of the DSLAM used in this session.
+             It should be the same as l2cpSessionConfigDslamName.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= {l2cpCurrentSessionEntry 4 }
+
+    l2cpCurrentSessionDslamPartitionId OBJECT-TYPE
+        SYNTAX          GsmpPartitionIdType
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The Id for this session's specific DSLAM partition.
+             It should be the same as l2cpSessionConfigPartitionId.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+       ::= { l2cpCurrentSessionEntry 5 }
+
+    l2cpCurrentSessionBrasName OBJECT-TYPE
+        SYNTAX          GsmpNameType
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The name of the BRAS as advertised in the adjacency
+             message. 
+             This object has value 0 if l2cpCurrentSessionState is not estab(4).
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+       ::= { l2cpCurrentSessionEntry 6 }
+
+    l2cpCurrentSessionVrfId OBJECT-TYPE
+        SYNTAX          Uint32
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "  SHUB-based Systems:
+             In case encapsulation type is TCP/IP, 
+             this is the VRF used for the connectivity to the BRAS.
+                IHUB-based Systems:
+             This is the Service ID used for the connectivity 
+             to the BRAS.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 7 }
+
+    l2cpCurrentSessionDslamIpAddress OBJECT-TYPE
+        SYNTAX          InetAddress
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The IPv4 or IPv6 address used for
+             the DSLAM.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 8 }
+
+    l2cpCurrentSessionBrasIpAddressType OBJECT-TYPE
+        SYNTAX          InetAddressType
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The type of address in l2cpCurrentSessionBrasIpAddress.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 9 }
+
+    l2cpCurrentSessionBrasIpAddress OBJECT-TYPE
+        SYNTAX          InetAddress
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The IPv4 or IPv6 address used for
+             the GSMP session peer (=BRAS).
+             It should be the primary or secondary BRAS IP address.
+             Alcatel-Lucent ISAM case:
+               BRAS redundancy is supported only via redundant sessions.
+               Then it should be l2cpSessionConfigBrasIpAddress.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 10 }
+
+    l2cpCurrentSessionDslamInstance OBJECT-TYPE
+        SYNTAX          INTEGER(1..16777215)
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The instance number used by the DSLAM during this
+             session. The Instance number is a 24-bit number
+             that should be guaranteed to be unique within
+             the recent past and to change when the link
+             or node comes back up after going down. Zero is
+             not a valid instance number.
+             This object has value 0 if l2cpCurrentSessionState is not estab(4).
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 11 }
+
+    l2cpCurrentSessionBrasInstance OBJECT-TYPE
+        SYNTAX          INTEGER(1..16777215)
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The instance number used by the BRAS during this
+             session. The Instance number is a 24-bit number
+             that should be guaranteed to be unique within
+             the recent past and to change when the link
+             or node comes back up after going down.
+             This object has value 0 if l2cpCurrentSessionState is not estab(4).
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 12 }
+
+    l2cpCurrentSessionCapabilities OBJECT-TYPE
+        SYNTAX          Uint32
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The common L2CP capabilities supported by the DSLAM and BRAS
+             in this session.
+             Bit 1 is set if Access Topology Discovery is supported.
+             Bit 2 is set if Line Configuration is supported.
+             Bit 3 is set if Transactional Multicast is supported.
+             Bit 4 is set if Layer 2 OAM is supported.
+             Example: if Access Topology Discovery, Line Configuration and 
+             Layer 2 OAM all are supported, the value must be '1011'B=11
+             This object has value 0 if l2cpCurrentSessionState is not estab(4).
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 13 }
+
+    l2cpCurrentSessionStartUptime OBJECT-TYPE
+        SYNTAX         NetworkTimeInSeconds
+        ACCESS         read-only
+        STATUS         mandatory
+        DESCRIPTION
+             "The value of sysUpTime when the session came to
+             established state.
+             This object has value 0 if l2cpCurrentSessionState is not estab(4).
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 14 }
+
+    l2cpCurrentSessionStatSentMessages OBJECT-TYPE
+        SYNTAX         Counter
+        ACCESS         read-only
+        STATUS         mandatory
+        DESCRIPTION
+             "The number of messages that have been sent in this session
+             by the DSLAM. 
+             All GSMP messages pertaining to this session after
+             the session came to established state shall
+             be counted, also including adjacency protocol messages
+             and failure response messages.
+             The counter shall be reset when the session restarts.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 15 }
+
+    l2cpCurrentSessionStatReceivedValidMessages OBJECT-TYPE
+        SYNTAX         Counter
+        ACCESS         read-only
+        STATUS         mandatory
+        DESCRIPTION
+             "The number of messages that have been received and processed in 
+             this session by the DSLAM. 
+             All GSMP messages pertaining to this session after
+             the session came to established state shall
+             be counted, also including adjacency protocol messages
+             and failure response messages.
+             The counter shall be reset when the session restarts.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 16 }
+
+    l2cpCurrentSessionStatDiscardedMessages OBJECT-TYPE
+        SYNTAX         Counter
+        ACCESS         read-only
+        STATUS         mandatory
+        DESCRIPTION
+             "The number of messages that in this session have been received
+             and discarded for whatever reason by the DSLAM. 
+             All GSMP messages pertaining to this session after
+             the session came to established state shall
+             be counted, also including adjacency protocol messages
+             and failure response messages.
+             The counter shall be reset when the session restarts.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 17 }
+
+    l2cpCurrentSessionDslamIpAddressType OBJECT-TYPE
+        SYNTAX          InetAddressType
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The type of address in l2cpCurrentSessionDslamIpAddress.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NO
+             INSRVMOD:  NO
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+        ::= { l2cpCurrentSessionEntry 18 }
+
+    --**************************************************************
+    -- L2CP INTERFACE CONFIGURATION table
+    --**************************************************************
+
+    l2cpInterfaceConfigTable OBJECT-TYPE
+        SYNTAX          SEQUENCE OF L2cpInterfaceConfigEntry
+        ACCESS          not-accessible
+        STATUS          mandatory
+        DESCRIPTION
+             "This table represents the Dslam ANCP partitions.
+             An row in this table indicates the partition to which
+             an interface belongs.
+             For every interface that belongs to a partition, the
+             Dslam operator must create one row in this table.
+        ALCATEL NOTE:
+             TABLESIZE: depends on the number of planned XDSL/SHDSL boards
+             INSRVMOD:  YES
+             "
+        ::= { l2cpObjects 4 }
+
+    l2cpInterfaceConfigEntry OBJECT-TYPE
+        SYNTAX          L2cpInterfaceConfigEntry
+        ACCESS          not-accessible
+        STATUS          mandatory
+        DESCRIPTION
+             "An entry in the table showing the partition for a 
+             specific interface.
+             "
+        INDEX { l2cpInterfaceConfigIfIndex, l2cpInterfaceConfigPartitionId }
+        ::= { l2cpInterfaceConfigTable 1 }
+
+    L2cpInterfaceConfigEntry ::= SEQUENCE {
+        l2cpInterfaceConfigIfIndex               INTEGER,
+        l2cpInterfaceConfigPartitionId           GsmpPartitionIdType,
+        l2cpInterfaceConfigRowStatus             RowStatus
+        }
+
+    l2cpInterfaceConfigIfIndex OBJECT-TYPE
+        SYNTAX          INTEGER
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "ifIndex of an interface.
+             It must be a ADSL-port index or VDSL-port index.
+             It must NOT be a higher layer index like EFM-port index,
+             nor an Ethernet-port index.
+        ALCATEL NOTE:
+             ACCESS:    not applicable
+             USAGE:     NA
+             PERSIST:   NA
+             INSRVMOD:  NO
+             RANGE:     0..2^32-1
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+          ::= { l2cpInterfaceConfigEntry 1 }
+
+    l2cpInterfaceConfigPartitionId OBJECT-TYPE
+        SYNTAX          GsmpPartitionIdType
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The Id for this interface's specific DSLAM partition.
+        ALCATEL NOTE:
+             ACCESS:    not applicable
+             USAGE:     NA
+             PERSIST:   NA
+             INSRVMOD:  NO
+             RANGE:     1..127
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+       ::= { l2cpInterfaceConfigEntry 2 }
+
+    l2cpInterfaceConfigRowStatus OBJECT-TYPE
+        SYNTAX          RowStatus
+        ACCESS          read-write
+        STATUS          mandatory
+        DESCRIPTION
+             "An object that allows entries in this table to
+             be created and deleted using the
+             RowStatus convention.
+        ALCATEL NOTE:
+             ACCESS:    read-write
+             USAGE:     MAND
+             PERSIST:   NA
+             INSRVMOD:  YES
+             RANGE:     NA
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+          ::= { l2cpInterfaceConfigEntry 3 }
+
+    --**************************************************************
+    -- L2CP CURRENT PARTITION table
+    --**************************************************************
+
+    l2cpCurrentPartitionTable OBJECT-TYPE
+        SYNTAX          SEQUENCE OF L2cpCurrentPartitionEntry
+        ACCESS          not-accessible
+        STATUS          mandatory
+        DESCRIPTION
+             "This table lists the interfaces associated to a
+             given partition in the Dslam.
+             This table is created and updated automatically
+             at every configuration action on l2cpInterfaceConfigTable.
+        ALCATEL NOTE:
+             TABLESIZE: depends on the number of planned XDSL/SHDSL boards
+             INSRVMOD:  NO
+             "
+        ::= { l2cpObjects 5 }
+
+    l2cpCurrentPartitionEntry OBJECT-TYPE
+        SYNTAX          L2cpCurrentPartitionEntry
+        ACCESS          not-accessible
+        STATUS          mandatory
+        DESCRIPTION
+             "An entry in the table showing (one of) the interface
+             for a specific partition.
+             "
+        INDEX { l2cpCurrentPartitionId, l2cpCurrentPartitionIfIndex }
+        ::= { l2cpCurrentPartitionTable 1 }
+
+    L2cpCurrentPartitionEntry ::= SEQUENCE {
+        l2cpCurrentPartitionId           GsmpPartitionIdType,
+        l2cpCurrentPartitionIfIndex      INTEGER
+        }
+
+    l2cpCurrentPartitionId OBJECT-TYPE
+        SYNTAX          GsmpPartitionIdType
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "The Id for an explicitly created and configured
+             Dslam partition.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NA
+             INSRVMOD:  NA
+             RANGE:     1..127
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+       ::= { l2cpCurrentPartitionEntry 1 }
+
+    l2cpCurrentPartitionIfIndex OBJECT-TYPE
+        SYNTAX          INTEGER
+        ACCESS          read-only
+        STATUS          mandatory
+        DESCRIPTION
+             "ifIndex of an interface belonging to the given partition.
+        ALCATEL NOTE:
+             ACCESS:    RO
+             USAGE:     NA
+             PERSIST:   NA
+             INSRVMOD:  NO
+             RANGE:     0..2^32-1
+             DEFVALUE:  NA
+             UNITS:     NA
+             SPARSE:    NO
+             "
+          ::= { l2cpCurrentPartitionEntry 2 }
+
+
+END
+
+
+
+
+
+

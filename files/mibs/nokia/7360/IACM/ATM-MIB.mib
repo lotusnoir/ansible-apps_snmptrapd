@@ -1,0 +1,864 @@
+-- ATM-MIB (RFC 2515)
+-- ========================================================================
+-- This specification is published by Alcatel under Non-Disclosure
+-- Agreement(s) (NDA) with specific parties and has to be considered as
+-- Confidential Information as defined in such NDA.
+-- Alcatel reserves the right to revise this document for any reason,
+-- including but not limited to conformity with standards promulgated by
+-- various agencies, utilisation of advances in the state of the technical
+-- areas, or the reflection of changes in the design of any equipment,
+-- techniques, or procedures described or referred to herein.
+-- The product specifications and other technical or performance information
+-- contained herein are subject to change without notice.
+-- Updates of this document will be issued under the above NDA's.
+-- Alcatel makes no representation or warranty, expressed or implied, with
+-- respect to the sufficiency, accuracy, or utility of any information or
+-- opinion contained herein. Alcatel expressly advises that any use of for 
+-- any purpose or reliance upon this technical reference is at the risk of
+-- the user and that Alcatel shall not be liable for any damage or injury
+-- incurred by any person arising out of the sufficiency, accuracy, or
+-- utility of any information or opinion contained herein.
+-- This document is not to be construed as a suggestion to any manufacturer
+-- to modify or change any of its products, nor does this document represent
+-- any commitment by Alcatel to sell or purchase any product.
+-- Nothing contained herein shall be construed as conferring by implication,
+-- estoppel, or otherwise any license or right under any patent, whether or
+-- not the use of any information herein necessarily employs an invention of
+-- any existing or later issued patent.
+-- Alcatel reserves the right not to offer any or all of these products and
+-- to withdraw any or all of them at any future time.
+-- Copyright (C) 2003, Alcatel. All Rights Reserved.
+-- ========================================================================
+-- MODULE-IDENTITY
+-- LAST-UPDATED "20060605000000Z"
+-- ORGANIZATION "Alcatel"
+-- CONTACT-INFO 
+--
+--         Email: asam.mibsupport@alcatel.be
+--
+--
+-- DESCRIPTION:
+--    This is the MIB Module for ATM and AAL5-related
+--    objects for managing ATM interfaces, ATM termination
+--    connections, AAL5 entities, and encapsulation mode.
+--    Alcatel specific behavior is indicated by comments
+--    labeled 'ALCATEL NOTE'.
+--  
+--  REVISION "20060605000000Z"
+--  DESCRIPTION
+--        "Version: 3EC15358EAAA_E3.2.0.0.0
+--         Editor: Rommy VOLDERS
+--         Changes:  Open SNMP feature ISAM R3.2"
+--
+--  REVISION "20060123000000Z"
+--  DESCRIPTION
+--        "Version: 3EC15358EAAA_E2.0.0.0.1
+--         Editor: Bart Bogaert
+--         Changes:  Implemented BDFhw70643: strict syntax checks (smilint)"
+--
+--  REVISION "20040913000000Z"
+--  DESCRIPTION
+--        "Version: 3EC15358EAAA_E2.1.0.0.0
+--         Editor: Wang Xin
+--         Changes:  changes for ISAM2.1: extend the original
+--         encapsulation type in standard atmVclTable to asamAtmVclTable 
+--         and add a new autodetect mode object 
+--         in order to support autodetect of encapsulation type."
+--
+--  REVISION "20040228000000Z"
+--  DESCRIPTION
+--        "Version: 3EC15358EAAA_E1.1.0.0.0
+--         Editor: Peter Van Mele
+--         Changes:  changes for ISAM1.1: configuration of Aal5 Encap. Type"
+--
+--
+--  REVISION "20031210000000Z"
+--  DESCRIPTION
+--        "Version: 3EC15358EAAA_E1.0.0.0.0
+--         Editor: Yingzhong Miao
+--         Changes:  created from atmMIB RFC-2515 (9810191200Z) for ESAM R1.0"
+--
+-- ==================================================================
+ATM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+    Counter, IpAddress
+        FROM RFC1155-SMI
+    mib-2
+        FROM RFC1213-MIB
+    DisplayString, RowStatus, TruthValue
+        FROM SNMPv2-TC
+    InterfaceIndex, ifIndex
+        FROM ITF-MIB
+--  AtmAddr,
+    AtmConnKind, AtmConnCastType,
+--  AtmServiceCategory, AtmTrafficDescrParamIndex,
+    AtmVpIdentifier, AtmVcIdentifier,
+    AtmVorXAdminStatus, AtmVorXLastChange,
+    AtmVorXOperStatus 
+--  atmNoClpNoScr
+        FROM ATM-TC-MIB
+;
+
+--   atmMIB MODULE-IDENTITY
+--        LAST-UPDATED "9810191200Z"
+--        ORGANIZATION "IETF AToM MIB Working Group"
+--        CONTACT-INFO
+--          "          Kaj Tesink
+--            Postal:  Bellcore
+--                     331 Newman Springs Road
+--                     Red Bank, NJ 07701
+--            Tel:     732-758-5254
+--            Fax:     732-758-2269
+--            E-mail:  kaj@bellcore.com"
+--        DESCRIPTION
+--         "This is the MIB Module for ATM and AAL5-related
+--          objects for managing ATM interfaces, ATM virtual
+--          links, ATM cross-connects, AAL5 entities, and
+--          and AAL5 connections."
+--        REVISION      "9810191200Z"
+--        DESCRIPTION
+--         "The initial revision of this module was published
+--          as RFC 1695. Key revisions include:
+--          o  Textual Conventions and OBJECT IDENTITIES have
+--             been moved to a separate MIB module.
+--          o  Applicability of objects to PVCs, SVCs and Soft
+--             PVCs has been clarified.
+--          o  DEFVAL clauses have been added.
+--          o  The relationship of ifIndex values with different
+--             layers and sublayers related to ATM has been
+--             clarified.
+--          o  atmTrafficQosClass has been deprecated
+--             and replaced with atmServiceCategory.
+--          o  atmInterfaceCurrentMaxVpiBits and
+--             atmInterfaceCurrentMaxVciBits have been added with
+--             a description on their relationship with other
+--             objects.
+--          o  atmInterfaceAddressType and atmInterfaceAdminAddress
+--             have been deprecated and replaced by
+--             atmInterfaceSubscrAddress.
+--          o  atmInterfaceTCAlarmState has been clarified.
+--          o  atmTrafficDescrParamIndexNext has been introduced
+--             in order to provide a manager a free
+--             atmTrafficDescrParamIndex value.
+--          o  The atmTrafficFrameDiscard capability has been added.
+--          o  A connection topology type (atmVpl/VclCastType) and
+--             a call control type (atmVpl/VclConnKind) have been
+--             added.
+--          o  aal2 has been added to atmVccAalType."
+--        REVISION      "9406072245Z"
+--        DESCRIPTION
+--         "The RFC1695 version of this MIB module."
+--        ::= { mib-2 37 }
+
+
+atmMIB OBJECT IDENTIFIER ::= { mib-2 37 }
+
+atmMIBObjects OBJECT IDENTIFIER ::= { atmMIB 1 }
+
+-- This ATM MIB Module consists of the following tables:
+-- (1) ATM Interface configuration table
+-- (2) ATM Interface DS3 PLCP table
+-- (3) ATM Interface TC Sublayer table
+
+-- (4) Atm Traffic Descriptor table
+-- (5) ATM Interface VPL configuration table
+-- (6) ATM Interface VCL configuration table
+-- (7) ATM VP Cross Connect table (for PVCs)
+-- (8) ATM VC Cross Connect table (for PVCs)
+
+
+--  ATM Interface Configuration Parameters Table
+
+-- This table contains ATM specific
+-- configuration information associated with
+-- an ATM interface beyond those
+-- supported using the ifTable.
+
+atmInterfaceConfTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF AtmInterfaceConfEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "This table contains ATM local interface
+            configuration parameters, one entry per ATM
+            interface port.
+       ALCATEL NOTE: The tables parameters cannot be modified, since in the
+                     ATM extension MIB (ATM_EXT_MIB) the extension to this 
+                     table is defined (asamAtmInterfaceConfigTable) which 
+                     contains the settable parameters and pointer to the
+                     profiles which configures the parameters in this table."
+    ::= { atmMIBObjects  2 }
+
+atmInterfaceConfEntry OBJECT-TYPE
+    SYNTAX  AtmInterfaceConfEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "This list contains ATM interface configuration
+            parameters and state variables and is indexed
+            by ifIndex values of ATM interfaces."
+    INDEX   { ifIndex }
+    ::= { atmInterfaceConfTable  1 }
+
+AtmInterfaceConfEntry ::=
+    SEQUENCE {
+--        atmInterfaceMaxVpcs
+--            INTEGER,
+
+        atmInterfaceMaxVccs
+            INTEGER,
+
+--        atmInterfaceConfVpcs
+--            INTEGER,
+
+        atmInterfaceConfVccs
+            INTEGER,
+
+        atmInterfaceMaxActiveVpiBits
+            INTEGER,
+
+        atmInterfaceMaxActiveVciBits
+            INTEGER
+
+--        atmInterfaceIlmiVpi
+--            AtmVpIdentifier,
+
+--        atmInterfaceIlmiVci
+--            AtmVcIdentifier,
+
+--        atmInterfaceAddressType
+--            INTEGER,
+
+--        atmInterfaceAdminAddress
+--            AtmAddr,
+
+--        atmInterfaceMyNeighborIpAddress
+--            IpAddress,
+
+--        atmInterfaceMyNeighborIfName
+--            DisplayString,
+
+--        atmInterfaceCurrentMaxVpiBits
+--            INTEGER,
+
+--        atmInterfaceCurrentMaxVciBits
+--            INTEGER,
+
+--        atmInterfaceSubscrAddress
+--            AtmAddr
+    }
+
+-- atmInterfaceMaxVpcs OBJECT-TYPE
+--      ::= { atmInterfaceConfEntry 1}
+
+atmInterfaceMaxVccs OBJECT-TYPE
+     SYNTAX         INTEGER  (0..65536)
+     ACCESS         read-write
+     STATUS         mandatory
+     DESCRIPTION
+      "The maximum number of VCCs (PVCCs and SVCCs)
+       supported at this ATM interface.
+     ALCATEL NOTE: WRITE operation is not supported."
+     ::= { atmInterfaceConfEntry 2}
+
+-- atmInterfaceConfVpcs  OBJECT-TYPE
+--      ::= { atmInterfaceConfEntry 3}
+
+atmInterfaceConfVccs  OBJECT-TYPE
+     SYNTAX         INTEGER  (0..65536)
+     ACCESS         read-only
+     STATUS         mandatory
+     DESCRIPTION
+      "The number of VCCs (PVCC, Soft PVCC and SVCC)
+       currently in use at this ATM interface.  It includes
+       the number of PVCCs and Soft PVCCs that are configured
+       at the interface, plus the number of SVCCs
+       that are currently  established at the
+       interface.
+       ALCATEL NOTE:
+        ACCESS: R0
+        USAGE: NA
+        PERSIST :       NO
+        INSRVMOD:       NO
+        RANGE:          0..65536
+        DEFVALUE:	NA
+        UNITS:          NA
+        SPARSE:	N0
+        DESCR:	ISAM only supports PVCCs"
+     ::= { atmInterfaceConfEntry 4}
+
+atmInterfaceMaxActiveVpiBits  OBJECT-TYPE
+     SYNTAX         INTEGER (0..12)
+     ACCESS         read-write
+     STATUS         mandatory
+     DESCRIPTION
+      "The  maximum number of active VPI bits
+       configured for use at the ATM interface.
+       At the ATM UNI, the maximum number of active
+       VPI bits configured for use ranges from
+       0 to 8 only.
+     ALCATEL NOTE: WRITE operation is not supported on this object."
+     ::= { atmInterfaceConfEntry 5}
+
+atmInterfaceMaxActiveVciBits  OBJECT-TYPE
+     SYNTAX         INTEGER (0..16)
+     ACCESS         read-write
+     STATUS         mandatory
+     DESCRIPTION
+      "The maximum number of active VCI bits
+       configured for use at this ATM interface.
+     ALCATEL NOTE: WRITE operation is not supported on this object."
+     ::= { atmInterfaceConfEntry 6}
+
+-- atmInterfaceIlmiVpi OBJECT-TYPE
+--      ::= { atmInterfaceConfEntry 7}
+
+-- atmInterfaceIlmiVci OBJECT-TYPE
+--     ::= { atmInterfaceConfEntry 8}
+
+-- atmInterfaceAddressType  OBJECT-TYPE
+--      ::= { atmInterfaceConfEntry 9 }
+
+--      -**-  The atmInterfaceAdminAddress object has been replaced by
+--      -**-  atmInterfaceSubscrAddress.
+
+-- atmInterfaceAdminAddress OBJECT-TYPE
+--        ::= { atmInterfaceConfEntry 10 }
+
+-- atmInterfaceMyNeighborIpAddress OBJECT-TYPE
+--      ::= { atmInterfaceConfEntry 11 }
+
+-- atmInterfaceMyNeighborIfName OBJECT-TYPE
+--      ::= { atmInterfaceConfEntry 12 }
+
+-- atmInterfaceCurrentMaxVpiBits    OBJECT-TYPE
+--      ::= { atmInterfaceConfEntry 13 }
+
+-- atmInterfaceCurrentMaxVciBits    OBJECT-TYPE
+--     ::= { atmInterfaceConfEntry 14 }
+
+-- atmInterfaceSubscrAddress OBJECT-TYPE
+--      ::= { atmInterfaceConfEntry 15 }
+
+-- atmInterfaceDs3PlcpTable OBJECT-TYPE
+--     ::= { atmMIBObjects  3 }
+
+-- atmInterfaceTCTable OBJECT-TYPE
+--     ::= { atmMIBObjects  4 }
+--
+
+-- atmTrafficDescrParamTable OBJECT-TYPE
+--     ::= { atmMIBObjects  5 }
+--
+
+
+--  ATM Interface Virtual Path Link (VPL) Table
+
+-- This table contains configuration and state
+-- information of a bi-directional Virtual Path Link
+-- (VPL)
+
+-- This table can be used to create, delete or modify
+-- a VPL that is terminated in an ATM host or switch.
+-- This table can also be used to create, delete or
+-- modify a VPL which is cross-connected to another
+-- VPL.
+
+-- In the example below, the traffic flows on the receive
+-- and transmit directions of the VPLs are characterized
+-- by atmVplReceiveTrafficDescrIndex and
+-- atmVplTransmitTrafficDescrIndex respectively.
+-- The cross-connected VPLs are identified by
+-- atmVplCrossConnectIdentifier.
+
+--           ________________________________
+--           |                              |
+--  VPL      | ATM Host, Switch, or Network |   VPL
+-- receive   |                              |  receive
+-- ========> X                              X <=======
+-- <======== X                              X ========>
+-- transmit  |                              |  transmit
+--           |______________________________|
+
+--  The ATM Interface VPL Table
+
+-- atmVplTable OBJECT-TYPE
+--    ::= { atmMIBObjects  6 }
+--
+
+--  ATM Interface Virtual Channel Link (VCL) Table
+
+-- This table contains configuration and state
+-- information of a bi-directional Virtual Channel
+-- Link (VCL) at an ATM interface.
+
+-- This table can be used to create, delete or modify
+-- a VCL that is terminated in an ATM host or switch.
+-- This table can also be
+-- used to create, delete or modify a VCL that is
+-- cross-connected to another VCL.
+
+--  The ATM Interface VCL Table
+
+atmVclTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF AtmVclEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "The Virtual Channel Link (VCL) table.  A
+            bi-directional VCL is modeled as one entry
+            in this table. This table can be used for
+            PVCs, SVCs and Soft PVCs.
+            ALCATEL NOTE :
+             TABLESIZE : 11007
+             DESCR : ISAM does not support atmVclReceiveTrafficDescrIndex and
+                     atmVclTransmitTrafficDescrIndex to characterize the traffic.
+                     ISAM only supports one shot VCL establishment.
+                     ISAM only supports VCLs that terminate a VCC, therefore
+                     atmVclCrossConnectIdentifier is not supported"
+    ::= { atmMIBObjects  7 }
+
+atmVclEntry OBJECT-TYPE
+    SYNTAX  AtmVclEntry
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "An entry in the VCL table.  This entry is
+                      used to model a bi-directional VCL.
+                      To create a VCL at an ATM interface,
+                      either of the following procedures are used:
+
+                      Negotiated VCL establishment
+
+                    (1) The management application creates
+                        a VCL entry in the atmVclTable
+                        by setting atmVclRowStatus to createAndWait(5).
+                        This may fail for the following reasons:
+                        - The selected VPI/VCI values are unavailable,
+                        - The selected VPI/VCI values are in use.
+                        Otherwise, the agent creates a row and
+                        reserves the VPI/VCI values on that port.
+
+                    (2) The manager selects an existing row(s) in the
+                        atmTrafficDescrParamTable,
+                        thereby, selecting a set of self-consistent
+                        ATM traffic parameters and the QoS Class
+                        for receive and transmit directions of the VCL.
+
+                   (2a) If no suitable row(s) in the
+                        atmTrafficDescrParamTable exists,
+                        the manager must create a new row(s)
+                        in that table.
+
+                   (2b) The manager characterizes the VCL's traffic
+                        parameters through setting the
+                        atmVclReceiveTrafficDescrIndex and the
+                        atmVclTransmitTrafficDescrIndex values
+                        in the VCL table, which point to the rows
+                        containing desired ATM traffic parameter values
+                        in the atmTrafficDescrParamTable.  The agent
+                        will check the availability of resources and
+                        may refuse the request.
+
+                    (3) The manager activates the VCL by setting the
+                        the atmVclRowStatus to active(1).
+                        If this set is successful, the agent has
+                        reserved the resources to satisfy the requested
+                        traffic parameter values and the QoS Class
+                        for that VCL.
+                    (4) If the VCL terminates a VCC in the ATM host
+                        or switch, the manager turns on the
+                        atmVclAdminStatus to up(1) to turn the VCL
+                        traffic flow on.  Otherwise, the
+                        atmVcCrossConnectTable  must be used
+                        to cross-connect the VCL to another VCL(s)
+                        in an ATM switch or network.
+
+                     One-Shot VCL Establishment
+
+                     A VCL may also be established in one step by a
+                     set-request with all necessary VCL parameter
+                     values and atmVclRowStatus set to createAndGo(4).
+                     In contrast to the negotiated VCL establishment
+                     which allows for detailed error checking
+                     (i.e., set errors are explicitly linked to
+                     particular resource acquisition failures),
+                     the one-shot VCL establishment
+                     performs the setup on one operation but
+                     does not have the advantage of step-wise
+                     error checking.
+
+                     VCL Retirement
+
+                     A VCL is released by setting atmVclRowStatus to
+                     destroy(6), and the agent may release all
+                     associated resources.            "
+    INDEX   {
+                 ifIndex,
+                 atmVclVpi,
+                 atmVclVci
+               }
+    ::= { atmVclTable  1 }
+
+AtmVclEntry ::=
+    SEQUENCE {
+        atmVclVpi
+            AtmVpIdentifier,
+
+        atmVclVci
+            AtmVcIdentifier,
+
+        atmVclAdminStatus
+            AtmVorXAdminStatus,
+
+        atmVclOperStatus
+            AtmVorXOperStatus,
+
+        atmVclLastChange
+            AtmVorXLastChange,
+
+--        atmVclReceiveTrafficDescrIndex
+--            AtmTrafficDescrParamIndex,
+
+--        atmVclTransmitTrafficDescrIndex
+--            AtmTrafficDescrParamIndex,
+
+        atmVccAalType
+            INTEGER,
+
+        atmVccAal5CpcsTransmitSduSize
+            INTEGER,
+
+        atmVccAal5CpcsReceiveSduSize
+            INTEGER,
+
+--        atmVccAal5EncapsType
+--            INTEGER,
+
+--        atmVclCrossConnectIdentifier
+--            INTEGER,
+
+        atmVclRowStatus
+            RowStatus,
+
+        atmVclCastType
+            AtmConnCastType,
+
+        atmVclConnKind
+            AtmConnKind
+    }
+
+atmVclVpi OBJECT-TYPE
+    SYNTAX  AtmVpIdentifier
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "The VPI value of the VCL.
+            The maximum VPI value cannot
+            exceed the value allowable by the atmInterfaceMaxVpiBits."
+    ::= { atmVclEntry  1 }
+
+atmVclVci OBJECT-TYPE
+    SYNTAX  AtmVcIdentifier
+    ACCESS  not-accessible
+    STATUS  mandatory
+    DESCRIPTION
+           "The VCI value of the VCL.
+            The maximum VCI value cannot
+            exceed the value allowable by the atmInterfaceMaxVciBits."
+    ::= { atmVclEntry  2 }
+
+atmVclAdminStatus OBJECT-TYPE
+    SYNTAX  AtmVorXAdminStatus
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+           "This object is implemented only for a VCL which
+            terminates a VCC (i.e.,
+            one which is NOT cross-connected to other VCLs).
+            Its value specifies the desired administrative
+            state of the VCL.  The up and down states indicate
+            that the traffic flow is enabled and disabled
+            respectively for this VCL.
+            ALCATEL NOTE:
+             ACCESS: RW
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE: 1..2
+             DEFVALUE: 	2
+             UNITS:	NA
+             SPARSE:	N0
+             DESCR:	ISAM only supports VCLs that terminate a VCC"
+    DEFVAL { down }
+    ::= { atmVclEntry  3 }
+
+atmVclOperStatus OBJECT-TYPE
+    SYNTAX  AtmVorXOperStatus
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+           "This object indicates the current operational
+            status of the VCL.  The up and down states
+            indicate that the VCL is currently
+            operational, or not operational, respectively.
+            The unknown state indicates that the status of
+            this VCL cannot be determined."
+    ::= { atmVclEntry  4 }
+
+atmVclLastChange OBJECT-TYPE
+    SYNTAX  AtmVorXLastChange
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+           "The value of MIB II's sysUpTime object
+            at the time this VCL entered its current
+            operational state.  If the current state was
+            entered prior to the last re-initialization of the
+            agent, then this object contains a zero value."
+    ::= { atmVclEntry  5 }
+
+-- atmVclReceiveTrafficDescrIndex OBJECT-TYPE
+--    ::= { atmVclEntry  6 }
+--
+-- atmVclTransmitTrafficDescrIndex OBJECT-TYPE
+--    ::= { atmVclEntry  7 }
+
+atmVccAalType OBJECT-TYPE
+    SYNTAX  INTEGER {
+                 aal1(1),
+                 aal34(2),
+                 aal5(3),
+                 other(4),
+                 unknown(5),
+                 aal2(6)
+               }
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+           "An instance of this object only exists when the
+            local VCL end-point is also the VCC end-point,
+            and AAL is in use.
+            The type of AAL used on this VCC.
+            The AAL type includes AAL1, AAL2, AAL3/4,
+            and AAL5. The other(4) may be user-defined
+            AAL type.  The unknown type indicates that
+            the AAL type cannot be determined.
+            ALCATEL NOTE:
+             ACCESS: RW
+             USAGE: NA
+             PERSIST:  	NA
+             INSRVMOD: 	NO
+             RANGE: 3
+             DEFVALUE: 	3
+             UNITS:	NA 
+             SPARSE:	NA
+             DESCR:	Only aal5 is supported. "
+    DEFVAL { aal5 }
+    ::= { atmVclEntry  8 }
+
+atmVccAal5CpcsTransmitSduSize OBJECT-TYPE
+    SYNTAX  INTEGER (1..65535)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+           "An instance of this object only exists when the
+            local VCL end-point is also the VCC end-point,
+            and AAL5 is in use.
+            The maximum AAL5 CPCS SDU size in octets that is
+            supported on the transmit direction of this VCC.
+            ALCATEL NOTE:
+             ACCESS: RW
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:  1..65535
+             DEFVALUE: 	9133
+             UNITS:	Octets 
+             SPARSE:	NA
+             DESCR:	NA "
+    DEFVAL  { 9188 }
+    ::= { atmVclEntry  9 }
+
+atmVccAal5CpcsReceiveSduSize OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+           "An instance of this object only exists when the
+            local VCL end-point is also the VCC end-point,
+            and AAL5 is in use.
+            The maximum AAL5 CPCS SDU size in octets that is
+            supported on the receive direction of this VCC.
+            ALCATEL NOTE:
+             ACCESS: RW
+             USAGE: NA
+             PERSIST:  	YES
+             INSRVMOD: 	NO
+             RANGE:  1..65535
+             DEFVALUE: 	9133
+             UNITS:	Octets 
+             SPARSE:	NA
+             DESCR:	NA "
+    DEFVAL  { 9188 }
+    ::= { atmVclEntry  10 }
+
+--atmVccAal5EncapsType OBJECT-TYPE
+--    SYNTAX  INTEGER {
+--                 vcMultiplexRoutedProtocol(1),
+--                 vcMultiplexBridgedProtocol8023(2),
+--                 vcMultiplexBridgedProtocol8025(3),
+--                 vcMultiplexBridgedProtocol8026(4),
+--                 vcMultiplexLANemulation8023(5),
+--                 vcMultiplexLANemulation8025(6),
+--                 llcEncapsulation(7),
+--                 multiprotocolFrameRelaySscs(8),
+--                 other(9),
+--                 unknown(10)
+--               }
+--    ACCESS  read-write
+--    STATUS  mandatory
+--    DESCRIPTION
+--           "An instance of this object only exists when the
+--            local VCL end-point is also the VCC end-point,
+--            and AAL5 is in use.
+--            The type of data encapsulation used over
+--            the AAL5 SSCS layer. The definitions reference
+--            RFC 1483 Multiprotocol Encapsulation
+--            over ATM AAL5 and to the ATM Forum
+--            LAN Emulation specification.
+--ALCATEL NOTE: Only llcEncapsulation(7) and vcMultiplexBridgedProtocol8023 (2_
+--              are supported. The operator has to configure the encapsulation
+--              type explicitly while creating the VC."
+--    DEFVAL  { llcEncapsulation }
+--    ::= { atmVclEntry  11 }
+
+-- atmVclCrossConnectIdentifier OBJECT-TYPE
+--    ::= { atmVclEntry  12 }
+
+atmVclRowStatus OBJECT-TYPE
+    SYNTAX  RowStatus
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+           "This object is used to create, delete or
+            modify a row in this table.  To create
+            a new VCL, this object is initially set
+            to 'createAndWait' or 'createAndGo'.
+            This object should not be
+            set to 'active' unless the following columnar
+            objects have been set to their desired value
+            in this row:
+            atmVclReceiveTrafficDescrIndex,
+            atmVclTransmitTrafficDescrIndex.
+            In addition, if the local VCL end-point
+            is also the VCC end-point:
+            atmVccAalType.
+            In addition, for AAL5 connections only:
+            atmVccAal5CpcsTransmitSduSize,
+            atmVccAal5CpcsReceiveSduSize, and
+            atmVccAal5EncapsType. (The existence
+            of these objects imply the AAL connection type.).
+            The DESCRIPTION of atmVclEntry provides
+            further guidance to row treatment in this table.
+          ALCATEL NOTE:
+             ACCESS: RW
+             USAGE: MAND
+             PERSIST:  	NO
+             INSRVMOD: 	YES
+             RANGE: 1,4,6
+             DEFVALUE: 	5
+             UNITS:	NA 
+             SPARSE:	NA
+             DESCR:	Only 'createAndGo' option of row creation is supported.
+             Only atmVclAdminStatus object can be modified, all other
+             objects in this table cannot be modifed."
+    DEFVAL  { createAndWait }
+    ::= { atmVclEntry  13 }
+
+atmVclCastType      OBJECT-TYPE
+     SYNTAX         AtmConnCastType
+     ACCESS         read-write
+     STATUS         mandatory
+     DESCRIPTION
+"The connection topology type.
+ALCATEL NOTE: This object supports 'p2p' option only."
+     DEFVAL { p2p }
+           ::= {atmVclEntry 14}
+
+atmVclConnKind      OBJECT-TYPE
+     SYNTAX         AtmConnKind
+     ACCESS         read-write
+     STATUS         mandatory
+     DESCRIPTION
+      "The use of call control.
+       ALCATEL NOTE: This object supports 'pvc' option only since ASAMrestricts management of PVC connections only."
+     DEFVAL { pvc }
+     ::= {atmVclEntry 15}
+
+
+
+-- atmVpCrossConnectIndexNext OBJECT-TYPE
+--     ::= { atmMIBObjects  8 }
+-- 
+
+-- atmVpCrossConnectTable OBJECT-TYPE
+--     ::= { atmMIBObjects  9 }
+--
+
+-- atmVcCrossConnectIndexNext OBJECT-TYPE
+--     ::= { atmMIBObjects  10 }
+-- 
+
+-- atmVcCrossConnectTable OBJECT-TYPE
+--     ::= { atmMIBObjects  11 }
+
+
+
+--
+-- The following object may be used in conjunction with
+-- the atmTrafficDescrParamTable for the creation of
+-- new table entries.
+--
+
+-- atmTrafficDescrParamIndexNext  OBJECT-TYPE
+--      ::= { atmMIBObjects 13 }
+-- 
+-- Conformance Information
+-- ALCATEL NOTE: Not supported.
+--atmMIBConformance OBJECT IDENTIFIER ::= { atmMIB  2 }
+
+--atmMIBGroups OBJECT IDENTIFIER ::= { atmMIBConformance  1 }
+
+--atmMIBCompliances OBJECT IDENTIFIER ::= { atmMIBConformance  2 }
+
+--atmMIBCompliance2 OBJECT IDENTIFIER ::= { atmMIBCompliances  2 }
+
+--atmInterfaceDs3PlcpGroup OBJECT IDENTIFIER ::= { atmMIBGroups  3 }
+
+--atmInterfaceTCGroup OBJECT IDENTIFIER ::= { atmMIBGroups  4 }
+
+--atmVcCrossConnectGroup OBJECT IDENTIFIER ::= { atmMIBGroups  8 }
+
+--aal5VccGroup OBJECT IDENTIFIER ::= { atmMIBGroups  9 }
+
+--atmInterfaceConfGroup2 OBJECT IDENTIFIER ::= { atmMIBGroups  10 }
+
+--atmTrafficDescrGroup2 OBJECT IDENTIFIER ::= { atmMIBGroups  11 }
+
+--atmVpcTerminationGroup2 OBJECT IDENTIFIER ::= { atmMIBGroups  12 }
+
+--atmVccTerminationGroup2 OBJECT IDENTIFIER ::= { atmMIBGroups  13 }
+
+--atmVplCrossConnectGroup OBJECT IDENTIFIER ::= { atmMIBGroups  14 }
+
+--atmVpPvcCrossConnectGroup OBJECT IDENTIFIER ::= { atmMIBGroups  15 }
+
+--atmVclCrossConnectGroup OBJECT IDENTIFIER ::= { atmMIBGroups  16 }
+
+--atmVcPvcCrossConnectGroup OBJECT IDENTIFIER ::= { atmMIBGroups  17 }
+
+END

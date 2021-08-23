@@ -1,0 +1,342 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V1.03
+-- History: Drafted by yinjiasheng  2006-06-7
+-- 2006-9-18, Added by lvhuaming for PITP¡¢DHCP option82¡¢GPON single MAC
+-- v1.03, 2007-12-25, modified by xieliang for VLAN ctrl table 
+ 
+-- ============================================================================
+	HUAWEI-IPDSLAM-L2PPORTCONFIG-MIB DEFINITIONS ::= BEGIN
+		IMPORTS 
+			ifIndex			
+				FROM IF-MIB			
+			OBJECT-TYPE, MODULE-IDENTITY, Integer32		
+		        	FROM SNMPv2-SMI	       
+		    	huaweiUtility			
+		        	FROM HUAWEI-MIB							
+			TruthValue, RowStatus, MacAddress, TEXTUAL-CONVENTION, DisplayString			
+				FROM SNMPv2-TC;
+
+
+
+
+
+hwIpDslamL2pPortConfig MODULE-IDENTITY
+	LAST-UPDATED "200606071738Z"
+	ORGANIZATION "Fix-Net Dept, Huawei Technologies Co.,Ltd."
+	CONTACT-INFO 
+		"Floor 5 ,Block 4, R&D Building,
+		Huawei Longgang Production Base,
+		Shenzhen,   P.R.C.
+		http://www.huawei.com
+		Zip:518057
+		"
+	DESCRIPTION 
+		"huawei IPDSLAM layer two protocol port configuration MIB.
+		"		
+    ::= { huaweiUtility 109}
+      				
+
+	    hwIpDslamL2pPortConfigTable OBJECT-TYPE
+	      		SYNTAX      SEQUENCE OF HwIpDslamL2pPortConfigEntry
+	      		MAX-ACCESS  not-accessible
+	      		STATUS      current
+	      		DESCRIPTION
+	          		"Layer two protocol configuration table based on physics port.
+	           		 "
+	      		::= { hwIpDslamL2pPortConfig 1 }		      		
+		
+		hwIpDslamL2pPortConfigEntry OBJECT-TYPE
+			SYNTAX HwIpDslamL2pPortConfigEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Layer two protocol configuration table entry based on physics port.
+				"
+			INDEX { hwIpDslamL2pPortConfigIfIndex, hwIpDslamL2pPortConfigSecondIndex, hwIpDslamL2pPortConfigThirdIndex, hwIpDslamL2pPortConfigObject }
+			::= { hwIpDslamL2pPortConfigTable 1 }
+			
+		
+		HwIpDslamL2pPortConfigEntry ::=
+			SEQUENCE { 
+				hwIpDslamL2pPortConfigIfIndex
+					INTEGER,
+				hwIpDslamL2pPortConfigSecondIndex
+					INTEGER,
+				hwIpDslamL2pPortConfigThirdIndex
+					INTEGER,									
+				hwIpDslamL2pPortConfigObject
+					INTEGER,
+				hwIpDslamL2pPortConfigType
+					INTEGER,
+				hwIpDslamL2pPortConfigValue
+					DisplayString,
+				hwIpDslamL2pPortConfigRowStatus
+					RowStatus									
+			 }
+
+		        hwIpDslamL2pPortConfigIfIndex OBJECT-TYPE
+				SYNTAX INTEGER
+				MAX-ACCESS not-accessible
+				STATUS current
+				DESCRIPTION
+					"IfIndex, main index parameter.
+					 "				 
+				::= { hwIpDslamL2pPortConfigEntry 1 }
+
+			hwIpDslamL2pPortConfigSecondIndex OBJECT-TYPE
+				SYNTAX INTEGER
+				MAX-ACCESS not-accessible
+				STATUS current
+				DESCRIPTION
+					"Second index parameter.
+					 "
+				::= { hwIpDslamL2pPortConfigEntry 2 }
+
+			hwIpDslamL2pPortConfigThirdIndex OBJECT-TYPE
+				SYNTAX INTEGER
+				MAX-ACCESS not-accessible
+				STATUS current
+				DESCRIPTION
+					"Third index parameter.
+					 "					 
+				::= { hwIpDslamL2pPortConfigEntry 3 }
+
+
+			hwIpDslamL2pPortConfigObject OBJECT-TYPE
+				SYNTAX INTEGER
+					{	
+						pppoe-session-count(1),
+						pitp(2),
+						dhcp-option82(3)
+					}								
+				MAX-ACCESS not-accessible
+				STATUS current
+				DESCRIPTION
+					"Config object.
+					 "
+				::= { hwIpDslamL2pPortConfigEntry 4 }
+
+
+			hwIpDslamL2pPortConfigType OBJECT-TYPE
+				SYNTAX INTEGER
+				{
+					integer(1),
+					string(2)
+				}
+				MAX-ACCESS read-write
+				STATUS current
+				DESCRIPTION
+					"The type of value that config object has.
+					 "
+				::= { hwIpDslamL2pPortConfigEntry 5 }
+											
+
+			hwIpDslamL2pPortConfigValue OBJECT-TYPE
+				SYNTAX DisplayString (SIZE (0..255))
+				MAX-ACCESS read-write
+				STATUS current
+				DESCRIPTION
+					"The value that config object has.
+					 "
+				::= { hwIpDslamL2pPortConfigEntry 6 }
+
+
+			hwIpDslamL2pPortConfigRowStatus OBJECT-TYPE
+	            SYNTAX       RowStatus
+				MAX-ACCESS read-create
+				STATUS current
+				DESCRIPTION
+					"
+					Row status.
+					Add or delete a table item.
+					"
+	            DEFVAL { active }					
+				::= { hwIpDslamL2pPortConfigEntry 7 }
+												
+
+	    hwIpDslamL2pSrvFlowConfigTable OBJECT-TYPE
+	      		SYNTAX      SEQUENCE OF HwIpDslamL2pSrvFlowConfigEntry
+	      		MAX-ACCESS  not-accessible
+	      		STATUS      current
+	      		DESCRIPTION
+	          		"Layer two protocol configuration table based on service-port.
+	           		 "
+	      		::= { hwIpDslamL2pPortConfig 2 }		      		
+		
+		hwIpDslamL2pSrvFlowConfigEntry OBJECT-TYPE
+			SYNTAX HwIpDslamL2pSrvFlowConfigEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Layer two protocol configuration table entry based on service-port.
+				"
+			INDEX { hwIpDslamL2pSrvFlowConfigIndex, hwIpDslamL2pSrvFlowConfigObject }
+			::= { hwIpDslamL2pSrvFlowConfigTable 1 }
+			
+		
+		HwIpDslamL2pSrvFlowConfigEntry ::=
+			SEQUENCE { 
+				hwIpDslamL2pSrvFlowConfigIndex
+					INTEGER,								
+				hwIpDslamL2pSrvFlowConfigObject
+					INTEGER,
+				hwIpDslamL2pSrvFlowConfigType
+					INTEGER,
+				hwIpDslamL2pSrvFlowConfigValue
+					DisplayString,
+				hwIpDslamL2pSrvFlowConfigRowStatus
+					RowStatus										
+			 }
+
+		        hwIpDslamL2pSrvFlowConfigIndex OBJECT-TYPE
+				SYNTAX INTEGER
+				MAX-ACCESS not-accessible
+				STATUS current
+				DESCRIPTION
+					"FlowId, index of service-port.
+					 "
+				::= { hwIpDslamL2pSrvFlowConfigEntry 1 }
+
+
+			hwIpDslamL2pSrvFlowConfigObject OBJECT-TYPE
+				SYNTAX INTEGER
+					{	
+						macspoofing-mac-count(1),
+						max-session-count(2),
+						pitp(3),
+						dhcp-option82(4),
+						pitp-forbid-forwarding(5),
+						option82-forbid-forwarding(6)
+					}				
+				MAX-ACCESS not-accessible
+				STATUS current
+				DESCRIPTION
+					"Config object.
+					 "
+				::= { hwIpDslamL2pSrvFlowConfigEntry 2 }
+
+
+			hwIpDslamL2pSrvFlowConfigType OBJECT-TYPE
+				SYNTAX INTEGER
+				{
+					integer(1),
+					string(2)
+				}								
+				MAX-ACCESS read-write
+				STATUS current
+				DESCRIPTION
+					"The type of value that config object has.
+					 "
+				::= { hwIpDslamL2pSrvFlowConfigEntry 3 }
+											
+
+			hwIpDslamL2pSrvFlowConfigValue OBJECT-TYPE
+				SYNTAX DisplayString (SIZE (0..255))
+				MAX-ACCESS read-write
+				STATUS current
+				DESCRIPTION
+					"The value that config object has.
+					 "
+				::= { hwIpDslamL2pSrvFlowConfigEntry 4 }
+
+			hwIpDslamL2pSrvFlowConfigRowStatus OBJECT-TYPE
+	            SYNTAX       RowStatus
+				MAX-ACCESS read-create
+				STATUS current
+				DESCRIPTION
+					"
+					Row status.
+					Add or delete a table item.
+					"
+	            DEFVAL { active }					
+				::= { hwIpDslamL2pSrvFlowConfigEntry 5 }				
+	
+
+	    hwIpDslamL2pVlanCtrlTable OBJECT-TYPE
+	      		SYNTAX      SEQUENCE OF HwIpDslamL2pVlanCtrlEntry
+	      		MAX-ACCESS  not-accessible
+	      		STATUS      current
+	      		DESCRIPTION
+	          		"Layer two protocol configuration table based on VLAN.
+	           		 "
+	      		::= { hwIpDslamL2pPortConfig 3 }		      		
+		
+		hwIpDslamL2pVlanCtrlEntry OBJECT-TYPE
+			SYNTAX HwIpDslamL2pVlanCtrlEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Layer two protocol configuration table entry based on VLAN.
+				"
+			INDEX { hwIpDslamL2pVlanCtrlIndex }
+			::= { hwIpDslamL2pVlanCtrlTable 1 }
+			
+		
+		HwIpDslamL2pVlanCtrlEntry ::=
+			SEQUENCE { 
+				hwIpDslamL2pVlanCtrlIndex
+					INTEGER,								
+				hwIpDslamL2pVlanCtrlMacSpoofing
+					INTEGER,
+				hwIpDslamL2pVlanCtrlPppoeMacMode
+					INTEGER,	
+				hwIpDslamL2pVlanCtrlDhcpBroadcastControl
+					INTEGER								
+			 }
+
+		        hwIpDslamL2pVlanCtrlIndex OBJECT-TYPE
+				SYNTAX INTEGER (1..4095)
+				MAX-ACCESS not-accessible
+				STATUS current
+				DESCRIPTION
+					"VLAN ID.
+					 "
+				::= { hwIpDslamL2pVlanCtrlEntry 1 }
+
+
+			hwIpDslamL2pVlanCtrlMacSpoofing OBJECT-TYPE
+				SYNTAX INTEGER
+					{	
+						disable(1),
+						enable(2)
+					}				
+				MAX-ACCESS read-write
+				STATUS current
+				DESCRIPTION
+					"The status of anti-macspoofing switch.
+					 "
+				::= { hwIpDslamL2pVlanCtrlEntry 2 }
+
+
+			hwIpDslamL2pVlanCtrlPppoeMacMode OBJECT-TYPE
+				SYNTAX INTEGER
+					{	
+						multi-mac(1),
+						single-mac(2)
+					}										
+				MAX-ACCESS read-write
+				STATUS current
+				DESCRIPTION
+					"The MAC mode of PPPoE.
+					 "
+				::= { hwIpDslamL2pVlanCtrlEntry 3 }
+				
+			hwIpDslamL2pVlanCtrlDhcpBroadcastControl OBJECT-TYPE
+				SYNTAX INTEGER
+					{	
+						disable(1),
+						enable(2)
+					}				
+				MAX-ACCESS read-write
+				STATUS current
+				DESCRIPTION
+					"The status of DhcpBroadcastControl switch.
+					 "
+				::= { hwIpDslamL2pVlanCtrlEntry 4 }
+
+
+	END

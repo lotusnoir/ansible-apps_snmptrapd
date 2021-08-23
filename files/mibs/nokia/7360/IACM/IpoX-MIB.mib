@@ -1,0 +1,224 @@
+IpoX-MIB DEFINITIONS ::= BEGIN
+
+-- =============================================================================
+-- This specification is published by Alcatel under Non-Disclosure
+-- Agreement(s) (NDA) with specific parties and has to be considered as
+-- Confidential Information as defined in such NDA.
+-- Alcatel reserves the right to revise this document for any reason,
+-- including but not limited to conformity with standards promulgated by
+-- various agencies, utilisation of advances in the state of the technical
+-- areas, or the reflection of changes in the design of any equipment,
+-- techniques, or procedures described or referred to herein.
+-- The product specifications and other technical or performance information
+-- contained herein are subject to change without notice.
+-- Updates of this document will be issued under the above NDA's.
+-- Alcatel makes no representation or warranty, expressed or implied, with
+-- respect to the sufficiency, accuracy, or utility of any information or
+-- opinion contained herein. Alcatel expressly advises that any use of for 
+-- any purpose or reliance upon this technical reference is at the risk of
+-- the user and that Alcatel shall not be liable for any damage or injury
+-- incurred by any person arising out of the sufficiency, accuracy, or
+-- utility of any information or opinion contained herein.
+-- This document is not to be construed as a suggestion to any manufacturer
+-- to modify or change any of its products, nor does this document represent
+-- any commitment by Alcatel to sell or purchase any product.
+-- Nothing contained herein shall be construed as conferring by implication,
+-- estoppel, or otherwise any license or right under any patent, whether or
+-- not the use of any information herein necessarily employs an invention of
+-- any existing or later issued patent.
+-- Alcatel reserves the right not to offer any or all of these products and
+-- to withdraw any or all of them at any future time.
+-- Copyright (C) 2006, Alcatel. All Rights Reserve
+-- ==============================================================================
+-- MODULE-IDENTITY
+-- LAST-UPDATED   “200604030000Z”
+-- ORGANIZATION   “Alcatel”
+-- CONTACT-INFO
+--                    Email:  asam.mibsupport@alcatel »be"
+--
+-- DESCRIPTION   Alcatel proprietary IP media-specific interface MIB.
+--
+--  REVISION 200604030000Z
+--  DESCRIPTION
+--        "Version:  3FE22920AAAA_E3.0.0.0
+--         Editor:   Lucien Marcotte
+--         Changes:  Updates for ISAM R3.0: changed ipoxIfTable size to 4672"
+--
+--  REVISION "200601231200Z" 
+--  DESCRIPTION 
+--       "Version: 3FE22920EAAA_V2.4.0.0.0 
+--        Editor: Bart Bogaert 
+--        Changes: Implemented BDFhw70643: strict syntax checks (smilint)" 
+--
+--  REVISION 200408270000Z
+--  DESCRIPTION
+--        "Version:  3FE22920AAAA_E2.1.0.0
+--         Editor:   Yin Qin
+--         Changes:  Updates for iSAM R2.1"
+--
+-- REVISION <UTCtime>
+-- DESCRIPTION
+--       "Version: 3FE22920AAAA_E2.0.0.0
+--         Editor:   Patrick Mensch
+--         Changes:  Initial Version"
+--
+--
+-- =============================================================================
+
+
+   IMPORTS  OBJECT-TYPE                    FROM RFC-1212
+            AutonomousType                 FROM SNMPv2-TC
+            TruthValue                     FROM SNMPv2-TC
+            TestAndIncr                    FROM SNMPv2-TC
+            RowStatus                      FROM SNMPv2-TC
+            TimeTicks                      FROM RFC1155-SMI
+            Counter                        FROM RFC1155-SMI
+            mib-2                          FROM RFC1213-MIB
+            IANAifType                     FROM IANAifType-MIB
+            ifIndex, InterfaceIndex        FROM ITF-MIB
+            InterfaceIndexOrZero           FROM ITF-MIB
+            asam                           FROM SYSTEM-MIB;
+
+-- asam OBJECT IDENTIFIER ::= { iso(1) identified-organization(3) dod(6)
+--                              internet(1) private(4) enterprises(1)
+--                              alcatel(637) asd(61) asam(1)}
+
+-- ==========================================================================
+-- ==   O B J E C T     D E F I N I T I O N S                              == 
+-- ==========================================================================
+
+asamIPoX      OBJECT IDENTIFIER ::= { asam 46 }
+
+-- ==========================================================================
+-- ==   I P o X     I N T E R F A C E     T A B L E                        == 
+-- ==========================================================================
+
+   ipoxIfTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF IpoxIfEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "The Alcatel proprietary IP-over-Ethernet interface table.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             TABLE SIZE:	4672 = 1024 (network) + 19*48*4	
+		 "
+
+      ::= {asamIPoX 1}
+
+
+   ipoxIfEntry  OBJECT-TYPE
+      SYNTAX IpoxIfEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry containing information applicable to a
+          particular IPoE interface.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NA
+             RANGE:	NA
+             DEFVALUE :	NA
+             UNITS:	NA
+		 "
+
+      INDEX { ipoxIfLowerLayerIfIndex }
+
+      ::= {ipoxIfTable 1}
+
+
+   IpoxIfEntry ::= SEQUENCE
+   {
+      ipoxIfLowerLayerIfIndex        InterfaceIndex,
+      ipoxIfRowStatus                RowStatus,
+      ipoxIfThisLayerIfIndex         InterfaceIndexOrZero
+   }
+
+
+   ipoxIfLowerLayerIfIndex  OBJECT-TYPE
+      SYNTAX InterfaceIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The interface index of the lower layer i.e.
+		o  either a bridge port
+		o  either an ATM VC with bridged encapsulatin
+		o  either a terminated VLAN on one of the above
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	NO / INDEX
+             RANGE:	NA
+             DEFVALUE :	NA
+             UNITS:	NA
+         "
+      ::= {ipoxIfEntry 1}
+
+
+   ipoxIfRowStatus  OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The status of this conceptual row.
+          The RowStatus TC requires that this DESCRIPTION clause
+          states under which circumstances other objects in this row
+          can be modified.  The value of this object has no effect on
+          whether other objects in this conceptual row can be
+          modified.
+          A conceptual row can always be made active.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	NO
+             INSRVMOD: 	NA
+             RANGE:	1 | 4 | 6	-- active (1), createAndGo (4), destroy (6)
+             DEFVALUE :	NA
+             UNITS:	NA
+         "
+      ::= {ipoxIfEntry 2}
+
+
+   ipoxIfThisLayerIfIndex  OBJECT-TYPE
+      SYNTAX InterfaceIndexOrZero
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The interface index of this layer.  This value may
+          be assigned by the system or specified by the manager
+		o  the ifIndex is *NOT* specified or set to zero
+                   during creation of a row in this table
+
+                   The system will automatically allocate an ifIndex
+                   for this row and create a corresponding entry in
+                   the ifTable
+
+		o  the ifIndex is specified with a non-zero value
+                   during creation of a row in this table
+
+                   The system will check whether 
+ 			- the lower layer ifIndex refers to a terminated
+                          VLAN
+		  	- the this layer ifIndex exists and also refers
+                          to a terminated VLAN.
+                   If it does, this means that this terminated VLAN
+                   should be added to the bundle of terminated VLANs,
+                   referred to by this layer ifIndex.
+
+          ALCATEL NOTE:
+             SUPPORT:  	YES
+             PERSIST:  	YES
+             INSRVMOD: 	YES
+             RANGE	NA
+             DEFVALUE :	NA
+             UNITS:	NA
+         "
+      ::= {ipoxIfEntry 3}
+
+END
+

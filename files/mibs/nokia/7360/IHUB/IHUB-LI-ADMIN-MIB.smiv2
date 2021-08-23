@@ -1,0 +1,260 @@
+-- IHUB LI ADMIN MIB
+--------------------------------------------------------------------------- 
+-- This specification is published by Alcatel-Lucent under Non-Disclosure 
+-- Agreement(s) (NDA) with specific parties and has to be considered as 
+-- Confidential Information as defined in such NDA. 
+-- Alcatel-Lucent reserves the right to revise this document for any reason, 
+-- including but not limited to conformity with standards promulgated by 
+-- various agencies, utilisation of advances in the state of the technical 
+-- areas, or the reflection of changes in the design of any equipment, 
+-- techniques, or procedures described or referred to herein. 
+-- The product specifications and other technical or performance information 
+-- contained herein are subject to change without notice. 
+-- Updates of this document will be issued under the above NDA's. 
+-- Alcatel-Lucent makes no representation or warranty, expressed or implied, 
+-- with respect to the sufficiency, accuracy, or utility of any information 
+-- or opinion contained herein. Alcatel-Lucent expressly advises that any use
+-- of for any purpose or reliance upon this technical reference is at the 
+-- risk of the user and that Alcatel-Lucent shall not be liable for any 
+-- damage or injury incurred by any person arising out of the sufficiency, 
+-- accuracy, or utility of any information or opinion contained herein. 
+-- This document is not to be construed as a suggestion to any manufacturer 
+-- to modify or change any of its products, nor does this document represent 
+-- any commitment by Alcatel-Lucent to sell or purchase any product. 
+-- Nothing contained herein shall be construed as conferring by implication, 
+-- estoppel, or otherwise any license or right under any patent, whether or 
+-- not the use of any information herein necessarily employs an invention of 
+-- any existing or later issued patent. 
+-- Alcatel-Lucent reserves the right not to offer any or all of these products 
+-- and to withdraw any or all of them at any future time. 
+-- Copyright (C) 2009, Alcatel-Lucent. All Rights Reserved. 
+---------------------------------------------------------------------------
+
+
+IHUB-LI-ADMIN-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+           MODULE-IDENTITY,
+           OBJECT-TYPE,  
+           enterprises,
+           Unsigned32           
+                   FROM SNMPv2-SMI
+	
+
+	   OBJECT-GROUP,
+	   MODULE-COMPLIANCE
+	   	   FROM SNMPv2-CONF
+	   	   
+           TruthValue
+                   FROM SNMPv2-TC;
+
+ihubLiAdminMIB   
+        MODULE-IDENTITY
+        LAST-UPDATED    "201002200000Z"
+        ORGANIZATION    "Alcatel"
+        CONTACT-INFO
+            "Tom Batsele
+             Email:  asam.mibsupport@alcatel-lucent.com
+            " 
+        DESCRIPTION
+            "This document is the SNMP MIB module to manage and provision
+             Lawfull intercept system settings on Alcatel-Lucent IHUB for
+             the 7302 ISAM, 7330 ISAM FTTN, and 7342 ISAM FTTU systems.
+             It contains system configuration settings which are possible different per country/customer
+            "
+
+--
+--  Revision History
+--
+
+
+        REVISION        "201002200000Z"
+        DESCRIPTION     "Rev 0.1                    20 Feb 2010 00:00
+                         Initial version of the IHUB-LI-ADMIN-MIB."
+
+
+::= { enterprises alcatel(637) asd(61) asam(1) 92 }  
+
+
+
+-- ----------------------------
+-- Textual Conventions
+-- -------------------------
+    
+                 
+
+
+-- ----------------------------
+-- MIB Objects begin here
+-- ----------------------------
+
+
+ihubLiSessionAccess OBJECT-TYPE
+     SYNTAX      INTEGER {
+                         enabled (0),
+                         disabled (1)
+                }
+     MAX-ACCESS read-write
+     STATUS     current
+     DESCRIPTION
+         "
+          Via this parameter an administrator can prevent that IHUB-LI-MIB is being accessed
+          Via this parameter an administrator can destroy all data present in IHUB-LI-MIB
+          
+          note: can only be set to disabled when ihubLiSessionIntercept is set to disabled.
+          Note: status=enabled should only be set when operator has a Lawful intercept licence.
+          
+          if status='enabled':
+             -data items can be created in the IHUB-LI-MIB
+             -session will age out if not refreshed
+           
+          if status='disabled':
+             - all data in the IHUB-LI-MIB are destroyed ( will have default values when access is again 
+                enabled)
+             - when data is stored non volatile, its removed ( i.e file deleted)
+             - get/set request(s) in IHUB-LI-MIB are rejected with genErr
+         "
+     DEFVAL {  disabled }
+     ::= { ihubLiAdminMIB 1 }
+
+ihubLiSessionIntercept OBJECT-TYPE
+     SYNTAX      INTEGER {
+                         enabled (0),
+                         disabled (1)
+                }
+     MAX-ACCESS read-write
+     STATUS     current
+     DESCRIPTION
+         "
+         Via this parameter an administrator can stop the interception of traffic.
+         Data in IHUB-LI-MIB is not deleted, but sending of intercepted traffic
+         to the mediation device stops. 
+         
+         note: can only be set to enabled when ihubLiReservedPort1, ihubLiReservedPort2
+               have valid values ( e.g when ports are set to unused and there are no unused ports ).
+         
+         If status='enabled':
+             -User traffic will be sent to the mediation device(s)
+              
+         If status='disabled':
+             -User traffic will NOT be sent to the mediation device(s)
+         "
+     DEFVAL { disabled }
+     ::= { ihubLiAdminMIB 2 }
+     
+ihubLiVolatile OBJECT-TYPE
+     SYNTAX     TruthValue
+     MAX-ACCESS read-write
+     STATUS     current
+     DESCRIPTION
+         "
+          Via this parameter an adminstrator decides whether the data in IHUB-LI-MIB
+          is stored in memory or stored on disk.
+          
+          note: when set to false an explicit save command is available in IHUB-LI-MIB
+                intercept data is lost when doing SW upgrades or restore operations. 
+          
+          if 'true':
+             -Config with one NT: intercept data lost at reset  
+             -Redundant cofig with two NT's: intecept data lost when both NT reset
+             
+          if 'false':
+             -intercept data is kept after a system reset
+          
+         "
+     DEFVAL { false }
+     ::= { ihubLiAdminMIB  3 }
+
+
+ihubLiReservedPort1 		OBJECT-TYPE
+	SYNTAX     Unsigned32
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+         "
+          Ethernet ports reserved for lawfull intercept, needed to add LIID to intercepted data
+         
+          note: can only be modified when ihubLiSessionIntercept is set to disabled.
+          
+          The port can be set to:
+           - unused port (0xFFFFFFFF): 
+                  the system selects a port that is not externally accessible. 
+		  this is the case for extended configuration and in other cases it depends on the planned NTIO type
+		  
+           - a specific NTIO port: in case the system fails in selecting an unused port the operator has to explicitly specify
+			           the NTIO port to be used
+			     
+	     32 30 | 29 26 | 25 22 | 21 16 | 15  1 |
+	     +-----+-------+-------+-------+-------+
+	     |000  | 0001  | 0001  | port  |  zero |
+             +-----+-------+-------+-------+-------+
+         
+          "
+         DEFVAL {  'FFFFFFFF'H  }
+         ::= { ihubLiAdminMIB  4 }  
+
+
+ihubLiReservedPort2 		OBJECT-TYPE
+     SYNTAX     Unsigned32 
+     MAX-ACCESS read-write
+     STATUS     current
+     DESCRIPTION
+         "
+          Ethernet ports reserved for lawfull intercept, needed to add GRE header to intercepted data
+         
+          note: can only be modified when ihubLiSessionIntercept is set to disabled.
+    
+          The port can be set to:
+           - unused port (0xFFFFFFFF): 
+                  the system selects a port that is not externally accessible. 
+		  this is the case for extended configuration and in other cases it depends on the planned NTIO type
+		  
+           - a specific NTIO port: in case the system fails in selecting an unused port the operator has to explicitly specify
+			           the NTIO port to be used
+			     
+	     32 30 | 29 26 | 25 22 | 21 16 | 15  1 |
+	     +-----+-------+-------+-------+-------+
+	     |000  | 0001  | 0001  | port  |  zero |
+             +-----+-------+-------+-------+-------+
+          The ports can only be modified when ihubLiSessionInterceptState is set to disabled.
+         "
+     DEFVAL { 'FFFFFFFF'H }
+     ::= { ihubLiAdminMIB  5 }  
+
+---------------------------------------------------------------------------------------------------
+-- MIB Conformance Information
+---------------------------------------------------------------------------------------------------
+
+ihubLiAdminMIBConformance      OBJECT IDENTIFIER ::= { ihubLiAdminMIB 6 }
+
+
+
+
+ihubLiAdminMIBCompliances OBJECT IDENTIFIER ::= { ihubLiAdminMIBConformance 1 }   
+ihubLiAdminMIBGroups      OBJECT IDENTIFIER ::= { ihubLiAdminMIBConformance 2 }
+
+ihubLiAdminMIBV1v0Compliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+       "The core compliance statement all LI implementations."
+    MODULE -- Compliance to the LI Admin MIB module
+    MANDATORY-GROUPS  {
+        ihubLiAdminGroup
+    }
+    ::= { ihubLiAdminMIBCompliances 1 }
+    
+ihubLiAdminGroup OBJECT-GROUP
+    OBJECTS   {  
+        ihubLiSessionAccess,
+        ihubLiSessionIntercept,
+        ihubLiVolatile,
+        ihubLiReservedPort1,
+        ihubLiReservedPort2                          	
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI Admin group objects providing Admin Settings."
+    ::= { ihubLiAdminMIBGroups 1 }    
+         
+END

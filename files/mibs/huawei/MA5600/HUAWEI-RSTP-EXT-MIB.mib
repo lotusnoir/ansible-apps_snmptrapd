@@ -1,0 +1,362 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V3.00
+-- History:
+-- liu chenglong 2003-04-28 Added IPR Decriptions and updated all MIB version to V3.00
+-- ============================================================================
+	HUAWEI-RSTP-EXT-MIB DEFINITIONS ::= BEGIN
+		IMPORTS 
+			dot1dStpPortEntry			
+				FROM BRIDGE-MIB			
+			huaweiMgmt			
+				FROM HUAWEI-MIB			
+			Counter32, OBJECT-TYPE, MODULE-IDENTITY			
+				FROM SNMPv2-SMI			
+			MacAddress, TruthValue, TEXTUAL-CONVENTION			
+				FROM SNMPv2-TC;
+	
+	
+		hwRstpExt MODULE-IDENTITY
+			LAST-UPDATED "200304280900Z"
+			ORGANIZATION "Fix-Net Dept, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floor 5 ,Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,  P.R.C.
+				http://www.huawei.com
+				Zip:518057
+				"
+			DESCRIPTION 
+				"
+				huawei rstp mib.
+				"
+			REVISION "200211280900Z"
+			DESCRIPTION
+				"
+				V2.00	
+				reunification version based on the  Fix-Net MIBs baseline by the MIB Standard community.
+				"
+			::= { huaweiMgmt 21 }
+		
+
+	
+		EnabledStatus ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION
+				"A simple status value for the object."
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			
+	
+		hwRstpMibObject OBJECT IDENTIFIER ::= { hwRstpExt 1 }
+		
+		hwdot1dStpAdminStatus OBJECT-TYPE
+			SYNTAX EnabledStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Enabling/Disabling Spanning Tree of the Switch
+				  enabled:1, disabled:2
+				"
+			DEFVAL { 2 }
+			::= { hwRstpMibObject 1 }
+		
+		hwdot1dStpForceVersion OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				stp(0),
+				rstp(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Configuring RSTP Operating Mode,
+				RSTP is compatible with STP. If a bridge running STP is in 
+				this switched network, this can be used to set RSTP to work 
+				in STP compatible mode or RSTP compatible mode.
+				"
+			DEFVAL { 2 }
+			::= { hwRstpMibObject 2 }
+		
+		hwdot1dStpDiameter OBJECT-TYPE
+			SYNTAX INTEGER (1..7)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Configuring Diameter of the Switched Network,
+				Switched network is a loop-free tree structure in which any	          				
+				two PCs are connected by a series of bridges. 
+				Network diameter refers to the path with the most bridges. 
+				It is denoted by the number of bridges on the path. 
+				
+				"
+			::= { hwRstpMibObject 3 }
+		
+		hwdot1dStpRootBridgeAddress OBJECT-TYPE
+			SYNTAX MacAddress
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"MAC Address of the root bridge
+				 "
+			::= { hwRstpMibObject 4 }
+		
+		hwdot1dStpPortXTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDot1dStpPortXEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"rstp port expand table 
+				"
+			::= { hwRstpMibObject 5 }
+		
+		hwdot1dStpPortXEntry OBJECT-TYPE
+			SYNTAX HwDot1dStpPortXEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"rstp port expand table entry
+				"
+			AUGMENTS { dot1dStpPortEntry }
+			::= { hwdot1dStpPortXTable 1 }
+		
+		HwDot1dStpPortXEntry ::=
+			SEQUENCE { 
+				hwdot1dStpPortAdminStatus
+					EnabledStatus,
+				hwdot1dStpPortEdgeport
+					TruthValue,
+				hwdot1dStpPortPointToPoint
+					INTEGER,
+				hwdot1dStpMcheck
+					TruthValue,
+				hwdot1dStpTransLimit
+					INTEGER,
+				hwdot1dSetStpDefaultPortCost
+					INTEGER
+			 }
+
+		hwdot1dStpPortAdminStatus OBJECT-TYPE
+			SYNTAX EnabledStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Enabling/Disabling Spanning Tree on the Port
+				The spanning tree can be disabled on specified Ethernet port 
+				to forbid these ports participating in spanning tree calculation.
+				 "
+			DEFVAL { 1 }
+			::= { hwdot1dStpPortXEntry 1 }
+		
+		hwdot1dStpPortEdgeport OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Configuring Specified Port to Be EdgePort£¬
+				If the current Ethernet port is not connected with any 
+				Ethernet port of other bridges, this port should configured as 
+				EdgePort to enable it to enter forwarding state directly without 
+				the unnecessary transition. 
+				If the specified port that is connected	with the port of other bridges, 
+				RSTP will automatically detect and reconfigure it as non-EdgePort
+				
+				"
+			DEFVAL { 2 }
+			::= { hwdot1dStpPortXEntry 2 }
+		
+		hwdot1dStpPortPointToPoint OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				forceTrue(1),
+				forceFalse(2),
+				auto(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Configuring the Port to Connect Point-to-Point Link£¬
+				The two ports connected via the Point-to-Point link can 
+				enter the forwarding state rapidly by transmitting synchronous packets,
+				so that unnecessary forwarding delay can be avoided. 
+				If the configuration mode for this parameter is set to auto, 
+				RSTP can automatically detect if the current Ethernet port is 
+				connected with Point-to-Point link.
+				
+				"
+			DEFVAL { 3 }
+			::= { hwdot1dStpPortXEntry 3 }
+		
+		hwdot1dStpMcheck OBJECT-TYPE
+			SYNTAX TruthValue
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Configuring mCheck of Specified Port£¬
+				By configuring mCheck, the user can check if there is the bridge 
+				running STP in the network segment connected with the active Ethernet port. 
+				If there is, the port will transfer to STP compatible mode. 
+				In a stable network, though the bridge running STP has been removed, 
+				this port will still work in STP compatible mode. 
+				In this case, the port can be forced to RSTP mode by setting the variable mCheck 
+				
+				"
+			::= { hwdot1dStpPortXEntry 4 }
+		
+		hwdot1dStpTransLimit OBJECT-TYPE
+			SYNTAX INTEGER (1..255)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Configuring Maximum Transmission Speed of Specified Port,
+				The maximum transmission speed of Ethernet port is related 
+				to its physical state and network structure. 
+				The user can configure it according to the actual network situation.  
+				
+				"
+			::= { hwdot1dStpPortXEntry 5 }
+		
+		hwdot1dSetStpDefaultPortCost OBJECT-TYPE
+			SYNTAX INTEGER { enable(1) }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"come back to default path cost of specified port ,
+				The path cost of Ethernet port is related to its link speed. 
+				The higher the link speed is, the lower the path cost should be configured. 
+				When this parameter is set to the default value, 
+				RSTP can automatically detect the link speed on the current Ethernet port 
+				and transform it to corresponding path cost.
+				
+				"
+			::= { hwdot1dStpPortXEntry 6 }
+		
+		hwdot1dStpPortStatTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwDot1dStpPortStatEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"rstp port statistic table 
+				"
+			::= { hwRstpMibObject 6 }
+		
+		hwdot1dStpPortStatEntry OBJECT-TYPE
+			SYNTAX HwDot1dStpPortStatEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"rstp port statistic table  entry
+				"
+			AUGMENTS { dot1dStpPortEntry }
+			::= { hwdot1dStpPortStatTable 1 }
+		
+		HwDot1dStpPortStatEntry ::=
+			SEQUENCE { 
+				hwdot1dStpRXStpBPDU
+					Counter32,
+				hwdot1dStpTXStpBPDU
+					Counter32,
+				hwdot1dStpRXTCNBPDU
+					Counter32,
+				hwdot1dStpTXTCNBPDU
+					Counter32,
+				hwdot1dStpRXRSTPBPDU
+					Counter32,
+				hwdot1dStpTXRSTPBPDU
+					Counter32,
+				hwdot1dStpClearStatistics
+					INTEGER
+			 }
+
+		hwdot1dStpRXStpBPDU OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Number of STP BPDU Received
+				"
+			::= { hwdot1dStpPortStatEntry 1 }
+		
+		hwdot1dStpTXStpBPDU OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Number of STP BPDU Transmitted
+				"
+			::= { hwdot1dStpPortStatEntry 2 }
+		
+		hwdot1dStpRXTCNBPDU OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Number of TCN BPDU Received "
+			::= { hwdot1dStpPortStatEntry 3 }
+		
+		hwdot1dStpTXTCNBPDU OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" Number of TCN BPDU Transmitted
+				"
+			::= { hwdot1dStpPortStatEntry 4 }
+		
+		hwdot1dStpRXRSTPBPDU OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Number of RSTP BPDU Received
+				 "
+			::= { hwdot1dStpPortStatEntry 5 }
+		
+		hwdot1dStpTXRSTPBPDU OBJECT-TYPE
+			SYNTAX Counter32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Number of RSTP BPDU Transmitted
+				"
+			::= { hwdot1dStpPortStatEntry 6 }
+		
+		hwdot1dStpClearStatistics OBJECT-TYPE
+			SYNTAX INTEGER { clear(1) }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"To clear statistics of Rapid Spanning Tree Protocol (RSTP for short)
+				
+				"
+			::= { hwdot1dStpPortStatEntry 7 }
+			
+		hwRingCheckAdminStatus OBJECT-TYPE
+			SYNTAX EnabledStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Enabling/Disabling RSTP data ring checking function
+				
+				"
+			DEFVAL { 2 }
+			::= { hwRstpMibObject 7 }
+		
+		hwBpduTunnelAdminStatus OBJECT-TYPE
+			SYNTAX EnabledStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Enabling/Disabling BPDU tunneling function
+				"
+			DEFVAL { 2 }
+			::= { hwRstpMibObject 8 }
+	
+	END

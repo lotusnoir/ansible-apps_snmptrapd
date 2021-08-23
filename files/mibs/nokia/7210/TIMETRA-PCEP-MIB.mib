@@ -1,0 +1,810 @@
+TIMETRA-PCEP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+    Unsigned32
+                                                    FROM SNMPv2-SMI
+    MODULE-COMPLIANCE, OBJECT-GROUP,
+    NOTIFICATION-GROUP
+                                                    FROM SNMPv2-CONF
+    TEXTUAL-CONVENTION, RowStatus, TimeStamp
+                                                    FROM SNMPv2-TC
+    InetAddress, InetAddressType, InetPortNumber
+                                                    FROM INET-ADDRESS-MIB
+
+    timetraSRMIBModules, tmnxSRObjs,
+    tmnxSRNotifyPrefix, tmnxSRConfs                 FROM TIMETRA-GLOBAL-MIB
+
+    vRtrID                                          FROM TIMETRA-VRTR-MIB
+
+    TmnxAdminState, TNamedItem                      FROM TIMETRA-TC-MIB
+    ;
+
+timetraPcepMIBModule               MODULE-IDENTITY
+    LAST-UPDATED    "201501010000Z"
+    ORGANIZATION    "Nokia"
+    CONTACT-INFO
+        "Nokia 7xxx Support
+         Web: http://www.nokia.com"
+    DESCRIPTION
+    "This document is the SNMP MIB module for the Nokia SROS
+    implementation of Path Computation Element communications Protocol (PCEP).
+
+    Copyright 2003-2015 Nokia. All rights reserved.
+    Reproduction of this document is authorized on the condition that
+    the foregoing copyright notice is included.
+
+    This SNMP MIB module (Specification) embodies Nokia's
+    proprietary intellectual property. Nokia retains all title and
+    ownership in the Specification, including any revisions.
+
+    Nokia grants all interested parties a non-exclusive
+    license to use and distribute an unmodified copy of this
+    Specification in connection with management of Nokia products,
+    and without fee, provided this copyright notice and license appear
+    on all copies.
+
+    This Specification is supplied 'as is', and Nokia
+    makes no warranty, either express or implied, as to the use,
+    operation, condition, or performance of the Specification."
+
+--
+--  Revision History
+--
+   REVISION        "201501010000Z"
+   DESCRIPTION     "Rev 13.0               1 Jan 2015 00:00
+                    13.0 release of the TIMETRA-PCEP-MIB."
+
+    ::= { timetraSRMIBModules 101 }
+
+-- ----------------------------------------------------------------------------
+--  MIB structure
+-- ----------------------------------------------------------------------------
+tmnxPcepObjects             OBJECT IDENTIFIER ::= { tmnxSRObjs 101 }
+  tmnxPcepTableChangedObjects OBJECT IDENTIFIER ::= { tmnxPcepObjects 1 }
+  tmnxPcepConfigObjects       OBJECT IDENTIFIER ::= { tmnxPcepObjects 2 }
+    tmnxPcepPccConfigObjects   OBJECT IDENTIFIER ::= { tmnxPcepConfigObjects 1 }
+    tmnxPcepPceConfigObjects   OBJECT IDENTIFIER ::= { tmnxPcepConfigObjects 2 }
+
+tmnxPcepNotifyPrefix        OBJECT IDENTIFIER ::= { tmnxSRNotifyPrefix 101 }
+  tmnxPcepNotification        OBJECT IDENTIFIER ::= { tmnxPcepNotifyPrefix 0 }
+
+tmnxPcepConformance         OBJECT IDENTIFIER ::= { tmnxSRConfs 101 }
+  tmnxPcepCompliances         OBJECT IDENTIFIER ::= { tmnxPcepConformance 1 }
+  tmnxPcepGroups              OBJECT IDENTIFIER ::= { tmnxPcepConformance 2 }
+    tmnxPcepV13v0Groups        OBJECT IDENTIFIER ::= { tmnxPcepGroups 1 }
+
+-- ----------------------------------------------------------------------------
+--  Textual Conventions
+-- ----------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------
+-- PCEP Entity Table
+-- ----------------------------------------------------------------------------
+tmnxPcepEntityTableLastChanged      OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityTableLastChanged indicates the sysUpTime
+         at the time of the last modification of an entry in the
+         tmnxPcepEntityTable.
+
+         If no changes were made to the table since the last re-initialization
+         of the local network management subsystem, then this object contains
+         a zero value."
+    ::= { tmnxPcepTableChangedObjects 1 }
+
+tmnxPcepEntityTable                 OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TmnxPcepEntityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The tmnxPcepEntityTable contains information about local Path
+         Computation Element communications Protocol (PCEP) entities."
+    ::= { tmnxPcepConfigObjects 3 }
+
+tmnxPcepEntityEntry                 OBJECT-TYPE
+    SYNTAX      TmnxPcepEntityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityEntry represents a local PCEP entity."
+    INDEX { vRtrID, tmnxPcepEntityType, tmnxPcepEntityIndex }
+    ::= { tmnxPcepEntityTable 1 }
+
+TmnxPcepEntityEntry ::= SEQUENCE {
+    tmnxPcepEntityType                  INTEGER,
+    tmnxPcepEntityIndex                 Unsigned32,
+    tmnxPcepEntityRowStatus             RowStatus,
+    tmnxPcepEntityLastChanged           TimeStamp,
+    tmnxPcepEntityAdminState            TmnxAdminState,
+    tmnxPcepEntityAddrType              InetAddressType,
+    tmnxPcepEntityAddr                  InetAddress,
+    tmnxPcepEntityPort                  InetPortNumber,
+    tmnxPcepEntityKeepAliveInterval     Unsigned32,
+    tmnxPcepEntityDeadTimer             Unsigned32,
+    tmnxPcepEntityMaxUnknownMsgs        Unsigned32,
+    tmnxPcepEntityMessageRate           Unsigned32,
+    tmnxPcepEntityRequestQueueSize      Unsigned32,
+    tmnxPcepEntityCapability            BITS
+}
+
+tmnxPcepEntityType                  OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    pcc    (1),
+                    pce    (2)
+                }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityType specifies the type of this PCEP entity.
+         It takes one of the following values:
+             - pcc (1) : this entity is a Path Computation Client (PCC)
+             - pce (2) : this entity is a Path Computation Server (PCE)."
+    ::= { tmnxPcepEntityEntry 1 }
+
+tmnxPcepEntityIndex                 OBJECT-TYPE
+    SYNTAX      Unsigned32 (1)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityIndex specifies the unique identifier for
+         this PCEP entity."
+    ::= { tmnxPcepEntityEntry 2 }
+
+tmnxPcepEntityRowStatus             OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityRowStatus controls the creation and
+         deletion of rows in this entity table."
+    ::= { tmnxPcepEntityEntry 3 }
+
+tmnxPcepEntityLastChanged           OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityLastChanged indicates the sysUpTime at the
+         time of the most recent change to this entity row."
+    ::= { tmnxPcepEntityEntry 4 }
+
+tmnxPcepEntityAdminState            OBJECT-TYPE
+    SYNTAX      TmnxAdminState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityAdminState specifies the desired 
+         administrative state of this PCEP entity."
+   DEFVAL { outOfService }
+   ::= { tmnxPcepEntityEntry 5 }
+
+tmnxPcepEntityAddrType              OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityAddrType specifies the address type of this
+         PCEP entity's Internet address.
+
+         When the value of tmnxPcepEntityType is 'pcc (1)', this object acts
+         as read-only and set on this object will result in
+         'inConsistentValue' error."
+   DEFVAL { unknown }
+   ::= { tmnxPcepEntityEntry 6 }
+
+tmnxPcepEntityAddr                  OBJECT-TYPE
+    SYNTAX      InetAddress (SIZE (0|4|16))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityAddr specifies the Internet address of this
+         PCEP entity.
+         
+         When the value of tmnxPcepEntityType is 'pcc (1)', this object is
+         read-only and an SNMP set operation on this object will result in an
+         'inconsistentValue' error."
+    DEFVAL { ''H }
+    ::= { tmnxPcepEntityEntry 7 }
+
+tmnxPcepEntityPort                  OBJECT-TYPE
+    SYNTAX      InetPortNumber (1..65535)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityPort specifies port number associated with
+         this PCEP entity."
+    DEFVAL { 4189 }
+    ::= { tmnxPcepEntityEntry 8 }
+
+tmnxPcepEntityKeepAliveInterval     OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..255)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityKeepAliveInterval specifies keep alive
+         interval that this PCEP entity proposes in the initial
+         OPEN message of each session it is involved in. This is the maximum
+         time between two consecutive messages sent to a peer."
+    DEFVAL { 30 }
+    ::= { tmnxPcepEntityEntry 9 }
+
+tmnxPcepEntityDeadTimer             OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..255)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityDeadTimer specifies the dead timer
+         interval that this PCEP entity proposes in the initial OPEN message of
+         each session it is involved in. This is the time after which a peer
+         should declare a session down if it does not receive any PCEP
+         messages."
+    DEFVAL { 120 }
+    ::= { tmnxPcepEntityEntry 10 }
+
+tmnxPcepEntityMaxUnknownMsgs        OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..255)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityMaxUnknownMsgs specifies the maximum number
+         of unknown messages that any session on this PCEP entity is willing to
+         accept per minute before terminating the session."
+    DEFVAL { 10 }
+    ::= { tmnxPcepEntityEntry 11 }
+
+tmnxPcepEntityMessageRate           OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..16384)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityMessageRate specifies the maximum number of
+         messages per minute that any session on this PCEP entity can send."
+    DEFVAL { 100 }
+    ::= { tmnxPcepEntityEntry 12 }
+
+tmnxPcepEntityRequestQueueSize      OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..16384)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityRequestQueueSize specifies maximum number
+         of mesasge requests per minute that can be served by this PCEP entity."
+    DEFVAL { 500 }
+    ::= { tmnxPcepEntityEntry 13 }
+
+tmnxPcepEntityCapability            OBJECT-TYPE
+    SYNTAX      BITS {
+                    activeStateful        (0),
+                    statefulDelegate      (1),
+                    statefulUpdate        (2),
+                    statefulOptimize      (3),
+                    segmentRtPath         (4),
+                    rsvpPath              (5),
+                    opticsGmpls           (6)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepEntityCapability specifies the capabilities
+         associated with this PCEP entity."
+    DEFVAL { { activeStateful } }
+    ::= { tmnxPcepEntityEntry 14 }
+
+-- ----------------------------------------------------------------------------
+-- PCEP PCC Entity Table
+-- ----------------------------------------------------------------------------
+tmnxPcepPccEntityTblLastChgd        OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPccEntityTblLastChgd indicates the sysUpTime
+         at the time of the last modification of an entry in the
+         tmnxPcepPccEntityTable.
+
+         If no changes were made to the table since the last re-initialization
+         of the local network management subsystem, then this object contains
+         a zero value."
+    ::= { tmnxPcepTableChangedObjects 2 }
+
+tmnxPcepPccEntityTable              OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TmnxPcepPccEntityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The tmnxPcepPccEntityTable contains information about PCEP Path
+         Computation Client (PCC) entities.
+         
+         Entries, in this table, are created by the system for each row in
+         tmnxPcepEntityTable that have the index object tmnxPcepEntityType
+         value as 'pcc (1)'."
+   ::= { tmnxPcepPccConfigObjects 1 }
+
+tmnxPcepPccEntityEntry              OBJECT-TYPE
+    SYNTAX      TmnxPcepPccEntityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPccEntityEntry represents a PCEP PCC entity.
+        
+         Entries in tmnxPcepPccEntityEntry are created when entries in
+         tmnxPcepEntityEntry are created with the value of object
+         tmnxPcepEntityType set to 'pcc (1)."
+    INDEX { vRtrID, tmnxPcepEntityType, tmnxPcepEntityIndex }
+    ::= { tmnxPcepPccEntityTable 1 }
+
+TmnxPcepPccEntityEntry ::= SEQUENCE {
+    tmnxPcepPccEntityLastChanged        TimeStamp,
+    tmnxPcepPccEntityStateTimeout       Unsigned32,
+    tmnxPcepPccEntityRedelegtnTmeout    Unsigned32
+}
+
+tmnxPcepPccEntityLastChanged        OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPccEntityLastChanged indicates the sysUpTime at
+         the time of the most recent change to this PCC entity row."
+    ::= { tmnxPcepPccEntityEntry 1 }
+
+tmnxPcepPccEntityStateTimeout       OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..1800)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPccEntityStateTimeout specifies the wait time to
+         discard Path Computation Element (PCE) updates after PCE dead-timer
+         expires or PCE disconnects."
+    DEFVAL { 300 }
+    ::= { tmnxPcepPccEntityEntry 2 }
+
+tmnxPcepPccEntityRedelegtnTmeout    OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..1800)
+    UNITS       "seconds"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPccEntityRedelegtnTmeout specifies the wait time
+         to redelegate Labeled Switch Path (LSP) to another Path Computation
+         Server (PCE)."
+    DEFVAL { 180 }
+    ::= { tmnxPcepPccEntityEntry 3 }
+
+-- ----------------------------------------------------------------------------
+-- PCEP PCE Entity Table
+-- ----------------------------------------------------------------------------
+tmnxPcepPceEntityTblLastChgd        OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPceEntityTblLastChgd indicates the sysUpTime
+         at the time of the last modification of an entry in the
+         tmnxPcepPceEntityTable.
+
+         If no changes were made to the table since the last re-initialization
+         of the local network management subsystem, then this object contains
+         a zero value."
+    ::= { tmnxPcepTableChangedObjects 3 }
+
+tmnxPcepPceEntityTable              OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TmnxPcepPceEntityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The tmnxPcepPceEntityTable contains information about PCEP Path
+         Computation Element (PCE) entities.
+         
+         Entries, in this table, are created by the system for each row in
+         tmnxPcepEntityTable that have the index object tmnxPcepEntityType
+         value as 'pce (2)'."
+   ::= { tmnxPcepPceConfigObjects 1 }
+
+tmnxPcepPceEntityEntry              OBJECT-TYPE
+    SYNTAX      TmnxPcepPceEntityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPceEntityEntry represents a PCEP PCE entity.
+        
+         Entries in tmnxPcepPceEntityEntry are created when entries in
+         tmnxPcepEntityEntry are created with the value of object
+         tmnxPcepEntityType set to 'pce (2)."
+    INDEX { vRtrID, tmnxPcepEntityType, tmnxPcepEntityIndex }
+    ::= { tmnxPcepPceEntityTable 1 }
+
+TmnxPcepPceEntityEntry ::= SEQUENCE {
+    tmnxPcepPceEntityLastChanged        TimeStamp,
+    tmnxPcepPceEntityPathGroupId        Unsigned32
+}
+
+tmnxPcepPceEntityLastChanged        OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPceEntityLastChanged indicates the sysUpTime at
+         the time of the most recent change to this PCE entity row."
+    ::= { tmnxPcepPceEntityEntry 1 }
+
+tmnxPcepPceEntityPathGroupId            OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..4294967295)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPceEntityPathGroupId specifies the path group
+         identifier being referenced by Path Computation Element (PCE)."
+    DEFVAL { 0 }
+    ::= { tmnxPcepPceEntityEntry 2 }
+
+-- ----------------------------------------------------------------------------
+-- PCEP Peer Table
+-- ----------------------------------------------------------------------------
+tmnxPcepPeerTableLastChanged        OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPeerTableLastChanged indicates the sysUpTime
+         at the time of the last modification of an entry in the
+         tmnxPcepPeerTable.
+
+         If no changes were made to the table since the last re-initialization
+         of the local network management subsystem, then this object contains
+         a zero value."
+    ::= { tmnxPcepTableChangedObjects 4 }
+
+tmnxPcepPeerTable                   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TmnxPcepPeerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The tmnxPcepPeerTable contains information about peers known by the
+         PCEP entity.
+         
+         Entries in this table are created only when the value of 
+         tmnxPcepEntityType is set to 'pcc (1)'."
+    ::= { tmnxPcepConfigObjects 4 }
+
+tmnxPcepPeerEntry                  OBJECT-TYPE
+    SYNTAX      TmnxPcepPeerEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPeerEntry represents information about a single
+         peer which spans all PCEP sessions to that peer."
+    INDEX { vRtrID, tmnxPcepEntityType, tmnxPcepEntityIndex,
+            tmnxPcepPeerAddrType, tmnxPcepPeerAddr }
+    ::= { tmnxPcepPeerTable 1 }
+
+TmnxPcepPeerEntry ::= SEQUENCE {
+    tmnxPcepPeerAddrType                InetAddressType,
+    tmnxPcepPeerAddr                    InetAddress,
+    tmnxPcepPeerRowStatus               RowStatus,
+    tmnxPcepPeerLastChanged             TimeStamp,
+    tmnxPcepPeerPort                    InetPortNumber,
+    tmnxPcepPeerType                    INTEGER,
+    tmnxPcepPeerRole                    INTEGER,
+    tmnxPcepPeerAdminState              TmnxAdminState
+}
+
+tmnxPcepPeerAddrType                OBJECT-TYPE
+    SYNTAX      InetAddressType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPeerAddrType specifies the address type of the
+         peer's Internet address."
+   ::= { tmnxPcepPeerEntry 1 }
+
+tmnxPcepPeerAddr                    OBJECT-TYPE
+    SYNTAX      InetAddress (SIZE (4|16))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPeerAddr specifies the Internet address of the
+         peer."
+    ::= { tmnxPcepPeerEntry 2 }
+
+tmnxPcepPeerRowStatus              OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPeerRowStatus controls the creation and
+         deletion of rows for this peer table."
+    ::= { tmnxPcepPeerEntry 3 }
+
+tmnxPcepPeerLastChanged            OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPeerLastChanged indicates the sysUpTime at the
+         time of the most recent change to this peer row."
+    ::= { tmnxPcepPeerEntry 4 }
+
+tmnxPcepPeerPort                    OBJECT-TYPE
+    SYNTAX      InetPortNumber
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPeerPort specifies peer's port number.
+
+         Peer's port number can only be set at row creation and cannot be
+         modified."
+    DEFVAL { 4189 }
+    ::= { tmnxPcepPeerEntry 5 }
+
+tmnxPcepPeerType                    OBJECT-TYPE
+    SYNTAX      INTEGER {
+                     pcc        (1),
+                     pce        (2),
+                     pccAndPce  (3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPeerType specifies the type of peer the session
+         has been established by the local PCEP entity. It takes one of the
+         following values:
+           - pcc(1)       : this peer is a Path Computation Client (PCC).
+           - pce(2)       : this peer is a Path Computation Server (PCE).
+           - pccAndPce(3) : this peer can be both PCC and PCE
+         
+         The peer type can only be set at row creation and cannot be modified."
+    ::= { tmnxPcepPeerEntry 6 }
+
+tmnxPcepPeerRole                    OBJECT-TYPE
+    SYNTAX      INTEGER {
+                     primary       (0),
+                     backup        (1)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPeerRole specifies the role of this peer."
+    DEFVAL { primary }
+    ::= { tmnxPcepPeerEntry 7 }
+
+tmnxPcepPeerAdminState              OBJECT-TYPE
+    SYNTAX      TmnxAdminState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPeerAdminState specifies the desired 
+         administrative state of this peer."
+   DEFVAL { outOfService }
+   ::= { tmnxPcepPeerEntry 8 }
+
+-- ----------------------------------------------------------------------------
+-- PCEP Path Profile Table
+-- ----------------------------------------------------------------------------
+tmnxPcepPathProfileTblLastChnged        OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPathProfileTblLastChnged indicates the sysUpTime
+         at the time of the last modification of an entry in the
+         tmnxPcepPathProfileTable.
+
+         If no changes were made to the table since the last re-initialization
+         of the local network management subsystem, then this object contains
+         a zero value."
+    ::= { tmnxPcepTableChangedObjects 5 }
+
+tmnxPcepPathProfileTable                OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TmnxPcepPathProfileEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The tmnxPcepPathProfileTable contains path profile information
+         for this PCEP entity.
+         
+         A path profile represents a list of path parameters or policies
+         that a PCEP peer may invoke on a remote peer using a profile
+         identifier. The receiving peer interprets the identifier
+         according to a local path profile definition.
+         
+         Entries in this table are created only when the value of 
+         tmnxPcepEntityType is set to 'pce (2)'."
+    ::= { tmnxPcepConfigObjects 5 }
+
+tmnxPcepPathProfileEntry                OBJECT-TYPE
+    SYNTAX      TmnxPcepPathProfileEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPathProfileEntry represents information about
+         path profile being used by this PCEP entity."
+    INDEX { vRtrID, tmnxPcepEntityType, tmnxPcepEntityIndex,
+            tmnxPcepPathProfileName }
+    ::= { tmnxPcepPathProfileTable 1 }
+
+TmnxPcepPathProfileEntry ::= SEQUENCE {
+    tmnxPcepPathProfileName             TNamedItem,
+    tmnxPcepPathProfileRowStatus        RowStatus,
+    tmnxPcepPathProfileLastChanged      TimeStamp,
+    tmnxPcepPathProfileId               Unsigned32,
+    tmnxPcepPathProfileMetric           INTEGER
+}
+
+tmnxPcepPathProfileName                 OBJECT-TYPE
+    SYNTAX      TNamedItem
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPathProfileName specifies the path profile name."
+   ::= { tmnxPcepPathProfileEntry 1 }
+
+tmnxPcepPathProfileRowStatus            OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPathProfileRowStatus controls the creation and
+         deletion of rows for this path profile table."
+    ::= { tmnxPcepPathProfileEntry 2 }
+
+tmnxPcepPathProfileLastChanged          OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPathProfileLastChanged indicates the sysUpTime
+         at the time of the most recent change to this row."
+    ::= { tmnxPcepPathProfileEntry 3 }
+
+tmnxPcepPathProfileId                   OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..4294967295)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPathProfileId specifies the identifier for this
+         path profile.
+
+         Path profile Identifier can only be set at row creation and cannot be
+         modified."
+   ::= { tmnxPcepPathProfileEntry 4 }
+
+tmnxPcepPathProfileMetric               OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    groupDisjointness     (1),
+                    hopCount              (2),
+                    igpTe                 (3)
+                }
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxPcepPathProfileMetric specifies the metric associated
+         with this path profile."
+   DEFVAL { groupDisjointness }
+   ::= { tmnxPcepPathProfileEntry 5 }
+
+-- ----------------------------------------------------------------------------
+-- NOTIFICATION OBJECT
+-- ----------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------
+-- NOTIFICATIONS
+-- ----------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------
+--  Conformance information
+-- ----------------------------------------------------------------------------
+tmnxPcepComplianceV13v0             MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for management of PCEP features on
+         Nokia SROS series systems release 13.0."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+            tmnxPcepTableChngdV13v0Group,
+            tmnxPcepConfigV13v0Group,
+            tmnxPcepPccConfigV13v0Group,
+            tmnxPcepPceConfigV13v0Group,
+            tmnxPcepPeerConfigV13v0Group,
+            tmnxPcepPathProfConfigV13v0Group
+        }
+    ::= { tmnxPcepCompliances 1 }
+
+-- ----------------------------------------------------------------------------
+--  Conformance Groups
+-- ----------------------------------------------------------------------------
+
+tmnxPcepTableChngdV13v0Group            OBJECT-GROUP
+    OBJECTS {
+        tmnxPcepEntityTableLastChanged,
+        tmnxPcepPccEntityTblLastChgd,
+        tmnxPcepPceEntityTblLastChgd,
+        tmnxPcepPeerTableLastChanged,
+        tmnxPcepPathProfileTblLastChnged
+    }
+    STATUS       current
+    DESCRIPTION
+        "The group of objects supporting PCEP table last changed objects on
+         Nokia SROS series systems release 13.0."
+    ::= { tmnxPcepV13v0Groups 1 }
+
+tmnxPcepConfigV13v0Group                OBJECT-GROUP
+    OBJECTS {
+        tmnxPcepEntityRowStatus,
+        tmnxPcepEntityLastChanged,
+        tmnxPcepEntityAdminState,
+        tmnxPcepEntityAddrType,
+        tmnxPcepEntityAddr,
+        tmnxPcepEntityPort,
+        tmnxPcepEntityKeepAliveInterval,
+        tmnxPcepEntityDeadTimer,
+        tmnxPcepEntityMaxUnknownMsgs,
+        tmnxPcepEntityMessageRate,
+        tmnxPcepEntityRequestQueueSize,
+        tmnxPcepEntityCapability
+    }
+    STATUS       current
+    DESCRIPTION
+        "The group of objects supporting PCEP configuration on
+         Nokia SROS series systems release 13.0."
+    ::= { tmnxPcepV13v0Groups 2 }
+
+tmnxPcepPccConfigV13v0Group             OBJECT-GROUP
+    OBJECTS {
+        tmnxPcepPccEntityLastChanged,
+        tmnxPcepPccEntityStateTimeout,
+        tmnxPcepPccEntityRedelegtnTmeout
+    }
+    STATUS       current
+    DESCRIPTION
+        "The group of objects supporting PCEP PCC configuration on
+         Nokia SROS series systems release 13.0."
+    ::= { tmnxPcepV13v0Groups 3 }
+
+tmnxPcepPceConfigV13v0Group             OBJECT-GROUP
+    OBJECTS {
+        tmnxPcepPceEntityLastChanged,
+        tmnxPcepPceEntityPathGroupId
+    }
+    STATUS       current
+    DESCRIPTION
+        "The group of objects supporting PCEP PCE configuration on
+         Nokia SROS series systems release 13.0."
+    ::= { tmnxPcepV13v0Groups 4 }
+
+tmnxPcepPeerConfigV13v0Group            OBJECT-GROUP
+    OBJECTS {
+        tmnxPcepPeerRowStatus,
+        tmnxPcepPeerLastChanged,
+        tmnxPcepPeerPort,
+        tmnxPcepPeerType,
+        tmnxPcepPeerRole,
+        tmnxPcepPeerAdminState
+    }
+    STATUS       current
+    DESCRIPTION
+        "The group of objects supporting PCEP Peer configuration on
+         Nokia SROS series systems release 13.0."
+    ::= { tmnxPcepV13v0Groups 5 }
+
+tmnxPcepPathProfConfigV13v0Group        OBJECT-GROUP
+    OBJECTS {
+        tmnxPcepPathProfileRowStatus,
+        tmnxPcepPathProfileLastChanged,
+        tmnxPcepPathProfileId,
+        tmnxPcepPathProfileMetric
+    }
+    STATUS       current
+    DESCRIPTION
+        "The group of objects supporting PCEP Path Profile configuration on
+         Nokia SROS series systems release 13.0."
+    ::= { tmnxPcepV13v0Groups 6 }
+
+END
+

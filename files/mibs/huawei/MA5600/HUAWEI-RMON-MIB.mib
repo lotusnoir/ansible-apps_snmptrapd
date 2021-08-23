@@ -1,0 +1,60 @@
+	HUAWEI-RMON-MIB DEFINITIONS ::= BEGIN
+	 
+		IMPORTS
+			OBJECT-TYPE,Counter32
+				FROM SNMPv2-SMI
+			etherStatsEntry
+				FROM RMON-MIB;	
+	
+		hwEtherStatsPktsRecvPause OBJECT-TYPE
+			SYNTAX     Counter32
+                        UNITS      "Packets"
+                        MAX-ACCESS read-only
+                        STATUS     current
+			DESCRIPTION
+				"
+				端口收Pause帧数"
+			::= { etherStatsEntry 65536 }
+		
+		hwEtherStatsPktsSendPause OBJECT-TYPE
+			SYNTAX     Counter32
+                        UNITS      "Packets"
+                        MAX-ACCESS read-only
+                        STATUS     current
+			DESCRIPTION
+				"
+				端口发Pause帧数"
+			::= { etherStatsEntry 65537 }
+			
+		hwEtherStatsPkts1519to2047Octets OBJECT-TYPE
+			SYNTAX     Counter32
+                        UNITS      "Packets"
+                        MAX-ACCESS read-only
+                        STATUS     current
+			DESCRIPTION
+				"
+				1519～2047字节长度的总帧数"
+			::= { etherStatsEntry 65538 }
+		
+		hwEtherStatsPkts2048to4095Octets OBJECT-TYPE
+			SYNTAX     Counter32
+                        UNITS      "Packets"
+                        MAX-ACCESS read-only
+                        STATUS     current
+			DESCRIPTION
+				"
+				2048～4095字节长度的总帧数"
+			::= { etherStatsEntry 65539 }
+	    hwEtherStatsPkts4096to9216Octets OBJECT-TYPE
+			SYNTAX     Counter32
+                        UNITS      "Packets"
+                        MAX-ACCESS read-only
+                        STATUS     current
+			DESCRIPTION
+				"
+				4096～9216字节长度的总帧数"
+			::= { etherStatsEntry 65540 }		
+	
+	END
+
+

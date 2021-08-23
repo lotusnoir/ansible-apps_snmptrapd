@@ -1,0 +1,204 @@
+AOS-CORE-EQUIPMENT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+             FROM SNMPv2-CONF
+    MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, Integer32, Counter64, TimeTicks
+             FROM SNMPv2-SMI
+    TEXTUAL-CONVENTION
+             FROM SNMPv2-TC
+    entPhysicalIndex
+             FROM ENTITY-MIB
+    aosCommon
+             FROM ADVA-MIB;
+
+aosCoreEquipmentMIB MODULE-IDENTITY
+    LAST-UPDATED    "201811220000Z"
+    ORGANIZATION    "ADVA Optical Networking"
+    CONTACT-INFO
+                    "ADVA Optical Networking, Inc."
+    DESCRIPTION     "This module defines the Core Equipment MIB definitions
+                     used by the AOS based product lines.
+                     Copyright (C) ADVA Optical Networking."
+
+    REVISION        "201811220000Z"
+    DESCRIPTION     "First release."
+    ::= {aosCommon 4}
+
+--
+-- OID definitions
+--
+
+aosCoreEquipmentObjects          OBJECT IDENTIFIER ::= {aosCoreEquipmentMIB 1}
+aosCoreEquipmentStatsObjects     OBJECT IDENTIFIER ::= {aosCoreEquipmentMIB 2}
+aosCoreEquipmentConformance      OBJECT IDENTIFIER ::= {aosCoreEquipmentMIB 3}
+
+--
+-- Textual conventions.
+--
+
+--
+-- Scalar definitions.
+--
+
+--
+-- Equipment statistics tables. Current PM values.
+--
+
+aosCoreShelfTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AosCoreShelfEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A list of entries corresponding to the PM points
+             collected on the shelf level."
+    ::= { aosCoreEquipmentStatsObjects 1 }
+
+aosCoreShelfEntry  OBJECT-TYPE
+    SYNTAX     AosCoreShelfEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry containing information applicable to a particular shelf."
+    INDEX { entPhysicalIndex }
+    ::= { aosCoreShelfTable 1 }
+	
+AosCoreShelfEntry ::= SEQUENCE {
+    aosCoreShelfPower Integer32
+}
+
+aosCoreShelfPower OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "W"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Power monitored at the shelf level."
+     ::= { aosCoreShelfEntry 1 }
+	 
+aosCoreCardTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AosCoreCardEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A list of entries corresponding to the PM points
+             collected on the card level."
+    ::= { aosCoreEquipmentStatsObjects 2 }
+
+aosCoreCardEntry  OBJECT-TYPE
+    SYNTAX     AosCoreCardEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry containing information applicable to a particular card."
+    INDEX { entPhysicalIndex }
+    ::= { aosCoreCardTable 1 }
+	
+AosCoreCardEntry ::= SEQUENCE {
+    aosCoreCardPower Integer32,
+	aosCoreCardTemp  Integer32
+}
+
+aosCoreCardPower OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "W"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Power monitored at the card level."
+     ::= { aosCoreCardEntry 1 }
+	 
+aosCoreCardTemp OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "C"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Temperature monitored at the card level."
+     ::= { aosCoreCardEntry 2 }
+	 
+aosCoreFanTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF AosCoreFanEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "A list of entries corresponding to the PM points
+             collected on the card level."
+    ::= { aosCoreEquipmentStatsObjects 3 }
+
+aosCoreFanEntry  OBJECT-TYPE
+    SYNTAX     AosCoreFanEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry containing information applicable to a particular card."
+    INDEX { entPhysicalIndex }
+    ::= { aosCoreFanTable 1 }
+	
+AosCoreFanEntry ::= SEQUENCE {
+    aosCoreFanPower Integer32,
+	aosCoreFanTemp  Integer32,
+	aosCoreFanSpeed Integer32
+}
+
+aosCoreFanPower OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "W"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Fan's input power."
+     ::= { aosCoreFanEntry 1 }
+	 
+aosCoreFanTemp OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "C"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Fan's temperature."
+     ::= { aosCoreFanEntry 2 }
+	 
+aosCoreFanSpeed OBJECT-TYPE
+    SYNTAX     Integer32
+    UNITS      "rpm"
+    MAX-ACCESS read-only
+    STATUS     current
+    DESCRIPTION
+         "Fan's rotation speed."
+     ::= { aosCoreFanEntry 3 }
+--
+-- Conformance
+--
+aosCoreEquipmentCompliances      OBJECT IDENTIFIER ::= {aosCoreEquipmentConformance 1}
+aosCoreEquipmentGroups           OBJECT IDENTIFIER ::= {aosCoreEquipmentConformance 2}
+
+aosCoreEquipmentCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+            "Describes the requirements for conformance to the Core
+             Equipment Services."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+              aosCoreEquipmentStatsObjectGroup
+        }
+    ::= { aosCoreEquipmentCompliances 1 }
+
+aosCoreEquipmentStatsObjectGroup OBJECT-GROUP
+    OBJECTS {
+        aosCoreShelfPower,
+		
+		aosCoreCardPower,
+		aosCoreCardTemp,
+		
+		aosCoreFanPower,
+		aosCoreFanTemp,
+		aosCoreFanSpeed
+    }
+    STATUS  current
+    DESCRIPTION
+            "A collection of objects used to manage the Core Equipment
+             Stats Services."
+    ::= { aosCoreEquipmentGroups 1 }
+
+END

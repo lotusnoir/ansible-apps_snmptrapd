@@ -1,0 +1,931 @@
+--  ***************************************************************************
+--  ADVA-FSPR7-CAP-MIB.txt
+--
+--               ADVA AG Optical Networking Capability MIB File
+--
+--  Copyright 2011 ADVA AG Optical Networking.
+--
+--  All rights reserved.
+--  ***************************************************************************
+
+
+--  MIB capability definitions required for entity management.
+
+ADVA-FSPR7-CAP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+                                        FROM  SNMPv2-CONF
+    OBJECT-TYPE,
+    MODULE-IDENTITY,
+    Integer32
+                                        FROM  SNMPv2-SMI
+    fspR7
+                                        FROM  ADVA-MIB
+    FspR7AdminStateCaps,
+    FspR7ChannelBandwidthCaps,
+    FspR7ChannelIdentifierCaps,
+    FspR7TypeCrsCaps,
+    FspR7ConnCaps,
+    FspR7EqlzAdminStateCaps,
+    FspR7FecTypeCaps,
+    FspR7FiberDetectCaps,
+    FspR7FrameFormatCaps,
+    FspR7FunctionCrsCaps,
+    FspR7InitEqualizationCaps,
+    FspR7Integer32Caps,
+    FspR7InterfaceTypeCaps,
+    FspR7LineCodingCaps,
+    FspR7MaxBitErrorRateCaps,
+    FspR7PathNodeCaps,
+    FspR7RedLinedStateCaps,
+    FspR7RowStatusCaps,
+    FspR7TypeConnectionCaps,
+    FspR7Unsigned32Caps
+                                        FROM  ADVA-FSPR7-TC-MIB
+    entityFacilityShelfNo,
+    entityFacilitySlotNo,
+    entityFacilityPortNo,
+    entityFacilityExtNo,
+    entityFacilityClassName,
+    entityCrossConnFromShelfNo,
+    entityCrossConnFromSlotNo,
+    entityCrossConnFromPortNo,
+    entityCrossConnFromExtNo,
+    entityCrossConnFromClassName,
+    entityCrossConnToShelfNo,
+    entityCrossConnToSlotNo,
+    entityCrossConnToPortNo,
+    entityCrossConnToExtNo,
+    entityCrossConnToClassName,
+    entityCrossConnClassName,
+    entityConnectionClassName,
+    entityTerminPointIndexNo1,
+    entityTerminPointIndexNo2,
+    entityTerminPointIndexNo3,
+    entityTerminPointIndexNo4,
+    entityTerminPointClassName,
+    entityExternalPortShelfNo,
+    entityExternalPortSlotNo,
+    entityExternalPortPortNo,
+    entityExternalPortExtNo,
+    entityExternalPortClassName,
+    entityCrsOptLineFromIndexNo1,
+    entityCrsOptLineFromIndexNo2,
+    entityCrsOptLineFromIndexNo3,
+    entityCrsOptLineFromIndexNo4,
+    entityCrsOptLineFromClassName,
+    entityCrsOptLineToIndexNo1,
+    entityCrsOptLineToIndexNo2,
+    entityCrsOptLineToIndexNo3,
+    entityCrsOptLineToIndexNo4,
+    entityCrsOptLineToClassName,
+    entityCrsOptLineClassName
+                                        FROM  ADVA-FSPR7-MIB;
+    
+
+advaFspR7Cap MODULE-IDENTITY
+
+    LAST-UPDATED "201105220000Z"
+
+    ORGANIZATION "ADVA Optical Networking"
+
+    CONTACT-INFO "EMEA Support
+                  Phone : +49 89 89 0665 848
+                  Fax   : +49 89 89 0665 22848
+                  Email : support@advaoptical.com
+
+                  North American Support
+                  Phone : 886 442 ADVA (2382) (toll-free within the US, Canada and Mexico)
+                  Fax   : + 1 806 741 8529 (elsewhere)
+                  Email : support-usa@advaoptical.com
+
+                  Asia Pacific Support
+                  Phone : + 1 866 442 2382 (other toll-free numbers available in some countries)
+                  Email : support-asia@advaoptical.com"
+
+    DESCRIPTION   "This is a MIB definition for ADVA AG Optical Networking entity management."
+
+    REVISION      "201105220000Z"
+    DESCRIPTION   "FSP3000 F7 Release 11.2 MIB."
+    ::= { fspR7 9 }
+
+
+managementCap
+    OBJECT IDENTIFIER ::= { advaFspR7Cap 3 }
+
+specificMgmtCap
+    OBJECT IDENTIFIER ::= { managementCap 2 }
+
+facilityMgmtCap
+    OBJECT IDENTIFIER ::= { managementCap 4 }
+
+performanceCap
+    OBJECT IDENTIFIER ::= { advaFspR7Cap 6 }
+
+performanceFacilityCap
+    OBJECT IDENTIFIER ::= { performanceCap 4 }
+
+performanceFacilityThresholdCap
+    OBJECT IDENTIFIER ::= { performanceFacilityCap 1 }
+
+featureSpecificCap
+    OBJECT IDENTIFIER ::= { advaFspR7Cap 7 }
+
+fiberMapCap
+    OBJECT IDENTIFIER ::= { featureSpecificCap 1 }
+
+eciCap
+    OBJECT IDENTIFIER ::= { featureSpecificCap 3 }
+
+crossConnectionCapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CrossConnectionCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "crossConnectionCapTable"
+    ::=  { specificMgmtCap 6 }
+
+crossConnectionCapEntry OBJECT-TYPE
+    SYNTAX      CrossConnectionCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of crossConnectionCapTable"
+    INDEX       {
+                  entityCrossConnFromShelfNo,
+                  entityCrossConnFromSlotNo,
+                  entityCrossConnFromPortNo,
+                  entityCrossConnFromExtNo,
+                  entityCrossConnFromClassName,
+                  entityCrossConnToShelfNo,
+                  entityCrossConnToSlotNo,
+                  entityCrossConnToPortNo,
+                  entityCrossConnToExtNo,
+                  entityCrossConnToClassName,
+                  entityCrossConnClassName
+                }
+    ::=  { crossConnectionCapTable 1 }
+
+CrossConnectionCapEntry ::=  SEQUENCE
+  { crossConnectionCapRowStatus FspR7RowStatusCaps,
+    crossConnectionCapAdmin FspR7AdminStateCaps,
+    crossConnectionCapRedLineState FspR7RedLinedStateCaps,
+    crossConnectionCapConn FspR7ConnCaps,
+    crossConnectionCapAlias Integer32,
+    crossConnectionCapPathNode FspR7PathNodeCaps,
+    crossConnectionCapTunnelAid Integer32,
+    crossConnectionCapType FspR7InterfaceTypeCaps,
+    crossConnectionCapCrsFunction FspR7FunctionCrsCaps }
+
+crossConnectionCapRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatusCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Capability RowStatus."
+    ::=  { crossConnectionCapEntry 1 }
+
+crossConnectionCapAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminStateCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Capability Adminstrative State."
+    ::=  { crossConnectionCapEntry 2 }
+
+crossConnectionCapRedLineState OBJECT-TYPE
+    SYNTAX      FspR7RedLinedStateCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Capability Red Lined State."
+    ::=  { crossConnectionCapEntry 3 }
+
+crossConnectionCapConn OBJECT-TYPE
+    SYNTAX      FspR7ConnCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Capability Direction."
+    ::=  { crossConnectionCapEntry 4 }
+
+crossConnectionCapAlias OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Capability Alias."
+    ::=  { crossConnectionCapEntry 5 }
+
+crossConnectionCapPathNode OBJECT-TYPE
+    SYNTAX      FspR7PathNodeCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Capability Path Node."
+    ::=  { crossConnectionCapEntry 6 }
+
+crossConnectionCapTunnelAid OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Capability Tunnel AID."
+    ::=  { crossConnectionCapEntry 7 }
+
+crossConnectionCapType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceTypeCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Capability Type Facility."
+    ::=  { crossConnectionCapEntry 8 }
+
+crossConnectionCapCrsFunction OBJECT-TYPE
+    SYNTAX      FspR7FunctionCrsCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Capability Crs Function."
+    ::=  { crossConnectionCapEntry 9 }
+
+crossOpticalLineCapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CrossOpticalLineCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "crossOpticalLineCapTable"
+    ::=  { specificMgmtCap 7 }
+
+crossOpticalLineCapEntry OBJECT-TYPE
+    SYNTAX      CrossOpticalLineCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of crossOpticalLineCapTable"
+    INDEX       {
+                  entityCrsOptLineFromIndexNo1,
+                  entityCrsOptLineFromIndexNo2,
+                  entityCrsOptLineFromIndexNo3,
+                  entityCrsOptLineFromIndexNo4,
+                  entityCrsOptLineFromClassName,
+                  entityCrsOptLineToIndexNo1,
+                  entityCrsOptLineToIndexNo2,
+                  entityCrsOptLineToIndexNo3,
+                  entityCrsOptLineToIndexNo4,
+                  entityCrsOptLineToClassName,
+                  entityCrsOptLineClassName
+                }
+    ::=  { crossOpticalLineCapTable 1 }
+
+CrossOpticalLineCapEntry ::=  SEQUENCE
+  { crossOpticalLineCapRowStatus FspR7RowStatusCaps,
+    crossOpticalLineCapRedLineState FspR7RedLinedStateCaps,
+    crossOpticalLineCapConn FspR7ConnCaps,
+    crossOpticalLineCapCrsType FspR7TypeCrsCaps,
+    crossOpticalLineCapAlias Integer32,
+    crossOpticalLineCapTunnelAid Integer32 }
+
+crossOpticalLineCapRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatusCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Capability RowStatus."
+    ::=  { crossOpticalLineCapEntry 1 }
+
+crossOpticalLineCapRedLineState OBJECT-TYPE
+    SYNTAX      FspR7RedLinedStateCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Capability Red Lined State."
+    ::=  { crossOpticalLineCapEntry 2 }
+
+crossOpticalLineCapConn OBJECT-TYPE
+    SYNTAX      FspR7ConnCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Capability Direction."
+    ::=  { crossOpticalLineCapEntry 3 }
+
+crossOpticalLineCapCrsType OBJECT-TYPE
+    SYNTAX      FspR7TypeCrsCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Capability Type."
+    ::=  { crossOpticalLineCapEntry 4 }
+
+crossOpticalLineCapAlias OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Capability Alias."
+    ::=  { crossOpticalLineCapEntry 5 }
+
+crossOpticalLineCapTunnelAid OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Capability Tunnel AID."
+    ::=  { crossOpticalLineCapEntry 6 }
+
+physicalPortCapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PhysicalPortCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "physicalPortCapTable"
+    ::=  { facilityMgmtCap 1 }
+
+physicalPortCapEntry OBJECT-TYPE
+    SYNTAX      PhysicalPortCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of physicalPortCapTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { physicalPortCapTable 1 }
+
+PhysicalPortCapEntry ::=  SEQUENCE
+  { physicalPortCapRowStatus FspR7RowStatusCaps,
+    physicalPortCapType FspR7InterfaceTypeCaps,
+    physicalPortCapAdmin FspR7AdminStateCaps }
+
+physicalPortCapRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatusCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Capability RowStatus."
+    ::=  { physicalPortCapEntry 1 }
+
+physicalPortCapType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceTypeCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Capability Facility Type."
+    ::=  { physicalPortCapEntry 2 }
+
+physicalPortCapAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminStateCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Capability Adminstrative State."
+    ::=  { physicalPortCapEntry 3 }
+
+virtualPortCapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF VirtualPortCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "virtualPortCapTable"
+    ::=  { facilityMgmtCap 2 }
+
+virtualPortCapEntry OBJECT-TYPE
+    SYNTAX      VirtualPortCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of virtualPortCapTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { virtualPortCapTable 1 }
+
+VirtualPortCapEntry ::=  SEQUENCE
+  { virtualPortCapRowStatus FspR7RowStatusCaps,
+    virtualPortCapChannelBand FspR7ChannelBandwidthCaps,
+    virtualPortCapType FspR7InterfaceTypeCaps,
+    virtualPortCapAlias Integer32,
+    virtualPortCapAdmin FspR7AdminStateCaps,
+    virtualPortCapEqlzAdmin FspR7EqlzAdminStateCaps,
+    virtualPortCapInitEqlz FspR7InitEqualizationCaps }
+
+virtualPortCapRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatusCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Capability RowStatus."
+    ::=  { virtualPortCapEntry 1 }
+
+virtualPortCapChannelBand OBJECT-TYPE
+    SYNTAX      FspR7ChannelBandwidthCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Capability Channel Bandwidth."
+    ::=  { virtualPortCapEntry 2 }
+
+virtualPortCapType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceTypeCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Capability Facility Type."
+    ::=  { virtualPortCapEntry 3 }
+
+virtualPortCapAlias OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Capability Alias."
+    ::=  { virtualPortCapEntry 4 }
+
+virtualPortCapAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminStateCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Capability Adminstrative State."
+    ::=  { virtualPortCapEntry 5 }
+
+virtualPortCapEqlzAdmin OBJECT-TYPE
+    SYNTAX      FspR7EqlzAdminStateCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Capability Fiber Connection Attenuation."
+    ::=  { virtualPortCapEntry 6 }
+
+virtualPortCapInitEqlz OBJECT-TYPE
+    SYNTAX      FspR7InitEqualizationCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Capability Initiate Equalization."
+    ::=  { virtualPortCapEntry 7 }
+
+optThresholdConfigCapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF OptThresholdConfigCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "optThresholdConfigCapTable"
+    ::=  { performanceFacilityThresholdCap 1 }
+
+optThresholdConfigCapEntry OBJECT-TYPE
+    SYNTAX      OptThresholdConfigCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of optThresholdConfigCapTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { optThresholdConfigCapTable 1 }
+
+OptThresholdConfigCapEntry ::=  SEQUENCE
+  { optThresholdConfigCapLowConfig FspR7Integer32Caps,
+    optThresholdConfigCapHighConfig FspR7Integer32Caps }
+
+optThresholdConfigCapLowConfig OBJECT-TYPE
+    SYNTAX      FspR7Integer32Caps
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Configurable threshold of the Optical Power Transmitted (output)" 
+    ::=  { optThresholdConfigCapEntry 1 }
+
+optThresholdConfigCapHighConfig OBJECT-TYPE
+    SYNTAX      FspR7Integer32Caps
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Configurable high threshold of the Optical Power Transmitted (output)" 
+    ::=  { optThresholdConfigCapEntry 2 }
+
+oprThresholdConfigCapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF OprThresholdConfigCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "oprThresholdConfigCapTable"
+    ::=  { performanceFacilityThresholdCap 2 }
+
+oprThresholdConfigCapEntry OBJECT-TYPE
+    SYNTAX      OprThresholdConfigCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of oprThresholdConfigCapTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { oprThresholdConfigCapTable 1 }
+
+OprThresholdConfigCapEntry ::=  SEQUENCE
+  { oprThresholdConfigCapLowConfig FspR7Integer32Caps,
+    oprThresholdConfigCapHighConfig FspR7Integer32Caps }
+
+oprThresholdConfigCapLowConfig OBJECT-TYPE
+    SYNTAX      FspR7Integer32Caps
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprThresholdConfigCapEntry 1 }
+
+oprThresholdConfigCapHighConfig OBJECT-TYPE
+    SYNTAX      FspR7Integer32Caps
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprThresholdConfigCapEntry 2 }
+
+terminationPointCapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TerminationPointCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "terminationPointCapTable"
+    ::=  { fiberMapCap 1 }
+
+terminationPointCapEntry OBJECT-TYPE
+    SYNTAX      TerminationPointCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of terminationPointCapTable"
+    INDEX       {
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName
+                }
+    ::=  { terminationPointCapTable 1 }
+
+TerminationPointCapEntry ::=  SEQUENCE
+  { terminationPointCapRowStatus FspR7RowStatusCaps,
+    terminationPointCapAdmin FspR7AdminStateCaps,
+    terminationPointCapFiberDetect FspR7FiberDetectCaps,
+    terminationPointCapAlias Integer32 }
+
+terminationPointCapRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatusCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Termination Point Capability RowStatus."
+    ::=  { terminationPointCapEntry 1 }
+
+terminationPointCapAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminStateCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Termination Point Capability Adminstrative State."
+    ::=  { terminationPointCapEntry 2 }
+
+terminationPointCapFiberDetect OBJECT-TYPE
+    SYNTAX      FspR7FiberDetectCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Termination Point Capability Fiber Detect."
+    ::=  { terminationPointCapEntry 3 }
+
+terminationPointCapAlias OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Termination Point Capabillity Alias."
+    ::=  { terminationPointCapEntry 4 }
+
+connectionCapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ConnectionCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "connectionCapTable"
+    ::=  { fiberMapCap 2 }
+
+connectionCapEntry OBJECT-TYPE
+    SYNTAX      ConnectionCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of connectionCapTable"
+    INDEX       {
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  entityConnectionClassName
+                }
+    ::=  { connectionCapTable 1 }
+
+ConnectionCapEntry ::=  SEQUENCE
+  { connectionCapRowStatus FspR7RowStatusCaps,
+    connectionCapType FspR7TypeConnectionCaps }
+
+connectionCapRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatusCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Connection Capability RowStatus."
+    ::=  { connectionCapEntry 1 }
+
+connectionCapType OBJECT-TYPE
+    SYNTAX      FspR7TypeConnectionCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Connection Capability Type."
+    ::=  { connectionCapEntry 2 }
+
+externalPortCapTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExternalPortCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "externalPortCap"
+    ::=  { eciCap 1 }
+
+externalPortCapEntry OBJECT-TYPE
+    SYNTAX      ExternalPortCapEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of externalPortCap"
+    INDEX       {
+                  entityExternalPortShelfNo,
+                  entityExternalPortSlotNo,
+                  entityExternalPortPortNo,
+                  entityExternalPortExtNo,
+                  entityExternalPortClassName
+                }
+    ::=  { externalPortCapTable 1 }
+
+ExternalPortCapEntry ::=  SEQUENCE
+  { externalPortCapRowStatus FspR7RowStatusCaps,
+    externalPortCapType FspR7InterfaceTypeCaps,
+    externalPortCapTransmitChannel FspR7ChannelIdentifierCaps,
+    externalPortCapChannelBandwith FspR7ChannelBandwidthCaps,
+    externalPortCapAlias Integer32,
+    externalPortCapFarEndLocation Integer32,
+    externalPortCapBitrate FspR7Unsigned32Caps,
+    externalPortCapFecType FspR7FecTypeCaps,
+    externalPortCapLineCoding FspR7LineCodingCaps,
+    externalPortCapFrameFormat FspR7FrameFormatCaps,
+    externalPortCapOpticalPowerTx FspR7Integer32Caps,
+    externalPortCapOsnrTransmit FspR7Unsigned32Caps,
+    externalPortCapPmdTransmit FspR7Unsigned32Caps,
+    externalPortCapChromDisperTx FspR7Integer32Caps,
+    externalPortCapMinOsnrRcv FspR7Unsigned32Caps,
+    externalPortCapMinOptPowerRcv FspR7Integer32Caps,
+    externalPortCapMaxOptPowerRcv FspR7Integer32Caps,
+    externalPortCapMaxPmdRcv FspR7Unsigned32Caps,
+    externalPortCapMinChromDisperRcv FspR7Integer32Caps,
+    externalPortCapMaxChromDisperRcv FspR7Integer32Caps,
+    externalPortCapMaxBitErrorRate FspR7MaxBitErrorRateCaps,
+    externalPortCapSourceProfile Integer32 }
+
+externalPortCapRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatusCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Termination Point RowStatus. Object is used to 
+         create or delete a row in the table."
+    ::=  { externalPortCapEntry 1 }
+
+externalPortCapType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceTypeCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 2 }
+
+externalPortCapTransmitChannel OBJECT-TYPE
+    SYNTAX      FspR7ChannelIdentifierCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 3 }
+
+externalPortCapChannelBandwith OBJECT-TYPE
+    SYNTAX      FspR7ChannelBandwidthCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 4 }
+
+externalPortCapAlias OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 5 }
+
+externalPortCapFarEndLocation OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 6 }
+
+externalPortCapBitrate OBJECT-TYPE
+    SYNTAX      FspR7Unsigned32Caps
+    UNITS       "Mbit/s"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 7 }
+
+externalPortCapFecType OBJECT-TYPE
+    SYNTAX      FspR7FecTypeCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 8 }
+
+externalPortCapLineCoding OBJECT-TYPE
+    SYNTAX      FspR7LineCodingCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 9 }
+
+externalPortCapFrameFormat OBJECT-TYPE
+    SYNTAX      FspR7FrameFormatCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 10 }
+
+externalPortCapOpticalPowerTx OBJECT-TYPE
+    SYNTAX      FspR7Integer32Caps
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 11 }
+
+externalPortCapOsnrTransmit OBJECT-TYPE
+    SYNTAX      FspR7Unsigned32Caps
+    UNITS       "dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 12 }
+
+externalPortCapPmdTransmit OBJECT-TYPE
+    SYNTAX      FspR7Unsigned32Caps
+    UNITS       "ps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 13 }
+
+externalPortCapChromDisperTx OBJECT-TYPE
+    SYNTAX      FspR7Integer32Caps
+    UNITS       "ps/nm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 14 }
+
+externalPortCapMinOsnrRcv OBJECT-TYPE
+    SYNTAX      FspR7Unsigned32Caps
+    UNITS       "dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 15 }
+
+externalPortCapMinOptPowerRcv OBJECT-TYPE
+    SYNTAX      FspR7Integer32Caps
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 16 }
+
+externalPortCapMaxOptPowerRcv OBJECT-TYPE
+    SYNTAX      FspR7Integer32Caps
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 17 }
+
+externalPortCapMaxPmdRcv OBJECT-TYPE
+    SYNTAX      FspR7Unsigned32Caps
+    UNITS       "ps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 18 }
+
+externalPortCapMinChromDisperRcv OBJECT-TYPE
+    SYNTAX      FspR7Integer32Caps
+    UNITS       "ps/nm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 19 }
+
+externalPortCapMaxChromDisperRcv OBJECT-TYPE
+    SYNTAX      FspR7Integer32Caps
+    UNITS       "ps/nm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 20 }
+
+externalPortCapMaxBitErrorRate OBJECT-TYPE
+    SYNTAX      FspR7MaxBitErrorRateCaps
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 21 }
+
+externalPortCapSourceProfile OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortCapEntry 22 }
+
+
+-- conformance information
+
+conformanceCap OBJECT IDENTIFIER ::= { advaFspR7Cap 10 }
+
+compliancesCap OBJECT IDENTIFIER ::= { conformanceCap 1 }
+
+groupsCap      OBJECT IDENTIFIER ::= { conformanceCap 2 }
+
+-- compliance statements
+
+complianceCap MODULE-COMPLIANCE
+  STATUS  current
+  DESCRIPTION
+    "The compliance statement for entities implementing the ADVA FSPR7 CAP MIB."
+  MODULE  -- this module
+  MANDATORY-GROUPS { objectGroupCap }
+  ::= { compliancesCap 1 }
+
+
+-- units of conformance
+
+objectGroupCap OBJECT-GROUP
+  OBJECTS {
+    crossConnectionCapRowStatus,
+    crossConnectionCapAdmin,
+    crossConnectionCapRedLineState,
+    crossConnectionCapConn,
+    crossConnectionCapAlias,
+    crossConnectionCapPathNode,
+    crossConnectionCapTunnelAid,
+    crossOpticalLineCapRowStatus,
+    crossOpticalLineCapRedLineState,
+    crossOpticalLineCapConn,
+    crossOpticalLineCapCrsType,
+    crossOpticalLineCapAlias,
+    crossOpticalLineCapTunnelAid,
+    crossConnectionCapType,
+    physicalPortCapRowStatus,
+    physicalPortCapType,
+    physicalPortCapAdmin,
+    virtualPortCapRowStatus,
+    virtualPortCapChannelBand,
+    virtualPortCapType,
+    virtualPortCapAlias,
+    virtualPortCapAdmin,
+    virtualPortCapEqlzAdmin,
+    virtualPortCapInitEqlz,
+    optThresholdConfigCapLowConfig,
+    optThresholdConfigCapHighConfig,
+    oprThresholdConfigCapLowConfig,
+    oprThresholdConfigCapHighConfig,
+    terminationPointCapRowStatus,
+    terminationPointCapAdmin,
+    terminationPointCapFiberDetect,
+    terminationPointCapAlias,
+    connectionCapRowStatus,
+    connectionCapType,
+    externalPortCapRowStatus,
+    externalPortCapType,
+    externalPortCapTransmitChannel,
+    externalPortCapChannelBandwith,
+    externalPortCapAlias,
+    externalPortCapFarEndLocation,
+    externalPortCapBitrate,
+    externalPortCapMaxChromDisperRcv,
+    externalPortCapMaxBitErrorRate,
+    externalPortCapSourceProfile,
+    externalPortCapFecType,
+    externalPortCapLineCoding,
+    externalPortCapFrameFormat,
+    externalPortCapOpticalPowerTx,
+    externalPortCapOsnrTransmit,
+    externalPortCapPmdTransmit,
+    externalPortCapChromDisperTx,
+    externalPortCapMinOsnrRcv,
+    externalPortCapMinOptPowerRcv,
+    externalPortCapMaxOptPowerRcv,
+    externalPortCapMaxPmdRcv,
+    externalPortCapMinChromDisperRcv
+  }
+  STATUS  current
+  DESCRIPTION
+    "A list of objects used for configuration of an entity in ADVA FSPR7 CAP MIB."
+  ::= { groupsCap 1 }
+
+
+END
+

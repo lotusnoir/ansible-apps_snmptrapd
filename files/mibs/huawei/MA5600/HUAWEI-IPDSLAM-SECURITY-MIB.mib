@@ -1,0 +1,742 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V1.00
+-- History: Drafted by mozengning  2005-05-13
+-- ============================================================================
+	HUAWEI-IPDSLAM-SECURITY-MIB DEFINITIONS ::= BEGIN
+		IMPORTS 
+			ifIndex			
+				FROM IF-MIB			
+			hwIpDslamSecurity			
+				FROM HUAWEI-MIB
+			IpAddress
+				FROM SNMPv2-SMI					
+			RowStatus, MacAddress, TruthValue, TEXTUAL-CONVENTION, DateAndTime			
+				FROM SNMPv2-TC;
+		
+	
+		EnabledStatus ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION
+				"A simple status value for the object."
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			
+	
+		hwIpDslamAntiIcmpStatus OBJECT-TYPE
+			SYNTAX EnabledStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Enabling/Disabling ICMP protecting function
+				"
+			DEFVAL { 2 }
+			::= { hwIpDslamSecurity 1 }
+	
+		hwIpDslamAntiIpStatus OBJECT-TYPE
+			SYNTAX EnabledStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Enabling/Disabling IP protecting function
+				"
+			DEFVAL { 2 }
+			::= { hwIpDslamSecurity 2 }
+			
+		hwIpDslamIpAddrDynamicBindingStatus OBJECT-TYPE
+			SYNTAX EnabledStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" Enabling/Disabling  IP address dynamic binding function
+				"
+			DEFVAL { 2 }
+			::= { hwIpDslamSecurity 3 }
+		
+		hwIpDslamAntiMacSpoofingStatus OBJECT-TYPE
+	      		SYNTAX EnabledStatus
+			MAX-ACCESS read-write
+			STATUS current
+	      		DESCRIPTION
+	         		"The global switch of anti mac spoofing.
+                    "	 
+          	  	DEFVAL { 2 }     
+	      		::= { hwIpDslamSecurity 4 }
+	      
+	      hwIpDslamAntiDosStatus OBJECT-TYPE
+	      		SYNTAX EnabledStatus
+			MAX-ACCESS read-write
+			STATUS current
+	      		DESCRIPTION
+	      	        	"The global switch of ANTI-DOS.          
+          	  		    "
+          	  	DEFVAL { 2 }	      
+	      		::= { hwIpDslamSecurity 5 }
+
+		hwIpDslamSrcMacAddrFilteringTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIpDslamSrcMacAddrFilteringEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Source MAC address filtering table 
+				"
+			::= { hwIpDslamSecurity 6 }
+		
+		hwIpDslamSrcMacAddrFilteringEntry OBJECT-TYPE
+			SYNTAX HwIpDslamSrcMacAddrFilteringEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Source MAC address filtering table entry
+				"
+			INDEX { hwIpDslamSrcMacFilteringIndex }
+			::= { hwIpDslamSrcMacAddrFilteringTable 1 }
+		
+		HwIpDslamSrcMacAddrFilteringEntry ::=
+			SEQUENCE { 
+				hwIpDslamSrcMacFilteringIndex
+					INTEGER,
+				hwIpDslamSrcMacFilteringSrcMac
+					MacAddress,
+				hwIpDslamSrcMacFilteringRowStatus
+					RowStatus
+			 }
+
+		hwIpDslamSrcMacFilteringIndex OBJECT-TYPE
+			SYNTAX INTEGER(1..4)
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" The value of this object uniquely identifies this Soure MAC address filtering entry.
+				"
+			::= { hwIpDslamSrcMacAddrFilteringEntry 1 }
+		
+		hwIpDslamSrcMacFilteringSrcMac OBJECT-TYPE
+			SYNTAX MacAddress
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" The source MAC address that is to be matched with the packet which received 
+				from service port，If the source MAC address in the packet is the same as this 
+				object, The packet should be discard.
+				"
+			::= { hwIpDslamSrcMacAddrFilteringEntry 2 }
+		
+		hwIpDslamSrcMacFilteringRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"The status of this filter entry.
+				"
+			::= { hwIpDslamSrcMacAddrFilteringEntry 3 }
+		
+		
+		hwIpDslamMacAddrDynamicBindingTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIpDslamMacAddrDynamicBindingEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"MAC address dynamic binding table 
+				"
+			::= { hwIpDslamSecurity 7 }
+		
+		hwIpDslamMacAddrDynamicBindingEntry OBJECT-TYPE
+			SYNTAX HwIpDslamMacAddrDynamicBindingEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Source MAC address dynamic binding table entry,
+				Each entry contains one MAC ddress to a flow binding.
+				"
+			INDEX { hwIpDslamMacAddrDynamicBindingFlowId, hwIpDslamMacAddrDynamicBindingMacIndex }
+			::= { hwIpDslamMacAddrDynamicBindingTable 1 }
+		
+		HwIpDslamMacAddrDynamicBindingEntry ::=
+			SEQUENCE { 
+				hwIpDslamMacAddrDynamicBindingFlowId
+				        INTEGER,
+				hwIpDslamMacAddrDynamicBindingMacIndex
+					INTEGER,
+				hwIpDslamMacAddrDynamicBindingMacAddr
+					MacAddress
+			 }
+			 
+		hwIpDslamMacAddrDynamicBindingFlowId OBJECT-TYPE
+			SYNTAX INTEGER(0..8192)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The flow identification.
+				"
+			::= { hwIpDslamMacAddrDynamicBindingEntry 1 }
+
+		hwIpDslamMacAddrDynamicBindingMacIndex OBJECT-TYPE
+			SYNTAX INTEGER(0..7)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The value of this object and the value of hwIpDslamMacAddrDynamicBindingFlowId object
+				 uniquely identifies this MAC address dynamic binding entry.
+				 "
+			::= { hwIpDslamMacAddrDynamicBindingEntry 2 }
+		
+		hwIpDslamMacAddrDynamicBindingMacAddr OBJECT-TYPE
+			SYNTAX MacAddress
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" The MAC address that was bound to a flow.
+				"
+			::= { hwIpDslamMacAddrDynamicBindingEntry 3 }
+		
+		hwIpDslamIpAddrDynamicBindingTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIpDslamIpAddrDynamicBindingEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"MAC address dynamic binding table 
+				"
+			::= { hwIpDslamSecurity 8 }
+		
+		hwIpDslamIpAddrDynamicBindingEntry OBJECT-TYPE
+			SYNTAX HwIpDslamIpAddrDynamicBindingEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"IP address dynamic binding table entry,
+				Each entry contains one IP ddress to a flow binding.
+				
+				"
+			INDEX { hwIpDslamIpAddrDynamicBindingFlowId, hwIpDslamIpAddrDynamicBindingIpIndex }
+			::= { hwIpDslamIpAddrDynamicBindingTable 1 }
+		
+		HwIpDslamIpAddrDynamicBindingEntry ::=
+			SEQUENCE { 
+				hwIpDslamIpAddrDynamicBindingFlowId
+				    	INTEGER,
+				hwIpDslamIpAddrDynamicBindingIpIndex
+					INTEGER,
+				hwIpDslamIpAddrDynamicBindingIpAddr
+					IpAddress,
+		                hwIpDslamIpAddrDynamicBindingLeaseTime
+					INTEGER				
+			 }
+			 
+		hwIpDslamIpAddrDynamicBindingFlowId OBJECT-TYPE
+			SYNTAX INTEGER(0..8192)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The flow identification.
+				"
+			::= { hwIpDslamIpAddrDynamicBindingEntry 1 }	
+
+		hwIpDslamIpAddrDynamicBindingIpIndex OBJECT-TYPE
+			SYNTAX INTEGER(0..7)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The value of this object the value of hwIpDslamIpAddrDynamicBindingFlowId
+				uniquely identifies this IP address dynamic binding entry.
+				 "
+			::= { hwIpDslamIpAddrDynamicBindingEntry 2 }
+		
+		hwIpDslamIpAddrDynamicBindingIpAddr OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" The IP address that was bound to a flow.
+				"
+			::= { hwIpDslamIpAddrDynamicBindingEntry 3 }
+		
+		hwIpDslamIpAddrDynamicBindingLeaseTime OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" The lease time of the DHCP user.
+				"
+			::= { hwIpDslamIpAddrDynamicBindingEntry 4 }
+		
+		hwIpDslamDosBlackListTable OBJECT-TYPE
+	      		SYNTAX      SEQUENCE OF HwIpDslamDosBlackListEntry
+	      		MAX-ACCESS  not-accessible
+	      		STATUS      current
+	      		DESCRIPTION
+	          		"DoS black list table.
+	                "
+	      		::= { hwIpDslamSecurity 9 }
+
+		hwIpDslamDosBlackListEntry OBJECT-TYPE
+		      	SYNTAX      HwIpDslamDosBlackListEntry
+		      	MAX-ACCESS  not-accessible
+		      	STATUS      current
+		      	DESCRIPTION
+			          "DoS black list table entry.
+			          "
+			INDEX { hwIpDslamDosBlackListIndex }
+			::= { hwIpDslamDosBlackListTable 1 }
+
+	  	HwIpDslamDosBlackListEntry ::= SEQUENCE {
+	  	              hwIpDslamDosBlackListIndex       Integer32,  
+	  		      hwIpDslamDosBlackListIfIndex     Integer32,
+			      hwIpDslamDosBlackListType        INTEGER,			      			      	
+			      hwIpDslamDosBlackListMode        INTEGER,	
+			      hwIpDslamDosBlackListTime        DateAndTime,		      
+			      hwIpDslamDosBlackListRowStatus   RowStatus,
+			      hwIpDslamDosBlackListMatchpara   Integer32,
+			      hwIpDslamDosBlackListCid         Integer32,
+			      hwIpDslamDosBlackListOntID       Integer32,
+			      hwIpDslamDosBlackListLLIndex     Integer32,
+			                            }
+
+		hwIpDslamDosBlackListIndex OBJECT-TYPE
+		      	SYNTAX      Integer32 (1..1024)
+		      	MAX-ACCESS  not-accessible
+		      	STATUS      current
+		      	DESCRIPTION
+		        	 "The index of dos blacklist.
+	                 "	      
+		      	::= { hwIpDslamDosBlackListEntry 1 }
+		      
+		hwIpDslamDosBlackListIfIndex OBJECT-TYPE
+		      	SYNTAX      Integer32 (1..2147483647)
+		      	MAX-ACCESS  read-create
+		      	STATUS      current
+		      	DESCRIPTION
+		        	 "The ifindex of dos blacklist.
+	          
+	          	  	 "	      
+		      	::= { hwIpDslamDosBlackListEntry 2 }	
+		      	                                      
+		hwIpDslamDosBlackListType OBJECT-TYPE
+		      	SYNTAX  INTEGER {
+		      			 unknow(1),
+		        	         pppoe(2),
+			        	 dhcp(3),
+			                 icmp(4),
+			                 arp(5),
+		                         pppoa(6)	                      
+		                        }
+		      	MAX-ACCESS  read-create
+		      	STATUS      current
+		      	DESCRIPTION
+		        	 "The type of dos blacklist.
+	          
+                     "
+		      	DEFVAL { 6 }
+		      	::= { hwIpDslamDosBlackListEntry 3 }      
+		
+		
+		hwIpDslamDosBlackListMode OBJECT-TYPE
+			SYNTAX      INTEGER{
+	                                   dynamic(1),
+			                   static(2)
+			                 }
+		      	MAX-ACCESS  read-create
+		      	STATUS      current
+		      	DESCRIPTION
+		        	 "The mode of dos blacklist.
+	                 "	      
+		      	::= { hwIpDslamDosBlackListEntry 4 }      	    
+		      	
+		hwIpDslamDosBlackListTime OBJECT-TYPE
+			SYNTAX DateAndTime
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" The time of dos occur.
+				"
+			::= { hwIpDslamDosBlackListEntry 5 }      	 
+		
+		
+	      	hwIpDslamDosBlackListRowStatus OBJECT-TYPE
+		      	SYNTAX      RowStatus
+		      	MAX-ACCESS  read-create
+		      	STATUS      current
+		      	DESCRIPTION
+		        	"the rowstatus of dos blacklist.
+	          	  	"    	  
+		      	::= { hwIpDslamDosBlackListEntry 6 }
+
+	      	hwIpDslamDosBlackListMatchpara OBJECT-TYPE
+		      	SYNTAX      Integer32 (0..4095)
+		      	MAX-ACCESS  read-create
+		      	STATUS      current
+		      	DESCRIPTION
+		        	 "The match para of dos blacklist.
+	          
+	          	  	"	      
+		      	::= { hwIpDslamDosBlackListEntry 7 }
+		      	
+	      	hwIpDslamDosBlackListCid OBJECT-TYPE
+		      	SYNTAX      Integer32 (1..8092)
+		      	MAX-ACCESS  read-create
+		      	STATUS      current
+		      	DESCRIPTION
+		        	 "The PVC Cid of dos blacklist.
+	          
+	          	  	"	      
+		      	::= { hwIpDslamDosBlackListEntry 8 }
+		      	
+	      	hwIpDslamDosBlackListOntID OBJECT-TYPE
+		      	SYNTAX      Integer32 (0..63)
+		      	MAX-ACCESS  read-create
+		      	STATUS      current
+		      	DESCRIPTION
+		        	 "The ont identification of dos blacklist.
+	          
+	          	  	"	      
+		      	::= { hwIpDslamDosBlackListEntry 9 }
+		      	
+	      	hwIpDslamDosBlackListLLIndex OBJECT-TYPE
+		      	SYNTAX      Integer32 (0..127)
+		      	MAX-ACCESS  read-create
+		      	STATUS      current
+		      	DESCRIPTION
+		        	 "The logic link index of dos blacklist.
+	          
+	          	  	"	      
+		      	::= { hwIpDslamDosBlackListEntry 10 }
+		      			      	
+	       hwIpDslamAntiMacSpoofingPppoeOverallAgingTime OBJECT-TYPE
+	      		SYNTAX INTEGER (30..3600 | 0)
+			MAX-ACCESS read-write
+			STATUS current
+	      		DESCRIPTION
+	         		"The value of PPPoE Overall Aging Time.
+          
+          	  		"	 
+          	  	DEFVAL { 360 }     
+	      		::= { hwIpDslamSecurity 10 }   
+	      			      		
+              hwIpDslamAntiMacSpoofingPppoeAgingPeriod OBJECT-TYPE
+	      		SYNTAX INTEGER (30..120 | 0)
+			MAX-ACCESS read-write
+			STATUS current
+	      		DESCRIPTION
+	         		"The value of PPPoE Aging Period.
+          
+          	  		"	 
+          	  	DEFVAL { 90 }     
+	      		::= { hwIpDslamSecurity 11 }     
+    		
+        hwIpDslamAntiMacSpoofingDhcpOverallAgingTime OBJECT-TYPE
+	      		SYNTAX INTEGER (360..3600 | 0)
+			MAX-ACCESS read-write
+			STATUS current
+	      		DESCRIPTION
+	         		"The value of DHCP Overall Aging Time.
+          
+          	  		"	 
+          	  	DEFVAL { 1560 }     
+	      		::= { hwIpDslamSecurity 12 }      
+	      		
+	hwIpDslamDesMacAddrFilteringTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIpDslamDesMacAddrFilteringEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Destination MAC address filtering table 
+				
+				"
+			::= { hwIpDslamSecurity 13 }
+		
+		hwIpDslamDesMacAddrFilteringEntry OBJECT-TYPE
+			SYNTAX HwIpDslamDesMacAddrFilteringEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Destination MAC address filtering table entry
+				
+				"
+			INDEX { hwIpDslamDesMacFilteringIndex }
+			::= { hwIpDslamDesMacAddrFilteringTable 1 }
+		
+		HwIpDslamDesMacAddrFilteringEntry ::=
+			SEQUENCE { 
+				hwIpDslamDesMacFilteringIndex
+					INTEGER,
+				hwIpDslamDesMacFilteringDesMac
+					MacAddress,
+				hwIpDslamDesMacFilteringRowStatus
+					RowStatus
+			 }
+
+		hwIpDslamDesMacFilteringIndex OBJECT-TYPE
+			SYNTAX INTEGER(1..4)
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" The value of this object uniquely identifies this destination MAC address filtering entry.
+				
+				"
+			::= { hwIpDslamDesMacAddrFilteringEntry 1 }
+		
+		hwIpDslamDesMacFilteringDesMac OBJECT-TYPE
+			SYNTAX MacAddress
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" The destination MAC address that is to be matched with the packet which received 
+				from service port，If the destination MAC address in the packet is the same as this 
+				object, The packet should be discard.
+				
+				"
+			::= { hwIpDslamDesMacAddrFilteringEntry 2 }
+		
+		hwIpDslamDesMacFilteringRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"The status of this filter entry.
+				
+				"
+			::= { hwIpDslamDesMacAddrFilteringEntry 3 }
+			
+		hwIpDslamDynSrcMacAddrFilteringTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIpDslamDynSrcMacAddrFilteringEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Dynamic source MAC address filtering table 
+				
+				"
+			::= { hwIpDslamSecurity 14 }
+		
+		hwIpDslamDynSrcMacAddrFilteringEntry OBJECT-TYPE
+			SYNTAX HwIpDslamDynSrcMacAddrFilteringEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Dynamic source MAC address filtering table entry
+				
+				"
+			INDEX { hwIpDslamDynSrcMacFilteringIndex }
+			::= { hwIpDslamDynSrcMacAddrFilteringTable 1 }
+		
+		HwIpDslamDynSrcMacAddrFilteringEntry ::=
+			SEQUENCE { 
+				hwIpDslamDynSrcMacFilteringIndex
+					INTEGER,
+				hwIpDslamDynSrcMacFilteringSrcMac
+					MacAddress
+			 }
+
+		hwIpDslamDynSrcMacFilteringIndex OBJECT-TYPE
+			SYNTAX INTEGER(1..4)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" The value of this object uniquely identifies this Dynamic soure MAC address filtering entry.
+				
+				"
+			::= { hwIpDslamDynSrcMacAddrFilteringEntry 1 }
+		
+		hwIpDslamDynSrcMacFilteringSrcMac OBJECT-TYPE
+			SYNTAX MacAddress
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" The source MAC address that is to be matched with the packet which received 
+				from service port，If the source MAC address in the packet is the same as this 
+				object, The packet should be discard.
+				
+				"
+			::= { hwIpDslamDynSrcMacAddrFilteringEntry 2 }	
+			
+		hwIpDslamMacAbnormalDetectStatus OBJECT-TYPE
+			SYNTAX EnabledStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The switch of the Mac-Abnormal-Detect function.			
+				"
+	                DEFVAL { 2 }  
+			::= { hwIpDslamSecurity 15 }	
+			
+		hwIpDslamMacAbnormalDetectIntervalTime OBJECT-TYPE
+			SYNTAX INTEGER ( 30..3600 )
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The interval of the Mac-Abnormal-Detect.				
+				"
+	                DEFVAL { 60 }  
+			::= { hwIpDslamSecurity 16 }	
+						
+		hwIpDslamAntiIpServicePortTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF hwIpDslamAntiIpServicePortEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Enabling/Disabling IP protecting function by service-port"
+			::= { hwIpDslamSecurity 17 }     
+	
+		hwIpDslamAntiIpServicePortEntry OBJECT-TYPE
+			SYNTAX hwIpDslamAntiIpServicePortEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Enabling/Disabling IP protecting function by service-port"
+			INDEX { hwIpDslamAntiIpServicePortIndex }
+			::= { hwIpDslamAntiIpServicePortTable 1 }
+
+		hwIpDslamAntiIpServicePortEntry ::=
+			SEQUENCE { 
+				hwIpDslamAntiIpServicePortIndex 
+				INTEGER,
+				hwIpDslamAntiIpServicePortStatus 
+				INTEGER
+				}
+				
+			hwIpDslamAntiIpServicePortIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"The value of this object uniquely identifies "
+			::= { hwIpDslamAntiIpServicePortEntry 1 }
+			   
+			hwIpDslamAntiIpServicePortStatus OBJECT-TYPE
+			SYNTAX EnabledStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				" The status of anti-ipspoofing "
+			::= { hwIpDslamAntiIpServicePortEntry 2 }
+			
+		hwIpDslamAntiDosAlarmThreshold OBJECT-TYPE
+			SYNTAX INTEGER ( 10..200 )
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The alarm threshold of ANTI-DOS.				
+				"
+	                DEFVAL { 20 }  
+			::= { hwIpDslamSecurity 18 }	
+			
+		hwIpDslamAntiDosPortAction OBJECT-TYPE
+			SYNTAX      INTEGER{
+	                                     deactive(1),
+			                     none(2)
+			                   }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The port action of dos occur.				
+				"
+	                DEFVAL { 1 }  
+			::= { hwIpDslamSecurity 19 }			
+			
+		hwIpDslamAntiDosResumeTime OBJECT-TYPE
+			SYNTAX INTEGER ( 10..2880 )
+		        UNITS  "minute"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The port resume time of ANTI-DOS, it must be a multiple of 10.				
+				"
+	                DEFVAL { 60 }  
+			::= { hwIpDslamSecurity 20 }
+		
+		
+		hwIpDslamArpDetectMode OBJECT-TYPE
+			SYNTAX      INTEGER{
+	                                     gateway(1),
+			                     dummy(2)
+			                   }
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				Arp detection mode				
+				"
+	                DEFVAL { 2 }  
+			::= { hwIpDslamSecurity 21 }									
+	
+-- ==============================================================
+-- 基于业务VLAN的配置	
+-- ==============================================================
+
+	    hwIpDslamSecurityVlanCtrlTable OBJECT-TYPE
+	      		SYNTAX      SEQUENCE OF HwIpDslamSecurityVlanCtrlEntry
+	      		MAX-ACCESS  not-accessible
+	      		STATUS      current
+	      		DESCRIPTION
+	          		"Layer two protocol configuration table based on VLAN.
+	           		 "
+	      		::= { hwIpDslamSecurity 22 }	   			      		
+		
+		hwIpDslamSecurityVlanCtrlEntry OBJECT-TYPE
+			SYNTAX HwIpDslamSecurityVlanCtrlEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Layer two protocol configuration table entry based on VLAN.
+				"
+			INDEX { hwIpDslamSecurityVlanCtrlIndex }
+			::= { hwIpDslamSecurityVlanCtrlTable 1 }
+			
+		
+		HwIpDslamSecurityVlanCtrlEntry ::=
+			SEQUENCE { 
+				hwIpDslamSecurityVlanCtrlIndex
+					INTEGER,								
+				hwIpDslamSecurityVlanCtrlIpSpoofing
+					INTEGER
+			 }
+
+		        hwIpDslamSecurityVlanCtrlIndex OBJECT-TYPE
+				SYNTAX INTEGER (1..4093)
+				MAX-ACCESS not-accessible
+				STATUS current
+				DESCRIPTION
+					"VLAN ID.
+					 "
+				::= { hwIpDslamSecurityVlanCtrlEntry 1 }
+
+
+			hwIpDslamSecurityVlanCtrlIpSpoofing OBJECT-TYPE
+				SYNTAX INTEGER
+					{	
+						disable(1)
+						enable(2)
+					}				
+				MAX-ACCESS read-write
+				STATUS current
+				DESCRIPTION
+					"The status of anti-ipspoofing switch.
+					 "
+				::= { hwIpDslamSecurityVlanCtrlEntry 2 }  
+				
+-- ==============================================================
+-- 防DoS攻击策略	
+-- ==============================================================
+								
+		hwIpDslamAntiDosPolicy OBJECT-TYPE
+			SYNTAX INTEGER {default(1),deactive-ports(2)}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				" 
+				The Policy of ANTI-DOS.				
+				"
+	                DEFVAL { 1 }  
+			::= { hwIpDslamSecurity 23 }
+		END                
+

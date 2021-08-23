@@ -1,0 +1,2973 @@
+-- ============================================================================
+-- Copyright (C) by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:
+-- Reference:
+-- Version:     V3.34
+-- History:
+
+
+-- ============================================================================
+    HUAWEI-TC-MIB DEFINITIONS ::= BEGIN
+        IMPORTS
+            Integer32,IpAddress, OBJECT-TYPE, MODULE-IDENTITY,
+            NOTIFICATION-TYPE
+                FROM SNMPv2-SMI
+            TEXTUAL-CONVENTION,DateAndTime,MacAddress
+                FROM SNMPv2-TC
+            ifEntry
+                FROM IF-MIB
+            huawei
+                FROM HUAWEI-MIB;
+
+
+        huaweiTCMIB MODULE-IDENTITY
+            LAST-UPDATED "2005090800Z"
+            ORGANIZATION "Fix-Net Dep, Huawei Technologies Co.,Ltd."
+            CONTACT-INFO
+                "Floot 5 ,Block 4, R&D Building,
+                Huawei Longgang Production Base,
+                Shenzhen,  P.R.C.
+                http://www.huawei.com
+                Zip:518129
+                "
+            DESCRIPTION
+                "huawei  text conventions and common  defination.    "
+            ::= { huawei 20021210 }
+
+        HWErrorCode ::= TEXTUAL-CONVENTION
+            STATUS deprecated
+            DESCRIPTION
+                "SNMP expand Error code defintion."
+            SYNTAX INTEGER
+
+        HWFrameType ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "This data type is used as the syntax of the
+                hwframeType object in the definition of
+                HUAWEI-DEVICE-MIBs hwframeTable.
+                  "
+            SYNTAX INTEGER
+                {
+                fnameUnknow(1),
+-- MD5500产品:
+                fnameMd16(2),                   -- MD 16 Slot Frame
+                fnameMd8(3),                    -- MD 8  Slot Frame
+                fnameMd4(4),                    -- MD 4  Slot Frame
+                fnameMa16(5),                   -- MA 16 Slot Frame
+                fnameMa8(6),                    -- MA 8  Slot Frame
+                fnameMa4(7),                    -- MA 4  Slot Frame
+                fnameSmx16(8),                  -- MA 16 Slot Slave Frame
+                fnameRsa(9),                    -- RSA Frame
+                fnameRsp19(10),                 -- RSP 19 Slot Frame
+                fnameRsp15(11),                 -- RSP 15 Slot Frame
+                fnameRsp14(12),                 -- RSP 14 Slot Frame
+                fnameRsp12(13),                 -- RSP 12 Slot Frame
+                fnameRsp10(14),                 -- RSP 10 Slot Frame
+                fnameRsp6A(15),                 -- RSP 6  Slot A Type Frame
+                fnameRsp6B(16),                 -- RSP 6  Slot B Type Frame
+                fnamePv819(17),                 -- PV8 19 Slot Frame
+                fnamePv815(18),                 -- PV8 15 Slot Frame
+                fnamePv814(19),                 -- PV8 14 Slot Frame
+                fnamePv812(20),                 -- PV8 12 Slot Frame
+                fnamePv810(21),                 -- PV8 10 Slot Frame
+                fnamePv86A(22),                 -- PV8 6 Slot A Type Frame
+                fnamePv86B(23),                 --PV8 6 Slot B Type Frame
+-- UA3000新增机框
+                fnameHubm(24),                  -- Honet综合业务接入网后维护主框
+                fnameHube(25),                  -- Honet综合业务接入网前维护主框
+                fnameHubf(26),                  -- Honet综合业务接入网前维护从框
+-- MD5500支持管理UA而新增机框
+                fnameUamr(27),                  -- UA R系列框,背板类型为HUBM
+                fnameUasr(28),                  -- UA R系列框,背板类型为HUBS
+                fnameUafmr(29),                 -- UA R系列框,背板类型为HUBE
+                fnameUafsr(30),                 -- UA R系列框,背板类型为HUBF
+                fnameUamv(31),                  -- UA V系列框,背板类型为HUBM
+                fnameUasv(32),                  -- UA V系列框,背板类型为HUBS
+                fnameUafmv(33),                 -- UA V系列框,背板类型为HUBE
+                fnameUafsv(34),                 -- UA V系列框,背板类型为HUBF
+                fnameUabmr(35),                 -- UA的R系列框，背板为HUBB
+                fnameOnu60ar(36),               -- UA的R系列框，背板为HUBO
+                fnameOnuf01D100r(37),           -- UA的R系列框，背板为HUBL
+                fnameUabmv(38),                 -- UA的V系列框，背板为HUBB
+                fnameOnu60av(39),               -- UA的V系列框，背板为HUBO
+                fnameOnuf01D100v(40),           -- UA的V系列框，背板为HUBL
+                fnameHubs(41),                  -- UA的宽带框，背板为HUBS
+                fnameHubb(42),                  -- UA的宽带框，背板为HUBB
+                fnameHubl(43),                  -- UA的宽带框，背板为HUBL
+                fnameMa7(44),                   -- MA5103的7槽位主框
+                fnameSmxMa4(45),                -- MA5103的4槽位从框
+                fnameSmxMa7(46),                -- MA5103的7槽位从框
+                fnameMdb16(47),                 -- MD5500大容量背板
+-- Musa统一类型机框:
+                fnameMusa(50),
+-- MA5200产品:
+                fnameMusa5200E(51),             -- MA5200E是1U的盒子
+                fnameMusa5200F(52),             -- MA5200F是2U的盒子
+-- AG产品:
+                fnamePvm10(60),
+                fnamePvm6B(61) ,
+                fnamePvm6A(62),                 -- AG的主控框160A，背板为HMB
+                fnamePvmUam(63),                -- AG的主控框，PVM插在UAM机框中，背板为HUBM
+                fnamePvmUafm(64),               -- AG的主控框，PVM插在UAFM机框中，背板为HUBE
+                fnamePvmUafs(65),               -- AG的主控框，PVM插在UAFS机框中，背板为HUBF
+                fnamePvmUas(66),                -- AG的主控框，PVM插在UAS机框中，背板为HUBS
+                fnamePvmUamb(67),               -- AG的主控框，PVM插在UAMB机框中，背板为HUBB
+                fnamePvmOnuf01D100(68),         -- AG的主控框，PVM插在ONUF01D100机框中，背板为HUBL
+                fnameOnu04(262176),             -- 远供onu04机框
+                fnameOnu08(262177),             -- 远供onu08机框
+-- A8010:
+                fnameA8010U18(70),              -- A8010 18U 一体化机框
+                fnameA8010U5(71),               -- A8010 小规格5U一体框
+-- MA5105产品:
+                fnameMA5105(80),                -- MA5105
+                fnameBSL(81) ,                  -- BSL
+                fnameB08(82),                   -- B08
+-- MA5300产品:
+                fnameMA5306(83),                -- MA5306 BOM编号:02000204, 13个横插槽位,两个电源模块
+                fnameMA5300(84),                -- MA5300 前后各16个前后竖插槽位,3个电源模块
+                fnameS3026V(85),                -- S3026V产品盒式机框
+
+                fnameOnuf01D100H602Hublr(86),   -- Rsp从框，背板为H602HUBL
+                fnameOnuf01D100H602Hublv(87),   -- Pv8从框，背板为H602HUBL
+                fnameAmgH602Hubl(88),           -- Amg的主控框，背板为H602HUBL
+                fnameUaH602Hubl(89),            -- UA的主控框，背板为H602HUBL
+                fnameHaba(90),                  -- UA后维护高密分离主控框背板
+                fnameHabb(91),                  -- UA后维护高密合一主控框背板
+                fnameHabd(92),                  -- UA前维护高密分离主控框背板
+                fnameHabe(93),                  -- UA前维护高密合一主控框背板
+                fnameHabl(94),                  -- UA前维护高密框小规格室外型背板
+                fnameHabt(95),                  -- UABT大背板
+                fnameApsbHabe(96),              -- UA带APSB板的前维护高密合一主控框背板作从框
+                fnameApsrHabe(97),              -- UA带APSR板的前维护高密合一主控框背板作从框
+-- 8040:
+                fname1760(100),                 -- Quidway R1760 FRAME, 1 MIM slot and 2 SIC slot
+                fname2610(101),                 -- Quidway R2610 FRAME, 1 MIM slot and 2 SIC slot
+                fname2611(102),                 -- Quidway R2611 FRAME, 1 MIM slot and 2 SIC slot
+                fname2620(103),                 -- Quidway R2620 FRAME, 2 MIM slot
+                fname2621(104),                 -- Quidway R2621 FRAME, 2 MIM slot
+                fname2630(105),                 -- Quidway R2630 FRAME, 3 MIM slot
+                fname2631(106),                 -- Quidway R2631 FRAME, 3 MIM slot
+                fname3640(107),                 -- Quidway R3640 FRAME, 4 MIM slot
+                fname3680(108),                 -- Quidway R3680 FRAME, 8 MIM slot
+-- 8060:
+                fname4620(120),                 -- Quidway R4620 FRAME, 1RPU+2IfCard+2PWR+1FAN
+                fname4640(121),                 -- Quidway R4640 FRAME, 1RPU+4IfCard+2PWR+1FAN
+                fname4680(122),                 -- Quidway R4680 FRAME, 1RPU+8IfCard+1NPU+2PWR+1FAN
+                fnameNE20-2(123),               -- Quidway NE20-2 FRAME, 1RPU+2IfCard+1NPU+2PWR+1FAN
+                fnameNE20-4(124),               -- Quidway NE20-4 FRAME, 1RPU+4IfCard+1NPU+2PWR+1FAN
+                fnameNE20-8(125),               -- Quidway NE20-8 FRAME, 1RPU+8IfCard+1NPU+2PWR+1FAN
+                fnameNE20E-4(126),              -- Quidway NE20E-4 FRAME, 2RPU+4IfCard+2NPU+2PWR+1FAN+2COP
+                fnameNE20E-8(127),              -- Quidway NE20E-8 FRAME, 2RPU+8IfCard+2NPU+2PWR+1FAN+2COP
+-- 8070:
+                fnameNE05(130),                 -- Quidway NE05 FRAME, 4 VIU Slot, 1 RSU slot
+                fnameNE08(131),                 -- Quidway NE08 FRAME, 7 VIU slot, 1 RSU slot
+                fnameNE16(132),                 -- Quidway NE16 FRAME, 12 VIU slot, 2 RSU slot
+                fnameNE08E(133),                -- Quidway NE08E FRAME, 6 VIU slot, 2 RSU slot
+                fnameNE16E(134),                -- Quidway NE16E FRAME, 12 VIU slot, 2 RSU slot
+-- 8011:
+                fnameNE80(140),                 -- Quidway NE80 FRAME,
+                fnameNE40-8(141),               -- Quidway NE40-8 FRAME,
+                fnameNE40-4(142),               -- Quidway NE40-4 FRAME,
+                fnameNE40-2(143),               -- Quidway NE40-2 FRAME,
+-- MA
+                fnameMA5600H511upba(800),       -- MA5600的H511UPBA背板，双CELLBUS总线、GE总线
+                fnameMa5600MA5100(801),         -- MA5600的5100背板，插SCUA主控板
+                fnameMa5600MA5103(802),         -- MA5600的5103背板，插SCUA主控板
+                fnameMa5600MA5106(803),         -- MA5600的5106背板，插SCUA主控板
+                fnameMa5600MA5603(804),         -- MA5600的5603背板，插SCU主控板
+-- PVU 主控框
+                fnamePvuMainHaba(900),          -- 后维护的PVU高密主控机框，背板为H601HABA
+                fnamePvuMainHabb(901),          -- 后维护的PVU高密主控机框，背板为H601HABB
+                fnamePvuMainH601Habd(902),       -- 前维护的PVU高密主控机框，背板为H601HABD
+                fnamePvuMainHabe(903),          -- 前维护的PVU高密主控机框，背板为H601HABE
+                fnamePvuMainHabl(904),          -- 前维护的PVU高密主控机框，背板为H601HABL
+                fnamePvuMainHabt(905),          -- BT框HUBT
+
+-- PVM  主控框
+                fnamePvmMainHaba(1000),         -- 后维护的PVM高密主控机框，背板为H601HABA
+                fnamePvmMainHabb(1001),         -- 后维护的PVM高密主控机框，背板为H601HABB
+                fnamePvmMainHabd(1002),         -- 前维护的PVM高密主控机框，背板为H601HABD
+                fnamePvmMainHabe(1003),         -- 前维护的PVM高密主控机框，背板为H601HABE
+                fnamePvmMainHabl(1004),         -- 前维护的PVM高密主控机框，背板为H601HABL
+                fnamePvuMainHabt(1005),         -- BT框HUBT
+
+                frameH612MainHaba(1006),        -- 后维护的PVM高密主控机框,背板为H612HABA
+                frameH612SlaveHABB(1007),       -- 后维护的PVM高密合一从框,背板为H612HABB
+                frameH612MainHABD(1008),        -- 前维护的PVM高密主控机框,背板为H612HABD
+                frameH612SlaveHabe(1009),       -- 前维护的PVM高密合一从框,背板为H612HABE
+                frameH612MainHabl(1010),        -- 前维护的PVM高密主控半框,背板为H612HABL
+                frameH602MainHABD(196608),      -- 前维护的PVM高密主控机框,背板为H612HABD
+            	frameH602SlaveHABE(196609),     -- 前维护的PVM高密主控从框,背板为H612HABE
+            	frameH602SlaveHABD(196610),     -- 前维护的PVM高密主控从框,背板为H612HABD
+
+
+
+
+-- 无主控板的窄带从框
+                fnamePvuSlaveHabb(1500),        -- 后维护的PVU高密从框机框，无主节点板的从框，背板为H601HABB
+                fnamePvuSlaveH601Habe(1501),        -- 前维护的PVU高密从框机框，无主节点板的从框，背板为H601HABE
+                fnamePvuSlaveHaba(1502),        -- 后维护的PVU高密从框机框，无主节点板的从框，背板为H601HABA
+                fnamePvuSlaveH601Habd(1503),        -- 前维护的PVU高密从框机框，无主节点板的从框，背板为H601HABD
+
+
+
+-- MD下带的RSUA从框
+                fnameRsuSlaveHaba(1600),             --后维护的PVM高密主控机框，背板为H601HABA
+	        fnameRsuSlaveH601Habd(1601),             --前维护的PVM高密主控机框，背板为H601HABD
+	        fnameRsuSlaveHabl(1602),            --前维护的PVM高密主控机框，背板为H601HABL
+	        fnameRsuSlaveH602Habd(200706),             --前维护的PVM高密主控机框，背板为H602HABD
+
+
+-- MA5100
+                fnameMA5100ecua(131082),           -- MA5100的5100背板，插ECUA主控板
+                fnameMA5103ecua(131083),           -- MA5100的5103背板，插ECUA主控板
+                fnameMA5106ecua(131084),           -- MA5100的5106背板，插ECUA主控板
+-- MA5105
+                fnameMa5605(134912)  ,           -- MA5605, 2U高
+
+--WA5700:
+                fnameWA5700(155648),             -- WA5700机框
+
+-- MA5600产品
+-- SCU 300mm机框
+                fnameMA5600H801Maba(143360),     -- P300宽带主控框背板类型为H801MABA
+                fnameMA5600H801Spba(143361),     -- P300宽带SPL框背板类型为H801Spba
+                fnameMA5600H801Mabh(143362),     -- P300宽带19英寸新主控框背板类型为H801MABH
+                fnameMA5600H801Mabc(145949),     -- P300宽带主控框背板类型为H801MABC
+
+--OFA5920
+                fnameOFA5920H801MABE(145938),         -- ETSI全规格背板
+                fnameOFA5920H801MABB(145940),         --23'NEBS背板，后出线（全规格背板）
+
+-- MCU 300mm机框
+                fnameMA5600H801Mabm(143363),     -- MA5606T主控框背板类型为H801MABM
+                fnameMA5636(143365),             -- MA5636室外型机框
+
+ 	        fnamePvuMainH602Habd(200705),      -- 前维护的PVU高密主控机框，背板为H602HABD
+
+
+-- MD产品
+-- 有主控板的窄带从框
+                fnameRspHubt(200710),           -- RSP Hubt从框
+                fnamePv8Hubt(200711),           -- PV8 Hubt从框
+                fnameONU60A_RSUG(200712),       -- 远端室内小型用户单元，主控板为RSUG
+
+
+-- UA 宽带产品  从204800开始
+                fnameApsbHaba(204810),          -- UA近端后维护高密分离从框
+                fnameApsrHaba(204811),          -- UA远端后维护高密分离从框
+                fnameApsbHabd(204812),          -- UA近端前维护高密分离从框
+                fnameApsrHabd(204813),          -- UA远端前维护高密分离从框
+                fnameApsbHabb(204814),          -- UA近端后维护高密分离从框
+                fnameApsrHabb(204815),          -- UA远端后维护高密分离从框
+                fnameUa5000H612Habd(204816),    -- BT新增高密主框
+                fnameUa5000H612Habe(204817),    -- BT新增高密主框
+                fnameApsbH612Habe(204818),      -- BT新增近端高密从框
+		fnameH612Habl(204819),          -- UA远端后维护高密分离小框
+                fnameH602Habd(204820),          -- UA前维护高密分离主框，从H601改板
+                fnameH602Habe(204821),          -- UA前维护高密合一主框，从H601改板
+                fnameApsbH602Habd(204822),      -- UA近端前维护高密分离从框，从H601改板
+                fnameApsbH602Habe(204823)       -- UA近端前维护高密合一从框，从H601改板
+                fnameH601Habc(204824)           -- UA近端后维护高密合一主框
+
+-- AG产品
+-- PVM 300mm机框
+                fnameAmgH801MabaMain(262144),    -- P300窄带主控框背板类型为H801MABA
+                fnameAmgH801MabaSlave(262145),   -- P300窄带从框背板类型为H801MABA
+
+                fnameOnu04(262176),              -- 远供onu04机框
+                fnameOnu08(262177),              -- 远供onu08机框
+                fnameH601Habc(262178),           -- H601HABC机框
+-- 8031:
+                fname8031CXUNKN(536576),             -- Unknown frame
+                fname8031CX200A(536577),             -- Quidway CX200A Carrier Switch
+                fname8031CX200B(536578),             -- Quidway CX200B Carrier Switch
+                fname8031CX300A(536579),             -- Quidway CX300A Carrier Switch
+                fname8031CX300B(536580),             -- Quidway CX300B Carrier Switch
+                fname8031CX300C(536581),             -- Quidway CX300C Carrier Switch
+                fname8031CX6008(536582),             -- Quidway CX600-8 Carrier Switch
+                fname8031CX60016(536583),            -- Quidway CX600-16 Carrier Switch
+-- 8090:
+                fname8090Unknown(561152),            -- Quidway unknown FRAME,
+                fname8090Whole(561153),              -- Quidway NE80E FRAME, NE5000E FRAME,
+                fname8090Half(561154),               -- Quidway NE40E FRAME,
+                fname8090HalfLow(561155),           -- Quidway Ne40E FFAME low ,40E降高度的机框
+                fname8090BTBMaster(561156),          -- Quidwy NE5000E BTB MASTER FFAME,背靠背的主框
+                fname8090BTBSlave(561157)          -- Quidwy NE5000E BTB Slave FFAME,背靠背的从框
+
+                }
+
+
+        HWPCBType ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "This data type is used as the syntax of the
+                hwSlotType object in the definition of
+                HUAWEI-DEVICE-MIBs hwSlotTable.
+
+                The definition of this textual convention with the
+                addition of newly assigned values is published
+                periodically by the Huawei MIB Criterion Group, every
+                value indicate a PCB produced by Huawei.
+
+                "
+            SYNTAX INTEGER
+                {
+-- MD 5500
+                bnameUnknown(1),
+                bnameH511Mmxa(2),               -- MMXA board, mainboard of MA5100V1
+                bnameH511Mmxb(3),               -- MMXB board, mainboard of MA5100V1 with APON sub-board
+                bnameH511Mmxc(4),               -- MMXC board, mainboard of MA5100V2 with V5 characteritics etc.
+                bnameH511Asxa(5),               -- ASXA board, mainboard of MD5500, with ASX chip on board for 8x622M switch
+                bnameH511Aica(6),               -- ATM Interface Card, service board of MD5500, support STM-1 and STM-4
+                bnameH511Lanc(7),               -- 8 Port FE service board of MD/MA,
+                                                -- for ethernet service access, support 64 VLAN
+                bnameH512Lanc(8),               -- Update version of H511LANC, support 32/2K VLAN, and region VLAN (IPDSLAM)
+                bnameH512Land(9),               -- Update version of H512LANC, support 32/256/2K VLAN (IPDSLAM),
+                                                -- and 8FE/4FE/8Optic/4Optic/1GE subboard
+                bnameH511Adlb(10),              --
+                bnameH511Adlc(11),              -- 16 Port ADSL board
+                bnameH511Adld(12),              -- 32 Port ADSL board
+                bnameH512Adld(13),              -- 32 Port ADSL board, use another chipset contrast to H511ADLD
+                bnameH511Cesc(14),              -- 16 E1 Port CES board, not support TDM, with 2 E1 subboard
+                bnameH511Cesd(15),              -- 8 V35 Port CES board, with 3 V35 subboard
+                bnameH511Cese(16),              -- 8 E1 Port CES board, not support TDM, with 1 E1 subboard
+                bnameH511Cesf(17),              -- No subboard, for TDM use
+                bnameH511Cesh(18),              -- 16 E1 port CES board, with 2 E1 subboard, support TDM
+                bnameH512Cesh(19),              -- Same as H511CESH, diffrent from chipset
+                bnameH511Ea16(20),              -- Same as H511CESC, diffrent from chipset
+                bnameH511Ce8(21),               -- Same as H511CESE, diffrent from chipset
+                bnameH511Ce8V(22),              -- Same as H511CESD, diffrent from chipset
+                bnameH511Dt16(23),              -- 16 E1 Port CES board, only support TDM mode
+                bnameH511Dn16(24),              -- 16 E1 Port CES board, only support TDM mode, support DDN clock
+                bnameH511Frca(25),              -- 8 E1 Port FR board
+                bnameH511Frcb(26),              -- 8 V35 Port FR board
+                bnameH511Slfa(27),              -- 8 G.SHDSL port FR board, work in E1 mode
+                bnameH511Slfb(28),              -- 8 G.SHDSL port FR board, work in V35 mode
+                bnameH511Slca(29),              -- 8 G.SHDSL port CES board, work in E1 mode, not support TDM
+                bnameH511Slcb(30),              -- 8 G.SHDSL port CES board, work in V35 mode
+                bnameH511Splb(31),              -- 16 port split board word with H511ADLC
+                bnameH511Splc(32),              -- 32 port split board word with H511ADLD/H512ADLD
+                bnameH511Pots(33),              -- 32 Port Pots board
+                bnameH511Aiua(34),              -- ATM Interface Unit, can work with STM-1/IMA/E3 subboard, use the same PCB as MMXA
+                bnameH511Aiub(35),              -- ATM Interface Unit, can work with STM-1/IMA/E3/APON/STM-4 subboard, use the same PCB as MMXA
+                bnameH511Aiuc(36),              -- ATM Interface Unit, can work with STM-1/IMA/E3/APON/STM-4 subboard, use the same PCB as MMXC
+                bnameH511Ipuo(37),              -- Optic interface IP process board
+                bnameH511Epue(38),              -- Electric Interface IP process board
+                bnameH511Ipue(39),              -- Electric interface ehternet process board
+                bnameH511Epuo(40),              -- Optic interface ehternet process board
+                bnameH511Vspd(41),              -- VoDSL process board
+                bnameH511Msua(42),              -- 2 Port STM-1(with 2M structure) access board
+                bnameH511Imua(43),              -- 32 port IMA interface access board
+                bnameH511Smxa(44),              -- main board in slave frame for DSLAM use, use the same PCB as MMXA
+                bnameH511Smxb(45),              -- main board in slave frame for DSLAM use, use the same PCB as MMXB
+                bnameH511Sepa(46),              -- Board used to connect slave frame for DSLAM use
+                bnameEsc(47),                   -- For HONET
+                bnameRsp(48),                   -- For HONET
+                bnamePv8(49),                   -- For HONET
+                bnameApru(50),                  -- For HONET
+                bnameAprx(51),                  -- For HONET
+                bnameAsl(52),                   -- For HONET
+                bnameA32(53),                   -- For HONET
+                bnameDsl(54),                   -- For HONET
+                bnameMlc(55),                   -- For HONET
+                bnameIdla(56),                  -- For HONET
+                bnameCdi(57),                   -- For HONET
+                bnameAti(58),                   -- For HONET
+                bnameTss(59),                   -- For HONET
+                bnamePwx3(60),                 -- For HONET
+                bnamePwxA(61),                 -- For HONET
+                bnameEmu(62),                   -- For HONET
+                bnameHwc(63),                   -- For HONET
+                bnameVfb(64),                   -- For HONET
+                bnamePvu(65),                   -- For HONET
+
+                bnameH511Shla(66),              -- 32路ATM G.SHDSL业务板,51V2新增主框业务板
+                bnameH511Adle(67),              -- 32路ADL,SPL板合一业务板,51V2新增主框业务板
+                bnameMD5500H511BTSA(68),        -- H511BTSA（宽窄带测试板）
+                bnameh511Land(69),              -- H511lLand板
+
+                bnameH601Apma(70),              -- UA3000新增主框主控板
+                bnameH601Apsa(71),              -- UA3000新增从框主控板
+                bnameH601Apfa(72),              -- UA3000新增主框主控板（前出线）
+                bnameH601CSL(73),              -- UA3000新增业务板
+                bnameH601Cslf(74),              -- UA3000新增业务板（前出线）
+                bnameH601ADL(75),              -- UA3000新增业务板
+                bnameH512Adle(76),              -- 32路ADL,SPL板合一业务板,51V2新增主框业务板
+                bnameH512Adli(77),              -- 32路用于ISDN线路的ADL业务板,51V2新增主框业务板
+                bnameH531BASA(78),              -- MA5300新增业务板
+                bnameH531BASE(79),              -- MA5300新增业务板
+
+-- MUSA 产品公共编号
+                bnameSmb(80),                   -- 主控板
+                bnameHrb(81),                   -- 上行板
+                bnameHab(82),                   -- 上行板
+
+-- MA5200
+                bnameNat(83),
+                bnameCts(84),
+
+                bnameH511BTSB(85),              -- For MA5100&MD5300, Broad test card B , providing test for broad subscribers
+
+-- AG产品
+                bnamePvm(90),
+--                bnameAG03PVM(91),               --AG03PVM主控板
+
+                bnameSdl(100),                  -- SDL（窄带业务板,4个E1端口,4个G.SHDSL端口）
+                bnameH511Msuc(101),             -- MSUC 单板支持2个光口，126个E1
+                bnameH511AsxB(102),             -- ASXB 主控板
+
+-- A8010 单板类型：
+                bnamVspNas(110),                -- 编号 VSPNAS板, AS31VSPA03032106
+                bnamVspIpp(111),                -- 编号 VSP IPP板,HSPAS31VSPA03032106
+                bnamVspHsp(112),                -- 编号 VSP HSP板 AS31VSPA03032106
+                bnamVspAnyport(113),            -- 编号 VSP AnyPort板 AS31VSPA03032106
+                bnamVsu(114),                   -- 编号 AS31VSUA03033127 、AS31HSPA、
+                bnamHsp(115),                   -- 编号AS31MSTU03032762
+                bnamFrb(116),                   -- 编号 AS31FRBA03034101,AS31FRBB03034102
+                bnamMstu(117),                  -- 编号AS31MSTU03032762
+-- ESR 单板类型
+                bnameMpua(130) ,                -- BS21MPUA
+                bnameMpub(131) ,                -- BS22MPUB
+                bnameNeta(132) ,                -- BS21NETA
+                bnameNetb(133) ,                -- BS22NETB
+                bnameSFCA(134) ,                -- BS21NETA
+                bnameLpua(135) ,                -- BS21LPUA
+                bnameLpub(136) ,                -- BS22LPUB
+                bnameLpuc(137) ,                -- BS22LPUC
+                bnameLpud(138) ,                -- BS22LPUD
+-- ESR ,硬件相同,软件不同
+                bnameSpubBas(139) ,             -- SN01SPUB
+                bnameSpubSerm(140) ,            -- SN01SPUB
+                bnameLpui(141) ,                -- SN01LPUI
+                bnameLpuh(142) ,                -- SN01LPUH
+                bnameO2CC(143) ,                -- BS2202CC
+-- MA5105
+                bnameMa5105e1(200),             -- E1
+                bnameMa5105fe(201),             -- FE
+                bnameMa5105adsl(202),           -- ADSL
+                bnameMa5105ima(203),            -- IMA
+-- MD5500
+                bnameMD5500Hsl(204),            -- HSL（窄带业务板,两个E1端口,两个V35端口）
+                bnameMD5500PV4(205),            -- PV4（窄带主节点板,比PV8少四个E1）
+-- MA5300
+                bnameMa5300ESM(206),            -- MA5300 以太网交换主控扳 BOM编号：03033569
+                bnameMa5300VDSL16(207),         -- MA5300 以太网接入16路VDSL接口板,BOM编号：03033632
+                bnameMa5300VDSL24(208),         -- MA5300 以太网接入24路VDSL接口板,BOM编号：03035806
+                bnameMa5300ADSL(209),           -- MA5300 48路ADSL接口板
+-- UA5000
+                 bnameH601Aiua(210),            -- UA5000 ATM接口板
+-- MD5500
+                bnameH511IMUB(211),             -- MD5500 16路IMA接口板
+                bnameH511IMUD(212),             -- MD5500 32路IMA接口板
+                bnameH531EADL(213),             -- 24路ADSL接口板
+                bnameH531EVDB(214),             -- 24路支持10BASE-S 和PLAN9998 频段标准的VDSL接口板
+                bnameH533ESHA(215),             -- MA5300 24路G.SHDSL特性单板
+                bnameH531ETHA(216),             -- MA5300 以太网接入板(板上有8个FE端口，一个子槽)
+                bnameH533EADB(217),             -- MA5300 48路ADSL2+接口板
+-- S3026V
+                bnameH523VDLA(218),             -- S3026V的主控板
+                bnameH523VDLAVDSA(219),         -- S3026V的主控板+8路VDSA扣板
+-- UA5000
+                bnameH601SDL(220),             -- UA5000 16路G.SHDSL特性单板
+                bnameH601DEHA(221),             -- UA5000 16路E1透传特性单板
+                bnameH601VDL(222),             -- UA5000 16路VDSL特性单板
+                bnameH601IPMA(264),             -- UA5000 IP上行主控板
+                bnameH602ADM(265),             -- UA5000 16路ADSL2+ 纯宽带板
+-- MA5100
+                bnameH512ADLC(230),             -- 16路ADSL业务板
+                bnameH513ADLD(231),             -- 32路ADSL业务板
+                bnameH513ADLE(232),             -- MA5100 32路ADSL特性单板，下行最大8M
+                bnameH513ADLF(233),             -- MA5100 32路ADSL特性单板，下行最大25M
+                bnameH513ADLI(234),             -- 32路用于ISDN线路的ADL业务板
+                bnameH514ADLD(235),             -- 32路ADSL业务板
+                bnameH515ADLD(236),             -- 32路ADSL业务板
+                bnameH516ADLD(237),             -- 32路ADSL业务板
+                bnameH517ADLD(238),             -- 32路ADSL业务板
+                bnameH518ADLD(239),             -- 32路ADSL业务板
+                bnameH519ADLD(240),             -- 32路ADSL业务板
+                bnameH514ADLE(241),             -- MA5100 32路ADSL特性单板，下行最大8M
+                bnameH515ADLE(242),             -- MA5100 32路ADSL特性单板，下行最大8M
+                bnameH516ADLE(243),             -- MA5100 32路ADSL特性单板，下行最大8M
+                bnameH517ADLE(244),             -- MA5100 32路ADSL特性单板，下行最大8M
+                bnameH518ADLE(245),             -- MA5100 32路ADSL特性单板，下行最大8M
+                bnameH519ADLE(246),             -- MA5100 32路ADSL特性单板，下行最大8M
+                bnameH511Spli(247),             -- split board word with ADLI
+                bnameSepl(248),                 -- SEP 级联用单板
+                bnameSmxl(249),                 -- SEP 级联用单板
+-- MA5105
+                bnameMa5105shdsl(250),          -- SHDSL,16端口
+                bnameMa5105fc(251),             -- FE 级连板
+-- MA5105 N2B
+                bnameN2Be1(252),                -- N2B下的E1
+                bnameN2Bfe(253),                -- N2B下的FE
+                bnameN2Bima(254),               -- N2B下的IMA
+                bnameN2Badslb08(255),           -- N2B下的ADSL,8端口
+                bnameN2Badslbsl(256),           -- N2B下的ADSL,16端口
+                bnameN2Bshdslb08(257),          -- N2B下的SHDSL,8端口
+                bnameN2Bshdslbsl(258),          -- N2B下的SHDSL,16端口
+-- MA5100
+                bnameADLC(259),                 -- ADLC系列单板,16路ADSL业务板
+                bnameADLD(260),                 -- ADLD系列单板,32路ADSL特性单板
+                bnameADLE(261),                 -- ADLE系列单板,32路ADSL特性单板，下行最大8M
+                bnameADLI(262),                 -- ADLI系列单板,32路用于ISDN线路的ADL业务板
+                bnameADL(263),                  -- ADL 系列单板，包括H512ADLF,H512ADLG以及后续的ADL系列单板
+                bnameH601IPMA(264),             -- UA5000 IP上行主控板
+                bnameH602ADMB(265),             -- UA5000 ADSL2+ board
+                bnameH511TSBA(266),             -- H511TSBA无源测试总线引出板
+                bnameH511VDLA(267),             -- MA5100 VDSL 单板
+                bnameVPU(268),                  -- MD的VPU单板
+--S3026V
+                bnameH523VDLA(269),
+
+-- MA5105
+                bnameMa5105adli(270),           -- ADLI,16端口
+                bnameMa5105adlh(271),           -- ADLH,16端口
+                bnameMa5105adce(272),           -- ADSL2+,16端口
+                bnameMa5105adch(273),           -- ADSL2+,16端口
+                bnameMa5105adid(274),           -- ADSL2+ Over ISDN, 16端口
+                bnameH601ADLB(275),             -- 16路ADSL接入，内置splitter（TI AC5套片＋7350）（无继电器）
+                bnameH601CSLB(276),             -- 16路ADSL和POTS合一，内置splitter（TI AC5套片＋7350）（无继电器）
+                bnameH601SDLB(277),             -- 16路ATM G.SHDSL接入(GSV 套片＋7350/250＋高速连接器+支持四线特性)
+                bnameH602ADMC(278),             -- 16路ADSL/ADSL2+接入，内置splitter（GSV套片＋7350/250+高速连接器）（2个继电器）
+--S3026V
+
+                bnameH523VDLAVDSA(279),
+
+-- UA5000
+                bnameH601AIUB(280),             -- UA IMA、E3、ATM 155M上行接口板
+                bnameH601CSLI(281),             -- UA CSLI单板，16路ADSL纯宽带板
+                bnameH601VDLB(282),             -- UA VDLB单板，16路QAM方式VDSL单板，支持N+1备份
+                bnameH602ADMI(283),             -- UA ADMI单板，16路ADSL2+单板，内置BT splitter
+                bnameH601CSLC(284),             -- UA CSLC单板，16路ADSL宽窄带合一板
+                bnameH523mfce(299),             -- H523MFCE
+-- HONET board type, for iManager N2000 BMS HV20 integrate management
+                bnameHV20ASL(300),              -- For HONET, analog subscriber card of HONET SIPP II/III system, having 16 paths of subscriber lines on each card.
+                bnameHV20DRV(301),              -- For HONET, dual-tone number receiving card of HONET SIPP II/III. Each card configures  16 dual-tone number receivers. Meanwhile, DRV card also provides the function of level switch between difference level and TTL level.
+                bnameHV20RSA(302),              -- For HONET, a main board, usually used in remote subscriber shelf.
+                bnameHV20DTM(303),              -- For HONET, digital trunk card of HONET SIPP II/III system.  Each card provides 2 E1 interfaces.
+                bnameHV20DSL(304),              -- For HONET, digital subscriber card of HONET SIPP II/III system. Each card configures 8 paths of digital subscriber lines.
+                bnameHV20DDU(305),              -- For HONET, digital interface card of HONET SIPP II/III system.Each card performs the switch between 2 paths 64K bit/s signal and V35, V24 signals.
+                bnameHV20TSS(306),              -- For HONET, test card of HONET SIPP II/III system, providing test for analog subscribers and digital subscribers.
+                bnameHV20TSI(307),              -- For HONET, test card used in digital subscriber testing. This is no longer in use.
+                bnameHV20AV5(308),              -- For HONET, maste r control card of HONET SIPP II/III system, responsible f or the protocol processing, equiment management, and network exchanging.
+                bnameHV20PWC(309),              -- For HONET, power supply card of HONET SIPP II/III system. PWC card does not provide 48V generator, and is only used in the master control shelf of the SIPP II system.
+                bnameHV20PWX(310),              -- For HONET, power supply card of HONET SIPP II/III system. PWX card provides 48V generator, which is used in various shelfs.
+                bnameHV20DM4(311),              -- For HONET, tributary interface card. Each baord provides the 4 paths of switch between sub-synchronous PCM lines and 2112Kbit/s synchronous code, and 4 paths of inversion. It also determines the dirction of receiving and sending of the 4 paths of signals, which realizes the function of self-healing switch.
+                bnameHV20TIU(312),              -- For HONET, optical interface card of OLT terminal station. The function of a TIU card is to multiplex the 28 paths of 2112 Kbit/s tributary signals sent by 7 DM4, and then send them back to the 7 DM4.
+                bnameHV20NMI(313),              -- For HONET, used in OLT, ONU-512, ONU-128, ONU-1000A of the HONET system, functioning as maintenance of the optical transmission equipment, environment monitoring and equipment management.
+                bnameHV20FIU(314),              -- For HONET, optical interface in the trunk ONU, providing simultaneously two pairs of optical interfaces.
+                bnameHV20EIU(315),              -- For HONET, used in the E1 interface of ONU-128. EIU card completes the justification and restoration of two 2M signals.
+                bnameHV20BIU(316),              -- For HONET, optical interface card used in triburary ONU, accepting 2 to 6 2M point to point transmission.
+                bnameHV20ILM(317),              -- For HONET, InfoLink management card of CATV subscriber shelf.
+                bnameHV20ESC(318),              -- For HONET, environment monitor interface card of HONET SIPP II/III system, providing the environment quantity of the remote ONU and monitoring the operation of the power supply.
+                bnameHV20PWH(319),              -- For HONET, power supply card of PHD optical transmission system, used in various transmission shelfs.
+                bnameHV20ILR(320),              -- For HONET, InfoLink optical receiving card of CATV subscriber shelf.
+                bnameHV20ILT(321),              -- For HONET, InfoLink optical sending card of CATV subscriber shelf.
+                bnameHV20PV8(322),              -- For HONET, the master control card of HONET SIPP II/III system, responsible for protocol handling, equipment management, and network switch. The only difference between PV8 card and PV4 card is that the former has 8 paths of standard E1 interfaces while the latter has only 4.
+                bnameHV20PV4(323),              -- For HONET, the master control card of HONET SIPP II/III system, responsible for protocol handling, equipment management, and network switch. The only difference between PV8 card and PV4 card is that the former has 8 paths of standard E1 interfaces while the latter has only 4.
+                bnameHV20RSP(324),              -- For HONET, a new-type remote RSA card of HONET SIPP II/III system whose convergence rate can be adjusted, connecting to remote ONU subscribers collaboratively with digital trunk cards. Each RSP card may configure at most 4 2M PCM links, and can realize 1:1, 1:2, and 1:4 convergence rates.
+                bnameHV20HSL(325),              -- For HONET, N*64 super rate card (N=1~31), of HONET SIPP II/III system. Each card provides externally 2 synchronous V.35 interface in the mode of DCE or DTE, and two FE1 interfaces.
+                bnameHV20ATI(326),              -- For HONET, analog trunk interface card of HONET SIPP II/III system, used to connect subscriber machines which have only EM interfaces, realizing EM communication transfer in the access network. Each AIT cards provides 6 physical EM ports. The slots are compatible with such card slots as ASL, DSL, and VFB.
+                bnameHV20SRX(327),              -- For HONET, sub-rate card of HONET SIPP II/III system. Each card provides externally 5 synchronous/asynchronous compatible V.24 interfaces in DCE mode, completing the multiplexing of multiple sub-rate data specified in X.50 and X.58 protocols.
+                bnameHV20VFB(328),              -- For HONET, 2 line/4 line voice frequency interface card of HONET SIPP II/III system, providing the private network of the railway dispatching system with private interface card.
+                bnameHV20VDM(329),              -- For HONET, a card to stack sound frequencies in HONET SIPP II/III system. It is inserted in the subscriber shelf, and is compatible with other card slots in such cards as ASL, DSL, and VFB. Each VDM card has 16 channels, supporting at most 16 paths of voice frequency tiling.
+                bnameHV20CDI(330),              -- For HONET, analog trunk card in HONET SIPP II/III system, supporting DDI service. CDI baord may dynamically distribute time slots, and its slots are compatible with the slots of such cards as ASL, DSL, and VFB.
+                bnameHV20ASP(331),              -- For HONET, AV5 baord of the remote main node of HONET SIPP II/III system (HV20A003 version or above not supportable),.
+                bnameHV20DTE(332),              -- For HONET, a new- type 2M bit/s digital trunk interface card of HONET SIPP II/III system. Each card configures 8 2M PCM 30/32 systems.
+                bnameHV20WSA(333),              -- For HONET, remote main node card which is wireless connected to ETS450 WLL base station in HONET SIPP II/III system. Each card outputs 2M E1 trunk, mainly used in WSA subscriber shelf. WSA card communicates with the host via RSA protocol, which equals to RSA main node card.
+                bnameHV20DTH(334),              -- For HONET, 1.544M bit/s digital leased line interface card of HONET SIPP II/III system. Each card configures 8 1.544M PCM 22/24 systems, providing T1 leased line service.
+                bnameHV20ASL32(335),            -- For HONET, a new-type analog subscriber card of HONET SIPP II/III system, which can provide 32 paths of subscriber lines on each card.
+                bnameHV20NPU(336),              -- For HONET, net process unit in HONET SIPP II/III system, which can provide 10M ethernet interface .
+                bnameHV20DLI(337),              -- For HONET, DECT interface board, which provide 32 channle for wireless subscriber.
+                bnameHV20CKS(338),              -- For HONET, a clock card of HONET SIPP II/III system.
+                bnameHV20CKD(339),              -- For HONET, a clock card of HONET SIPP II/III system.
+                bnameHV20SBL(340),              -- For HONET, 2B1Q card of HONET SIPP II/III system. Each card provides 8 paths of 2B1Q interfaces, which are used in DDN access.
+                bnameHV20MLC(341),              -- For HONET, a new-type SBL card, can be used as both subscriber card and main node board.
+                bnameHV20SCS(342),              -- For HONET, SCS Card is subrate concentrate switch card that is used with SRX Card, MTA port, DE1 Channel, and this card only support connection between subrate of 2.4K, 4.8K, 9.6K, 19.2K.
+                bnameHV20HWC(343),              -- For HONET, a signal level convert board, only used for PV8 board in PV8-10 control shelf.
+-- MIM & SIC card for router:
+                bnameReserverd(400),            -- For router, Reserved board name
+                bnameUnknown(401),              -- For router, Unknown board
+                bnameMIM_8AS(402),              -- For router, MIM card with 8 asynchronous serial port
+                bnameMIM_4SA(403),              -- For router, MIM card with 4 high-speed synchronous/asynchronous serial port
+                bnameMIM_4BS(404),              -- For router, MIM card with 4 ISDN BRI S/T port
+                bnameMIM_2E1(405),              -- For router, MIM card with 2 channelized cE1/PRI port
+                bnameMIM_4E1(406),              -- For router, MIM card with 4 channelized cE1/PRI port
+                bnameMIM_1FE(407),              -- For router, MIM card with 1 10Base-T/100Base-TX port
+                bnameMIM_1E1(408),              -- For router, MIM card with 1 channelized cE1/PRI port
+                bnameMIM_2FE(409),              -- For router, MIM card with 2 10Base-T/100Base-TX port
+                bnameMIM_2VI(411),              -- For router, MIM card with 2 line voice processing unit
+                bnameMIM_4VI(412),              -- For router, MIM card with 4 line voice processing unit
+                bnameMIM_30VI(413),             -- For router, MIM card with 30 line voice processing unit
+                bnameMIM_2S1B(414),             -- For router, MIM card with 2 synchronous/asynchronous serial port and 1 ISDN BRI S/T port
+                bnameMIM_2SA(415),              -- For router, MIM card with 2 high-speed synchronous/asynchronous serial port
+                bnameMIM_16AS(416),             -- For router, MIM card with 16 asynchronous serial port
+                bnameMIM_new8AS(417),           -- For router, MIM card with 8 asynchronous serial port (new)
+                bnameMIM_8LSA(418),             -- For router, MIM card with 8 low-speed synchronous/asynchronous serial port
+                bnameMIM_2FXS(419),             -- For router, MIM card with 2 FXS port
+                bnameMIM_2FX0(420),             -- For router, MIM card with 2 FXO port
+                bnameMIM_2EM(421),              -- For router, MIM card with 2 E&M port
+                bnameMIM_4FXS(422),             -- For router, MIM card with 4 FXS port
+                bnameMIM_4FXO(423),             -- For router, MIM card with 4 FXO port
+                bnameMIM_4EM(424),              -- For router, MIM card with 4 E&M port
+                bnameFixed_SA(425),             -- For router 2620/2621, 1/2 fixed high-speed synchronous serial port
+                bnameMIM_E1VI(426),             -- For router, MIM card with 1 E1 port for voice processing
+                bnameMIM_12AM(427),             -- For router, MIM card with 12 analog modem port
+                bnameMIM_6AM(428),              -- For router, MIM card with 6 analog modem port
+                bnameMIM_NDEC(429),             -- For router, MIM card for network encryption
+                bnameMIM_new2SA(430),           -- For router, MIM card with 2 high-speed synchronous/asynchronous serial port (new)
+                bnameFixed_Aux(431),            -- For router, Fixed Aux port
+                bnameFixed_Console(432),        -- For router, Fixed Console Port
+                bnameFixed_SA_1760(433),        -- For router 1760/2610/2611, fixed synchronous/asynchronous serial port
+                bnameSIC_1FE(434),              -- For router, SIC card with 1 10Base-T/100Base-TX port
+                bnameSIC_1SA(435),              -- For router, SIC card with 1 high-speed sychronous/asynchronous serial port
+                bnameSIC_3AS(436),              -- For router, SIC card with 3 asynchronous serial port
+                bnameSIC_1E1(437),              -- For router, SIC card with 1 channelized cE1/PRI port
+                bnameSIC_1T1(438),              -- For router, SIC card with 1 channelized cT1/PRI port
+                bnameSIC_1BU(439),              -- For router, SIC card with 1 ISDN BRI U port
+                bnameSIC_2BU(440),              -- For router, SIC card with 2 ISDN BRI U port
+                bnameSIC_1BS(441),              -- For router, SIC card with 1 ISDN BRI S/T port
+                bnameSIC_2BS(442),              -- For router, SIC card with 2 ISDN BRI S/T port
+                bnameSIC_1AM(443),              -- For router, SIC card with 1 analog modem port
+                bnameSIC_2AM(444),              -- For router, SIC card with 2 analog modem port
+                bnameSIC_1EM(445),              -- For router, SIC card with 1 E&M port
+                bnameSIC_2EM(446),              -- For router, SIC card with 2 E&M port
+                bnameSIC_1FXS(447),             -- For router, SIC card with 1 FXS port
+                bnameSIC_2FXS(448),             -- For router, SIC card with 2 FXS port
+                bnameSIC_1FXO(449),             -- For router, SIC card with 1 FXO port
+                bnameSIC_2FXO(450),             -- For router, SIC card with 2 FXO port
+                bnameMIM_6FCM(451),             -- For router, MIM card with 6 fast connect modem port
+                bnameMIM_8SA(452),              -- For router, MIM card with 8 high-speed sychronous/asychronous serial port
+                bnameMIM_1T1(453),              -- For router, MIM card with 1 channelized cT1/PRI port
+                bnameMIM_2T1(454),              -- For router, MIM card with 2 channelized cT1/PRI port
+                bnameMIM_4T1(455),              -- For router, MIM card with 4 channelized cT1/PRI port
+                bnameMIM_T1VI(456),             -- For router, MIM card with 1 T1 port for voice processing
+                bnameMIM_4FCM(457),             -- For router, MIM card with 4 fast connect modem port
+                bnameMIM_2FCM(458),             -- For router, MIM card with 2 fast connect modem port
+                bnameMIM_cE3(459),              -- For router, MIM card with 1 channelized E3 port
+                bnameMIM_6AME(460),             -- For router, MIM card with 6 analog modem port (new)
+                bnameMIM_12AME(461),            -- For router, MIM card with 12 analog modem port (new)
+                bnameMIM_1E1-F(465),            -- For router, MIM card with 1 fractional E1 port
+                bnameMIM_2E1-F(466),            -- For router, MIM card with 2 fractional E1 port
+                bnameMIM_4E1-F(467),            -- For router, MIM card with 4 fractional E1 port
+                bnameMIM_1T1-F(468),            -- For router, MIM card with 1 fractional T1 port
+                bnameMIM_2T1-F(469),            -- For router, MIM card with 2 fractional T1 port
+                bnameMIM_4T1-F(470),            -- For router, MIM card with 4 fractional T1 port
+                bnameSIC_1E1-F(471),            -- For router, SIC card with 1 fractional E1 port
+                bnameSIC_1T1-F(472),            -- For router, SIC card with 1 fractional T1 port
+                bnameMIM_cT3(473),              -- For router, MIM card with 1 channelized T3 port
+                bnameMIM_ATM_ADSL1(474),        -- For router, MIM card with 1 adsl port
+                bnameMIM_ATM_ADSL2(475),        -- For router, MIM card with 2 adsl ports
+                bnameMIM_ATM_155(476),          -- For router, MIM card with 1 155M port
+                bnameMIM_8AS-701(477),          -- For router, MIM card with 8 asynchronous serial port(using SD701)
+                bnameMIM_16AS-701(478),         -- For router, MIM card with 16 asynchronous serial port(using SD701)
+                bnameMIM_4SA-701(479),          -- For router, MIM card with 4 high-speed synchronous/asynchronous serial port(using SD701)
+                bnameMIM_2SA-701(480),          -- For router, MIM card with 2 high-speed synchronous/asynchronous serial port(using SD701)
+-- 8070:
+                bnameRTC1RSU(550),              -- RSU process board
+                bnameRTC1RSK(551),              -- RSU back board
+                bnameRTC2RSUA(552),             -- RSU process board 128M
+                bnameRTC2RSUB(553),             -- RSU process board 256M
+                bnameRTC2RSUC(554),             -- RSU process board 512M
+                bnameRTC2RSEU(555),             -- RSU back board
+                bnameRTC1VIU(556),              -- VIU process board
+                bnameRTC1BAK(557),              -- VIU back board
+                bnameRTC2VIUA(558),             -- VIU process board 128M
+                bnameRTC2VIUB(559),             -- VIU process board 256M
+                bnameRTC2VIUC(560),             -- VIU process board 512M
+                bnameRTC2VIEU(561),             -- VIU back board version 2
+                bnameRTC4VIU(562),              -- Enhanced VIU process board
+                bnameRTC1HAU(563),              -- HAU
+                bnameRTC2HAU(564),              -- HAU version 2
+                bnameRTC1SMMU(565),             -- ALU used by NE08
+                bnameRTC2ALU(566),              -- ALU used by NE16E, NE08E and NE05
+                bnameRTC4VIUA(567),             -- NE05/08/16E front board
+                bnameRTC4VIUB(568),             -- NE05/08/16E front board
+                bnameRTC4VIUC(569),             -- NE05/08/16E front board
+                bnameRTC1RSHC(570),             -- NE05/08/16E board:for ne05 rshc 后板
+                bname5FEMP(571),                -- NE05/08/16E board:for imu 前板
+                bname2GOMP(572),                -- NE05/08/16E board:for imu 前板
+                bname1GOMP(573),                -- NE05/08/16E board:for imu 前板
+                bname2GEMP(574),                -- NE05/08/16E board:for imu 前板
+                bname1GEMP(575),                -- NE05/08/16E board:for imu 前板
+                bname5FEMK(576),                -- NE05/08/16E board:for imu 后板
+                bname3FEMK(577),                -- NE05/08/16E board:for imu 后板
+                bname2GOMK(578),                -- NE05/08/16E board:for imu 后板
+                bname2GEMK(579),                -- NE05/08/16E board:for imu 后板
+                bname1GOMK(580),                -- NE05/08/16E board:for imu 后板
+                bname1GEMK(581),                -- NE05/08/16E board:for imu 后板
+                bnameRTC3RSUB(582),             -- RSU process board 256M version 3
+                bnameRTC3RSUC(583),             -- RSU process board 512M version 3
+                bnameRTC2VIUS(584),             -- VIU process board 256M，used only by NE05
+                bnameRTC3VIUB(585),             -- VIU process board 256M version 3
+                bnameRTC8VIUB(586),             -- VIU process board 256M version 8
+                bnamePWR(587),                  -- Power supply
+                bnameFAN(588),                  -- Fan
+                bname3FEMP(589),                -- NE05/08/16E board:for imu 前板
+                bnameRTC2RSUD(590),             -- RSU process board 1G
+-- 8011:
+                bnameCR01BAKB(600),             -- For NE80, backplane of NE80
+                bnameCR01BAKC(601),             -- For NE40-8, backplane of NE40-8
+                bnameCR01BAKD(602),             -- For NE40-4, backplane of NE40-4
+                bnameCR01BAKE(603),             -- For NE40-2, backplane of NE40-2
+                bnameCR01PWRB(604),             -- For NE80, power supply card of NE80
+                bnameCR01DPRB(605),             -- For NE80, power destribution card of NE80
+                bnameCR01PWRD(606),             -- For NE40, power supply card of NE40
+                bnameCR01FANB(607),             -- For NE80, fan card of NE80
+                bnameCR01FAND(608),             -- For NE40, fan card of NE40
+                bnameCR01MPUB(609),             -- For NE80, main control card of NE80
+                bnameCR01SRUB(610),             -- For NE40, main control card of NE40
+                bnameCR01NETB(611),             -- For NE80, switch card of NE80
+                bnameCR01CLKB(612),             -- For NE80, clock card of NE80
+                bnameCR01HUBB(613),             -- For NE80, HUB card of NE80
+                bnameCR01LPUB(614),             -- For NE80 & NE40, mother card of NE80 and NE40
+                bnameCR01NATB(615),             -- For NE80 & NE40, NAT card of NE80 and NE40
+-- MA5300:
+                bnameH531ESME(616),             -- 以太网交换主控板，与ESMA区别在于：子槽2上只能插电口的FE子卡
+                bnameH531EIUA(617),             -- 上行接口板，可扣一个GE子卡
+-- MA5100 ADSL系列化单板:
+                bnameH511Mmxs(620),             -- MA5100 MMX系列主控板中的h511mmxs板，不带时钟扣板和业务扣板
+                bnameADLF(622),                 -- 32 port ADSL board over pots
+                bnameADLG(623),                 -- 32 port ADSL board over pots
+                bnameADLH(624),                 -- 32 port ADSL board over pots
+                bnameADLJ(625),                 -- 32 port ADSL board over pots
+                bnameADLK(626),                 -- 32 port ADSL board over pots
+                bnameADLL(627),                 -- 32 port ADSL board over pots
+                bnameADLM(628),                 -- 32 port ADSL board over pots
+                bnameADLN(629),                 -- 32 port ADSL board over pots
+                bnameADLO(630),                 -- 32 port ADSL board over pots
+                bnameADLP(631),                 -- 32 port ADSL board over pots
+                bnameADLQ(632),                 -- 32 port ADSL board over pots
+                bnameADLR(633),                 -- 32 port ADSL board over pots
+                bnameADLS(634),                 -- 32 port ADSL board over pots
+                bnameADLT(635),                 -- 32 port ADSL board over pots
+                bnameADLU(636),                 -- 32 port ADSL board over pots
+                bnameADLV(637),                 -- 32 port ADSL board over pots
+                bnameADLW(638),                 -- 32 port ADSL board over pots
+                bnameADLX(639),                 -- 32 port ADSL board over pots
+                bnameADLY(640),                 -- 32 port ADSL board over pots
+                bnameADLZ(641),                 -- 32 port ADSL board over pots
+                bnameADC(642),                  -- 32 port ADSL2+ board over pots
+                bnameADCA(643),                 -- 32 port ADSL2+ board over pots
+                bnameADCB(644),                 -- 32 port ADSL2+ board over pots
+                bnameADCC(645),                 -- 32 port ADSL2+ board over pots
+                bnameADCD(646),                 -- 32 port ADSL2+ board over pots
+                bnameADCE(647),                 -- 32 port ADSL2+ board over pots
+                bnameADCF(648),                 -- 32 port ADSL2+ board over pots
+                bnameADCG(649),                 -- 32 port ADSL2+ board over pots
+                bnameADCH(650),                 -- 32 port ADSL2+ board over pots
+                bnameADCI(651),                 -- 32 port ADSL2+ board over pots
+                bnameADCJ(652),                 -- 32 port ADSL2+ board over pots
+                bnameADCK(653),                 -- 32 port ADSL2+ board over pots
+                bnameADCL(654),                 -- 32 port ADSL2+ board over pots
+                bnameADCM(655),                 -- 32 port ADSL2+ board over pots
+                bnameADCN(656),                 -- 32 port ADSL2+ board over pots
+                bnameADCO(657),                 -- 32 port ADSL2+ board over pots
+                bnameADCP(658),                 -- 32 port ADSL2+ board over pots
+                bnameADCQ(659),                 -- 32 port ADSL2+ board over pots
+                bnameADCR(660),                 -- 32 port ADSL2+ board over pots
+                bnameADCS(661),                 -- 32 port ADSL2+ board over pots
+                bnameADCT(662),                 -- 32 port ADSL2+ board over pots
+                bnameADCU(663),                 -- 32 port ADSL2+ board over pots
+                bnameADCV(664),                 -- 32 port ADSL2+ board over pots
+                bnameADCW(665),                 -- 32 port ADSL2+ board over pots
+                bnameADCX(666),                 -- 32 port ADSL2+ board over pots
+                bnameADCY(667),                 -- 32 port ADSL2+ board over pots
+                bnameADCZ(668),                 -- 32 port ADSL2+ board over pots
+                bnameADI(669),                  -- 32 port ADSL2+ board over ISDN
+                bnameADID(670),                 -- 32 port ADSL2+ board over ISDN
+                bnameADIE(671),                 -- 32 port ADSL2+ board over ISDN
+                bnameADIF(672),                 -- 32 port ADSL2+ board over ISDN
+                bnameADIH(673),                 -- 32 port ADSL2+ board over ISDN
+                bnameADIJ(674),                 -- 32 port ADSL2+ board over ISDN
+                bnameADIK(675),                 -- 32 port ADSL2+ board over ISDN
+                bnameADIM(676),                 -- 32 port ADSL2+ board over ISDN
+                bnameADIA(677),                 -- 32 port ADSL2+ board over pots
+                bnameADIB(678),                 -- 32 port ADSL2+ board over pots
+                bnameADIC(679),                 -- 32 port ADSL2+ board over pots
+                bnameADIG(680),                 -- 32 port ADSL2+ board over pots
+                bnameADII(681),                 -- 32 port ADSL2+ board over pots
+                bnameADIL(682),                 -- 32 port ADSL2+ board over pots
+                bnameADIN(683),                 -- 32 port ADSL2+ board over pots
+                bnameADIO(684),                 -- 32 port ADSL2+ board over pots
+                bnameADIP(685),                 -- 32 port ADSL2+ board over pots
+                bnameADIQ(686),                 -- 32 port ADSL2+ board over pots
+                bnameADIR(687),                 -- 32 port ADSL2+ board over pots
+                bnameADIS(688),                 -- 32 port ADSL2+ board over pots
+                bnameADIT(689),                 -- 32 port ADSL2+ board over pots
+                bnameADIU(690),                 -- 32 port ADSL2+ board over pots
+                bnameADIV(691),                 -- 32 port ADSL2+ board over pots
+                bnameADIW(692),                 -- 32 port ADSL2+ board over pots
+                bnameADIX(693),                 -- 32 port ADSL2+ board over pots
+                bnameADIY(694),                 -- 32 port ADSL2+ board over pots
+                bnameADIZ(695),                 -- 32 port ADSL2+ board over pots
+                bnameADM(696),                  -- 64 port ADSL2+ board over pots
+                bnameADMA(697),                 -- 64 port ADSL2+ board over pots
+                bnameADMB(698),                 -- 64 port ADSL2+ board over pots
+                bnameADMC(699),                 -- 64 port ADSL2+ board over pots
+                bnameADMD(700),                 -- 64 port ADSL2+ board over pots
+                bnameADME(701),                 -- 64 port ADSL2+ board over pots
+                bnameADMF(702),                 -- 64 port ADSL2+ board over pots
+                bnameADMG(703),                 -- 64 port ADSL2+ board over pots
+                bnameADMH(704),                 -- 64 port ADSL2+ board over pots
+                bnameADMI(705),                 -- 64 port ADSL2+ board over pots
+                bnameADMJ(706),                 -- 64 port ADSL2+ board over pots
+                bnameADMK(707),                 -- 64 port ADSL2+ board over pots
+                bnameADML(708),                 -- 64 port ADSL2+ board over pots
+                bnameADMM(709),                 -- 64 port ADSL2+ board over pots
+                bnameADMN(710),                 -- 64 port ADSL2+ board over pots
+                bnameADMO(711),                 -- 64 port ADSL2+ board over pots
+                bnameADMP(712),                 -- 64 port ADSL2+ board over pots
+                bnameADMQ(713),                 -- 64 port ADSL2+ board over pots
+                bnameADMR(714),                 -- 64 port ADSL2+ board over pots
+                bnameADMS(715),                 -- 64 port ADSL2+ board over pots
+                bnameADMT(716),                 -- 64 port ADSL2+ board over pots
+                bnameADMU(717),                 -- 64 port ADSL2+ board over pots
+                bnameADMV(718),                 -- 64 port ADSL2+ board over pots
+                bnameADMW(719),                 -- 64 port ADSL2+ board over pots
+                bnameADMX(720),                 -- 64 port ADSL2+ board over pots
+                bnameADMY(721),                 -- 64 port ADSL2+ board over pots
+                bnameADMZ(722),                 -- 64 port ADSL2+ board over pots
+                bnameADD(723),                  -- ADSL2+ ADD系列单板
+                bnameADDA(724),                 -- ADSL2+ ADD系列单板
+                bnameADDB(725),                 -- ADSL2+ ADD系列单板
+                bnameADDC(726),                 -- ADSL2+ ADD系列单板
+                bnameADDD(727),                 -- ADSL2+ ADD系列单板
+                bnameADDE(728),                 -- ADSL2+ ADD系列单板
+                bnameADDF(729),                 -- ADSL2+ ADD系列单板
+                bnameADDG(730),                 -- ADSL2+ ADD系列单板
+                bnameADDH(731),                 -- ADSL2+ ADD系列单板
+                bnameADDI(732),                 -- ADSL2+ ADD系列单板
+                bnameADDJ(733),                 -- ADSL2+ ADD系列单板
+                bnameADDK(734),                 -- ADSL2+ ADD系列单板
+                bnameADDL(735),                 -- ADSL2+ ADD系列单板
+                bnameADDM(736),                 -- ADSL2+ ADD系列单板
+                bnameADDN(737),                 -- ADSL2+ ADD系列单板
+                bnameADDO(738),                 -- ADSL2+ ADD系列单板
+                bnameADDP(739),                 -- ADSL2+ ADD系列单板
+                bnameADDQ(740),                 -- ADSL2+ ADD系列单板
+                bnameADDR(741),                 -- ADSL2+ ADD系列单板
+                bnameADDS(742),                 -- ADSL2+ ADD系列单板
+                bnameADDT(743),                 -- ADSL2+ ADD系列单板
+                bnameADDU(744),                 -- ADSL2+ ADD系列单板
+                bnameADDV(745),                 -- ADSL2+ ADD系列单板
+                bnameADDW(746),                 -- ADSL2+ ADD系列单板
+                bnameADDX(747),                 -- ADSL2+ ADD系列单板
+                bnameADDY(748),                 -- ADSL2+ ADD系列单板
+                bnameADDZ(749),                 -- ADSL2+ ADD系列单板
+                bnameH601APMB(750),             -- UA5000APMB主控板
+                bnameH601APSB(751),             -- UA5000近端从框主控板
+                bnameH601APSR(752),             -- UA5000远端从框主控板
+                bnameH561SCU(753),             -- MA5600的H511SCUA主控板，可扣PHY/LSW扣板
+                bnameH601IPMB(754),             -- UA5000IPMB主控板
+                bnameH533ECBD(755),             -- 64路GE总线ADSL2+板(CoronaG)
+                bnameH512ADME(756),             -- 64路双CELLBUS总红ADSL2+板(AC7套片)
+-- UA
+                bnameH601CSMB(757),             -- UA5000 ADSL2+ board
+                bnameH601EAUA(758),             -- UA5000 16路VDSL特性单板
+                bnameH601TSSB(759),             -- UA5000 宽带测试单板
+                bnameH601BP2B(760),             -- UA5000 BPON
+
+		        bnameADE(761),               --ADSL2+ ADE系列单板
+                bnameADEA(762),              --ADSL2+ ADE系列单板
+                bnameADEB(763),              --ADSL2+ ADE系列单板
+                bnameADEC(764),              --ADSL2+ ADE系列单板
+                bnameADED(765),              --ADSL2+ ADE系列单板
+                bnameADEE(766),              --ADSL2+ ADE系列单板
+                bnameADEF(767),              --ADSL2+ ADE系列单板
+                bnameADEG(768),              --ADSL2+ ADE系列单板
+                bnameADEH(769),              --ADSL2+ ADE系列单板
+                bnameADEI(770),              --ADSL2+ ADE系列单板
+                bnameADEJ(771),              --ADSL2+ ADE系列单板
+                bnameADEK(772),              --ADSL2+ ADE系列单板
+                bnameADEL(773),              --ADSL2+ ADE系列单板
+                bnameADEM(774),              --ADSL2+ ADE系列单板
+                bnameADEN(775),              --ADSL2+ ADE系列单板
+                bnameADEO(776),              --ADSL2+ ADE系列单板
+                bnameADEP(777),              --ADSL2+ ADE系列单板
+                bnameADEQ(778),              --ADSL2+ ADE系列单板
+                bnameADER(779),              --ADSL2+ ADE系列单板
+                bnameADES(780),              --ADSL2+ ADE系列单板
+                bnameADET(781),              --ADSL2+ ADE系列单板
+                bnameADEU(782),              --ADSL2+ ADE系列单板
+                bnameADEV(783),              --ADSL2+ ADE系列单板
+                bnameADEW(784),              --ADSL2+ ADE系列单板
+                bnameADEX(785),              --ADSL2+ ADE系列单板
+                bnameADEY(786),              --ADSL2+ ADE系列单板
+                bnameADEZ(787),              --ADSL2+ ADE系列单板
+
+                bnameH602CSMB(788),             -- UA5000 16路ADSL2+ 宽窄带合一板
+                bnameH603CSMC(789),             -- UA5000 ADSL2+ board
+                bnameH601ADRB(790),             -- UA5000 32 路ADSL2+ board(内置分离器)
+                bnameH801X1CA(795),              -- -- OFA5920的 10GE光口板
+
+-- MA5300:
+                bnameH531EBDC(800),             -- 48路ADSL OVER POTS 接口板(内置分离器)
+                bnameH531EBDI(801),             -- 48路ADSL OVER ISDN 接口板(内置分离器)
+                bnameH531EADI(802),             -- 48路ADSL OVER ISDN 接口板
+                bnameH531EADK(803),             -- 48路ADSL OVER ISDN + 防护 接口板
+                bnameH531EBDL(804),             -- 24路ADSL2+ 接口板
+-- PVU
+                bnamePVU8(1000),                -- H601PVU
+                bnamePVU4(1001),                -- H601PVU
+-- RSU
+                bnameRSUA(1002),             --H601RSUA ,8个E1
+                bnameRSUA4(1003),            --H601RSUA ,4个E1
+                bnameH602PWX2(1100),            -- H602PWX2
+
+-- 8060 系列单板(3700-3799)
+                bnameDEVUNKNOWN(3700),          -- 未知类型
+                bnameDEVRPU(3701),              -- 不带NP的主控板
+                bnameDEVNPRPU(3702),            -- 带NP的主控板
+                bnameDEVNP(3703),               -- 网络处理器单板
+                bnameDEV6FAN(3704),             -- 支持6个风扇的单板
+                bnameDEV8FAN(3705),             -- 支持8个风扇的单板
+                bnameDEVPOWER(3706),            -- 电源模块
+                bnameDEVPOWER(3707),            -- 不带NP的RPUE
+                bnameDEVPOWER(3708),            -- 带NP的RPUE
+                bnameDEVCOPE(3709),             -- COP板
+                bnameDEVCOPE(3710),             -- CF卡
+                bnameE200EFAN(3711),			-- 32030001 风扇组件-7V-13.8V-40*40*20mm-300mm-4PIN-1.2W-0.267m^3/min	厂家  DELTA	厂家型号  EFB0412HHD-R00
+                bnameE200EPWRAC(3712),			-- 02130558 一次电源--5degC-55degC-85V-264V-12V/8.5A			厂家  DELTA	厂家型号  DPSN-100BP F
+                bnameE200EPWRDC(3713),			-- 02270038 特制二次电源-100W--5degC-55degC--36V--72V-12V/8.5A-0.5A	厂家  DELTA	厂家型号  DPSN-100BP-1 B
+                fnameE200E(3714),				-- 框
+                bnameE200ERPU(3715),            -- E200E主控板
+
+                bnameDEVH2FE(3719),             -- 高速2FE
+                bnameDEVHG1GE(3720),            -- 高速1GE
+                bnameDEVHG2GE(3721),            -- 高速2GE
+                bnameDEVH4FE(3722),             -- 高速4FE
+                bnameDEVH8FE(3723),             -- 高速8FE
+                bnameDEVH1POS(3724),            -- 1POS
+                bnameDEVH2POS(3725),            -- 2POS
+                bnameDEVH4POS(3726),            -- 4POS
+                bnameDEVH2FEP(3727),            -- 2FEP
+                bnameDEVH4FEP(3728),            -- 4FEP
+                bnameDEVH8FEP(3729),            -- 8FEP
+                bnameDEVLCPOS(3730),            -- CPOS
+                bnameDEVHIPSEC(3731),           -- 高速加密卡
+                bnameDEVHBYPASS(3732),          -- BYPass卡
+
+                bnameDEVLATME1(3749),            -- ATM E1
+                bnameDEVLATME3(3750),            -- ATM E3
+                bnameDEVLATM(3751),             -- ATM接口卡
+                bnameDEVL4SA(3752),             -- 4SA接口卡
+                bnameDEVLGSFE(3753),            -- 10/100光单模FE
+                bnameDEVLGMFE(3754),            -- 10/100光多模FE
+                bnameDEVLGGE(3755),             -- 低速光GE卡
+                bnameDEVLDGE(3756),             -- 低速电GE卡
+                bnameDEVL1FE(3757),             -- 1FE
+                bnameDEVL2FE(3758),             -- 2FE
+                bnameDEVL8E1A(3759),            -- 8E1A
+                bnameDEVL8E1B(3760),            -- 8E1B
+                bnameDEVL8CE1A(3761),           -- 8CE1A
+                bnameDEVL8CE1B(3762),           -- 8CE1B
+                bnameDEVL8CT1A(3763),           -- 8CT1A
+                bnameDEVL8CT1B(3764),           -- 8CT1B
+                bnameDEVL4CE1A(3765),           -- 4CE1A
+                bnameDEVL4CE1B(3766),           -- 4CE1B
+                bnameDEVL4E1A(3767),            -- 4E1A
+                bnameDEVL4E1B(3768),            -- 4E1B
+                bnameDEVL4CT1A(3769),           -- 4CT1A
+                bnameDEVL4CT1B(3770),           -- 4CT1B
+                bnameDEVL4E1(3771),             -- 4E1
+                bnameDEVL4CE1(3772),            -- 4CE1
+                bnameDEVL4CT1(3773),            -- 4CT1
+                bnameDEVL8T1(3774),             -- 8T1
+                bnameDEVL1CT3(3775),            -- 1CT3
+                bnameDEVL1CE3(3776),            -- 1CE3
+                bnameDEVLIPSEC(3777),           -- 低速加密卡
+                bnameDEVL1HSSI(3778),            -- 1HSSI 新增高速串口低速接口卡，一卡一接口
+                bnameDEVL2HSSI(3779),            -- 2HSSI 新增高速串口低速接口卡，一卡两接口
+                bnameDEVH16CE1A(3780),          -- 16端口CE1高速接口卡(120欧)
+                bnameDEVH16CE1B(3781),          -- 16端口CE1高速接口卡(75欧)
+                bnameDEVH16CT1(3782),           -- 16端口CT1高速接口卡(120欧)
+                bnameDEVHCPE1(3783),            -- 1端口STM-1 POS通道化E1高速接口卡(ESFP)
+                bnameDEVHCPT1(3784),            -- 1端口STM-1 POS通道化至T1高速接口卡(ESFP)
+                bnameDEVH1ATM(3785),            -- 1端口STM-1 ATM高速接口卡(ESFP)
+                bnameDEVH2ATM(3786),            -- 2端口STM-1 ATM高速接口卡
+                bnameDEVH4ATM(3787),            -- 4端口STM-1 ATM高速接口卡
+                bnameDEVLCT3(3788),             -- 单端口T3/CT3低速接口卡
+                bnameDEVLE8I(3789),             -- 8端口IMA E1低速接口板(75ohm)
+                bnameDEVLE8IA(3790),            -- 8端口IMA E1低速接口板(120ohm)
+                bnameDEVLT8I(3791),             -- 8端口IMA T1低速接口板
+                bnameDEVLIPSECSD707(3792),      -- 低速加密卡(SD707)
+-- MA5100
+                bnameH563ECBD(131082),          -- 64路ADSL2+ 单板
+
+	        bnameH561EIUB(131083),             -- EIUB 单板
+
+	        bnameADB(131084),               --ADSL2+ ADB系列单板
+	        bnameH561ADBA(131085),              --ADSL2+ ADB系列单板
+	        bnameH561ADBB(131086),              --ADSL2+ ADB系列单板
+	        bnameH561ADBC(131087),              --ADSL2+ ADB系列单板
+	        bnameH561ADBD(131088),              --ADSL2+ ADB系列单板
+	        bnameH561ADBE(131089),              --ADSL2+ ADB系列单板
+	        bnameH561ADBF(131090),              --ADSL2+ ADB系列单板
+	        bnameH561ADBG(131091),              --ADSL2+ ADB系列单板
+	        bnameH561ADBH(131092),              --ADSL2+ ADB系列单板
+	        bnameH561ADBI(131093),              --ADSL2+ ADB系列单板
+	        bnameH561ADBJ(131094),              --ADSL2+ ADB系列单板
+	        bnameH561ADBK(131095),              --ADSL2+ ADB系列单板
+	        bnameH561ADBL(131096),              --ADSL2+ ADB系列单板
+	        bnameH561ADBM(131097),              --ADSL2+ ADB系列单板
+	        bnameH561ADBN(131098),              --ADSL2+ ADB系列单板
+	        bnameH561ADBO(131099),              --ADSL2+ ADB系列单板
+	        bnameH561ADBP(131100),              --ADSL2+ ADB系列单板
+	        bnameH561ADBQ(131101),              --ADSL2+ ADB系列单板
+	        bnameH561ADBR(131102),              --ADSL2+ ADB系列单板
+	        bnameH561ADBS(131103),              --ADSL2+ ADB系列单板
+	        bnameH561ADBT(131104),              --ADSL2+ ADB系列单板
+	        bnameH561ADBU(131105),              --ADSL2+ ADB系列单板
+	        bnameH561ADBV(131106),              --ADSL2+ ADB系列单板
+	        bnameH561ADBW(131107),              --ADSL2+ ADB系列单板
+	        bnameH561ADBX(131108),              --ADSL2+ ADB系列单板
+	        bnameH561ADBY(131109),              --ADSL2+ ADB系列单板
+	        bnameH561ADBZ(131110),              --ADSL2+ ADB系列单板
+
+            bnameH561SHEA(131111),              --MA5600的H561SHEA业务单板，GE总线，端口数：32
+            bnameH561SCUK(131112),              --MA5600产品的主控板SCUK，比SCUA少了LSW/PHY扣板和时钟扣板
+
+            bnameADG(131113),               -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGA(131114),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGB(131115),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGC(131116),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGD(131117),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGE(131118),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGF(131119),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGG(131120),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGH(131121),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGI(131122),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGJ(131123),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGK(131124),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGL(131125),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGM(131126),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGN(131127),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGO(131128),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGP(131129),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGQ(131130),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGR(131131),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGS(131132),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGT(131133),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGU(131134),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGV(131135),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGW(131136),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGX(131137),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGY(131138),              -- 32路GE总线的ADSL2+ADG系列单板
+	        bnameADGZ(131139),              -- 32路GE总线的ADSL2+ADG系列单板
+
+            bnameH561VDEA(131140),          -- 64 路GE总线单板VDEA
+            bnameH561AIUG(131141),          -- MA5600的GE总线AIU单板
+            bnameH561SPLF(131142),          -- 无源的SPL板 ADSL2+ over POTS，阻抗为600
+            bnameH561SPLH(131143),          -- 无源的SPL板 ADSL2+ over ISDN
+            bnameH561SPLL(131144),          -- 无源的SPL板 ADSL2+ over POTS 复阻抗
+
+            bnameH511ECUA(131150),          -- MA5100 V3主控板的ECUA
+
+            bnameH511LANE(131151),          -- MA5100 LANE单板
+
+-- MA5105 from 0X20F00 ~0X20Fff
+                bnameH521mfea(134912),          -- FE电口上行板,   支持64路
+                bnameH521mfoa(134913),          -- FE光口上行板,   支持64路
+                bnameH521mimb(134914),          -- IMA上行板,      支持64路
+                bnameH521mcoa(134915),          -- 155M光口上行板, 支持64路
+                bnameH521mgoa(134916),          -- GE光口上行板,   支持64路
+                bnameH523adla(134928),          -- ADLA,           16端口
+
+
+-- MA5600产品
+
+                bnameH801SCUA(143360),          -- P300 宽带主控板H801SCUA
+                bnameH801SPLK(143361),          -- P300 SPL系列板H801SPLK
+                bnameH801SPMA(143362),          -- P300 SPL系列板的主控板
+                bnameH805ADLL(143363),          -- P300  ADSL单板ADL系列化单板32路GE 和 bnameH805ADL是系列化单板。
+                bnameH802SHLA(143364),          -- P300 SHDSL单板H802SHLA
+                bnameH801AIUG(143365),          -- P300 ATM接口板H801AIUG
+
+                bnameADI(143366),               -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIA(143367),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIB(143368),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIC(143369),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADID(143370),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIE(143371),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIF(143372),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIG(143373),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIH(143374),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADII(143375),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIJ(143376),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIK(143377),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIM(143378),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIN(143379),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIL(143380),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIO(143381),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIP(143382),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIQ(143383),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIR(143384),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIS(143385),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIT(143386),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIU(143387),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIV(143388),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIW(143389),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIX(143390),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIY(143391),          -- P300 ADSL单板ADI系列化单板32路GE
+                bnameADIZ(143392),          -- P300 ADSL单板ADI系列化单板32路GE
+
+                bnameADL(143393),                -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLA(143394),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLB(143395),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLC(143396),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLD(143397),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLE(143398),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLF(143399),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLG(143400),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLH(143401),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLI(143402),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLJ(143403),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLK(143404),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLM(143405),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLN(143406),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLO(143407),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLP(143408),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLQ(143409),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLR(143410),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLS(143411),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLT(143412),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLU(143413),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLV(143414),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLW(143415),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLX(143416),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLY(143417),           -- P300 ADSL单板ADL系列化单板32路GE
+                bnameADLZ(143418),           -- P300 ADSL单板ADL系列化单板32路GE
+
+                bnameSHD(143419),            -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDA(143420),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDB(143421),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDC(143422),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDD(143423),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDE(143424),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDF(143425),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDG(143426),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDH(143427),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDI(143428),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDJ(143429),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDK(143430),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDL(143431),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDM(143432),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDN(143433),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDO(143434),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDP(143435),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDQ(143436),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDR(143437),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDS(143438),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDT(143439),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDU(143440),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDV(143441),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDW(143442),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDX(143443),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDY(143444),           -- P300 GDOT单板SHD系列化单板16路GE
+                bnameSHDZ(143445),           -- P300 GDOT单板SHD系列化单板16路GE
+
+                bnameH521mcca(143600),       -- 5605的主控板 155M光口上行, 支持64路, 支持级联
+
+                bnameH801SPLG1(143700),      -- P300 SPL机框上的单板，用于分离ADSL和普通电话信号的单板，跟H801SPLK和H801SPLG2功能类似
+                bnameH801SPLG2(143701),      -- P300 SPL机框上的单板，用于分离ADSL和普通电话信号的单板，跟H801SPLK和H801SPLG1功能类似
+                bnameH801BSPA(143702),       -- P300 SPL机框上的单板，专门用于板间N+1备份单板。
+
+                bnameVDL(143703),        -- P300 32路VDSL系列化单板
+                bnameVDLA(143704),        -- P300 32路VDSL系列化单板
+                bnameVDLB(143705),        -- P300 32路VDSL系列化单板
+                bnameVDLC(143706),        -- P300 32路VDSL系列化单板
+                bnameVDLD(143707),        -- P300 32路VDSL系列化单板
+                bnameVDLE(143708),        -- P300 32路VDSL系列化单板
+                bnameVDLF(143709),        -- P300 32路VDSL系列化单板
+                bnameVDLG(143710),        -- P300 32路VDSL系列化单板
+                bnameVDLH(143711),        -- P300 32路VDSL系列化单板
+                bnameVDLI(143712),        -- P300 32路VDSL系列化单板
+                bnameVDLJ(143713),        -- P300 32路VDSL系列化单板
+                bnameVDLK(143714),        -- P300 32路VDSL系列化单板
+                bnameVDLL(143715),        -- P300 32路VDSL系列化单板
+                bnameVDLM(143716),        -- P300 32路VDSL系列化单板
+                bnameVDLN(143717),        -- P300 32路VDSL系列化单板
+                bnameVDLO(143718),        -- P300 32路VDSL系列化单板
+                bnameVDLP(143719),        -- P300 32路VDSL系列化单板
+                bnameVDLQ(143720),        -- P300 32路VDSL系列化单板
+                bnameVDLR(143721),        -- P300 32路VDSL系列化单板
+                bnameVDLS(143722),        -- P300 32路VDSL系列化单板
+                bnameVDLT(143723),        -- P300 32路VDSL系列化单板
+                bnameVDLU(143724),        -- P300 32路VDSL系列化单板
+                bnameVDLV(143725),        -- P300 32路VDSL系列化单板
+                bnameVDLW(143726),        -- P300 32路VDSL系列化单板
+                bnameVDLX(143727),        -- P300 32路VDSL系列化单板
+                bnameVDLY(143728),        -- P300 32路VDSL系列化单板
+                bnameVDLZ(143729),        -- P300 32路VDSL系列化单板
+
+                bnameH803CVD(143730),         -- P300 16路VDSL系列化单板
+                bnameH803CVDA(143731),        -- P300 16路VDSL系列化单板
+                bnameH803CVDB(143732),        -- P300 16路VDSL系列化单板
+                bnameH803CVDC(143733),        -- P300 16路VDSL系列化单板
+                bnameH803CVDD(143734),        -- P300 16路VDSL系列化单板
+                bnameH803CVDE(143735),        -- P300 16路VDSL系列化单板
+                bnameH803CVDF(143736),        -- P300 16路VDSL系列化单板
+                bnameH803CVDG(143737),        -- P300 16路VDSL系列化单板
+                bnameH803CVDH(143738),        -- P300 16路VDSL系列化单板
+                bnameH803CVDI(143739),        -- P300 16路VDSL系列化单板
+                bnameH803CVDJ(143740),        -- P300 16路VDSL系列化单板
+                bnameH803CVDK(143741),        -- P300 16路VDSL系列化单板
+                bnameH803CVDL(143742),        -- P300 16路VDSL系列化单板
+                bnameH803CVDM(143743),        -- P300 16路VDSL系列化单板
+                bnameH803CVDN(143744),        -- P300 16路VDSL系列化单板
+                bnameH803CVDO(143745),        -- P300 16路VDSL系列化单板
+                bnameH803CVDP(143746),        -- P300 16路VDSL系列化单板
+                bnameH803CVDQ(143747),        -- P300 16路VDSL系列化单板
+                bnameH803CVDR(143748),        -- P300 16路VDSL系列化单板
+                bnameH803CVDS(143749),        -- P300 16路VDSL系列化单板
+                bnameH803CVDT(143750),        -- P300 16路VDSL系列化单板
+                bnameH803CVDU(143751),        -- P300 16路VDSL系列化单板
+                bnameH803CVDV(143752),        -- P300 16路VDSL系列化单板
+                bnameH803CVDW(143753),        -- P300 16路VDSL系列化单板
+                bnameH803CVDX(143754),        -- P300 16路VDSL系列化单板
+                bnameH803CVDY(143755),        -- P300 16路VDSL系列化单板
+                bnameH803CVDZ(143756),        -- P300 16路VDSL系列化单板
+
+                bnameH805CAN(143757),         -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANA(143758),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANB(143759),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANC(143760),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CAND(143761),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANE(143762),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANF(143763),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANG(143764),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANH(143765),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANI(143766),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANJ(143767),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANK(143768),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANL(143769),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANM(143770),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANN(143771),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANO(143772),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANP(143773),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANQ(143774),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANR(143775),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANS(143776),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANT(143777),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANU(143778),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANV(143779),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANW(143780),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANX(143781),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANY(143782),        -- P300 KPN 16路ADSL系列化单板
+                bnameH805CANZ(143783),        -- P300 KPN 16路ADSL系列化单板
+
+                bnameH805CAL(143784),         -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALA(143785),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALB(143786),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALC(143787),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALD(143788),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALE(143789),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALF(143790),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALG(143791),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALH(143792),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALI(143793),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALJ(143794),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALK(143795),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALL(143796),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALM(143797),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALN(143798),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALO(143799),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALP(143800),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALQ(143801),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALR(143802),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALS(143803),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALT(143804),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALU(143805),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALV(143806),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALW(143807),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALX(143808),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALY(143809),        -- P300 KPN 32路ADSL系列化单板
+                bnameH805CALZ(143810),        -- P300 KPN 32路ADSL系列化单板
+
+                bnameH801GICA(143811),        -- P300 KPN 通用接口板
+                bnameH801GICB(143812),        -- P300 KPN 通用接口板
+                bnameH801FICA(143813),        -- P300 KPN 通用接口板
+                bnameH801PRTA(143814),        -- P300 H801PRTA电源板
+                bnameH801CITA(143815),        -- P300 H801CITA出线板
+                bnameH801PRTS(143816),        -- P300 H801PRTS电源板
+                bnameH801CITS(143817),        -- P300 H801CITS出线板
+
+                bnameH80xVDS(143818),         -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSA(143819),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSB(143820),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSC(143821),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSD(143822),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSE(143823),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSF(143824),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSG(143825),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSH(143826),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSI(143827),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSJ(143828),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSK(143829),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSL(143830),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSM(143831),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSN(143832),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSO(143833),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSP(143834),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSQ(143835),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSR(143836),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSS(143837),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDST(143838),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSU(143839),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSV(143840),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSW(143841),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSX(143842),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSY(143843),        -- P300 24路VDSL2 OVER POTS系列化单板
+                bnameH80xVDSZ(143844),        -- P300 24路VDSL2 OVER POTS系列化单板
+
+                bnameH80xVDT(143845),         -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTA(143846),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTB(143847),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTC(143848),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTD(143849),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTE(143850),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTF(143851),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTG(143852),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTH(143853),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTI(143854),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTJ(143855),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTK(143856),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTL(143857),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTM(143858),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTN(143859),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTO(143860),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTP(143861),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTQ(143862),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTR(143863),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTS(143864),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTT(143865),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTU(143866),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTV(143867),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTW(143868),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTX(143869),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTY(143870),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH80xVDTZ(143871),        -- P300 24路VDSL2 OVER ISDN系列化单板
+                bnameH801OPFA(143872),        -- P300 16路GE总线以太FE光接入单板
+                bnameH801GICD(143873),        -- P300 4GE光接口上行板
+                bnameH801GICE(143874),        -- P300 4GE电接口上行板
+                bnameH801FICB(143875),        -- P300 FE光接口上行板
+                bnameH801HWTF(143876),        -- P300 2GE光口从框级联板
+
+                bnameH801MCUA(143877),        -- MA5606T 宽带主控板H801MCUA
+                bnameH801MPWA(143878),        -- MA5606T 电源板H801MPWA
+
+                bnameH801ETHA(143879),        -- MA5600T 以太网级联接口板
+                bnameH801MFGA(143880),        -- MA5600T MPLS业务板
+
+                bnameH801SPLE(143881),         -- MA5600T 分离器板（带CPU）,SPLE系列化单板
+                bnameH801SPLE1(143882),        -- MA5600T 分离器板（带CPU）,SPLE系列化单板
+                bnameH801SPLE2(143883),        -- MA5600T 分离器板（带CPU）,SPLE系列化单板
+                bnameH801SPLE3(143884),        -- MA5600T 分离器板（带CPU）,SPLE系列化单板
+                bnameH801SPLE4(143885),        -- MA5600T 分离器板（带CPU）,SPLE系列化单板
+
+                bnameH801MCUB(143886),        -- MA5606T 宽带从框主控板H801MCUB
+
+                bnameH801BIUA(143887),        -- MA5600T 2路BITS时钟输入，1路BITS时钟输出板，支持选配H801CKMA扣板
+                bnameH802DSRE(143888),        -- MA5600T 32路ISDN用户板
+
+                bnameH561EPBA(145920),        -- OFA5920&MA5600 EPBA单板，提供1、2、4路EPON接入
+                bnameH565VDE(145921),         -- MA5600 32路VDSL系列化单板
+                bnameH565VDEA(145922),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEC(145924),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDED(145925),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEE(145926),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEF(145927),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEG(145928),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEH(145929),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEI(145930),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEJ(145931),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEK(145932),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEL(145933),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEM(145934),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEN(145935),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEO(145936),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEP(145937),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEQ(145938),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDER(145939),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDES(145940),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDET(145941),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEU(145942),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEV(145943),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEW(145944),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEX(145945),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEY(145946),        -- MA5600 32路VDSL系列化单板
+                bnameH565VDEZ(145947),        -- MA5600 32路VDSL系列化单板
+
+                bnameH561ETHA(145976),        -- MA5600的以太级联板
+-- OFA5920
+                bnameH801GPBC(145977),         -- OFA5920 GPON 接口板，出4个端口
+                bnameH801SCUL(145978),         -- OFA5920的300深的200GE SCU主控板
+                bnameH801X2CA(145979),         -- OFA5920的 2*10GE光口板
+                bnameH801GICF(145980),         -- 2路千兆光口，用于R2全10GE交换平台插框
+                bnameH801GICG(145981),         -- 2路千兆电口，用于R2全10GE交换平台插框
+                bnameH801CITC(145982),          --出线板
+                bnameH801PIUA(145983),          --NEBS，23英寸机框的X/Y区电源接入板
+
+                bnameH821MCUA(145984),         --MA5636  主控板
+                bnameH82XVDJ(145985),          --MA5636  8路VDSL系列化单板
+                bnameH82XVDJA(145986),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJB(145987),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJC(145988),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJD(145989),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJE(145990),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJF(145991),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJG(145992),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJH(145993),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJI(145994),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJJ(145995),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJK(145996),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJL(145997),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJM(145998),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJN(145999),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJO(146000),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJP(146001),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJQ(146002),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJR(146003),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJS(146004),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJT(146005),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJU(146006),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJV(146007),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJW(146008),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJX(146009),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJY(146010),         --MA5636  8路VDSL系列化单板
+                bnameH82XVDJZ(146011),         --MA5636  8路VDSL系列化单板
+                bnameH801SCUB(146018),         --MA5600  主控板
+                bnameH801ASRB(146019),         --MA5600  语音业务板
+                bnameH561SCUB(146021),         --MA5600V3R3C03的主控板H561SCUB
+                bnameH802SHLB(146022),         --MA5600  16路SHL系列化单板
+                bnameH801TOPA(146025),         --MA5600  TDM接口单板
+                bnameH569SHEB(146026),         --MA5600  H569SHEB业务单板，GE总线，端口数：32
+-- WA5700:
+                bnameBWAMPU(155648),            -- BWA产品室内单元MPU主控板
+                bnameBWAODU(155649),            -- BWA产品ODU业务单板
+
+
+
+-- UA5000 from 204800
+                bnameH601ADLF(204810),          -- 16路ADSL over ISDN，纯宽带板
+                bnameH603CSMC(204811),          -- 16路ADSL2+ POTS合一板，英飞凌套片
+                bnameH603CSR(204812),          -- 32路ADSL2+ POTS合一板，英飞凌套片
+                bnameH601TSSC(204815),          -- UA上使用的宽窄带测试板
+                bnameH603ADR(204816),           -- H603ADRB是UA 32路ADSL2+板，采用infineon带内方案，是 H603ADR 系列
+                bnameH602CSM(204817),           -- H602CSM系列单板
+                bnameH612IPMB(204818),          -- BT新增UA5000主框主控板
+                bnameH612APSB(204819),          -- BT新增UA5000从框主控板
+
+                bnameH602CSV(204820),           -- BT新增CSV系列化单板
+                bnameH602CSVA(204821),          -- BT新增CSV系列化单板
+                bnameH602CSVB(204822),          -- BT新增CSV系列化单板
+                bnameH602CSVC(204823),          -- BT新增CSV系列化单板
+                bnameH602CSVD(204824),          -- BT新增CSV系列化单板
+                bnameH602CSVE(204825),          -- BT新增CSV系列化单板
+                bnameH602CSVF(204826),          -- BT新增CSV系列化单板
+                bnameH602CSVG(204827),          -- BT新增CSV系列化单板
+                bnameH602CSVH(204828),          -- BT新增CSV系列化单板
+                bnameH602CSVI(204829),          -- BT新增CSV系列化单板
+                bnameH602CSVJ(204830),          -- BT新增CSV系列化单板
+                bnameH602CSVK(204831),          -- BT新增CSV系列化单板
+                bnameH602CSVL(204832),          -- BT新增CSV系列化单板
+                bnameH602CSVM(204833),          -- BT新增CSV系列化单板
+                bnameH602CSVN(204834),          -- BT新增CSV系列化单板
+                bnameH602CSVO(204835),          -- BT新增CSV系列化单板
+                bnameH602CSVP(204836),          -- BT新增CSV系列化单板
+                bnameH602CSVQ(204837),          -- BT新增CSV系列化单板
+                bnameH602CSVR(204838),          -- BT新增CSV系列化单板
+                bnameH602CSVS(204839),          -- BT新增CSV系列化单板
+                bnameH602CSVT(204840),          -- BT新增CSV系列化单板
+                bnameH602CSVU(204841),          -- BT新增CSV系列化单板
+                bnameH602CSVV(204842),          -- BT新增CSV系列化单板
+                bnameH602CSVW(204843),          -- BT新增CSV系列化单板
+                bnameH602CSVX(204844),          -- BT新增CSV系列化单板
+                bnameH602CSVY(204845),          -- BT新增CSV系列化单板
+                bnameH602CSVZ(204846),          -- BT新增CSV系列化单板
+
+                bnameH605CSR(204847),           -- 32路ADSL2+宽窄带合一的业务板
+
+                bnameH612SPLI(204874),           -- 分离器板，89C51单片机，有96个继电器进行宽窄带隔离，和CSRI共用时支持adsl only
+                bnameH612GAUA(204875),           -- BT新增单板，S&C特性
+                bnameH612SDLB(204876),           -- 16路SHDSL接入业务的宽带用户板
+
+
+
+-- AMG
+                bnameAG03PVM(262154),           --AG03PVM主控板
+                bnameH602PVU8(262155),          -- E1主备PVU+单板  8 E1 PVM下面带的E1主备的低密PVU
+                bnameH602PVU4(262156),          -- E1主备PVU+单板  4 E1 PVM下面带的E1主备的低密PVU
+                bnameH601PVMB(262157),          -- H601PVMB高密主控板，支持主辅＋从辅
+                bnameSDLE(262158),              -- 8路G.SHDSL接口板
+                bnameEDT(262159),               -- 窄带16路E1接口板
+                bnameTDT(262160),               -- 窄带16路T1接口板
+                bnameH601RSUG(262161),          -- RSP + 2G.SHDSL叠加板（RSP和SDL的简单叠加，2路G.SHDSL端口）
+                bnameH602RSUG(262162),          -- RSP + 2G.SHDSL合一板（共用一个CPU，2路G.SHDSL端口，1路E1端口）
+                bnameH601PVMA(262163),          -- H601PVMA 用在低密框内，支持E1主备
+                bnameH801PVMA(262164),          -- P300 窄带主控板H801PVMA电接口板
+                bnameH801PVMB(262165),          -- P300 窄带主控板H801PVMB光接口板
+                bnameH801HWTF(262166),          -- P300 H801HWTF HWT接口板
+                bnameH801HWCF(262167),          -- P300 H801HWCF HWC接口板
+                bnameH801TSSA(262168),          -- P300 窄带测试板H801TSSA
+                bnameH801ASLG(262169),          -- P300 窄带用户板H801ASLG
+                bnameH801DSCD(262170),          -- P300 2B1Q ISDN数字用户板H801DSLD
+                bnameH801PWXA(262171),          -- P300 窄带电源板H801PWXA
+                bnameH801SDLT(262172),          -- P300 TDM SHDSL单板H801SDLT
+                bnameH801TSSB(262173),          -- P300 测试板
+                bnameH801ASCK(262174),          -- P300 ASL32用户板
+                bnameH801EDTA(262175),          -- P300 EDT接口板
+
+                bnameAG02PVMC(262180),          -- AG02PVMC 用在低密框内，多模光口
+                bnameAG03PVMC(262181),          -- AG03PVMC 用在高密框内，多模光口
+                bnameH601PVMBB(262182),         -- H601PVMBB(2.0KM) 用在高密框内，光口
+                bnameH601PVMBF(262183),         -- H601PVMBF(15.0KM) 用在高密框内，光口
+                bnameH601PVMBG(262184),         -- H601PVMBBG(40.0KM) 用在高密框内，光口
+
+                bnameH612PVMB(262185),          -- H612PVMB高密主控板，支持主辅＋从辅
+
+                bnameH612HWCF(262186),          -- BT H612HWCF  HWC转接板，
+                bnameH612HWTF(262187),          -- BT H612HWTF  HWT转接板
+                bnameH612HWFF(262188),          -- BT H612HWTF  HWF转接板
+                bnameH612PSTF(262189),          -- BT H612PSTF  小型框H612HABF中的HW转接板
+                bnameH612HLSF(262190),          -- BT H612HLSF转接板
+                bnameH612HLAF(262191),          -- BT H612HLAF转接板
+                bnameH612HLEF(262192),          -- BT H612HLEF转接板
+                bnameH612SLTF(262193),          -- BT H612SLTF转接板
+                bnameH612EFTF(262194),          -- BT H612EFTF转接板
+                bnameH612E1TF(262195),          -- BT H612E1TF转接板
+                bnameH612TSTF(262196),          -- BT H612TSTF转接板
+
+                bnameH602PWX(262197),           -- 带CPU的窄带电源板
+
+                bnameH612PVMBG(262198),         -- H612PVMBG(40.0KM) 用在高密框内，光口主控板
+                bnameH612PWXB(262199),          -- BT H612PWXB 电源板
+
+                bnameH612RATF(262200),          -- BT H612RATF转接板
+                bnameH612SLPF(262201),          -- BT H612SLPF转接板
+                bnameH612WATF(262202),          -- BT H612WATF转接板
+                bnameH612PRTF(262203),          -- BT H612PRTF转接板
+                bnameH601PVMC(262204),          -- H601PVMC低密主控板
+                bnameH601PVMCG(262205),         -- H601PVMC光口板，40.0KM传输距离
+                bnameH603RSUG(262656),          -- H603RSUG
+                bnameA04(262657),               -- A04
+                bnameA08(262658),               -- A08
+                bnameDSLD(262659),              -- 16路数字用户板
+                bnameDSLE(262660),              -- 16路数字用户板
+-- 8011
+                bnameCR01LPUF(528384),             --For NE40, new main control card of NE40
+		bnameCR01CLKD(528385),             --For NE80, new main control card of NE80
+		bnameCR01NETD(528386),             --For NE80, new switch card of NE80
+		bnameCR03NETH(528387),             --For NE80, new switch card of NE80
+		bnameCR03SRUD(528388),             --For NE40-2,NE40-8,new main control card of NE40
+		bnameCR03SRUE(528389),             --For NE40-4 or NE40-8,new main control card of NE40
+		bnameCR03MPUF(528390),  		   --For NE80, new main control card of NE80
+		bnameCR01M2GSR(528391),            --For NE80, new power supply card of NE80
+		bnameCR01SPUA(528392),             --业务卡A
+		bnameCR01SPUB(528393),  	   --业务卡B
+		bnameCR01SPUC(528394),  	   --业务卡C
+		bnameCR01CLPU(528395),  	   --CPOS通道化64k的专用业务板
+		bnameCR01LPUE(528396),  	   --For NE40 & NE80 , mother card of NE80 and NE40
+		bnameCR01MPUE(528397),  	   --For NE80 , main control card of NE80
+		bnameCR01SRUC(528398),  	   --For NE40-2 , main control card of NE40-2
+		bnameRS01SFCB(528399),    	   --For S8016 SPECIAL, SWITCH CARD
+		bnameCR01NETSTREAMB(528400),    	   --For ne40&ne80, netstream board
+
+-- 8031:
+
+                bnameCX00UNBD(536832),                   -- Unknown board
+                bnameCX21SCUB(536833),                   -- Switching and Control Processing Unit - 24 Port Fast Ethernet Electrical Interface
+                bnameCX21SCUC(536834),                   -- General Switch Control Unit-24 Ports 100BASE-FX Interface Card(SFP)
+                bnameCX31E2GE(536835),                   -- 2 Ports 1000Base-T Gigabit Ethernet Electrical Interface Card
+                bnameCX31E2GF(536836),                   -- 2 Ports Gigabit Ethernet SFP Optical Interface Card  With LC Connector
+                bnameCX31E2GFE(536837),                  -- 2 Ports Gigabit Ethernet SFP Optical Interface Card With LC Connector (Enhance Board)
+                bnameCX31E4GE(536838),                   -- 4 Ports 1000Base-T Gigabit Ethernet Electrical Interface Card
+                bnameCX31E4GF(536839),                   -- 4 Ports Gigabit Ethernet SFP Optical Interface Card  With LC Connector
+                bnameCX31EGFE(536840),                   -- 16 Ports Fast Ethernet Electrical Interface Card
+                bnameCX31EGFF(536841),                   -- 16 Ports Fast Ethernet SFP Optical Interface Card With LC Connector
+                bnameCX31R2GF(536842),                   -- 2 Ports Gigabit Ethernet RPR-SFP Optical Interface Card With LC Connector
+                bnameCX31SCUA(536843),                   -- 48G Switching and Control Processing Unit
+                bnameCX31SCUB(536844),                   -- 24G Switching and Control Processing Unit
+                bnameCX21FMCB(536845),                   -- CX200B Fan Monitor Control Board
+                bnameCX31FMCBA(536846),                  -- CX300A Fan Monitor Control Board
+                bnameCX31FMCBB(536847),                  -- CX300B Fan Monitor Control Board
+                bnameCX21POWDC(536848),                  -- CX200B DC Power Monitor Control Board
+                bnameCX31POWDC(536849),                  -- CX300A/B DC Power Monitor Control Board
+                bnameCX21POWAC(536850),                  -- CX200B AC Power Monitor Control Board
+                bnameCX31POWAC(536851),                  -- CX300A/B AC Power Monitor Control Board
+                bnameCX31R2UF(536852),                   -- 2-Port STM-16c/OC-48c RPR Interface Card(SFP)
+                bnameCX31E4GFF(536853),                  -- 4-Port 1000BASE-X Interface Card(Enhanced Ⅱ,SFP)
+                bnameCX31E2GFF(536854),                  -- 2-Port 1000BASE-X Interface Card(Enhanced Ⅱ,SFP)
+                bnameCX31MPUA(536855),                   -- CX300E Master Processing Unit
+                bnameCX31SFUA(536856),                   -- CX300E Switching Forwarding Unit
+                bnameCX31E1XE(536857),                   -- 1-Port 10 Gigabit Ethernet Electrical Interface Card
+                bnameCX31E1XF(536858),                   -- 1-Port 10 Gigabit Ethernet SFP Optical Interface Card
+                bnameCX31T8CE1(536859),                  -- TDM Interface Card
+                bnameCX31FMCBE(536860),                  -- CX300E Fan Monitor Control Board
+                bnameCX31POWAC(536861),                  -- CX300E AC Power Monitor Control Board
+                bnameCX31POWDC(536862),                  -- CX300E DC Power Monitor Control Board
+                bnameCX31E8GF(536863),                   -- CX380 8-Port 1000BASE-X Interface Card(SFP)
+                bnameCX31EAGF(536864),                   -- CX380 10-Port 1000BASE-X Interface Card(SFP)
+                bnameCX31ECGF(536865),                   -- CX380 12-Port 1000BASE-X Interface Card(SFP)
+                bnameCX31EGGF(536866),                   -- CX380 16-Port 1000BASE-X Interface Card(SFP)
+                bnameCX3B1AUAC(536867),                  -- CX380 Chassis(8U,2 MCU Slots,2 SRU Slots,8 SIC Slots,2 Power Supply Slots,Without MCU and Power Module)
+                bnameCX31AGE1B(536868),                  -- CX380 16-Port ATM Service E1 75ohm Interface Card
+                bnameCX31AGE1A(536869),                  -- CX380 16-Port ATM Service E1 120ohm Interface Card
+                bnameCX31AGT1(536870),                   -- CX380 16-Port ATM Service T1 100ohm Interface Card
+                bnameCX31A1CC(536871),                   -- CX380 1-Port Channelized STM-1 ATM Service Interface Card
+                bnameCX31A4CC(536872),                   -- CX380 4-Port Channelized STM-1 ATM Service Interface Card
+                bnameCX31CMPB(536873),                   -- CX380 CPU ATM Service Pinch Board
+                bnameCX31CLKA(536874),                   -- CX380 CX31MPUA Clock Pinch Board
+                bnameCX31TCMA(536875),                   -- CX380 CX31SFUA TCAM Pinch Board
+                bnameCX31BAKE(536876),                   -- CX380 Backplane
+
+                bnameCX61SRUA0(536877),                  -- CX600-8 - Main Process Switch Fabric Unit
+                bnameCX61MPUB0(536878),                  -- CX600-16 Main Processing Unit
+                bnameCX61SFUD0(536879),                  -- CX600-8 Switch Fabric Unit
+                bnameCX61SFUF0(536880),                  -- CX600-16 Switch Fabric Unit
+                bnameCX61FCBA(536881),                   -- CX600 Fan module
+-- 8090:
+                bname8090DEVUNKNOWN(561152),         -- Unknown board type
+                bname8090DEVMPU(561153),             -- Main Processing Unit
+                bname8090DEVSFU(561154),             -- Switch Fabric Unit for Full Capacity System
+                bname8090DEVLPU(561155),             -- Flexible Card Line Processing Unit
+                bname8090DEVCLK(561156),             -- system clk board on MPU board
+                bname8090DEVPOWER(561157),           -- DC/DC Power Module
+                bname8090DEVFAN(561158),             -- Fan Module
+                bname8090DEVLCD(561159),             -- LCD Module
+                bname8090DEVSRUMPU(561160),          -- MPU Module on SRU board
+                bname8090DEVSRUSFU(561161),          -- SFU Module on SRU board
+                bname8090DEVNETSTREAM(561162),       -- NETSTREAM Module
+                bname8090DEVRAINIER(561163),      -- RAINIER Module
+                bname8090DEVGRE(561164),              -- GRE Module
+                bname8090DEVTSU(561165),              -- TSU Module
+                bname8090DEVSFEA(561166),              -- Switch Fabric Unit for Full Capacity System
+                bname8090DEVSRU(561167),             -- SRU  board
+                bname8090DEVLPUA(561168),            -- LPUA Module
+                bname8090DEVLPUB(561169),            -- LPUB Module
+                bname8090DEVLPUC(561170)             -- LPUC Module
+
+-- END
+                bnameEND(2147483647)            -- End
+
+                }
+
+        HWSubPCBType ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "This data type is used as the syntax of the
+                hwSubslotType object in the definition of
+                HUAWEI-DEVICE-MIB's hwSubslotTable.
+
+
+
+                "
+            SYNTAX INTEGER
+                {
+                subbnameunknown(1),
+                subbnameh511o2ctg(2),           -- 单模30Km-2路155M ATM接口扣板,MA用
+                subbnameh511o2ctb(3),           -- 多模2Km-2路155M ATM接口扣板,MA用
+                subbnameh511o1ctg(4),           -- 单模30Km-1路155M ATM接口扣板,MA用
+                subbnameh511o1ctb(5),           -- 多模2Km-1路155M ATM接口扣板,MA用
+                subbnameh511v2ht(6),            -- 622M单模双光口ARC扣板
+                subbnameh511v1ht(7),            -- 622M单模一光口一电口ARC扣板
+                subbnameh512o8ffb(8),           -- 多模2Km-8路100M以太网光接口扣板
+                subbnameh512o8fff(9),           -- 单模15Km-8路100M以太网光接口扣板
+                subbnameh511o1gfa(10),          -- 多模500m-1路GE光接口扣板
+                subbnameh511o1gfe(11),          -- 暂不用
+                subbnameh511o1gfg(12),          -- 暂不用
+                subbnameh511o2cpb(13),          -- 双STM-1光接口ATM扣板(多模2Km),MD用
+                subbnameh511o2cpg(14),          -- 双STM-1光接口ATM扣板(单模30Km),MD用
+                subbnameh511o1cpb(15),          -- 单STM-1光接口ATM扣板(多模2Km),MD用
+                subbnameh511o1cpg(16),          -- 单STM-1光接口ATM扣板(单模30Km),MD用
+                subbnameh511o1hxc(17),          -- 单STM-4光接口ATM扣板(单模长距离)
+                subbnameh511o1hxb(18),          -- 单STM-4光接口ATM扣板(单模中距离)
+                subbnameh511o1hxa(19),          -- 单STM-4光接口ATM扣板(多模短距离)
+                subbnameh511e23t(20),           -- 2路E3 ATM电接口扣板
+                subbnameh511e13t(21),           -- 1路E3 ATM电接口扣板
+                subbnameh511t23t(22),           -- 2路T3 ATM电接口扣板
+                subbnameh511t13t(23),           -- 1路T3 ATM电接口扣板
+                subbnameh511o2cvb(24),          -- 双STM-1光接口SDH扣板(多模2Km)
+                subbnameh511o2cvg(25),          -- 双STM-1光接口SDH扣板(单模30Km)
+                subbnameh511e8it(26),           -- 8口IMA扣板
+                subbnameh511e81d(27),           -- 8口E1扣板
+                subbnameh511e8vd(28),           -- 8口V35扣板
+                subbnameh511s81d(29),           -- 8口G.SHDSL扣板
+                subbnamevc01sdsp(30),           -- VSP扣板
+
+-- 20020619 新增
+                subbnameh511o1gfx(31),          -- 单模10Km-1路GE光接口扣板
+                subbnameh511e8fi(32),           -- E8FI（8路10M/100M以太网电接口扣板）
+                subbnameh511o1cvb(33),          -- 单STM-1光接口SDH扣板(多模2Km)
+                subbnameh511o1cvg(34),          -- 单STM-1光接口SDH扣板(单模30Km)
+
+-- UA3000新增IMA扣板
+                subbnameh601e8ia(35),           -- 8路IMA E1电接口扣板
+                subbnameh601o1cng(36),          -- 1路155MATM单模30KM光接口扣板（SC）
+                subbnameh601o1cnb(37),          -- 1路155MATM多模2KM光接口扣板（SC）
+                subbnameh601o2cng(38),          -- 2路155MATM单模30KM光接口扣板（SC）
+                subbnameh601o2cnb(39),          -- 2路155MATM多模2KM光接口扣板（SC）
+                                                -- IAS新增扣板
+                subbnameh511e1ct(40),           -- 1路155MATM电接口扣板
+                subbnameh511e2ct(41),           -- 2路155MATM电接口扣板
+                subbnameh531o1gaa(42),          -- 1路GE多模光接口
+                subbnameh531o2gaa(43),          -- 2路GE多模光接口
+                subbnameh531o1gae(44),          -- 1路GE单模光接口
+                subbnameh531o2gae(45),          -- 2路GE多模光接口
+                subbnameh531e4fb(46),           -- 4路10/100M以太网电接口扣板-BASE用
+                subbnameh53104fbf(47),          -- 4路10/100M以太网光接口扣板（单模15km，LC接口）-BASA和BASE用
+                subbnameh53104fbb(48),          -- 4路10/100M以太网光接口扣板（多模2km，LC接口）-BASA和BASE用
+-- MA5200
+                subbnameaim1(50),
+                subbnameaim2(51),
+                subbnameaim3(52),
+                subbnameaim4(53),
+                subbnamepim1(54),
+                subbnamepim2(55),
+                subbnamepim3(56),
+                subbnamepim4(57),
+                subbnameh521E6FC(58),           -- 六路快速以太网电接口扣板
+                subbnameh521O6FCSMTRJ(59),      -- 单模六路快速以太网MTRJ光接口扣板
+                subbnameh521O6FCMMTRJ(60),      -- 多模六路快速以太网MTRJ光接口扣板
+                subbnameh521O6FCSLC(61),        -- 单模六路快速以太网LC光接口扣板
+                subbnameh521O1GCSMTRJ(62),      -- 单模一路吉比特以太网MTRJ光接口扣板
+                subbnameh521O1GCMMTRJ(63),      -- 多模一路吉比特以太网MTRJ光接口扣板
+                subbnameh521O1GCSLC(64),        -- 单模一路吉比特以太网LC光接口扣板
+                subbnameh521O1GCMLC(65),        -- 多模一路吉比特以太网LC光接口扣板
+                subbnameh521O2GCSMTRJ(66),      -- 单模双路吉比特以太网MTRJ光接口扣板
+                subbnameh521O2GCMMTRJ(67),      -- 多模双路吉比特以太网MTRJ光接口扣板
+                subbnameh521O2GCSLC(68),        -- 单模双路吉比特以太网LC光接口扣板
+                subbnameh521O2GCMLC(69),        -- 多模双路吉比特以太网LC光接口扣板
+                subbnameh521EGCSTKC(70),        -- 吉比特以太网电口堆叠扣板
+                subbnameh521OGCSTKC(71),        -- 吉比特以太网光口堆叠扣板
+                subbnameh521P1CCOC3(72),        -- 155M POS扣板
+                subbnameh521P1HCOC12(73),       -- 622M POS扣板
+-- ESR 子卡类型
+                subbnameAtm155(130) ,           -- 包括ATM155与ATM155A.
+                subbnameAtm622(131) ,           -- 包括ATM622与ATMA622.
+                subbnamePos155 (132) ,          -- ESR 目前不支持,为以后扩展保留
+                subbnamePos622(133) ,           -- BS22P2HA
+                subbnameO2cc   (134) ,          -- CES(电路仿真）单板的子卡,编号：BS22O2CC
+                subbnameE43a(135) ,             -- 实现E3的ATM接入,编号：BS21E43A
+                subbnameE8fi (136) ,            -- SN01E8FI
+                subbnameO8fi (137) ,            -- SN01O8FI
+                subbnameO1gi (138) ,            -- SN01O1GI
+                subbnameE8f(139),               -- BS22E8FA/BS22E8FB 电口FE子卡     BS22LPUD子卡
+                subbnameO8f (140) ,             -- BS22O8FA/BS22O8FB 光口FE子卡     BS22LPUD子卡
+                subbnameO1g (141) ,             -- BS22O1GA,                        BS22LPUC子卡
+                subbnameO2g (142) ,             -- BS22O2GA,BS22O2GB                BS22LPUC子卡
+                subbnameO8g (143) ,             -- BS22O8GA                         BS22LPUC子卡
+                subbnameAtm2g5(144) ,           -- 实现2.5G ATM 接入功能,只能插在LPUB上,编号：BS22O1SC BS22LPUB子卡
+                subbnameBfm(145),               -- BS22BFMA   在O1G基础上  BS22BFMB  在O2G基础上
+                subbnameh601e23a(146),          -- 2路E3 ATM电接口扣板
+                subbnameh601e13a(147),          -- 1路E3 ATM电接口扣板
+-- -LAND新增扣板
+                subbnameH511o1GTG(148),         -- - LAND 1路千兆单模光口扣板(40Km.1550nm)
+-- VPRING扣板
+                subbnameh511v2htg(151),         -- H511V2HTG VPRING扣板2路622光口（单模40km，SC接口）
+                subbnameh511v1htg(152),         -- H511V1HTG VPRING扣板1路622光口（单模40km，SC接口）
+                subbnameh511v2htb(153),         -- H511V2HTB VPRING扣板2路622光口（多模2km，SC接口）
+                subbnameh511v1htb(154),         -- H511V1HTB VPRING扣板1路622光口（多模2km，SC接口）
+                subbnameh601v2haf(155),         -- H601V2HAF VPRING扣板2路622光口（单模15km，SC接口）
+                subbnameh601v1haf(156),         -- H601V1HAF VPRING扣板1路622光口（单模15km，SC接口）
+                subbnameh601v2hag(157),         -- H601V2HAG VPRING扣板2路622光口（单模40km，SC接口）
+                subbnameh601v1hag(158),         -- H601V1HAG VPRING扣板1路622光口（单模40km，SC接口）
+                subbnameh601v2hab(159),         -- H601V2HAB VPRING扣板2路622光口（多模2km，SC接口）
+                subbnameh601v1hab(160),         -- H601V1HAB VPRING扣板1路622光口（多模2km，SC接口）
+                subbnameh601cesa(165),          -- 8路IMA E1电接口扣板
+                subbnameh601v2ha(166),          -- 1路155MATM单模30KM光接口扣板（SC）//要作废
+-- LanD扣板
+                subbnameLande8fs(167),
+                subbnameLando8fsb(168),
+                subbnameLando8fsf(169),
+                subbnameLando8fsg(170),
+                subbnameLando4fsb(171),
+                subbnameLando4fsf(172),
+                subbnameLando4fsg(173),
+                subbnameLando1gta(174),
+                subbnameLando1gtf(175),
+                subbnameLando1gth(176),
+                subbnameh512e81d(177),
+                subbnameLando2fsb(178),         -- 2路百兆多模光口
+                subbnameLando2fsf(179),         -- 2路百兆单模光口(15Km、1310nm)
+                subbnameLando2fsg(180),         -- 2路百兆单模光口(40Km、1310nm)
+                subbnameLando1fsb(181),         -- 1路百兆多模光口
+                subbnameLando1fsf(182),         -- 1路百兆单模光口(15Km、1310nm)
+                subbnameLando1fsg(183),         -- 1路百兆单模光口(40Km、1310nm)
+-- 622M ATM扣板
+                subbnamebs22o1hda(184),         -- ATM扣板1路多模622光口 基于SD537芯片 0.5km
+                subbnamebs22o1hdb(185),         -- ATM扣板1路单模中距622光口 基于SD537芯片 15km
+                subbnamebs22o1hdc(186),         -- ATM扣板1路单模长距622光口 基于SD537芯片 40km
+                subbnameH601e2fn(187),          -- 2路10/100M以太网电接口扣板
+                subbnameH601o2fnf(188),         -- 2路10/100M以太网光接口扣板(1310nm,单模,15km,LC接口)
+                subbnameH601o2fnb(189),         -- 2路10/100M以太网光接口扣板(1310nm,多模,2km,LC接口)
+                subbnameH601o1fnf(190),         -- 1路10/100M以太网光接口扣板(1310nm,单模,15km,LC接口)
+                subbnameH601o1fnb(191),         -- 1路10/100M以太网光接口扣板(1310nm,多模,2km,LC接口)
+                subbnameH601o1gne(192),         -- 1路GE光接口扣板(1310nm,单模,10km,LC接口)
+                subbnameH601o1gna(193),         -- 1路GE光接口扣板(850nm,多模,500m,LC接口)
+                subbnameH601o1gng(194),         -- 1路GE光接口扣板(1510nm,单模,40km,LC接口)
+-- VPU 扣板
+                subbnamevpuh511etca(195),       -- VPU DSP 160路扣板
+                subbnamevpuh511etcb(196),       -- VPU DSP 600路扣板
+                subbnamevpuh511e2fn(197),       -- VPU 2路FE电口扣板
+                subbnamevpuh511o2fnb(198),      -- VPU 2路FE光口扣板
+                subbnamevpuh511o1gna(199),      -- VPU FE电口＋GE扣板
+-- MSUC扣板
+                subbnameH511O1CSB(200),         -- MSUC扣板1路155M SDH多模2KM光接口扣板
+                subbnameH511O1CSF(201),         -- MSUC扣板1路155M SDH单模15KM光接口扣板
+                subbnameH511O1CSG(202),         -- MSUC扣板1路155M SDH单模40KM光接口扣板
+                subbnameH511E1CS(203),          -- MSUC扣板1路155M SDH电接口扣板
+
+-- VPU 扣板
+                subbnamevpuh511e1fn(204),       -- VPU 1X10/100M以太网电接口板
+                subbnamevpuh511o2fnf(205),      -- VPU 2X100M以太网单模15KM光接口板
+                subbnamevpuh511o1fnb(206),      -- VPU 1X100M以太网多模2KM光接口板
+                subbnamevpuh511o1fnf(207),      -- VPU 1X100M以太网单模15KM光接口板
+                subbnamevpuh511o1gne(208),      -- VPU 1X千兆以太网单模10KM光接口板
+                subbnamevpuh511o1gng(209),      -- VPU 1X千兆以太网单模40KM光接口板
+
+-- 155M ATM光扣板
+                subbnameH601O2CNH(210),         -- UA双路155M单模60KM ATM光接口板H601O2CNH
+                subbnameH601O1CNH(211),         -- UA单路155M单模60KM光接口板H601O1CNH
+                subbnameH511O2CPH(212),         -- 双路155M单模60KM光接口板H511O2CPH
+                subbnameH511O1CPH(213),         -- 单路155M单模60KM光接口板H511O1CPH
+                subbnameH511O2CPI(214),         -- 双路155M单模90KM光接口板H511O2CPI
+-- UA VPRING扣板
+                subbnameH602V2HAF(215),         -- H602V2HAF VPRING扣板2路622光口（单模15km，SC接口，SD537芯片）
+                subbnameH602V1HAF(220),         -- VPRING扣板1路622光口（单模15km，SC接口，SD537）H602V1HAF
+                subbnameH602V2HAG(221),         -- VPRING扣板 2路622光口（单模40km，SC接口，SD537）H602V2HAG
+                subbnameH602V1HAG(222),         -- VPRING扣板1路622光口（单模40km，SC接口，SD537）H602V1HAG
+                subbnameH602V1HTF(223),         -- VPRING扣板1路622光口（单模15KM，SC接口，SD537，电口互联）H602V1HTF
+                subbnameH602V1HTG(224),         -- VPRING扣板1路622光口（单模40KM，SC接口，SD537，电口互联）H602V1HTG
+
+                subbnameH602V2HCF(225),         -- VPRING扣板2路622光口（单模15km，SC接口，三级时钟，SD537）H602V2HCF
+                subbnameH602V1HCF(226),         -- VPRING扣板1路622光口（单模15km，SC接口，三级时钟，SD537） H602V1HCF
+                subbnameH602V2HCG(227),         -- VPRING扣板2路622光口（单模40km，SC接口，SD537，三级时钟）H602V2HCG
+                subbnameH602V1HCG(228),         -- VPRING扣板1路622光口（单模40km，SC接口，SD537，三级时钟） H602V1HCG
+                subbnameH602V1HEF(229),         -- VPRING扣板1路622光口（单模15KM，SC接口，SD537，电口互联，三级时钟）H602V1HEF
+                subbnameH602V1HEG(230),         -- VPRING扣板1路622光口（单模40KM，SC接口，SD537，电口互联，三级时钟）H602V1HEG
+
+
+-- 8070
+                subbnameRTC1ETPA(300),          -- Ethernet process card
+                subbnameRTC1ETKA(301),          -- Ethernet back card
+                subbnameRTC1ETKX(302),          -- 光口Ethernet back card
+                subbnameRTC1GEM(303),           -- 前出线光口GE process card
+                subbnameRTC1GEPA(304),          -- 后出线GE process card
+                subbnameRTC1GEKA(305),          -- 后出线GE back card
+                subbnameRTC1GEKB(306),          -- 后出线GE back card
+                subbnameRTC1GEKC(307),          -- 后出线GE back card
+                subbnameRTC1GEKD(308),          -- 后出线GE back card
+                subbnameRTC1GEPT(309),          -- 前出线电口GE process card
+                subbnameRTC1SAPA(310),          -- 同步串口4SA process card
+                subbnameRTC1SAKA(311),          -- 同步串口4SA back card
+                subbnameRTC1POPA(312),          -- POS process card
+                subbnameRTC1POK(313),           -- POS back card
+                subbnameRTC2POPB(314),          -- POS++ process card
+                subbnameRTC1CPOP(315),          -- CPOS process card
+                subbnameRTC1CPOB(316),          -- CPOS process card that supports t1
+                subbnameRTC1PAK(317),           -- CPOS/POS++ /8236 ATM back card
+                subbnameRTC1ATPA(318),          -- 8230 ATM process card
+                subbnameRTC1ATK(319),           -- 8230 ATM back card
+                subbnameRTC1ATPB(320),          -- 8236 ATM process card
+                subbnameRTC1T8IP(321),          -- 8-port T1 ATM process card
+                subbnameRTC18TKA(322),          -- 8-port T1 ATM back card
+                subbnameRTC18TKB(323),          -- 8-port T1 ATM back card
+                subbnameRTC1E8IP(324),          -- 8-port E1 ATM process card
+                subbnameRTC18EKA(325),          -- 8-port E1 ATM back card
+                subbnameRTC18EKB(326),          -- 8-port E1 ATM back card
+                subbnameRTC1ATSP(327),          -- 1-port ATM T3 process card
+                subbnameRTC1CT3K(328),          -- 1-port ATM T3 back card
+                subbnameRTC1AESP(329),          -- 1-port ATM E3 process card
+                subbnameRTC1CE3K(330),          -- 1-port ATM E3 back card
+                subbnameRTC1ATDP(331),          -- 2-port ATM T3 process card
+                subbnameRTC1T3DK(332),          -- 2-port ATM T3 back card
+                subbnameRTC1AEDP(333),          -- 2-port ATM E3 process card
+                subbnameRTC1E3DK(334),          -- 2-port ATM E3 back card
+                subbnameRTC1ATHP(335),          -- 622M ATM  process card
+                subbnameRTC1PAHA(336),          -- 622M ATM back card
+                subbnameRTC1PAHB(337),          -- 622M ATM back card
+                subbnameRTC1PAHC(338),          -- 622M ATM back card
+                subbnameRTC1CEPA(339),          -- 4-port CE1/e1 process card
+                subbnameRTC14EPB(340),          -- 4-port CE1/e1 process card
+                subbnameRTC14CEP(341),          -- 4-port CE1/e1 process card
+                subbnameRTC1QEKA(342),          -- 4-port CE1/e1 back card
+                subbnameRTC14EKA(343),          -- 4-port CE1/e1 back card
+                subbnameRTC14EKB(344),          -- 4-port CE1/e1 back card
+                subbnameRTC18EPA(345),          -- 8-port CE1/e1 process card
+                subbnameRTC18EPB(346),          -- 8-port CE1/e1 process card
+                subbnameRTC18CEP(347),          -- 8-port CE1/e1 process card
+                subbnameRTC1E3PA(348),          -- E3 process card
+                subbnameRTC1E3DP(349),          -- 2E3 process card
+                subbnameRTC1CE3P(350),          -- CE3 process card
+                subbnameRTC18TPA(351),          -- 8T1 process card
+                subbnameRTC18TPB(352),          -- 8T1 process card
+                subbnameRTC18CTP(353),          -- 8T1 process card
+                subbnameRTC1T3PA(354),          -- T3 process card
+                subbnameRTC1T3DP(355),          -- 2T3 process card
+                subbnameRTC1CT3P(356),          -- CT3 process card
+                subbnameRTC1CFPA(357),          -- flash card front
+                subbnameRTC1FEPA(358),          -- FETH card front
+                subbnameIMUETHP(359),           -- imu-eth card front
+                subbnameIMUETHK(360),           -- imu-eth card back
+                subbnameIMUGEOP(361),           -- imu-geo card front
+                subbnameIMUGEOK(362),           -- imu-geo card back
+                subbnameIMUGEEP(363),           -- imu-gee card front
+                subbnameIMUGEEK(364),           -- imu-gee card back
+                subbnameRTC14CTP(365),          -- NE05/08/16E:4t1 front
+                subbnameRTC14TKA(366),          -- NE05/08/16E:4t1 back
+                subbnameRTC1CPOC(367),          -- NE05/08/16E:CPOC front
+-- 8011
+                subbnameCR01P4CM(400),          -- For NE80 & NE40, daughter card with 4 155M POS multimode optical port at 1300nm wavelength
+                subbnameCR01P4CS(401),          -- For NE80 & NE40, daughter card with 4 155M POS singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameCR01P1HM(402),          -- For NE80 & NE40, daughter card with 1 622M POS multimode optical port at 1300nm wavelength
+                subbnameCR01P1HS(403),          -- For NE80 & NE40, daughter card with 1 622M POS singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameCR01P1UZ(404),          -- For NE80 & NE40, daughter card with 1 2.5G POS singlemode optical port at 1300nm wavelenght (2km)
+                subbnameCR01P1US(405),          -- For NE80 & NE40, daughter card with 1 2.5G POS singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameCR01P1UL(406),          -- For NE80 & NE40, daughter card with 1 2.5G POS singlemode optical port at 1300nm wavelength (40km)
+                subbnameCR01P1UV(407),          -- For NE80 & NE40, daughter card with 1 2.5G POS singlemode optical port at 1300nm wavelength (70km)
+                subbnameCR01P1RZ(408),          -- For NE80 & NE40, daughter card with 1 2.5G channelized POS singlemode optical port at 1300nm wavelength (2km)
+                subbnameCR01P1RS(409),          -- For NE80 & NE40, daughter card with 1 2.5G channelized POS singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameCR01P1RL(410),          -- For NE80 & NE40, daughter card with 1 2.5G channelized POS singlemode optical port at 1300nm wavelength (40km)
+                subbnameCR01P1RV(411),          -- For NE80 & NE40, daughter card with 1 2.5G channelized POS singlemode optical port at 1300nm wavelength (70km)
+                subbnameCR01P4HM(412),          -- For NE80 & NE40, daughter card with 4 622M POS multimode optical port at 1300nm wavelength
+                subbnameCR01P4HS(413),          -- For NE80 & NE40, daughter card with 4 622M POS singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameCR01A8CM(414),          -- For NE80 & NE40, daughter card with 8 155M ATM multimode optical port at 1300nm wavelength
+                subbnameCR01A8CS(415),          -- For NE80 & NE40, daughter card with 8 155M ATM singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameCR01R1UZ(416),          -- For NE80 & NE40, daughter card with 1 2.5G RPR singlemode optical port at 1300nm wavelength (2km）
+                subbnameCR01R1US(417),          -- For NE80 & NE40, daughter card with 1 2.5G RPR singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameCR01R1UL(418),          -- For NE80 & NE40, daughter card with 1 2.5G RPR singlemode optical port at 1300nm wavelength (40km)
+                subbnameCR01R1UV(419),          -- For NE80 & NE40, daughter card with 1 2.5G RPR singlemode optical port at 1300nm wavelength (70km)
+                subbnameCR01C2CF(420),          -- For NE80 & NE40, daughter card with 2 155M CPOS optical port (include SFP module)
+                subbnameCR01C4CF(421),          -- For NE80 & NE40, daughter card with 4 155M CPOS optical port (include SFP module)
+                subbnameCR01EGFE(422),          -- For NE80 & NE40, daughter card with 16 FE port
+                subbnameCR01EGFM(423),          -- For NE80 & NE40, daughter card with 16 FE multimode optical port at 1300nm wavelength
+                subbnameCR01EGFS(424),          -- For NE80 & NE40, daughter card with 16 FE singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameCR01E2GP(425),          -- For NE80 & NE40, daughter card with 2 GE multimode optical port at 850nm wavelength
+                subbnameCR01E2GS(426),          -- For NE80 & NE40, daughter card with 2 GE singlemode optiacl port at 1300nm (10-15km)
+                subbnameCR01E2GQ(427),          -- For NE80 & NE40, daughter card with 2 GE singlemode optical port at 1550nm (40km)
+                subbnameCR01E2GV(428),          -- For NE80 & NE40, daughter card with 2 GE singlemode optical port at 1300nm (70km)
+                subbnameCR01E4GC(429),          -- For NE80 & NE40, daughter card with 4 GE optical port (include GIBC module)
+                subbnameCR01E8FB(430),           -- For NE80 & NE40, daughter card with 8 FE electronic/optical port
+                subbnameUR01A1CFF(431),         -- 1路STS-3C/STM-1 ATM SFP光接口灵活插卡(NetEngine40)
+                subbnameUR01A2CFF(432),         -- 2路STS-3C/STM-1 ATM SFP光接口灵活插卡(NetEngine40)
+                subbnameUR01A4CFF(433),         -- 4路STS-3C/STM-1 ATM SFP光接口灵活插卡(NetEngine40)
+                subbnameUR01A8CFF(434),         -- 8路STS-3C/STM-1 ATM SFP光接口灵活插卡(NetEngine40)
+                subbnameCR01A8CFF(435),         -- 8路STS-3C/STM-1 ATM SFP光接口灵活插卡(NetEngine80)
+                subbnameCR01A4CFF(436),         -- 4路STS-3C/STM-1 ATM SFP光接口线路板(NetEngine80)
+                subbnameCR01SPUA(437),          -- 灵活插卡业务处理板A
+                subbnameCR01SPUB(438),          -- 灵活插卡业务处理板B
+                subbnameCR01SPUC(439),          -- 灵活插卡业务处理板C
+                subbnameCR018CT1(440),          -- 8端口-Channelized T1-RJ45-物理接口板
+                subbnameCR01C1CF(441),          -- 1*OC-3/STM-1 通道化至DS0 光接口线路板-SFP
+         --scua新增扣板
+               subbnameH511L24GA(450),		-- LAN SWITCH 扣板（双片5695,提供24*GE）
+               subbnameH511L12GA(451),		-- LAN SWITCH 扣板（单片5695,提供12*GE）
+               subbnameH511L02GA(452),		-- 2*GE的SERDES PHY扣板
+               subbnameH511L02FA(453),		-- 2*FE的PHY扣板(光口)
+               subbnameH511L02FE(454),          -- 2*FE的PHY扣板(电口)
+               subbnameH511O4GS(455),		-- 4*GE SFP光扣板
+               subbnameH531O2GS(456),		-- 2*GE SFP光扣板
+               subbnameH511E2FA(457),		-- 2*FE电接口板
+               subbnameH511O2FS(458), 		-- 2*FE SFP光接口板
+
+        --IPMB新增扣板
+               subbnameH601O2GNE(459),		-- 2路GE光接口扣板(1310nm,单模,10km,LC接口)
+               subbnameH601O2GNA(460),		-- 2路GE光接口扣板(850nm,多模,500m,LC接口)
+               subbnameH601O2GNG(461),           -- 2路GE光接口扣板(1510nm,单模,40km,LC接口)
+
+-- VPU 新增扣板
+               subbnamevpuh511O1FNG(462),      -- 1X100M以太网单模40KM光接口板
+               subbnamevpuh511O2FNG(463),      -- 2X100M以太网单模40KM光接口板
+               subbnamevpuh511O2FNI(464),      -- 2X100M以太网单模80KM光接口板
+               subbnamevpuh511O1GNI(465),      -- 1X千兆以太网单模80KM光接口板
+               subbnamevpuh511O1GNT(466),      -- 1X千兆以太网单模40KM光接口板
+
+--ofa5920
+                subbnameH801TDMB(145933),          -- OFA5920 TDMoGEM扣板，在2GPON单板上，上行出8E1
+                subbnameH801EH1A(145934),          -- TDMoP大板上的16路E1/T1扣板
+		subbnameH801CKMA(145935),          --时钟扣板
+-- A8010 产品
+                subbnameCkmb(65536),            -- CKMB（时钟扣板）
+                subbnameP2ci(65537),            -- P2CI（2路POS光接口扣板）
+                subbnameCsma(65538),            -- CSMA（CSM/6芯片DSP扣板）
+                subbnameCsmb(65539),            -- CSMB（CSM/12 M80310芯片DSP扣板）
+                subbnameCsmc(65540),            -- CSMC（Mapletree芯片DSP扣板）
+                subbnameCsmd(65541),            -- CSMD（CSM/12 M80320芯片DSP扣板）
+                subbnameCkma(65542),            -- ckma0 sdh&tdm时钟扣板,
+                subbnameCkmc(65543),            -- ckmc0 tdm时钟模块(r002)
+                subbnameO8fib(65544),           -- o8fib 多模2km-8路100m以太网光接口扣板
+                subbnameO8fif(65545),           -- o8fif 单模15km-8路100m以太网光接口扣板
+                subbnameO1gie(65546),           -- o1gie 单模10km-1路ge光接口扣板
+                subbnameO1gig(65547),           -- o1gig 单模40km-1路ge光接口扣板
+                subbnameO1gii(65548),           -- o1gii 单模70km-1路ge光接口扣板
+                subbnameO1gia(65549),           -- o1gia 多模500m-1路ge光接口扣板
+                subbnameOgfib(65550),           -- ogfib 多模2km-16路100m以太网光接口扣板
+                subbnameOgfif(65551),           -- ogfif 单模15km-16路100m以太网光接口扣板
+                subbnameO2gie(65552),           -- o2gie 单模10km-2路ge光接口扣板
+                subbnameO2gia(65553),           -- o2gia 多模500m-2路ge光接口扣板
+                subbnameP2cig(65554),           -- p2cig 单模30km-2路155mpos光接口扣板
+                subbnameP2cib(65555),           -- p2cib 多模2km-2路155mpos光接口扣板
+                subbname8efi(65556),            -- e8fi  提供8路10/100m以太网电接口
+                subbnameO2cib(65557),           -- o2cib 提供2路155m atm多模光接口,传输距离2km。
+                subbnameO2cig(65558),           -- o2cig 提供2路155m atm单模光接口,传输距离30km。
+                subbnameE2ai(65559),            -- e2ai  提供2路e3/t3 atm电接口扣板    frb
+                subbnameE8vd(65560),            -- e8vd  8路v.35接口扣板
+                subbnameE81d(65561),            -- e81d  8路e1/t1双绞线接口扣板(1*2拼板)
+                subbnameLdcu(65562),            -- ldcu  lzs数据压缩单元扣板
+                subbnameLiua(65563),            -- liua  16路e1(75欧)线路接口单元扣板
+                subbnameLiub(65564),            -- liub  16路e1(120欧)线路接口单元扣板(r002)
+                subbnameLiuc(65565),            -- liuc  16路t1(100欧)线路接口单元扣板(r002)
+                subbnameSelf(65566),            -- 单板本身的虚拟扣板
+                                                -- subbnameCkmc(65567),
+                                                -- ckmc0 tdm时钟模块(r002)
+                subbnameCsme(65568),            -- CSME（CSM/6单芯片DSP扣板）
+                subbnameCsmg(65569),            -- CSMG（60路CSM/12信号处理扣板，M80310）
+                subbnameCsmh(65570),            -- CSMH（60路语音信号处理扣板，M80320）
+-- MA5100 产品
+                subbnameApc(65836),             -- MA5105 IMA板上APC扣板
+		subbnameH511O2GS(65837),
+		subbnameH511O4GS(65838),
+		subbnameH511E2FA(65839),
+		subbnameH511O2FS(65840),
+
+-- MA5300产品
+                subbnameMa530016VPSL(65900),    -- MA5300 16路VDSL语音分离器板 BOM编号：03024865
+                subbnameMa530024VPSL(65901),    -- MA5300 24路VDSL语音分离器板
+                subbnameMa5300APSL(65902),      -- MA5300 48路ADSL语音分离器板
+                subbnameMa5300FE(65903),        -- MA5300 8路快速以太网接口板-4个FE多模光口和4个FE电口 BOM编号：03025505
+                subbnameH531CQTA(65904),        -- MA5100和MA5300的宽带线路测试扣板 BOM编号：03036794
+                subbnameH531O2FAB(65905),       -- 4路10/100M以太网光接口扣板(多模2km，LC)
+                subbnameH53104FAF(65906),       -- 4路10/100M以太网光接口扣板(单模15km，LC)
+                subbnameH531O2FAB(65907),       -- 2路10/100M以太网光接口扣板(多模2km，LC)
+                subbnameH53104FAF(65908),       -- 2路10/100M以太网光接口扣板(单模15km，LC)
+                subbnameH531O2GAX(65909),       -- 路单多模混合GE,上GE(单模LC接口-10KM);下GE(多模LC接口-500m)
+                subbnameH531R2HAF(65910),       -- 2路单模622M RPR(两个622M口占一个GE),LC接口,15KM
+                subbnameH531R2HAX(65911),       -- 2路单模622M RPR(两个622M口占一个GE),LC接口,15KM + 1路单模GE,LC接口,10KM
+                subbnameH531O1FAB(65912),       -- 1路多模FE，LC接口，2KM
+                subbnameH531O1FAF(65913),       -- 1路单模FE，LC接口，15KM
+                subbnameH531O1FAG(65914),       -- 1路单模FE，LC接口，40KM
+                subbnameH531E2GA(65915),        -- 2路GE电接口扣板
+                subbnameTD91FEGA(65916),        -- 2路GE电口+4路FE电口扣板（装备专用）
+-- S3026V产品
+                subbnameLS66GS1UA(65920),       -- 千兆单模光口板(10km)
+                subbnameLS66GM1UA(65921),       -- 千兆多模光口板（500m）
+                subbnameLS66FS1UA(65922),       -- 百兆单模光口板（15km）
+                subbnameLS66FL1U(65923) ,       -- 百兆单模光口板（40km）
+                subbnameLS66FM1UA(65924),       -- 百兆多模光口板（2km）
+                subbnameLS66GT1UA(65925),       -- 千兆电口板
+                subbnameLS66ST1U(65926),        -- 千兆堆叠板
+                subbnameLS66GZ1UA(65927),       -- 千兆长距光口板（70km）
+                subbnameLS61GL1UA(65928),       -- 千兆中距光口板（40km）
+
+-- MA5100
+                subbnameH531E2GA(131082),           -- 电口的GE扣板
+
+                subbnameH561M2GA(131083),           --MPLS扣板
+                subbnameH561L24GA(131084),          -- MA5600的lsw扣板,双片5695,类似h511L24GA
+                subbnameH561O4FM(131085),           -- MA5600的4口FE光扣板
+                subbnameH561O2FM(131086),           -- MA5600的2口FE光扣板
+                subbnameH561E4GFA(131087),          -- MA5600的4口GE电扣板
+
+                --MA5100V3新增扣板,扣在ECUA主控板上
+                subbnameH511LSWA(131090),		-- LAN SWITCH 扣板(5650*1),提供4GE＋8FE
+                subbnameH511LO2GB(131091),		-- PHY扣板
+                subbnameH511O3GS(131092),		-- 3×GE SFP光接口扣板
+                subbnameH531E4FA(131093),		-- 4×FE电口接口扣板
+                subbnameH531O4FS(131094),		-- 4×FE SFP光接口扣板
+
+
+
+
+
+-- MA5600
+                		subbnameH531E2GA(131082),
+                		subbnameH561M2GA(131083),           --MPLS扣板
+                		subbnameH561L24GA(131084),          -- MA5600的lsw扣板,双片5695,类似h511L24GA
+                		subbnameH561O4FM(131085),           -- MA5600的4口FE光扣板
+                		subbnameH561O2FM(131086),           -- MA5600的2口FE光扣板
+                		subbnameH561E4GFA(131087),          -- MA5600的4口GE电扣板
+-- MA5600产品
+                subbnameH801O2GS(143360),          -- 2 GE光口上行扣板，用于SCUA上行接口
+                subbnameH801O4GS(143361),          -- 4 GE光口上行扣板，用于SCUA上行接口
+                subbnameH801O4FS(143362),          -- 4-FE光口上行扣板，用于SCUA上行接口
+                subbnameH801E2GA(143363),          -- 2 GE电口上行扣板，用于SCUA上行接口
+                subbnameH801O2CS(143364),          -- 2路ATM155M光模块可插拔扣板
+                subbnameH801E4GA(143365),          -- H801SCUA上四口的电扣板
+                subbnameH801D4GA(143366),          -- 主控板上的直通扣板H801D4GA
+
+                subbnameH801O2FN(143367),          -- H801MCUA上2FE光扣板，提供FE上行
+                subbnameH801O2GN(143368),          -- H801MCUA上2GE光扣板，提供GE上行
+
+
+                subbnameH801GP1A(143372),          -- GPON上行扣板，用于MCUA上行接口
+
+                subbnameH561EP1A(145920),          -- 1 EPON接口板
+                subbnameH561EP2A(145921),          -- 2 EPON接口板
+                subbnameH561EP4A(145922),           -- 4 EPON接口板
+
+                subbnameH531O4GS(145923),          -- MA5600的4口GE光接口扣板
+                subbnameH561BITS(145924),          -- H561AIUG单板上的BITS扣板
+                subbnameH822EP1A(145925),          -- H821MCUA上行扣板，1个EPON端口，2个GE电口
+                subbnameH801FLBA(145938),          -- 语音转发逻辑扣板
+                subbnameH801CKMA(146020),          -- H801SCUL上的时钟扣板
+                subbnameH801NH1A(145940),          -- H801TOPA单板上的TDM接口扣板
+-- WA5700:
+                subnameBWAE1(155648),             -- BWA产品IDU主控板E1扣板
+                subnameBWAT1(155649),             -- BWA产品IDU主控板T1扣板
+                subnameBWAGE(155650),             -- BWA产品IDU主控板GE扣板
+
+-- MD
+                subbnamebs22o1hdi(200704),         -- ATM扣板1路单模长距622光口 基于SD537芯片 70km
+
+-- UA
+                subbnameH601O1GNI(204805),       --1X千兆以太网单模80KM光接口板H601O1GNI
+                subbnameH601O2GNI(204806),       --2X千兆以太网单模80KM光接口板H601O2GNI
+                subbnameH601O2FNG(204807),       --2X100M以太网单模40KM光接口板H601O2FNG
+                subbnameH601O1GNT(204808),       --1X千兆以太网单模40KM接口板（1310）H601O1GNT,IPM主控板支持
+                subbnameH601O1FNG(204809),       --1X100M以太网单模40KM光接口板H601O1FNG
+                subbnameH601O1FNI(204810),       --1X100M以太网单模80KM光接口板H601O1FNI
+
+-- AG
+                subbnameBCM1510(204811),         --扣板名称：BCM1510,底板dsp芯片,扣在PVM主控板上
+                subbnameVPC1510(204812),         --扣板名称：VPC1510,语音扣板,扣在PVM主控板上
+                subbnameH602ETCA(204813),        --扣板名称：H602ETCA,语音扣板,扣在PVM主控板上
+                subbnameH601ETCA(204814),        --扣板名称：H601ETCA,语音扣板,扣在PVM主控板上
+                subbnameH801ETCA(204815),        --TI套片的VOIP扣板
+                subbnameH802ETCA(204816),        --MIRO套片的VOIP扣板
+                subbnameH602ETCB(204818),        --扣板名称：H602ETCB,双芯片MIRO语音扣板,扣在PVM主控板上
+                subbnameH602ETCC(204819),        --扣板名称：H602ETCC,3芯片MIRO语音扣板,扣在PVM主控板上
+
+
+-- UA
+                subbnameH601E13F(204820),        --APM和AIU上用的前维护E3端口 1路E3
+                subbnameH601E23F(204821),        --APM和AIU上用的前维护E3端口 2路E3
+                subbnameH601T13F(204822),        --APM和AIU上用的前维护T3端口 1路T3
+                subbnameH601T23F(204823),        --APM和AIU上用的前维护T3端口 2路T3
+
+                subbnameH601M2GS(204830),        -- 4光口，IPMB用MPLS扣板
+
+
+                subbnameH601ETCB(204831),        --扣板名称：H601ETCB,双芯片TI语音扣板,扣在PVM主控板上
+                subbnameH601ETCC(204832),        --扣板名称：H601ETCC,3芯片TI语音扣板,扣在PVM主控板上
+
+                subbnameH601O2GNI(204833),       --2路GE光接口扣板(1550nm,单模,80km,LC接口)
+		subbnameH601O2GNT(204834),       --2路GE光接口扣板(1310nm,单模,40km,LC接口)
+		subbnameH602O1GNT(204835),       --1路GE光接口扣板(1310nm,单模,40km,LC接口)
+		subbnameH602O1GNI(204836),       --1X千兆以太网单模80KM光接口板
+        	subbnameH601O2FNG(204837),	 --2X100M以太网单模40KM光接口板
+		subbnameH601O1FNG(204838),   	 --1X100M以太网单模40KM光接口板
+		subbnameH601O1FNI(204839), 	 --1X100M以太网单模80KM光接口板
+                subbnameH612O2FN(204840),         --2路FE光接口扣板
+                subbnameH61202GN(204841),         --2路GE光接口扣板
+
+	        --tangrong changed for conflictted with  subbnameH612O2FN(204840)
+                subbnameH602V1HAI(204842),         -- VPRING扣板1路622光口（单模70km，SC接口，SD537）H602V1HAI
+
+		subbnameH602ETCM( 262144 ),        --扣板名称：H602ETCM,单芯片MINI语音扣板,扣在PVM主控板上
+                subbnameH602ETCN( 262145),         --扣板名称：H602ETCN,双芯片MINI语音扣板,扣在PVM主控板上
+-- 8011
+                subbname8CE1(528640),  		-- NetEngine40-8CE10-8端口RJ45通道化E1灵活插卡
+		subbnameGCE1(528641),           -- NetEngine40-GCE10-16端口RJ45通道化E1灵活插卡
+		subbnameE4GS(528642),  		-- 4×GE单模1300nm 10km-MTRJ光接口线路板
+		subbnameE4GP(528643),           -- 4×GE多模850nm 500m-MTRJ光接口线路板
+		subbnameE4GQ(528644),		-- 4×GE 单模 1550nm 40km-LC光接口线路板
+		subbnameE4GV(528645),		-- 4×GE 单模 1550nm 70km-LC光接口线路板
+		subbnameP2HM(528646),		-- 2×OC-12c/STM-4c POS多模1300nm 500m-SC光接口线路板
+		subbnameP2HS(528647),		-- 2×OC-12c/STM-4c POS单模1300nm 15km-SC光接口线路板
+		subbnameP8CM(528648),		-- 8×OC-3c/STM-1 POS多模1300nm 2km-MTRJ光接口线路板
+		subbnameP8CS(528649),		-- 8×OC-3c/STM-1 POS单模1300nm 15km-MTRJ光接口线路板
+		subbnameE4FE(528650),           -- 4个FE RJ45电接口
+		subbnameEGFE(528651),		-- 16×FE-RJ45电接口线路板
+		subbnameEGFS(528652),		-- 16×FE单模1300nm 15km-MTRJ光接口线路板
+		subbnameEGFM(528653),		-- 16×FE多模1300nm 2km -MTRJ光接口线路板
+		subbnameE4GC(528654),		-- 提供4个GE接口，可热插拔4个GBIC光模块，现在可提供4种规格的光模块：850nm 500m、1310nm 10km和30km、1550nm 70km
+		subbnameEGFEM(528655),		-- 16×FE-RJ45电接口线路板
+		subbnameLGFSM(528656),		-- 16×FE单模1300nm 15km-MTRJ光接口线路板
+		subbnameEGFMM(528657),		-- 16×FE多模1300nm 2km -MTRJ光接口线路板
+		subbnameE4GSM(528658),		-- 4×GE单模1300nm 10km-MTRJ光接口线路板
+		subbnameE4GPM(528659),		-- 4×GE多模850nm 500m-MTRJ光接口线路板
+		subbnameE4GQM(528660),		-- 4×GE 单模 1550nm 40km-LC光接口线路板
+		subbnameE4GVM(528661),		-- 4×GE 单模 1550nm 70km-LC光接口LAN线路板
+		subbnameE4GCM(528662),		-- 提供4个GE接口，可热插拔4个GBIC光模块，现在可提供4种规格的光模块：850nm 500m、1310nm 10km和30km、1550nm 70km
+		subbnameE4GEM(528663),		-- 提供4个光电自适应接口，支持SFP光接口或者RJ45电接口
+		subbnameEWFEM(528664),		-- 提供32个快速以太网电接口，支持MPLS业务
+		subbnameEGFEF(528665),		-- N16电口FE灵活插卡
+		subbnameP1CFF(528666),		-- 1路SFP光口POS155灵活插卡
+		subbnameP2CFF(528667),		-- N2路SFP光口POS155灵活插卡
+		subbnameP4CFF(528668),		-- 4路SFP光口POS155灵活插卡
+		subbnameE8FF(528669), 		-- 8路SFP光口FE灵活插卡
+		subbnameE1GFF(528670),		-- 1路SFP光口GE灵活插卡
+		subbnameE2GFF(528671),		-- 2路SFP光口GE灵活插卡
+		subbnameA2HFF(528672),          -- 2路STS-12C/STM-4 ATM SFP光接口灵活插卡
+		subbname3E3(528673),  		-- 3端口SMB接口E3灵活插卡
+		subbname3T3(528674),		-- 3端口SMB接口T3灵活插卡
+		subbnameE0GFF(528675),		---SPUA板上的nat灵活插卡
+		subbnameETGFF(528676),		--SPUA板上的natpt灵活插卡
+		subbnameSNGFF(528677),		--SPUB板上的Netstream灵活插卡
+		subbnameSTGFF(528678),		--SPUB板上的L2tp+Netstream灵活插卡
+		subbnameSGGFF(528679),		--SPUC板上的GRE+组播VPN+Netstream灵活插卡
+		subbname8E1(528680),		-- 8*e1子卡
+		subbnameA2HF(528681),		-- 2路STS-12C/STM-4 ATM SFP光接口子卡
+		subbnameEGFEE(528682),		-- 16电口FE插卡(不可插拔)
+		subbnameEWFE(528683),		-- 提供32个快速以太网电接口
+		subbnameE4GE(528684),		--提供4个光电自适应接口，支持SFP光接口或者RJ45电接口
+		subbnameEGFSM(528685),		--16*FE单模1300nm15km-MTRJ光接口线路板
+		subbnameR1UF(528686),		--新rpr子卡，2.5g
+		subbnameN2GB(528687),		--Netstream子卡
+                subbnameP4CM(528688),          -- For NE80 & NE40, daughter card with 4 155M POS multimode optical port at 1300nm wavelength
+                subbnameP4CS(528689),          -- For NE80 & NE40, daughter card with 4 155M POS singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameP1HM(528690),          -- For NE80 & NE40, daughter card with 1 622M POS multimode optical port at 1300nm wavelength
+                subbnameP1HS(528691),          -- For NE80 & NE40, daughter card with 1 622M POS singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameP1UZ(528692),          -- For NE80 & NE40, daughter card with 1 2.5G POS singlemode optical port at 1300nm wavelenght (2km)
+                subbnameP1US(528693),          -- For NE80 & NE40, daughter card with 1 2.5G POS singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameP1UL(528694),          -- For NE80 & NE40, daughter card with 1 2.5G POS singlemode optical port at 1300nm wavelength (40km)
+                subbnameP1UV(528695),          -- For NE80 & NE40, daughter card with 1 2.5G POS singlemode optical port at 1300nm wavelength (70km)
+                subbnameP1RZ(528696),          -- For NE80 & NE40, daughter card with 1 2.5G channelized POS singlemode optical port at 1300nm wavelength (2km)
+                subbnameP1RS(528697),          -- For NE80 & NE40, daughter card with 1 2.5G channelized POS singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameP1RL(528698),          -- For NE80 & NE40, daughter card with 1 2.5G channelized POS singlemode optical port at 1300nm wavelength (40km)
+                subbnameP1RV(528699),          -- For NE80 & NE40, daughter card with 1 2.5G channelized POS singlemode optical port at 1300nm wavelength (70km)
+                subbnameP4HM(528700),          -- For NE80 & NE40, daughter card with 4 622M POS multimode optical port at 1300nm wavelength
+                subbnameP4HS(528701),          -- For NE80 & NE40, daughter card with 4 622M POS singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameA8CM(528702),          -- For NE80 & NE40, daughter card with 8 155M ATM multimode optical port at 1300nm wavelength
+                subbnameA8CS(528703),          -- For NE80 & NE40, daughter card with 8 155M ATM singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameR1UZ(528704),          -- For NE80 & NE40, daughter card with 1 2.5G RPR singlemode optical port at 1300nm wavelength (2km）
+                subbnameR1US(528705),          -- For NE80 & NE40, daughter card with 1 2.5G RPR singlemode optical port at 1300nm wavelength (10-15km)
+                subbnameR1UL(528706),          -- For NE80 & NE40, daughter card with 1 2.5G RPR singlemode optical port at 1300nm wavelength (40km)
+                subbnameR1UV(528707),          -- For NE80 & NE40, daughter card with 1 2.5G RPR singlemode optical port at 1300nm wavelength (70km)
+                subbnameC2CF(528708),          -- For NE80 & NE40, daughter card with 2 155M CPOS optical port (include SFP module)
+                subbnameC4CF(528709),          -- For NE80 & NE40, daughter card with 4 155M CPOS optical port (include SFP module)
+                subbnameE2GP(528710),          -- For NE80 & NE40, daughter card with 2 GE multimode optical port at 850nm wavelength
+                subbnameE2GS(528711),          -- For NE80 & NE40, daughter card with 2 GE singlemode optiacl port at 1300nm (10-15km)
+                subbnameE2GQ(528712),          -- For NE80 & NE40, daughter card with 2 GE singlemode optical port at 1550nm (40km)
+                subbnameE2GV(528713),          -- For NE80 & NE40, daughter card with 2 GE singlemode optical port at 1300nm (70km)
+                subbnameE8FB(528714),          -- For NE80 & NE40, daughter card with 8 FE electronic/optical port
+                subbnameA1CFF(528715),         -- 1路STS-3C/STM-1 ATM SFP光接口灵活插卡
+                subbnameA2CFF(528716),         -- 2路STS-3C/STM-1 ATM SFP光接口灵活插卡
+                subbnameA4CFF(528717),         -- 4路STS-3C/STM-1 ATM SFP光接口灵活插卡
+                subbnameA8CFF(528718),         -- 8路STS-3C/STM-1 ATM SFP光接口灵活插卡
+                subbname8CT1(528719),          -- 8端口-Channelized T1-RJ45-物理接口板
+                subbnameC1CF(528720),          -- 1*OC-3/STM-1 通道化至DS0 光接口线路板-SFP
+                subbnameE8FEF(528721),          -- 8路SFP电口FE灵活插卡
+                subbnameP1HF(528722),          -- 1路OC-12c/STM-4c POS
+                subbnameEWFEE(528723),         -- 32路FE-RJ45电口线路板_WAN
+                subbnameEGFT(528724),          -- RS01EGFT0-16×FE单模1550nm_15km-LC光接口线路板_LAN
+                subbnameCR01OPMQ(528725),      -- CR01OPMQ0-单模1550nm LC接口光路保护板,特殊的软件版本(安全版本)使用的单板
+                subbnameCR01OPMZ(528726),      -- CR01OPMZ0-单模1300nm LC接口光路保护板,特殊的软件版本(安全版本)使用的单板
+                subbnameCR01OPMM(528727),      -- CR01OPMM0-多模1300nm LC接口光路保护板,特殊的软件版本(安全版本)使用的单板
+                subbnameCR01OPMP(528728),      -- NetEngine40-2-CR01OPMP0-多模850nm LC接口光路保护板,特殊的软件版本(安全版本)使用的单板
+                subbnameSPCB(528729),          -- CR01SPCB0-4×FE-RJ45电接口,4×FE-SFP光接口和4×OC-3c/STM-1 POS多模1300nm 2km-MTRJ光接口多种业务线路板
+                subbnameEGFSE(528730),         -- CR01EGFSE0-16端口百兆以太网单模1310nm MTRJ光接口线路板_WAN
+                subbnameEGFME(528731),         -- CR01EGFME0-16端口百兆以太网多模1310nm MTRJ光接口线路板_WAN
+                subbnameP8CFF(528732),         -- CR01P8CFF-8路POS155 SFP光接口线路板
+                subbnameE4GFF(528733),         -- CR01E4GFF-4路SFP光口GE线路板
+
+-- 8090产品
+                subbname8090Unkown(561152),          --
+                subbname8090E1XZ(561153),          --1*10GE LAN Single-mode Optical Interface LPU
+                subbname8090W1XZ(561154),          --1*10GE WAN Single-mode Optical Interface LPU
+                subbname8090EAGF(561155),          --10-port GbE SFP Optical Interface LPU
+                subbname8090P4UF(561156),          --4-port 2.5G POS SFP Optical Interface LPU
+                subbname8090GE(561157),            --GE card
+                subbname8090FE(561158),            --Fe card
+                subbname8090P1XZ(561159),          --1*OC-192c/STM-64c POS Optical Interface LPU
+                subbname8090Pos622(561160),        -- Pos_622
+                subbname8090Pos25G(561161),        -- Pos_2.5G
+                subbname8090ATM(561162),           --ATM
+                subbname8090DPT25G(561163),        -- DPT 2.5G
+                subbname8090P16X155Channel(561164),-- POS_16x155_CHANNEL
+                subbname8090P4HF(561165),          -- POS_4X622
+                subbname8090Pos155(561166),        -- POS_155
+                subbname8090E2XX(561167),          --2*10GBase LAN-XFP Optical Interface LPU C
+                subbname8090W2XX(561168),          --2*10GBase WAN-XFP Optical Interface LPU C
+                subbname8090P2XX(561169),          --2*OC-192c/STM-64c POS-XFP Optical Interface LPU C
+                subbname8090EMGE(561170),          --48×10/100/1000Base-TX-RJ45 Electrical Interface LPU
+                subbname8090A8CF(561171),          --ATM8X155M
+                subbname8090RPR10G(561172),        --RPR_1X_10G_CARD
+                subbname8090P8CF(561173),          --8*OC-3c/STM-1 POS-SFP Optical Interface LPU
+                subbname8090EFGE(561174),          --24×10/100/1000Base-TX-RJ45 Electrical Interface LPU
+
+                subbnameRNR_POS_4X155(561175),          --4*OC-3c/STM-1 POS-SFP Optical Interface LPU
+                subbnameRNR_POS_1X622(561176),          --1 Port 622M POS Interface LPU
+                subbnameRNR_POS_1X25G(561177),          --1 Port 2.5G POS Interface LPU
+                subbnameRNR_POS_16X155(561178),         --16*OC-3c/STM-1 POS-SFP Optical Interface LPU
+                subbnameRNR_POS_4X622(561179),          --4 Port 622M POS Interface LPU
+                subbnameRNR_POS_8X155(561180),          --8*OC-3c/STM-1 POS-SFP Optical Interface LPU
+                subbnameRNR_ATM_8X155(561181),          -- 8 Port 155M ATM Interface LPU
+                subbnameRNR_ATM_2X622(561182),          -- 2 Port 622M ATM Interface LPU
+
+                subbnameRNR_ETH_4X100_D(561183),        -- 4 Port 100M RJ45 Interface LPU
+                subbnameRNR_ETH_4X100_G(561184),        -- 4 Port 100M Fiber Interface LPU
+
+                subbnameRNR_ETH_8X100_D(561185),        -- 8 Port 100M RJ45 Interface LPU
+                subbnameRNR_ETH_8X100_G(561186),        -- 8 Port 100M Fiber Interface LPU
+
+                subbnameRNR_ETH_16X100_D(561187),       -- 16 Port 100M RJ45 Interface LPU
+                subbnameRNR_ETH_16X100_G(561188),       -- 16 Port 100M Fiber Interface LPU
+
+                subbnameRNR_ETH_16X100_OTHER(561189),   -- 16 Port 100M Interface LPU
+
+                subbnameRNR_ETH_4XGE(561190),           -- 4 Port GE RJ45/Fiber Interface LPU
+                subbnameRNR_ETH_4XGC(561191),           -- 4 Port GE GE_BIC RJ45/Fiber Interface LPU
+
+                subbnameRNR_ETH_2XGE(561192),           -- 2 Port GE Interface LPU
+                subbnameRNR_ETH_2XGC(561193),           -- 2 Port GE GE_BIC Interface LPU
+
+                subbnameRNR_DPT_CARD(561194),           --FRR Card
+
+                subbnameRNR_CE1_PDH_2M(561195),        -- 8
+                subbnameRNR_CT1_PDH_1P5M(561196),      -- 8
+
+                subbnameRNR_E1_PDH_2M(561197) ,        -- 8
+                subbnameRNR_E3_PDH_34M(561198),        -- 3
+                subbnameRNR_T3_PDH_44M(561199),        -- 3
+
+                subbnameRNR_CPOS_OC3(561200),          --1
+                subbnameRNR_POS_OC12C(561201),         --4
+                subbnameRNR_POS_OC48C(561202),         --1
+
+                subbname8090P1UF(561203),              --1-port 2.5G POS SFP Optical Interface LPU
+                subbname8090P2UF(561204),              --2-port 2.5G POS SFP Optical Interface LPU
+
+                subbnameRNR_ATM_A8CFF_F(561205),        --8 Port 155M ATM Interface LPU
+                subbnameRNR_ATM_A2HFF_F(561206),        --2 Port 622M ATM Interface LPU
+                subbnameRNR_RPR_1X25(561207),           --1 Port 2.5G SDH RPR
+
+                subbnameRNR_POS_P4CFF_F(561208),        --4 Port 155M POS
+                subbnameRNR_ETH_E8FF_F(561209),         --8 Port 100M Fiber Interface LPU
+                subbname8090EFGF(561210),               --24GE光口
+                subbname8090EMGF(561211),               --48GE光口
+                subbnameRNR_CPOS_2OC3(561212),          --2*CPOS OC-3/STM-1-SFP Optical
+                subbmaneRNR_CPOS_4OC3(561213),			--4*CPOS OC-3/STM-1-SFP Optical
+                subbmaneRNR_8XCE1(561214),			    --UR-PIM-8xCHE1-RJ45
+                subbmaneRNR_3XCE3(561215),              --UR-PIM-3xE3-SMB
+                subbmaneRNR_3XT3(561216),                --UR-PIM-3xT3-SMB
+                subbmaneRNR_POS_16OC48C(561217),         --POS-OC48/SMT-16-SM-SR-LC
+                subbname8090R4UF(561218)                 --4 Port 2.5G SDH RPR
+
+                subbname8090R2GF(561219),               --2 Port GE RPR
+                subbname8090R4GF(561220),                --4 Port GE RPR
+                subbnameEnd(2147483647)
+                }
+
+        HWPortType ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "This data type is used as the syntax of the ifType
+                object in the (updated) definition of MIB-II's
+                ifTable.
+
+                The definition of this textual convention with the
+                addition of newly assigned values is published
+                periodically by the IANA, in either the Assigned
+                Numbers RFC, or some derivative of it specific to
+                Internet Network Management number assignments.  (The
+                latest arrangements can be obtained by contacting the
+                IANA.)
+
+                Requests for new values should be made to IANA via
+                email (iana@iana.org).
+
+                The relationship between the assignment of ifType
+                values and of OIDs to particular media-specific MIBs
+                is solely the purview of IANA and is subject to change
+                without notice.  Quite often, a media-specific MIB's
+                OID-subtree assignment within MIB-II's 'transmission'
+                subtree will be the same as its ifType value.
+                However, in some circumstances this will not be the
+                case, and implementors must not pre-assume any
+                specific relationship between ifType values and
+                transmission subtree OIDs.
+
+                "
+            SYNTAX INTEGER
+                {
+                other(1),                       -- none of the following
+                regular1822(2),
+                hdh1822(3),
+                ddnX25(4),
+                rfc877x25(5),
+                ethernetCsmacd(6),
+                iso88023Csmacd(7),
+                iso88024TokenBus(8),
+                iso88025TokenRing(9),
+                iso88026Man(10),
+                starLan(11),
+                proteon10Mbit(12),
+                proteon80Mbit(13),
+                hyperchannel(14),
+                fddi(15),
+                lapb(16),
+                sdlc(17),
+                ds1(18),                        -- DS1-MIB
+                e1(19),                         -- Obsolete see DS1-MIB
+                basicISDN(20),
+                primaryISDN(21),
+                propPointToPointSerial(22),     -- proprietary serial
+                ppp(23),
+                softwareLoopback(24),
+                eon(25),                        -- CLNP over IP
+                ethernet3Mbit(26),
+                nsip(27),                       -- XNS over IP
+                slip(28),                       -- generic SLIP
+                ultra(29),                      -- ULTRA technologies
+                ds3(30),                        -- DS3-MIB
+                sip(31),                        -- SMDS, coffee
+                frameRelay(32),                 -- DTE only.
+                rs232(33),
+                para(34),                       -- parallel-port
+                arcnet(35),                     -- arcnet
+                arcnetPlus(36),                 -- arcnet plus
+                atm(37),                        -- ATM cells
+                miox25(38),
+                sonet(39),                      -- SONET or SDH
+                x25ple(40),
+                iso88022llc(41),
+                localTalk(42),
+                smdsDxi(43),
+                frameRelayService(44),          -- FRNETSERV-MIB
+                v35(45),
+                hssi(46),
+                hippi(47),
+                modem(48),                      -- Generic modem
+                aal5(49),                       -- AAL5 over ATM
+                sonetPath(50),
+                sonetVT(51),
+                smdsIcip(52),                   -- SMDS InterCarrier Interface
+                propVirtual(53),                -- proprietary virtual/internal
+                propMultiplexor(54),            -- proprietary multiplexing
+                ieee80212(55),                  -- 100BaseVG
+                fibreChannel(56),               -- Fibre Channel
+                hippiInterface(57),             -- HIPPI interfaces
+                frameRelayInterconnect(58),     -- Obsolete use either [frameRelay(32)] or [frameRelayService(44)].
+                aflane8023(59),                 -- ATM Emulated LAN for 802.3
+                aflane8025(60),                 -- ATM Emulated LAN for 802.5
+                cctEmul(61),                    -- ATM Emulated circuit
+                fastEther(62),                  -- Fast Ethernet (100BaseT)
+                isdn(63),                       -- ISDN and X.25
+                v11(64),                        -- CCITT V.11/X.21
+                v36(65),                        -- CCITT V.36
+                g703at64k(66),                  -- CCITT G703 at 64Kbps
+                g703at2mb(67),                  -- Obsolete see DS1-MIB
+                qllc(68),                       -- SNA QLLC
+                fastEtherFX(69),                -- Fast Ethernet (100BaseFX)
+                channel(70),                    -- channel
+                ieee80211(71),                  -- radio spread spectrum
+                ibm370parChan(72),              -- IBM System 360/370 OEMI Channel
+                escon(73),                      -- IBM Enterprise Systems Connection
+                dlsw(74),                       -- Data Link Switching
+                isdns(75),                      -- ISDN S/T interface
+                isdnu(76),                      -- ISDN U interface
+                lapd(77),                       -- Link Access Protocol D
+                ipSwitch(78),                   -- IP Switching Objects
+                rsrb(79),                       -- Remote Source Route Bridging
+                atmLogical(80),                 -- ATM Logical Port
+                ds0(81),                        -- Digital Signal Level 0
+                ds0Bundle(82),                  -- group of ds0s on the same ds1
+                bsc(83),                        -- Bisynchronous Protocol
+                async(84),                      -- Asynchronous Protocol
+                cnr(85),                        -- Combat Net Radio
+                iso88025Dtr(86),                -- ISO 802.5r DTR
+                eplrs(87),                      -- Ext Pos Loc Report Sys
+                arap(88),                       -- Appletalk Remote Access Protocol
+                propCnls(89),                   -- Proprietary Connectionless Protocol
+                hostPad(90),                    -- CCITT-ITU X.29 PAD Protocol
+                termPad(91),                    -- CCITT-ITU X.3 PAD Facility
+                frameRelayMPI(92),              -- Multiproto Interconnect over FR
+                x213(93),                       -- CCITT-ITU X213
+                adsl(94),                       -- Asymmetric Digital Subscriber Loop
+                radsl(95),                      -- Rate-Adapt. Digital Subscriber Loop
+                sdsl(96),                       -- Symmetric Digital Subscriber Loop
+                vdsl(97),                       -- Very H-Speed Digital Subscrib. Loop
+                iso88025CRFPInt(98),            -- ISO 802.5 CRFP
+                myrinet(99),                    -- Myricom Myrinet
+                voiceEM(100),                   -- voice recEive and transMit
+                voiceFXO(101),                  -- voice Foreign Exchange Office
+                voiceFXS(102),                  -- voice Foreign Exchange Station
+                voiceEncap(103),                -- voice encapsulation
+                voiceOverIp(104),               -- voice over IP encapsulation
+                atmDxi(105),                    -- ATM DXI
+                atmFuni(106),                   -- ATM FUNI
+                atmIma (107),                   -- ATM IMA
+                pppMultilinkBundle(108),        -- PPP Multilink Bundle
+                ipOverCdlc (109),               -- IBM ipOverCdlc
+                ipOverClaw (110),               -- IBM Common Link Access to Workstn
+                stackToStack (111),             -- IBM stackToStack
+                virtualIpAddress (112),         -- IBM VIPA
+                mpc (113),                      -- IBM multi-protocol channel support
+                ipOverAtm (114),                -- IBM ipOverAtm
+                iso88025Fiber (115),            -- ISO 802.5j Fiber Token Ring
+                tdlc (116),                     -- IBM twinaxial data link control
+                gigabitEthernet (117),          -- Gigabit Ethernet
+                hdlc (118),                     -- HDLC
+                lapf (119),                     -- LAP F
+                v37 (120),                      -- V.37
+                x25mlp (121),                   -- Multi-Link Protocol
+                x25huntGroup (122),             -- X25 Hunt Group
+                trasnpHdlc (123),               -- Transp HDLC
+                interleave (124),               -- Interleave channel
+                fast (125),                     -- Fast channel
+                ip (126),                       -- IP (for APPN HPR in IP networks)
+                docsCableMaclayer (127),        -- CATV Mac Layer
+                docsCableDownstream (128),      -- CATV Downstream interface
+                docsCableUpstream (129),        -- CATV Upstream interface
+                a12MppSwitch (130),             -- Avalon Parallel Processor
+                tunnel (131),                   -- Encapsulation interface
+                coffee (132),                   -- coffee pot
+                ces (133),                      -- Circuit Emulation Service
+                atmSubInterface (134),          -- ATM Sub Interface
+                l2vlan (135),                   -- Layer 2 Virtual LAN using 802.1Q
+                l3ipvlan (136),                 -- Layer 3 Virtual LAN using IP
+                l3ipxvlan (137),                -- Layer 3 Virtual LAN using IPX
+                digitalPowerline (138),         -- IP over Power Lines
+                mediaMailOverIp (139),          -- Multimedia Mail over IP
+                dtm (140),                      -- Dynamic syncronous Transfer Mode
+                dcn (141),                      -- Data Communications Network
+                ipForward (142),                -- IP Forwarding Interface
+                msdsl (143),                    -- Multi-rate Symmetric DSL
+                ieee1394 (144),                 -- IEEE1394 High Performance Serial Bus
+                if-gsn (145),                   -- HIPPI-6400
+                dvbRccMacLayer (146),           -- DVB-RCC MAC Layer
+                dvbRccDownstream (147),         -- DVB-RCC Downstream Channel
+                dvbRccUpstream (148),           -- DVB-RCC Upstream Channel
+                atmVirtual (149),               -- ATM Virtual Interface
+                mplsTunnel (150),               -- MPLS Tunnel Virtual Interface
+                srp (151),                      -- Spatial Reuse Protocol
+                voiceOverAtm (152),             -- Voice Over ATM
+                voiceOverFrameRelay (153),      -- Voice Over Frame Relay
+                idsl (154),                     -- Digital Subscriber Loop over ISDN
+                compositeLink (155),            -- Avici Composite Link Interface
+                ss7SigLink (156),               -- SS7 Signaling Link
+                propWirelessP2P (157),          -- Prop. P2P wireless interface
+                frForward (158),                -- Frame Forward Interface
+                rfc1483 (159),                  -- Multiprotocol over ATM AAL5
+                usb (160),                      -- USB Interface
+                ieee8023adLag (161),            -- IEEE 802.3ad Link Aggregate
+                bgppolicyaccounting (162),      -- BGP Policy Accounting
+                frf16MfrBundle (163),           -- FRF .16 Multilink Frame Relay
+                h323Gatekeeper (164),           -- H323 Gatekeeper
+                h323Proxy (165),                -- H323 Voice and Video Proxy
+                mpls (166),                     -- MPLS
+                mfSigLink (167),                -- Multi-frequency signaling link
+                hdsl2 (168),                    -- High Bit-Rate DSL - 2nd generation
+                shdsl (169),                    -- Multirate HDSL2
+                ds1FDL (170),                   -- Facility Data Link 4Kbps on a DS1
+                pos (171),                      -- Packet over SONET/SDH Interface
+                dvbAsiIn (172),                 -- DVB-ASI Input
+                dvbAsiOut (173),                -- DVB-ASI Output
+                plc (174),                      -- Power Line Communtications
+                nfas (175),                     -- Non Facility Associated Signaling
+                tr008 (176),                    -- TR008
+                gr303RDT (177),                 -- Remote Digital Terminal
+                gr303IDT (178),                 -- Integrated Digital Terminal
+                isup (179),                     -- ISUP
+                propDocsWirelessMaclayer (180), -- prop/Maclayer
+                propDocsWirelessDownstream (181),   -- prop/Downstream
+                propDocsWirelessUpstream (182), -- prop/Upstream
+                hiperlan2 (183),                -- HIPERLAN Type 2 Radio Interface
+                propBWAp2Mp (184),              -- PropBroadbandWirelessAccesspt2multipt
+                sonetOverheadChannel (185),     -- SONET Overhead Channel
+                digitalWrapperOverheadChannel (186),    -- Digital Wrapper
+                aal2 (187),                     -- ATM adaptation layer 2
+                radioMAC (188),                 -- MAC layer over radio links
+                atmRadio (189),                 -- ATM over radio links
+                imt (190),                      -- Inter Machine Trunks
+                mvl (191),                      -- Multiple Virtual Lines DSL
+                reachDSL (192),                 -- Long Reach DSL
+                frDlciEndPt (193),              -- Frame Relay DLCI End Point
+                atmVciEndPt (194),              -- ATM VCI End Point
+                opticalChannel (195),           -- Optical Channel
+                opticalTransport (196),         -- Optical Transport
+                propAtm (197),                  -- Proprietary ATM
+                voiceOverCable (198),           -- Voice Over Cable Interface
+                infiniband (199),               -- Infiniband
+                teLink (200),                   -- TE Link
+                q2931 (201),                    -- Q.2931
+                virtualTg (202),                -- Virtual Trunk Group
+                sipTg (203),                    -- SIP Trunk Group
+                sipSig (204),                   -- SIP Signaling
+                docsCableUpstreamChannel (205), -- CATV Upstream Channel
+                econet (206),                   -- Acorn Econet
+                pon155 (207),                   -- FSAN 155Mb Symetrical PON interface
+                pon622 (208),                   -- FSAN622Mb Symetrical PON interface
+                bridge (209),                   -- Transparent bridge interface
+                linegroup (210),                -- Interface common to multiple lines
+                voiceEMFGD (211),               -- voice E&M Feature Group D
+                voiceFGDEANA (212),             -- voice FGD Exchange Access North American
+                voiceDID (213),                 -- voice Direct Inward Dialing
+                mpegTransport (214),            -- MPEG transport interface
+                sixToFour (215),                -- 6to4 interface
+                gtp (216),                      -- GTP (GPRS Tunneling Protocol)
+                pdnEtherLoop1 (217),            -- Paradyne EtherLoop 1
+                pdnEtherLoop2 (218),            -- Paradyne EtherLoop 2
+                opticalChannelGroup (219),      -- Optical Channel Group
+                homepna (220),                  -- HomePNA ITU-T G.989
+                gfp (221),                      -- Generic Framing Procedure (GFP)
+                ciscoISLvlan (222),             -- Layer 2 Virtual LAN using Cisco ISL
+                fcipLink (224),                 -- FCIP Link
+                rpr (225),                      -- Resilient Packet Ring Interface Type
+                qam (226),                      -- RF Qam Interface
+                lmp (227),                      -- Link Management Protocol
+                cblVectaStar (228),             -- Cambridge Broadband Limited VectaStar
+                docsCableMCmtsDownstream (229), -- CATV Modular CMTS Downstream Interface
+                adsl2 (230),                    -- Asymmetric Digital Subscriber Loop Version 2
+                macSecControlledIF (231),       -- MACSecControlled
+                macSecUncontrolledIF (232),     -- MACSecUncontrolled
+
+-- huawei expanding
+                aponOltPort(501),               -- Apon olt port
+                aponOltSubport(502),            -- Apon olt sub port
+                aponOntPort(503),               -- Apon ont port
+                atmPort(504),                   -- atm port
+                atmSubport(505),                -- atm sub port
+                adslPort(506),                  -- RFC标准中已经有定义,无需再定义
+                lanPort(507),                   -- lan port
+                cescPort(508),                  -- E1 port of CESC board
+                cesdPort(509),                  -- V35 port of CESD board
+                frcPort(510),                   -- E1 port FR board
+                fpcSubport(511),                --
+                sepPort(512),                   --
+                vpringPort(513),                -- STM-4 VPRING port
+                eimPort(514),                   -- FE port of BAS board
+                geimPort(515),                  -- GE port of BAS board
+                basMainport(516),               -- ATM port of BAS board used to create connection
+                apruCes(517),                   -- Apon CES port
+                apruLan(518),                   -- Apon LAN port
+                asxSoftSar(519),                -- soft sar port of ASX board
+                asxHardSar(520),                -- hard sar port of ASX board
+                cesE1Port(521),                 -- E1 port of CES board, for TDM use
+                e1Port(522),                    -- E1 port of CES
+                t1Port(523),                    -- T1 port of CES
+                pstnPort(524),
+                braPort(525),
+                praPort(536),
+                cdiPort(539),
+                vfbPort(540),
+                atiPort(541),
+                mlcE1Port(542),
+                v5TkPort(543),
+                comPort(544),
+                v35Port(545),                   --
+                mmxIwe8Port(546),               -- CES port on MMXC board
+                frPortE1(547),                  -- E1 port of FR board
+                frPortT1(548),                  -- T1 port of FR board
+                frPortV35(549),                 -- V35 port of FR board
+                aiuAtmPort(550),                -- ATM port on AIU board
+                imaPort(551),                   -- IMA port
+                e3Port(552),                    -- E3 port
+                mmxImaPort(554),                -- IMA port on MMX board
+                nullPort(555),
+                shdslPort(556),                 -- G.SHDSL  port
+                iadMainport(557),
+                iadPort(558),                   --
+                cesSDTVPort(559),               -- CES SDT virtual port
+                vlanVPort(560),                 -- VLAN virtual port of LAN board
+                frVCCIndexVPort(561),           -- FR VCC virtual port
+                frStreamVPort(562),             -- FR stream virtual port
+                imaGroupVPort(563),             -- IMA group virtual port
+                adslInterleaveVPort(564),       -- Interleavet virtual port of ADSL board
+                adslFastVPort(565),             -- Fast virtual port of ADSL board
+                lanTrunkVPort(566),             -- Trunk virtual port of LAN board
+                sepsmxAtmPort(568),             -- 用于配置SEPL、SMXL端口特性
+                dehaUdtPort(569),               -- UDT Port of DEHA board
+                ds3Port(570),                   -- DS3 port
+                feElcPort(571),                 -- FE电口
+                feOptPort(572),                 -- FE光口
+                geElcPort(573),                 -- GE电口
+                geOptPort(574),                 -- GE光口
+-- OFA5920产品
+                eponPort(571),                  --EPON port of EPON board
+                bitsPort(575),                  -- bits端口
+                gponOnuPort(576),               -- GPON上行端口
+                hwPort(578),                    -- HW port of PVM
+		gponOltPor(579),                -- GPON OLT端口
+
+-- MA5200
+                debugserial(580),
+                debugnet(581),
+
+-- MA5600产品
+	        nativeTDME1Port(589),           -- Native TDM的E1端口
+                nativeTDMT1Port(590),           -- Native TDM的T1端口
+                tengeOptPort(591),              -- 10GE光口
+-- MA5200
+                sdlFE1Port(600),                -- SDL FE1 port
+                sdlShdslPort(601),              -- SDL G.SHDSL port
+-- 8010
+                dsp(65536),
+                bits(65537),
+                clk(65538),
+                mon(65539),
+                aux(65540),
+                sdho(65541),
+                sdhe(65542),
+
+-- WA5700:
+                bwaTdmPort(155648)                -- BWA产品TDM端口
+                }
+
+        HWUnSupportNodeInteger ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "
+                To the nodes that don't supported in the MIB table ,the default value
+                should be return for keeping the integrity of the OID in the MIB table ,
+                and the type of the default value is INTEGER, and default value is 65535.
+
+                "
+            SYNTAX INTEGER { defaultValue(65535) }
+
+        HWUnSupportNodeString ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                " To the nodes that don't supported in the MIB table ,the default value
+                should be return for keeping the integrity of the OID in the MIB table,
+                and the default string is the null string. "
+            SYNTAX OCTET STRING (SIZE (0))
+
+        HWUnSupportNodeIPAddress ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "To the nodes that don't supported in the MIB table ,the default value
+                should be return for keeping the integrity of the OID in the MIB table,
+                and the default IP address is 0.0.0.0."
+            SYNTAX IpAddress
+
+        HWUnSupportNodeMacAddress ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "To the nodes that don't supported in the MIB table ,the default value
+                should be return for keeping the integrity of the OID in the MIB table,
+                and the default string is '000000'. "
+
+            SYNTAX MacAddress
+        HWVirtualEntityType ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "To show the relevant virtual entity type in vender type object.
+                "
+            SYNTAX INTEGER
+                {
+                other(1),                       -- none of the following
+
+ -- 8090:
+                virent8090DEVLPU(561152)             -- The whole IO board, incude all entitys on the slot
+
+                }
+
+        HWAdditionalEntityType ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION
+                "To show the relevant additional entity type in vender type object.
+                "
+            SYNTAX INTEGER
+                {
+                other(1),                      -- none of the following
+-- 8090:
+                addentname8090DEVFAD(561152),       -- FAD  Module
+                addentname8090DEVTCAM(561153),      -- TCAM Module
+                addentname8090DEVCLK(561154),       -- Clock Board
+                addentname8090DEVMIF(561155)        -- MIF Module
+
+                }
+
+
+
+-- node define
+
+        ifAdminStatus OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                up(1),
+                down(2),
+                testing(3),
+-- huawei expand
+                block(65536),               -- 阻塞操作
+                unblock(65537),             -- 解阻塞操作
+                reset(65538),               -- 复位
+                localloopback(65539),       -- 近端环回
+                remoteloopback(65540),      -- 远端环回
+                payloadloopback(65541),     -- 有效负载环回
+                unloopback(65542),          -- 解环回
+                linkrxblock(65543),         -- 链路接收方向阻塞
+                linktxblock(65544),         -- 链路发送方向阻塞
+                linkallblock(65545),        -- 链路双向同时阻塞
+                linkrxunblock(65546),       -- 链路接收方向解阻塞
+                linktxunblock(65547),       -- 链路发送方向解阻塞
+                    linkallunblock(65548),     -- 链路双向同时解阻塞
+                    adslloopbackafe(65549),    -- ADSL端口AFE环回
+                    adslloopbackhybrid(65550)  -- ADSL端口HYBRID环回
+                }
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "The current operational state of the interface.  The
+                testing(3) state indicates that no operational packets
+                can be passed.  If ifAdminStatus is down(2) then
+                ifOperStatus should be down(2).  If ifAdminStatus is
+                changed to up(1) then ifOperStatus should change to
+                up(1) if the interface is ready to transmit and
+                receive network traffic; it should change to
+                dormant(5) if the interface is waiting for external
+                actions (such as a serial line waiting for an incoming
+                connection); it should remain in the down(2) state if
+                and only if there is a fault that prevents it from
+                going to the up(1) state; it should remain in the
+                notPresent(6) state if the interface has missing
+                (typically, hardware) components.
+
+                huawei mib expand from 65536 .
+
+
+                Because  management states in the standard MIB can't satisfy
+                the request of all kinds of the product ,
+                the extension is performed
+
+                "
+            ::= { ifEntry 7 }
+
+        ifOperStatus OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                up(1),
+                down(2),
+                testing(3),
+                unknown(4),
+                dormant(5),
+                notPresent(6),
+                lowerLayerDown(7),
+                activing(65536),
+                block(65537),
+                config(65538),
+                localloopback(65539),           -- 近端环回
+                remoteloopback(65540),          -- 远端环回
+                payloadloopback(65541),         -- 有效负载环回
+                blockandlocalloopback(65542),   -- 阻塞并且近端环回
+                blockandremoteloopback(65543),  -- 阻塞并且远端环回
+                blockandpayloadloopback(65544), -- 阻塞并且有效负载环回
+                linkrxblock(65545),             -- 链路接收方向阻塞
+                linktxblock(65546),             -- 链路发送方向阻塞
+                linkallblock(65547),            -- 链路双向同时阻塞
+                fault(65548),                   -- 故障
+                unconfig(65549),                -- 未配置
+                            empty(65550),                  -- 空
+                    adslloopbackafe(65551),    -- ADSL端口AFE环回
+                    adslloopbackhybrid(65552)  -- ADSL端口HYBRID环回
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "
+                "
+            ::= { ifEntry 8 }
+
+        hwAlarmId OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The trap id only valids in the alarm trap Varible binding parameters .
+                 "
+            ::= { huaweiTCMIB 1 }
+
+        hwAlarmTime OBJECT-TYPE
+            SYNTAX DateAndTime
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The trap  time  only valids in the alarm trap Varible binding parameters .
+                 "
+            ::= { huaweiTCMIB 2 }
+
+        hwAlarmSn OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The serial number  only valids in the alarm trap Varible binding parameters .
+                 "
+            ::= { huaweiTCMIB 3 }
+
+        hwCauseId OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The cause for   sending  a trap .
+                 "
+            ::= { huaweiTCMIB 4 }
+
+        hwTrapType OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+                eventAlarm(0),                  -- 事件告警
+                faultAlarm(1),                  -- 故障告警
+                clearAlarm(2),                  -- 恢复告警
+                synAlarm(3),                    -- 同步用告警
+
+                maitainTrap(10),                -- 维护用TRAP
+                topDiscovery(11),               -- 拓扑发现类TRAP
+                debugTrap(12)                   -- 调试类TRAP
+            }
+
+            MAX-ACCESS accessible-for-notify
+            STATUS current
+            DESCRIPTION
+                "The trap type .
+                   "
+            ::= { huaweiTCMIB 5 }
+
+        hwFrameTypeOid OBJECT-TYPE
+            SYNTAX HWFrameType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the Frames definition only for Entity-Mib use"
+            ::= { huaweiTCMIB 11 }
+
+        hwSlotTypeOid OBJECT-TYPE
+            SYNTAX HWPCBType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the slots definition only for Entity-Mib use"
+            ::= { huaweiTCMIB 12}
+
+        hwSubslotTypeOid OBJECT-TYPE
+            SYNTAX HWSubPCBType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the sub slots  definition only for Entity-Mib use"
+            ::= { huaweiTCMIB 13}
+
+        hwPortTypeOid    OBJECT-TYPE
+            SYNTAX HWPortType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "the ports definition only for Entity-Mib use"
+            ::= { huaweiTCMIB 14}
+        hwVirtualEntityOid    OBJECT-TYPE
+            SYNTAX HWVirtualEntityType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The virtual entity definition only for Entity-mib."
+            ::= { huaweiTCMIB 15}
+
+        hwAdditionalEntityOid    OBJECT-TYPE
+            SYNTAX HWAdditionalEntityType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "The additional entity definition only for Entity-mib."
+            ::= { huaweiTCMIB 16}
+
+    END
+
+

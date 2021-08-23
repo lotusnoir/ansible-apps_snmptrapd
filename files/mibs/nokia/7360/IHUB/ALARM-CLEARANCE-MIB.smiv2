@@ -1,0 +1,201 @@
+-- ALCATEL ALARM-CLEARANCE-MIB
+
+-- ======================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel-Lucent expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel-Lucent will not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein will be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2005-2008, Alcatel-Lucent. All Rights Reserved.
+-- ===========================================================================
+
+
+-- ===========================================================================
+
+ALARM-CLEARANCE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,OBJECT-TYPE,enterprises FROM SNMPv2-SMI
+        Integer32                              FROM SNMPv2-SMI
+                
+        ;
+alarmClearanceMIB       
+  MODULE-IDENTITY
+  LAST-UPDATED "201003150000Z"
+  ORGANIZATION "Alcatel-Lucent"
+  CONTACT-INFO
+              "Atahan Tuzel
+               Email:  asam.mibsupport@alcatel-lucent.com"
+  DESCRIPTION
+              "This MIB module is implemented in Alcatel-Lucent's
+               IHUB DSLAM for manual clearing of alarms"
+  REVISION    "201003150000Z"
+  DESCRIPTION "Version: 3FE-50609-AYAN-PBZZA
+               Editor: Paul Reynders
+               Changes:
+               * replace SMIv1 syntax by SMIv2.
+              "
+  REVISION    "200811030000Z"
+  DESCRIPTION "Version: 3FE-50609-AYAN-PBZZA
+               Editor: Atahan Tuzel
+               Changes:
+               * Pre-reelase modifications per internal process.
+              "
+    ::= { enterprises alcatel(637) asd(61) asam(1) 86 }
+
+alarmClearance       OBJECT IDENTIFIER ::= { alarmClearanceMIB 1 }
+
+alarmClearanceTable OBJECT-TYPE
+    SYNTAX  SEQUENCE OF AlarmClearanceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The alarmClearanceTable is a table of 1 row created by the system 
+         at start-up. 
+         
+         ALCATEL NOTE :
+              TABLESIZE : 1 
+              DESCR : NA "
+    
+     ::= { alarmClearance 1 }
+
+alarmClearanceEntry       OBJECT-TYPE
+    SYNTAX  AlarmClearanceEntry
+    MAX-ACCESS      not-accessible
+    STATUS  current
+    DESCRIPTION
+        "There is only one conceptual row used to trigger the action of
+         clearing an outstanding alarm"
+    INDEX   { clearingEntryIndex }
+
+    ::= { alarmClearanceTable 1 }
+
+AlarmClearanceEntry ::=
+    SEQUENCE {
+             clearingEntryIndex                Integer32,       
+             clearingAlarmID                   Integer32,
+             clearingAlarmIndex1               Integer32,
+             clearingAlarmIndex2               Integer32    
+             }
+ 
+clearingEntryIndex OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-only
+      STATUS current
+      DESCRIPTION
+         "Index for Alarm Clearance Entry.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: (1..1)
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+
+      ::= {alarmClearanceEntry 1}
+
+clearingAlarmID OBJECT-TYPE
+      SYNTAX Integer32 
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+         "This is the unique id for an alarm. It is a combination of 2
+          distinct parts of information : the alarm type and the alarm number.
+          The first half represents the type and the second (most right) part
+          the alarm number. This alarm number represents the bit position of
+          an alarm in a bitmap of an active alarm entry.  Thus the value of
+          asamAlarmId can be found using a simple formula: (AlarmType x 2^16)
+          + AlarmNumber.  E.g. an alarm with alarm type 5 and alarm number 3
+          is represented as 0x00050003.
+ 
+          A SET operation to the this object is treated as an action request 
+          to clear an outstanding alarm of the kind designated by 
+          this object which is assumed to have ocured at the entity instance
+          indicated via clearingAlarmIndex1 and clearingAlarmIndex2 by the 
+          manager.
+
+          A GET on this object return the last SET value.
+
+          A SET on this object must be accompanied with applicable SETs for
+          clearingAalrmIndex1 and clearingAlarmIndex2 as defined in the Alarm
+          DS.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: NA
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+
+      ::= {alarmClearanceEntry 2} 
+ 
+clearingAlarmIndex1 OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+         "This object is used in conjunction with Index2. Together they
+          identify where the alarm occurred. For more information regarding
+          the index definition, refer to the Alarm Definition document. 
+
+          A SET on this object must be accompanied with applicable SETs for
+          clearingAlarmID and clearingAlarmIndex2 as defined in the Alarm
+          DS. 
+
+          A GET on this object returns the last SET value. A value of 0 
+          designates not-applicable. This 0 value may be provided in the PDU 
+          by the manager otherwise it will be SET internally by the application
+          if the remainder of the PDU is consistent.
+
+
+
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: NA
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+
+      ::= {alarmClearanceEntry 3}
+   
+   
+clearingAlarmIndex2 OBJECT-TYPE
+      SYNTAX Integer32
+      MAX-ACCESS read-write
+      STATUS current
+      DESCRIPTION
+         "This object is used in conjunction with Index1. See description of
+          Index1 for further info. 
+
+          A SET on this object must be accompanied with applicable SETs for
+          clearingAlarmID and clearingAlarmIndex1 as defined in the Alarm
+          DS. 
+
+          A GET on this object returns the last SET value. A value of 0 
+          designates not-applicable. This 0 value may be provided in the PDU 
+          by the manager. Otherwise it will be SET internally by the application
+          if the remainder of the PDU is consistent.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: NA
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+
+      ::= {alarmClearanceEntry 4}
+
+
+
+END

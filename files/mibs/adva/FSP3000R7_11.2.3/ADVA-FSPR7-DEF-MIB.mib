@@ -1,0 +1,763 @@
+--  ***************************************************************************
+--  ADVA-FSPR7-DEF-MIB.txt
+--
+--               ADVA AG Optical Networking Default MIB File
+--
+--  Copyright 2011 ADVA AG Optical Networking.
+--
+--  All rights reserved.
+--  ***************************************************************************
+
+
+--  MIB default definitions required for entity management.
+
+ADVA-FSPR7-DEF-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+                                        FROM  SNMPv2-CONF
+    OBJECT-TYPE,
+    MODULE-IDENTITY,
+    Unsigned32,
+    Integer32
+                                        FROM  SNMPv2-SMI
+    SnmpAdminString
+                                        FROM  SNMP-FRAMEWORK-MIB
+    fspR7
+                                        FROM  ADVA-MIB
+    FspR7AdminState,
+    FspR7ChannelIdentifier,
+    FspR7ChannelBandwidth,
+    FspR7Conn,
+    FspR7EqlzAdminState,
+    FspR7FecType,
+    FspR7FrameFormat,
+    FspR7FunctionCrs,
+    FspR7InterfaceType,
+    FspR7LineCoding,
+    FspR7MaxBitErrorRate,
+    FspR7PathNode,
+    FspR7RedLinedState,
+    FspR7RowStatus,
+    FspR7TypeConnection,
+    FspR7TypeCrs
+                                        FROM  ADVA-FSPR7-TC-MIB
+    entityFacilityShelfNo,
+    entityFacilitySlotNo,
+    entityFacilityPortNo,
+    entityFacilityExtNo,
+    entityFacilityClassName,
+    entityCrossConnFromShelfNo,
+    entityCrossConnFromSlotNo,
+    entityCrossConnFromPortNo,
+    entityCrossConnFromExtNo,
+    entityCrossConnFromClassName,
+    entityCrossConnToShelfNo,
+    entityCrossConnToSlotNo,
+    entityCrossConnToPortNo,
+    entityCrossConnToExtNo,
+    entityCrossConnToClassName,
+    entityCrossConnClassName,
+    entityConnectionClassName,
+    entityTerminPointIndexNo1,
+    entityTerminPointIndexNo2,
+    entityTerminPointIndexNo3,
+    entityTerminPointIndexNo4,
+    entityTerminPointClassName,
+    entityExternalPortShelfNo,
+    entityExternalPortSlotNo,
+    entityExternalPortPortNo,
+    entityExternalPortExtNo,
+    entityExternalPortClassName,
+    entityCrsOptLineFromIndexNo1,
+    entityCrsOptLineFromIndexNo2,
+    entityCrsOptLineFromIndexNo3,
+    entityCrsOptLineFromIndexNo4,
+    entityCrsOptLineFromClassName,
+    entityCrsOptLineToIndexNo1,
+    entityCrsOptLineToIndexNo2,
+    entityCrsOptLineToIndexNo3,
+    entityCrsOptLineToIndexNo4,
+    entityCrsOptLineToClassName,
+    entityCrsOptLineClassName
+                                        FROM  ADVA-FSPR7-MIB;
+    
+
+advaFspR7Def MODULE-IDENTITY
+
+    LAST-UPDATED "201105220000Z"
+
+    ORGANIZATION "ADVA Optical Networking"
+
+    CONTACT-INFO "EMEA Support
+                  Phone : +49 89 89 0665 848
+                  Fax   : +49 89 89 0665 22848
+                  Email : support@advaoptical.com
+
+                  North American Support
+                  Phone : 886 442 ADVA (2382) (toll-free within the US, Canada and Mexico)
+                  Fax   : + 1 806 741 8529 (elsewhere)
+                  Email : support-usa@advaoptical.com
+
+                  Asia Pacific Support
+                  Phone : + 1 866 442 2382 (other toll-free numbers available in some countries)
+                  Email : support-asia@advaoptical.com"
+
+    DESCRIPTION   "This is a MIB definition for ADVA AG Optical Networking entity management."
+
+    REVISION      "201105220000Z"
+    DESCRIPTION   "FSP3000 F7 Release 11.2 MIB."
+    ::= { fspR7 10 }
+
+
+managementDef
+    OBJECT IDENTIFIER ::= { advaFspR7Def 3 }
+
+specificMgmtDef
+    OBJECT IDENTIFIER ::= { managementDef 2 }
+
+facilityMgmtDef
+    OBJECT IDENTIFIER ::= { managementDef 4 }
+
+featureSpecificDef
+    OBJECT IDENTIFIER ::= { advaFspR7Def 7 }
+
+fiberMapDef
+    OBJECT IDENTIFIER ::= { featureSpecificDef 1 }
+
+eciDef
+    OBJECT IDENTIFIER ::= { featureSpecificDef 3 }
+
+crossConnectionDefTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CrossConnectionDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "crossConnectionDefTable"
+    ::=  { specificMgmtDef 6 }
+
+crossConnectionDefEntry OBJECT-TYPE
+    SYNTAX      CrossConnectionDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of crossConnectionDefTable"
+    INDEX       {
+                  entityCrossConnFromShelfNo,
+                  entityCrossConnFromSlotNo,
+                  entityCrossConnFromPortNo,
+                  entityCrossConnFromExtNo,
+                  entityCrossConnFromClassName,
+                  entityCrossConnToShelfNo,
+                  entityCrossConnToSlotNo,
+                  entityCrossConnToPortNo,
+                  entityCrossConnToExtNo,
+                  entityCrossConnToClassName,
+                  entityCrossConnClassName
+                }
+    ::=  { crossConnectionDefTable 1 }
+
+CrossConnectionDefEntry ::=  SEQUENCE
+  { crossConnectionDefRowStatus FspR7RowStatus,
+    crossConnectionDefAdmin FspR7AdminState,
+    crossConnectionDefRedLineState FspR7RedLinedState,
+    crossConnectionDefConn FspR7Conn,
+    crossConnectionDefAlias SnmpAdminString,
+    crossConnectionDefPathNode FspR7PathNode,
+    crossConnectionDefTunnelAid SnmpAdminString,
+    crossConnectionDefType FspR7InterfaceType,
+    crossConnectionDefCrsFunction FspR7FunctionCrs }
+
+crossConnectionDefRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Default RowStatus."
+    ::=  { crossConnectionDefEntry 1 }
+
+crossConnectionDefAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Default Adminstrative State."
+    ::=  { crossConnectionDefEntry 2 }
+
+crossConnectionDefRedLineState OBJECT-TYPE
+    SYNTAX      FspR7RedLinedState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Default Red Lined State."
+    ::=  { crossConnectionDefEntry 3 }
+
+crossConnectionDefConn OBJECT-TYPE
+    SYNTAX      FspR7Conn
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Default Direction."
+    ::=  { crossConnectionDefEntry 4 }
+
+crossConnectionDefAlias OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Default Alias."
+    ::=  { crossConnectionDefEntry 5 }
+
+crossConnectionDefPathNode OBJECT-TYPE
+    SYNTAX      FspR7PathNode
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Default Path Node."
+    ::=  { crossConnectionDefEntry 6 }
+
+crossConnectionDefTunnelAid OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Default Tunnel AID."
+    ::=  { crossConnectionDefEntry 7 }
+
+crossConnectionDefType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Default Type Facility."
+    ::=  { crossConnectionDefEntry 8 }
+
+crossConnectionDefCrsFunction OBJECT-TYPE
+    SYNTAX      FspR7FunctionCrs
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Describes the Cross Connect Functionality" 
+    ::=  { crossConnectionDefEntry 9 }
+
+crossOpticalLineDefTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CrossOpticalLineDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "crossOpticalLineDefTable"
+    ::=  { specificMgmtDef 7 }
+
+crossOpticalLineDefEntry OBJECT-TYPE
+    SYNTAX      CrossOpticalLineDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of crossOpticalLineDefTable"
+    INDEX       {
+                  entityCrsOptLineFromIndexNo1,
+                  entityCrsOptLineFromIndexNo2,
+                  entityCrsOptLineFromIndexNo3,
+                  entityCrsOptLineFromIndexNo4,
+                  entityCrsOptLineFromClassName,
+                  entityCrsOptLineToIndexNo1,
+                  entityCrsOptLineToIndexNo2,
+                  entityCrsOptLineToIndexNo3,
+                  entityCrsOptLineToIndexNo4,
+                  entityCrsOptLineToClassName,
+                  entityCrsOptLineClassName
+                }
+    ::=  { crossOpticalLineDefTable 1 }
+
+CrossOpticalLineDefEntry ::=  SEQUENCE
+  { crossOpticalLineDefRowStatus FspR7RowStatus,
+    crossOpticalLineDefRedLineState FspR7RedLinedState,
+    crossOpticalLineDefConn FspR7Conn,
+    crossOpticalLineDefCrsType FspR7TypeCrs,
+    crossOpticalLineDefAlias SnmpAdminString,
+    crossOpticalLineDefTunnelAid SnmpAdminString }
+
+crossOpticalLineDefRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Default RowStatus."
+    ::=  { crossOpticalLineDefEntry 1 }
+
+crossOpticalLineDefRedLineState OBJECT-TYPE
+    SYNTAX      FspR7RedLinedState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Default Red Lined State."
+    ::=  { crossOpticalLineDefEntry 2 }
+
+crossOpticalLineDefConn OBJECT-TYPE
+    SYNTAX      FspR7Conn
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Default Direction."
+    ::=  { crossOpticalLineDefEntry 3 }
+
+crossOpticalLineDefCrsType OBJECT-TYPE
+    SYNTAX      FspR7TypeCrs
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Default Type."
+    ::=  { crossOpticalLineDefEntry 4 }
+
+crossOpticalLineDefAlias OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Default Alias."
+    ::=  { crossOpticalLineDefEntry 5 }
+
+crossOpticalLineDefTunnelAid OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Default Tunnel AID."
+    ::=  { crossOpticalLineDefEntry 6 }
+
+physicalPortDefTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PhysicalPortDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "physicalPortDefTable"
+    ::=  { facilityMgmtDef 1 }
+
+physicalPortDefEntry OBJECT-TYPE
+    SYNTAX      PhysicalPortDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of physicalPortDefTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { physicalPortDefTable 1 }
+
+PhysicalPortDefEntry ::=  SEQUENCE
+  { physicalPortDefRowStatus FspR7RowStatus,
+    physicalPortDefType FspR7InterfaceType,
+    physicalPortDefAdmin FspR7AdminState }
+
+physicalPortDefRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Default RowStatus."
+    ::=  { physicalPortDefEntry 1 }
+
+physicalPortDefType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Default Facility Type."
+    ::=  { physicalPortDefEntry 2 }
+
+physicalPortDefAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Default Adminstrative State."
+    ::=  { physicalPortDefEntry 3 }
+
+virtualPortDefTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF VirtualPortDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "virtualPortDefTable"
+    ::=  { facilityMgmtDef 2 }
+
+virtualPortDefEntry OBJECT-TYPE
+    SYNTAX      VirtualPortDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of virtualPortDefTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { virtualPortDefTable 1 }
+
+VirtualPortDefEntry ::=  SEQUENCE
+  { virtualPortDefRowStatus FspR7RowStatus,
+    virtualPortDefChannelBand FspR7ChannelBandwidth,
+    virtualPortDefType FspR7InterfaceType,
+    virtualPortDefAlias SnmpAdminString,
+    virtualPortDefAdmin FspR7AdminState,
+    virtualPortDefEqlzAdmin FspR7EqlzAdminState }
+
+virtualPortDefRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Default RowStatus."
+    ::=  { virtualPortDefEntry 1 }
+
+virtualPortDefChannelBand OBJECT-TYPE
+    SYNTAX      FspR7ChannelBandwidth
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Default Channel Bandwidth."
+    ::=  { virtualPortDefEntry 2 }
+
+virtualPortDefType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Default Facility Type."
+    ::=  { virtualPortDefEntry 3 }
+
+virtualPortDefAlias OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Default Alias."
+    ::=  { virtualPortDefEntry 4 }
+
+virtualPortDefAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Default Adminstrative State."
+    ::=  { virtualPortDefEntry 5 }
+
+virtualPortDefEqlzAdmin OBJECT-TYPE
+    SYNTAX      FspR7EqlzAdminState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Default Fiber Connection Attenuation."
+    ::=  { virtualPortDefEntry 6 }
+
+connectionDefTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ConnectionDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "connectionCapTable"
+    ::=  { fiberMapDef 2 }
+
+connectionDefEntry OBJECT-TYPE
+    SYNTAX      ConnectionDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of connectionCapTable"
+    INDEX       {
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  entityConnectionClassName
+                }
+    ::=  { connectionDefTable 1 }
+
+ConnectionDefEntry ::=  SEQUENCE
+  { connectionDefRowStatus FspR7RowStatus,
+    connectionDefType FspR7TypeConnection }
+
+connectionDefRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Connection Default RowStatus."
+    ::=  { connectionDefEntry 1 }
+
+connectionDefType OBJECT-TYPE
+    SYNTAX      FspR7TypeConnection
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Connection Default Type."
+    ::=  { connectionDefEntry 2 }
+
+externalPortDefTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExternalPortDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "externalPortDef"
+    ::=  { eciDef 1 }
+
+externalPortDefEntry OBJECT-TYPE
+    SYNTAX      ExternalPortDefEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of externalPortDef"
+    INDEX       {
+                  entityExternalPortShelfNo,
+                  entityExternalPortSlotNo,
+                  entityExternalPortPortNo,
+                  entityExternalPortExtNo,
+                  entityExternalPortClassName
+                }
+    ::=  { externalPortDefTable 1 }
+
+ExternalPortDefEntry ::=  SEQUENCE
+  { externalPortDefRowStatus FspR7RowStatus,
+    externalPortDefType FspR7InterfaceType,
+    externalPortDefTransmitChannel FspR7ChannelIdentifier,
+    externalPortDefChannelBandwith FspR7ChannelBandwidth,
+    externalPortDefAlias SnmpAdminString,
+    externalPortDefFarEndLocation SnmpAdminString,
+    externalPortDefBitrate Unsigned32,
+    externalPortDefFecType FspR7FecType,
+    externalPortDefLineCoding FspR7LineCoding,
+    externalPortDefFrameFormat FspR7FrameFormat,
+    externalPortDefOpticalPowerTx Integer32,
+    externalPortDefOsnrTransmit Unsigned32,
+    externalPortDefPmdTransmit Unsigned32,
+    externalPortDefChromDisperTx Integer32,
+    externalPortDefMinOsnrRcv Unsigned32,
+    externalPortDefMinOptPowerRcv Integer32,
+    externalPortDefMaxOptPowerRcv Integer32,
+    externalPortDefMaxPmdRcv Unsigned32,
+    externalPortDefMinChromDisperRcv Integer32,
+    externalPortDefMaxChromDisperRcv Integer32,
+    externalPortDefMaxBitErrorRate FspR7MaxBitErrorRate,
+    externalPortDefSourceProfile SnmpAdminString }
+
+externalPortDefRowStatus OBJECT-TYPE
+    SYNTAX      FspR7RowStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Connection Default RowStatus."
+    ::=  { externalPortDefEntry 1 }
+
+externalPortDefType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 2 }
+
+externalPortDefTransmitChannel OBJECT-TYPE
+    SYNTAX      FspR7ChannelIdentifier
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 3 }
+
+externalPortDefChannelBandwith OBJECT-TYPE
+    SYNTAX      FspR7ChannelBandwidth
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 4 }
+
+externalPortDefAlias OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 5 }
+
+externalPortDefFarEndLocation OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 6 }
+
+externalPortDefBitrate OBJECT-TYPE
+    SYNTAX      Unsigned32 
+    UNITS       "Mbit/s"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 7 }
+
+externalPortDefFecType OBJECT-TYPE
+    SYNTAX      FspR7FecType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 8 }
+
+externalPortDefLineCoding OBJECT-TYPE
+    SYNTAX      FspR7LineCoding
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 9 }
+
+externalPortDefFrameFormat OBJECT-TYPE
+    SYNTAX      FspR7FrameFormat
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 10 }
+
+externalPortDefOpticalPowerTx OBJECT-TYPE
+    SYNTAX      Integer32 (-9900..600) 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 11 }
+
+externalPortDefOsnrTransmit OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..58) 
+    UNITS       "dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 12 }
+
+externalPortDefPmdTransmit OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..30) 
+    UNITS       "ps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 13 }
+
+externalPortDefChromDisperTx OBJECT-TYPE
+    SYNTAX      Integer32 (-60000..60000) 
+    UNITS       "ps/nm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 14 }
+
+externalPortDefMinOsnrRcv OBJECT-TYPE
+    SYNTAX      Unsigned32 (10..58) 
+    UNITS       "dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 15 }
+
+externalPortDefMinOptPowerRcv OBJECT-TYPE
+    SYNTAX      Integer32 (-2500..0) 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 16 }
+
+externalPortDefMaxOptPowerRcv OBJECT-TYPE
+    SYNTAX      Integer32 (-1000..1000) 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 17 }
+
+externalPortDefMaxPmdRcv OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..30) 
+    UNITS       "ps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 18 }
+
+externalPortDefMinChromDisperRcv OBJECT-TYPE
+    SYNTAX      Integer32 (-60000..60000) 
+    UNITS       "ps/nm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 19 }
+
+externalPortDefMaxChromDisperRcv OBJECT-TYPE
+    SYNTAX      Integer32 (-60000..60000) 
+    UNITS       "ps/nm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 20 }
+
+externalPortDefMaxBitErrorRate OBJECT-TYPE
+    SYNTAX      FspR7MaxBitErrorRate
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 21 }
+
+externalPortDefSourceProfile OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "."
+    ::=  { externalPortDefEntry 22 }
+
+
+-- conformance information
+
+conformanceDef OBJECT IDENTIFIER ::= { advaFspR7Def 10 }
+
+compliancesDef OBJECT IDENTIFIER ::= { conformanceDef 1 }
+
+groupsDef      OBJECT IDENTIFIER ::= { conformanceDef 2 }
+
+-- compliance statements
+
+complianceDef MODULE-COMPLIANCE
+  STATUS  current
+  DESCRIPTION
+    "The compliance statement for entities implementing the ADVA FSPR7 DEF MIB."
+  MODULE  -- this module
+  MANDATORY-GROUPS { objectGroupDef }
+  ::= { compliancesDef 1 }
+
+
+-- units of conformance
+
+objectGroupDef OBJECT-GROUP
+  OBJECTS {
+    crossConnectionDefRowStatus,
+    crossConnectionDefAdmin,
+    crossConnectionDefRedLineState,
+    crossConnectionDefConn,
+    crossConnectionDefAlias,
+    crossConnectionDefPathNode,
+    crossConnectionDefTunnelAid,
+    crossOpticalLineDefRowStatus,
+    crossOpticalLineDefRedLineState,
+    crossOpticalLineDefConn,
+    crossOpticalLineDefCrsType,
+    crossOpticalLineDefAlias,
+    crossOpticalLineDefTunnelAid,
+    crossConnectionDefType,
+    physicalPortDefRowStatus,
+    physicalPortDefType,
+    physicalPortDefAdmin,
+    virtualPortDefRowStatus,
+    virtualPortDefChannelBand,
+    virtualPortDefType,
+    virtualPortDefAlias,
+    virtualPortDefAdmin,
+    virtualPortDefEqlzAdmin,
+    connectionDefRowStatus,
+    connectionDefType,
+    externalPortDefRowStatus,
+    externalPortDefType,
+    externalPortDefTransmitChannel,
+    externalPortDefChannelBandwith,
+    externalPortDefAlias,
+    externalPortDefFarEndLocation,
+    externalPortDefBitrate,
+    externalPortDefMaxChromDisperRcv,
+    externalPortDefMaxBitErrorRate,
+    externalPortDefFecType,
+    externalPortDefLineCoding,
+    externalPortDefFrameFormat,
+    externalPortDefOpticalPowerTx,
+    externalPortDefOsnrTransmit,
+    externalPortDefPmdTransmit,
+    externalPortDefChromDisperTx,
+    externalPortDefMinOsnrRcv,
+    externalPortDefMinOptPowerRcv,
+    externalPortDefMaxOptPowerRcv,
+    externalPortDefMaxPmdRcv,
+    externalPortDefMinChromDisperRcv,
+    externalPortDefSourceProfile
+  }
+  STATUS  current
+  DESCRIPTION
+    "A list of objects used for configuration of an entity in ADVA FSPR7 DEF MIB."
+  ::= { groupsDef 1 }
+
+
+END
+

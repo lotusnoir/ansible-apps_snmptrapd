@@ -1,0 +1,303 @@
+   HUAWEI-VDSL2-PRIV-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+      MODULE-IDENTITY,
+      OBJECT-TYPE,
+      Unsigned32,
+      NOTIFICATION-TYPE,
+      Integer32,
+      Counter32                 
+         FROM SNMPv2-SMI          
+
+      ifIndex
+         FROM IF-MIB
+
+      TruthValue,
+      RowStatus,
+      DateAndTime
+          FROM SNMPv2-TC
+
+      SnmpAdminString
+         FROM SNMP-FRAMEWORK-MIB
+
+      MODULE-COMPLIANCE,
+      OBJECT-GROUP,
+      NOTIFICATION-GROUP
+         FROM SNMPv2-CONF
+      
+     vdsl2
+         FROM HUAWEI-VDSL2-LINE-MIB;
+ 
+     VSDLSELTOPERTYPE ::= TEXTUAL-CONVENTION
+	 STATUS current
+	 DESCRIPTION  "the operation type of selt test"
+	 SYNTAX INTEGER {
+		stop(0),
+		adslstart(1),
+		vdsl2start(2)
+	}
+	
+     VSDLSELTOPERRESULT ::= TEXTUAL-CONVENTION
+	 STATUS current
+	 DESCRIPTION  "the result of selt test"
+	 SYNTAX INTEGER {
+		normal(1),
+		fail(2),
+		abort(3)
+	}	
+
+     VSDLSELTRESULTLASTFLAG ::= TEXTUAL-CONVENTION
+	 STATUS current
+	 DESCRIPTION  "last flag of selt test data"
+	 SYNTAX INTEGER {
+		false(0),
+		true(1)
+	}   
+
+     VSDLSELTPARAMLOOPTERMIN ::= TEXTUAL-CONVENTION
+	 STATUS current
+	 DESCRIPTION  ""
+	 SYNTAX INTEGER {
+		open(0),
+		short(1),
+		unknown(2),
+		terminated(3)
+	}
+	
+     VSDLSELTPARAMLOOPGAUGE ::= TEXTUAL-CONVENTION
+	 STATUS current
+	 DESCRIPTION  ""
+	 SYNTAX INTEGER {
+		greater_26_awg(1),
+		equal_26_awg(2),
+		equal_24_awg(3),
+	        less_24_awg(4),
+		unknown_awg(5)
+	}		
+
+       
+       
+     vdsl2Priv                     OBJECT IDENTIFIER ::= { vdsl2 7 }
+     --------------------------------------------------------------------------
+     vdsl2Test                     OBJECT IDENTIFIER ::= { vdsl2Priv 1 }
+     --------------------------------------------------------------------------
+
+   ------------------------------------------------
+   --          vdsl2SeltTestTable                 --
+   ------------------------------------------------
+   vdsl2SeltTestTable  OBJECT-TYPE
+     	SYNTAX          SEQUENCE OF VDSL2SELTTESTENTRY
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION
+        "This table describes vdsl2 selt test."
+        ::= { vdsl2Test 1 }    
+           
+   vdsl2SeltTestEntry  OBJECT-TYPE
+   	SYNTAX          VDSL2SELTTESTENTRY
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION     "An entry in vdsl2SeltTestTable."
+        INDEX           { ifIndex }
+        ::= { vdsl2SeltTestTable 1 }
+
+   VDSL2SELTTESTENTRY ::=
+      SEQUENCE{
+        vdsl2SeltTestOperType       	    VSDLSELTOPERTYPE  ,
+        vdsl2SeltTestOperResult     	    VSDLSELTOPERRESULT ,
+        vdsl2SeltTestResultNo       	    Integer32  ,
+        vdsl2SeltTestResultLastFlag 	    VSDLSELTRESULTLASTFLAG,
+        vdsl2SeltTestResult         	    OCTET STRING ,
+        vdsl2SeltTestParamLoopLength 	    Integer32 ,
+        vdsl2SeltTestParamLoopTermin 	    VSDLSELTPARAMLOOPTERMIN ,
+        vdsl2SeltTestParamLoopGauge  	    VSDLSELTPARAMLOOPGAUGE ,
+        vdsl2SeltTestParamUpShnCap   	    Integer32 ,
+        vdsl2SeltTestParamDwnShnCap  	    Integer32 ,
+        vdsl2SeltTestParamInbandNois 	    OCTET STRING ,
+        vdsl2SeltTestParamTerminResp 	    OCTET STRING ,
+        vdsl2SeltTestParamUpMgnAtRate       OCTET STRING ,
+        vdsl2SeltTestParamDwnMgnAtRate      OCTET STRING ,
+        vdsl2SeltTestParamUpRateAtMgn       OCTET STRING ,  
+        vdsl2SeltTestParamDwnRateAtMgn      OCTET STRING ,
+        hwvdsl2SeltTestParamAttnAt180KHZ    Integer32 ,
+        hwvdsl2SeltTestParamAttnAt300KHZ    Integer32 ,
+        hwvdsl2SeltTestParamQSPsdValue      OCTET STRING 
+      }
+
+   vdsl2SeltTestOperType OBJECT-TYPE
+       SYNTAX      VSDLSELTOPERTYPE
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION
+          "Selt test operation type"         
+       ::= { vdsl2SeltTestEntry 1 }    
+      
+   vdsl2SeltTestOperResult OBJECT-TYPE
+       SYNTAX      VSDLSELTOPERRESULT
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "  Selt test operation result"
+       ::= { vdsl2SeltTestEntry 2 }
+      
+   vdsl2SeltTestResultNo OBJECT-TYPE
+       SYNTAX      Integer32(1..255)
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "  Selt test result serial number "
+       ::= { vdsl2SeltTestEntry 3 }
+      
+   vdsl2SeltTestResultLastFlag OBJECT-TYPE
+       SYNTAX      VSDLSELTRESULTLASTFLAG
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Last package flag for test result "
+       ::= { vdsl2SeltTestEntry 4 }
+      
+   vdsl2SeltTestResult OBJECT-TYPE
+       SYNTAX      OCTET STRING(SIZE(0..1500))
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "  Selt test result data  "
+       ::= { vdsl2SeltTestEntry 5 }
+      
+   vdsl2SeltTestParamLoopLength OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Loop Length"
+       ::= { vdsl2SeltTestEntry 6 }
+      
+   vdsl2SeltTestParamLoopTermin OBJECT-TYPE
+       SYNTAX      VSDLSELTPARAMLOOPTERMIN
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Loop Termination"
+       ::= { vdsl2SeltTestEntry 7 }
+      
+   vdsl2SeltTestParamLoopGauge OBJECT-TYPE
+       SYNTAX      VSDLSELTPARAMLOOPGAUGE
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Loop Gauge"
+       ::= { vdsl2SeltTestEntry 8 }
+      
+   vdsl2SeltTestParamUpShnCap OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Upstream Shannon Capacity"
+       ::= { vdsl2SeltTestEntry 9 }
+      
+   vdsl2SeltTestParamDwnShnCap OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Downstream Shannon Capacity"
+      ::= { vdsl2SeltTestEntry 10 }
+      
+   vdsl2SeltTestParamInbandNois OBJECT-TYPE
+       SYNTAX      OCTET STRING(SIZE(0..1500))
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Inband Noise
+          
+           512 values that indicate inband noise in DB/Hz, 
+           covering ADSL, ADSL2, and ADSL2+ bands, from 0 to 2.2 MHz."
+       ::= { vdsl2SeltTestEntry 11 }
+      
+   vdsl2SeltTestParamTerminResp OBJECT-TYPE
+       SYNTAX      OCTET STRING(SIZE(0..1500))
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Termination Response
+          
+           180 values that indicate termination response magnitude from 0 to 18 kft."
+      ::= { vdsl2SeltTestEntry 12 }
+      
+   vdsl2SeltTestParamUpMgnAtRate OBJECT-TYPE
+       SYNTAX      OCTET STRING(SIZE(0..1500))
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Upstream Rate vs. Margin
+          
+           This value is a measure of the quality of your upstream data 
+           signal relative to the noise on the line. Hundreds of values that 
+           indicate SNR margin in DB/Hz at a particular bit rate are provided, 
+           at a certain increments, up to 30 Mbps. This information may be plotted 
+           with the bit rate on the X-axis and the SNR margin on the Y-axis."
+       ::= { vdsl2SeltTestEntry 13 }
+      
+   vdsl2SeltTestParamDwnMgnAtRate OBJECT-TYPE
+       SYNTAX      OCTET STRING(SIZE(0..1500))
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Downstream Rate vs. Margin
+          
+           This value is a measure of the quality of your downstream data 
+           signal relative to the noise on the line. Hundreds of values that 
+           indicate SNR margin in DB/Hz at a particular bit rate are provided, 
+           at a certain increments, up to 30 Mbps. This information may be plotted 
+           with the bit rate on the X-axis and the SNR margin on the Y-axis."
+       ::= { vdsl2SeltTestEntry 14 }
+      
+   vdsl2SeltTestParamUpRateAtMgn OBJECT-TYPE
+       SYNTAX      OCTET STRING(SIZE(0..1500))
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Upstream Margin vs. Rate"
+       ::= { vdsl2SeltTestEntry 15 }
+      
+   vdsl2SeltTestParamDwnRateAtMgn OBJECT-TYPE
+       SYNTAX      OCTET STRING(SIZE(0..1500))
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter Downstream Margin vs. Rate"
+       ::= { vdsl2SeltTestEntry 16 }
+      
+   hwvdsl2SeltTestParamAttnAt180KHZ OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter AttnAt180KHZ.
+          It ranges from -950 to 0 units of 0.1dB(physical values
+ 	  are -95 to 0 dB)"
+       ::= { vdsl2SeltTestEntry 65535 }
+      
+   hwvdsl2SeltTestParamAttnAt300KHZ OBJECT-TYPE
+       SYNTAX      Integer32
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter AttnAt300KHZ.
+          It ranges from -950 to 0 units of 0.1dB(physical values
+ 	  are -95 to 0 dB)"
+      ::= { vdsl2SeltTestEntry 65536 }
+              
+   hwvdsl2SeltTestParamQSPsdValue OBJECT-TYPE
+       SYNTAX      OCTET STRING(SIZE(0..8191))
+       MAX-ACCESS  accessible-for-notify
+       STATUS      current
+       DESCRIPTION
+          "Selt test parameter QuietSignal PSD.
+          An array of 4096 16-bits values, 
+          designed for supporting up to 4096 (downstream) sub-carriers. 
+ 	  It ranges from -150 to -40 units of 1dBm/Hz."
+      ::= { vdsl2SeltTestEntry 65537 }
+      
+END

@@ -1,0 +1,2489 @@
+DHCP-RELAY-MIB DEFINITIONS ::= BEGIN
+
+-- ================================================================================
+-- This specification is published by Alcatel under Non-Disclosure
+-- Agreement(s) (NDA) with specific parties and has to be considered as
+-- Confidential Information as defined in such NDA.
+-- Alcatel reserves the right to revise this document for any reason,
+-- including but not limited to conformity with standards promulgated by
+-- various agencies, utilisation of advances in the state of the technical
+-- areas, or the reflection of changes in the design of any equipment,
+-- techniques, or procedures described or referred to herein.
+-- The product specifications and other technical or performance information
+-- contained herein are subject to change without notice.
+-- Updates of this document will be issued under the above NDA's.
+-- Alcatel makes no representation or warranty, expressed or implied, with
+-- respect to the sufficiency, accuracy, or utility of any information or
+-- opinion contained herein. Alcatel expressly advises that any use of for
+-- any purpose or reliance upon this technical reference is at the risk of
+-- the user and that Alcatel shall not be liable for any damage or injury
+-- incurred by any person arising out of the sufficiency, accuracy, or
+-- utility of any information or opinion contained herein.
+-- This document is not to be construed as a suggestion to any manufacturer
+-- to modify or change any of its products, nor does this document represent
+-- any commitment by Alcatel to sell or purchase any product.
+-- Nothing contained herein shall be construed as conferring by implication,
+-- estoppel, or otherwise any license or right under any patent, whether or
+-- not the use of any information herein necessarily employs an invention of
+-- any existing or later issued patent.
+-- Alcatel reserves the right not to offer any or all of these products and
+-- to withdraw any or all of them at any future time.
+-- Copyright (C) 2007, Alcatel. All Rights Reserved.
+-- ================================================================================
+--
+--  REVISION 201610060000Z
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V5.6.0.0.0
+--         Editor:   Haripriya Ronda
+--         Changes: Added extDhcpv6RelayPortOption53InsertedCounter, extDhcpv6RelayPortOption53RemovedCounter 
+--                      and extDhcpv6RelayPortUpOption53TooLongCounter objects for extDhcpv6RelayPortStatsTable"
+--
+--  MODULE-IDENTITY
+--  LAST-UPDATED    "201101130000Z"
+--  ORGANIZATION   "Alcatel"
+--  CONTACT-INFO
+--
+--          "Email:  Tao.B.Liu@alcatel-sbell.com.cn"
+--
+--  DESCRIPTION   Alcatel proprietary DHCP Relay MIB for supporting Option 17
+--                Insertion extDhcpv6RelayPortUpOption17TooLongCounter,extDhcpv6RelayPortOption17InsertedCounter 
+--                extDhcpv6RelayPortOption17RemovedCounter into extDhcpv6RelayPortStatsEntry.
+
+--  REVISION 201006280000Z
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V4.2.0.1.4
+--         Editor:   
+--         Changes: 
+
+--  REVISION 200910130000Z
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V4.2.0.0.0
+--         Editor:   Xiong Xiaohong
+--         Changes: Added extDhcpv6RelayPortStatsSumTable
+--                  Added extDhcpv6RelayPortStatsTable"
+
+--  REVISION 200910060000Z
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V4.0.10.0.0
+--         Editor:   Rob Parsons
+--         Changes: Added extDhcpRelayPortTotalInCounter 
+--                  and extDhcpRelayPortTotalOutCounter objects
+--                  to extDhcpRelayPortStatsSumTable."
+
+--  REVISION 200711030000Z
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V3.5.0.0.0
+--         Editor:   Wang Jianglin
+--         Changes: dhcpTrapPreSession is added.
+--
+--                   When a dhcp session is preempted, a trap shall be generated 
+--	             and sent to manager element."
+
+
+--  REVISION 200702280000Z
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V3.4.0.0.1
+--         Editor:   YAO Yifeng
+--         Changes:  modification of RemoteIdControl, addPhysicalLineId is added.
+--
+--                   Also DHCP Session table is extended to support snooped L2 DHCP
+--                   sessions as well."
+
+--
+--  REVISION 200701010900Z
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V3.4.0.0.0
+--         Editor:   Hemachandra Ramineni
+--         Changes:  Implementation for BDFhw52075. Added new tables
+--                   extDhcpRelayPortStatsSumTable and
+--                   extDhcpRelayPortStatsTable for supporting
+--                   DHCP Relay OAM counters at the port level for both
+--                   L2 and L3 forwarding models. These replace the existing
+--                   tables extendDhcpRelayPortSummaryTable and
+--                   extendDhcpRelayPortCounterTable. The old tables are
+--                   no longer supported.
+--
+--                   Also re-formatted the MIB as per the latest Alcatel PB
+--                   template."
+--
+--
+--  REVISION 200607180000Z
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V3.1.0.0.0
+--         Editor:   Shi Tao
+--         Changes:  re-use ASAM DHCP MIB OID extendDhcpRelayAgentChaddrMode
+--                   for MAC concentraion(BDFhw41001) in ISAM R3.1"
+--
+--  REVISION "200606060000Z"
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V3.2.0.0.0
+--         Editor:   Ze Chao
+--         Changes:  Alcatel notes added"
+--
+--  REVISION 200601230000Z
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V2.4.01.0.0
+--         Editor:   Bart Bogaert
+--         Changes:  Implemented BDFhw70643: strict syntax checks (smilint)"
+--
+--  REVISION 200512260000Z
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V3.0.0.0.0
+--         Editor:   Sudhanshu Jindal
+--         Changes:  Added a new table: dhcpSessionTable"
+--
+--  REVISION "200406080000Z"
+--  DESCRIPTION
+--        "Version:  3FE21837EAAA_V2.0.0.0.0
+--         Editor:   Frank Desseyn
+--         Changes:  Initial version"
+--
+-- ===========================================================================
+
+   IMPORTS  OBJECT-TYPE                     FROM RFC-1212
+            TruthValue                      FROM SNMPv2-TC
+            RowStatus                       FROM SNMPv2-TC
+            InterfaceIndex                  FROM ITF-MIB
+            VrfIndex, vrfIndex              FROM VRF-MIB
+            vrfIpInterfaceIndex             FROM VRF-MIB
+            Counter, Gauge, IpAddress       FROM RFC1155-SMI
+            InetAddressType                 FROM INET-ADDRESS-MIB
+            InetAddressPrefixLength         FROM INET-ADDRESS-MIB
+            NetworkTimeInSeconds            FROM ASAM-TC-MIB
+            asam                            FROM SYSTEM-MIB;
+
+
+-- **************************************************************************
+-- **   T E X T U A L     C O N V E N T I O N S                            **
+-- **************************************************************************
+
+
+-- **************************************************************************
+-- **   O B J E C T     D E F I N I T I O N S                              **
+-- **************************************************************************
+
+    asamDhcpRelay OBJECT IDENTIFIER ::= { asam 40 }
+
+
+-- **************************************************************************
+-- **   D H C P     R E L A Y   A G E N T     G R O U P                    **
+-- **                                                                      **
+-- **   extendDhcpRelayAgent ::= { asamDhcpRelay 11 }                      **
+-- **************************************************************************
+
+    extendDhcpRelayAgent OBJECT IDENTIFIER ::= { asamDhcpRelay 11 }
+
+-- ========================================================================
+--      DHCP relay agent configuration table
+-- ========================================================================
+
+    extendDhcpRelayAgentConfigTable OBJECT-TYPE
+        SYNTAX  SEQUENCE OF ExtendDhcpRelayAgentConfigEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "A table containing configuration information for
+             the DHCP relay agents.
+
+            ALCATEL NOTE:
+                TABLESIZE: DEP (VRF number)
+                DESCR: NA
+            "
+    ::= { extendDhcpRelayAgent 1 }
+
+    extendDhcpRelayAgentConfigEntry OBJECT-TYPE
+        SYNTAX  ExtendDhcpRelayAgentConfigEntry
+        ACCESS  not-accessible
+        STATUS  mandatory
+        DESCRIPTION
+            "The entry containing configuration information for
+             a DHCP relay agent.
+             Row creation: An entry is created by the system when a VRF
+                           is created in the vrfConfigTable.
+             Row deletion: An entry is deleted by the system when a VRF
+                           is deleted in the vrfConfigTable.
+             Index usage: the index is the VRF Index.
+             Note that entries will be presented to the SNMP manager in full
+             lexicographical order.
+            "
+        INDEX { vrfIndex }
+    ::= { extendDhcpRelayAgentConfigTable 1 }
+
+    ExtendDhcpRelayAgentConfigEntry ::= SEQUENCE
+    {
+--      extendDhcpRelayAgentEnable                      INTEGER,
+        extendDhcpRelayAgentOption82Enable              INTEGER,
+--      extendDhcpRelayAgentUnicastOption82Enable       INTEGER,
+--      extendDhcpRelayAgentMaxAcceptedHops             INTEGER,
+--      extendDhcpRelayAgentOperationalState            INTEGER,
+--      extendDhcpRelayAgentErrorSummaryCounter         Counter,
+        extendDHCPRelayAgentUpStreamBroadcastVLAN       InterfaceIndex,
+        extendDHCPRelayAgentCircuitIdControl            INTEGER,
+        extendDHCPRelayAgentRemoteIdControl             INTEGER,
+        extendDhcpRelayAgentChaddrMode                  INTEGER,
+        extendDHCPRelayAgentDslLinRateControl           INTEGER
+--      extendDHCPRelayAgentMacConcentrationControl     INTEGER
+    }
+
+
+--  extendDhcpRelayAgentEnable OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentConfigEntry 1 }
+
+    extendDhcpRelayAgentOption82Enable OBJECT-TYPE
+        SYNTAX  INTEGER
+                {
+                    enable(1),
+                    disable(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "This object allows the operator to enable or disable
+             the option 82 information insertion in the
+             upstream broadcast DHCP packets.
+            ALCATEL NOTE:
+                ACCESS:      NA           USAGE:       NA
+                PERSIST:     YES          INSRVMOD:    YES
+                RANGE:       NA           DEFVALUE:    NA
+                UNITS:       NA           SPARSE:      NA
+                DESCR:       NA
+            "
+    ::= { extendDhcpRelayAgentConfigEntry 2 }
+
+--  extendDhcpRelayAgentUnicastOption82Enable OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentConfigEntry 3 }
+
+--  extendDhcpRelayAgentMaxAcceptedHops OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentConfigEntry 4 }
+
+--  extendDhcpRelayAgentOperationalState OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentConfigEntry 5 }
+
+--  extendDhcpRelayAgentErrorSummaryCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentConfigEntry 6 }
+
+    extendDHCPRelayAgentUpStreamBroadcastVLAN OBJECT-TYPE
+        SYNTAX  InterfaceIndex
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "The interface Index represent a VLAN, the VLAN is used for
+             forwarding upstream broadcast DHCP packets in case DHCP
+             relay Agent is disabled.
+            ALCATEL NOTE:
+                ACCESS:      NA           USAGE:       NA
+                PERSIST:     YES          INSRVMOD:    YES
+                RANGE:       NA           DEFVALUE:    NA
+                UNITS:       NA           SPARSE:      NA
+                DESCR:       NA
+            "
+    ::= { extendDhcpRelayAgentConfigEntry 7 }
+
+    extendDHCPRelayAgentCircuitIdControl OBJECT-TYPE
+        SYNTAX  INTEGER
+                {
+                    notAdd(1),
+                    addCustomerId (2),
+                    addPhysicalLineId (3),
+                    addCcsaFormat (4)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "This object controls what content will be included in the
+             CirciutId sub option of option 82.The following values are
+             defined currently:
+                notAdd(1)             CircuitId sub option is not include in
+                                      the option 82.
+                addCustomerId(2)      The CustomerId will be included in
+                                      CircuitId sub option.
+                addPhysicalLineId(3)  A auto-generated PhysicalLineId will be
+                                      included in CircuitId sub option.
+                addCcsaFormat(4)      A auto-generated circuit ID as per CCSA
+                                      format will be included in CircuitId sub
+                                      option.
+            ALCATEL NOTE:
+                ACCESS:      NA           USAGE:       NA
+                PERSIST:     YES          INSRVMOD:    YES
+                RANGE:       NA           DEFVALUE:    notAdd
+                UNITS:       NA           SPARSE:      NA
+                DESCR:       NA
+            "
+        DEFVAL { notAdd }
+    ::= { extendDhcpRelayAgentConfigEntry 8 }
+
+    extendDHCPRelayAgentRemoteIdControl OBJECT-TYPE
+        SYNTAX  INTEGER
+                {
+                    notAdd(1),
+                    addCustomerId(2) ,
+addPhysicalLineId(3)
+
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "This object controls what content will be included in the RemoteId
+             sub option of option 82.The following values are defined currently:
+                notAdd(1)           RemoteId sub option is not include in the
+                                    option 82.
+                addCustomerId(2)    The CustomerId will be included in RemoteId
+                                    sub option. 
+addPhysicalLineId(3)  An auto-generated PhysicalLineId will be
+                                      include in RemoteId sub option.
+
+            ALCATEL NOTE:
+                ACCESS:      NA           USAGE:       NA
+                PERSIST:     YES          INSRVMOD:    YES
+                RANGE:       NA           DEFVALUE:    notAdd
+                UNITS:       NA           SPARSE:      NA
+                DESCR:       NA
+            "
+        DEFVAL { notAdd }
+    ::= { extendDhcpRelayAgentConfigEntry 9 }
+
+    extendDhcpRelayAgentChaddrMode OBJECT-TYPE
+        SYNTAX  INTEGER
+                {
+                    doNotChange(1),
+                    copySourceMacAddr(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "This object allows the operator to configure if the relay agent
+             must line up the CHADDR-field in UPSTREAM DHCP messages, with
+             the source MAC address set by this relay agent.
+             For a RFC2131 relay agent (full relay agent), this object
+             should be configured to doNotChange(1).
+             The typical case in which this object may be configured to 
+             copySourceMacAddr(2), is the following:
+               - the relay agent is in the context of a bridge, and as such
+                 this relay agent is doing simplified relay, this means no
+                 transformation of broadcast message into a set of unicast 
+                 messages;
+                 and
+               - there is an upstream full relay agent;
+                 and
+               - the bridge is an IP-aware Bridge that is doing MAC address
+                 concentration, this means source MAC address is replaced by
+                 the bridge's MAC address, so CHADDR and source MAc address
+                 become different;
+                 and;
+               - the upstream relay agent uses CHADDR to route replies back
+                 to the user.
+             There might be a network inconsistency when the upstream full
+             relay agent requires that CHADDR matches the MAC address of the
+             bridge, while the DHCP server uses CHADDR to identify individual
+             users.
+
+            ALCATEL NOTE:
+                ACCESS:      NA           USAGE:       NA
+                PERSIST:     YES          INSRVMOD:    YES
+                RANGE:       NA           DEFVALUE:    doNotChange
+                UNITS:       NA           SPARSE:      NA
+                DESCR:       NA"
+        DEFVAL { doNotChange }
+    ::= { extendDhcpRelayAgentConfigEntry 13 }
+
+    extendDHCPRelayAgentDslLinRateControl OBJECT-TYPE
+        SYNTAX  INTEGER
+                {
+                    notAdd(1),
+                    addActualLineRate(2)
+                }
+        ACCESS  read-write
+        STATUS  mandatory
+        DESCRIPTION
+            "This object allows the operator to enable/disable the insertion of
+             Dsl Line rate suboption of Option82 for Dhcp Relay.The following
+             values are defined currently:
+                notAdd(1)               Insertion of DSL LineRate suboption is
+                                         disabled in option 82.
+                addActualLineRate(2)    Insertion of Actual Line rate will be
+                                        enabled as a suboption of option 82.
+            ALCATEL NOTE:
+                ACCESS:      NA           USAGE:       NA
+                PERSIST:     YES          INSRVMOD:    YES
+                RANGE:       NA           DEFVALUE:    notAdd
+                UNITS:       NA           SPARSE:      NA
+                DESCR:       NA
+            "
+        DEFVAL {notAdd}
+    ::= { extendDhcpRelayAgentConfigEntry 14 }
+
+--  extendDHCPRelayAgentMacConcentrationControl OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentConfigEntry 15 }
+
+
+-- ========================================================================
+--         DHCP server association table (Obsolete)
+-- ========================================================================
+
+--  extendDhcpRelayAgentServerTable OBJECT-TYPE
+--      DESCRIPTION
+--          "A table to associate DHCP servers to a DHCP relay agent."
+--  ::= { extendDhcpRelayAgent 2 }
+
+--  extendDhcpRelayAgentServerEntry OBJECT-TYPE
+--      INDEX { vrfIndex, extendDhcpServerIpAddr }
+--  ::= { extendDhcpRelayAgentServerTable 1 }
+
+--  extendDhcpRelayAgentServerRowStatus OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentServerEntry 1 }
+
+-- ========================================================================
+--         DHCP relay agent detailed counters table (Obsolete)
+-- ========================================================================
+
+--  extendDhcpRelayAgentCounterTable OBJECT-TYPE
+--      DESCRIPTION
+--           "A table containing the detailed counters of
+--            the DHCP relay agents under monitoring."
+--  ::= { extendDhcpRelayAgent 3 }
+
+--  extendDhcpRelayAgentCounterEntry OBJECT-TYPE
+--      INDEX { vrfIndex }
+--  ::= { extendDhcpRelayAgentCounterTable 1 }
+
+--  extendDhcpRelayAgentForwardedUpstreamCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentCounterEntry 1 }
+
+--  extendDhcpRelayAgentForwardedDownstreamCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentCounterEntry 2 }
+
+--  extendDhcpRelayAgentErrorCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentCounterEntry 3 }
+
+--  extendDhcpRelayAgentCounterRowStatus OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentCounterEntry 4 }
+
+--  extendDhcpRelayAgentUserUpstreamInCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentCounterEntry 5 }
+--
+--  extendDhcpRelayAgentNetworkDownstreamInCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayAgentCounterEntry 5 }
+
+
+-- **************************************************************************
+-- **   D H C P     R E L A Y   P O R T   G R O U P                        **
+-- **                                                                      **
+-- **   extendDhcpRelayPort ::= { asamDhcpRelay 12 }                       **
+-- **************************************************************************
+
+    extendDhcpRelayPort OBJECT IDENTIFIER ::= { asamDhcpRelay 12 }
+
+-- ========================================================================
+--         DHCP relay port error summary counters table (Obsolete)
+-- ========================================================================
+
+--  extendDhcpRelayPortSummaryTable OBJECT-TYPE
+--      DESCRIPTION
+--          "A table containing the DHCP error summary counter for
+--           each port linked to a VRF with the DHCP relay function.
+--  ::= { extendDhcpRelayPort 1 }
+
+--  extendDhcpRelayPortSummaryEntry OBJECT-TYPE
+--      INDEX { vrfIpInterfaceIndex }
+--  ::= { extendDhcpRelayPortSummaryTable 1 }
+
+--  extendDhcpRelayPortErrorSummaryCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayPortSummaryEntry 1 }
+
+-- ========================================================================
+--         DHCP relay port detailed counters table (Obsolete)
+-- ========================================================================
+
+--  extendDhcpRelayPortCounterTable OBJECT-TYPE
+--      DESCRIPTION
+--          "A table containing the DHCP detailed counters of
+--           the port under DHCP monitoring.
+--  ::= { extendDhcpRelayPort 2 }
+
+--  extendDhcpRelayPortCounterEntry OBJECT-TYPE
+--      INDEX { vrfIpInterfaceIndex }
+--  ::= { extendDhcpRelayPortCounterTable 1 }
+
+--  extendDhcpRelayPortCounterRowStatus OBJECT-TYPE
+--  ::= { extendDhcpRelayPortCounterEntry 1 }
+
+--  extendDhcpRelayPortInTotalCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayPortCounterEntry 2 }
+
+--  extendDhcpRelayPortOutTotalCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayPortCounterEntry 3 }
+
+--  extendDhcpRelayPortLargeMessageDroppedCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayPortCounterEntry 4 }
+
+--  extendDhcpRelayPortHopsExceedDroppedCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayPortCounterEntry 5 }
+
+--  extendDhcpRelayPortUntrustedAgentDroppedCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayPortCounterEntry 6 }
+
+--  extendDhcpRelayPortDnNotTrustedCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayPortCounterEntry 7 }
+
+--  extendDhcpRelayPortOption82TooLongCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayPortCounterEntry 8 }
+
+--  extendDhcpRelayPortResetCounter OBJECT-TYPE
+--  ::= { extendDhcpRelayPortCounterEntry 9 }
+
+
+-- ========================================================================
+--         DHCP relay port summary statistics table (L2 + L3)
+-- ========================================================================
+
+    extDhcpRelayPortStatsSumTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ExtDhcpRelayPortStatsSumEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "The table is used for storing the port level summary statistics
+             related to DHCP relay Option 82 insertion and DHCP snooping. The
+             table defines summary error counters for each of the VLan ports
+             or IP interfaces created.
+
+             The summary counters defined by this table are applicable for both
+             L2 and L3 forwarding models. When the DHCP Relay Agent has been
+             configured for L2 mode, the counters are defined at the VLan port
+             level. And when configured for L3 mode, the same counters are
+             defined at the IP interface level. 
+
+             Note that DHCP relay Option 82 insertion is not supported for the
+             following L2 modes: S-VLan XC, QoS Aware VLan XC and IPoA XC. So 
+             no summary statistics will be defined for Vlan ports configured for
+             these modes.
+
+            ALCATEL NOTE:
+                TABLESIZE: DEP
+                           The table size depends on the number of VLan ports
+                           or IP interfaces that have been configured on the
+                           User side. The worst case dimensioning is when we
+                           have 384(48*8) IP interfaces directly created on
+                           the bridge ports along with 384 static and 384 dynamic
+                           VLan ports at each LT.
+                           Max table size = 19*384*3 = 21888
+            "
+    ::= { extendDhcpRelayPort 4 }
+
+
+    extDhcpRelayPortStatsSumEntry  OBJECT-TYPE
+        SYNTAX    ExtDhcpRelayPortStatsSumEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "An entry in the DHCP relay port statistics summary table. All
+             entries in the table are auto-instantiated or auto-deleted.
+
+                * Row Creation. A row in the table is created whenever:
+                  -  A VLan port is created on the User side and has been
+                     associated with a L2 Forwarder. The L2 Forwarder cannot be
+                     of type S-VLan XC, QoS Aware VLan XC and IPoA XC. For these
+                     L2 modes DHCP Option 82 insertion is not supported and hence
+                     no entries are created.
+
+                  - An IP interface has been configured on the User side.
+
+                * Row Deletion. A row in the table is deleted whenever:
+                  - For the associated VLan port, a previously associated L2
+                    Forwarder is removed. 
+
+                  - The associated IP interface on the User side has been deleted.
+
+                * Index Usage. The index to be used depends on the interface
+                  hierarchy configured on a particular port. Each entry will
+                  be indexed by either a VLan port interface index or IPoX
+                  interface index, whichever is the highest configured layer
+                  at a given point of time. Note the counters themselves are
+                  defined at the IP interface level in L3 mode but IP interfaces
+                  are indexed by IPoX ifindex.
+            "
+        INDEX { extDhcpRelayPortIndex }
+    ::= { extDhcpRelayPortStatsSumTable 1 }
+
+    ExtDhcpRelayPortStatsSumEntry ::= SEQUENCE
+    {
+        extDhcpRelayPortIndex               InterfaceIndex,
+        extDhcpRelayPortCounterReset        TruthValue,
+
+        -- Summary Counters
+        extDhcpRelayPortErrorSummaryCounter     Counter,
+        extDhcpRelayPortTotalInCounter          Counter,
+        extDhcpRelayPortTotalOutCounter         Counter
+
+
+    }
+
+
+    extDhcpRelayPortIndex  OBJECT-TYPE
+        SYNTAX    InterfaceIndex
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "This object is the index for the extDhcpRelayPortStatsSumTable.
+             The index value will either be the VLan port interface index or the
+             IPoX interface index, depending on which is the highest configured
+             layer on this port at a given point of time.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsSumEntry 1 }
+
+    extDhcpRelayPortCounterReset  OBJECT-TYPE
+        SYNTAX    TruthValue
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "This object is a button-like object to reset the summary
+             counters for a given extDhcpRelayPortStatsSumEntry. 
+
+             When it is set to true(1) value, the corresponding
+             extDhcpRelayPortErrorSummaryCounter is cleared. Additionally, if
+             the detailed statistics have been enabled for the associated VLan
+             port/IP Interface, all the detailed counters that exist in the
+             extDhcpRelayPortStatsTable for this VLan port/IP Interface are
+             also cleared. However note that there are some objects defined
+             (of type Gauge) in the extDhcpRelayPortStatsTable that would not 
+             be affected by a counter reset.  
+
+             A value set to false(2) is ignored.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   YES
+                RANGE:      NA
+                DEFVALUE:   NA 
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsSumEntry 2 }
+
+    extDhcpRelayPortErrorSummaryCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "A count of all DHCP packets that have encountered errors while
+             processing and hence discarded. The counter value represents the
+             number of packets discarded since the last user reset or counter
+             rollover.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      0..65535
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsSumEntry 3 }
+
+    extDhcpRelayPortTotalInCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "A count of all DHCP packets that have been received. The counter
+             value represents the number of packets received since the last
+             user reset or counter rollover.
+
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      0..65535
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsSumEntry 4 }
+
+    extDhcpRelayPortTotalOutCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "A count of all DHCP packets that have been sent. The counter
+             value represents the number of packets sent since the last
+             user reset or counter rollover.
+
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      0..65535
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsSumEntry 5 }
+
+-- ========================================================================
+--         DHCP relay port detailed statistics table (L2 + L3)
+-- ========================================================================
+
+    extDhcpRelayPortStatsTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ExtDhcpRelayPortStatsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "The table is used for storing the port level detailed statistics
+             related to DHCP relay Option 82 insertion and DHCP snooping. The
+             table defines both fine grained error counters and statistics
+             counters for the VLan ports or IP interfaces created.
+
+             The detailed counters defined by this table are applicable for both
+             L2 and L3 forwarding models. When the DHCP Relay Agent has been
+             configured for L2 mode, the counters are defined at the VLan port
+             level. And when configured for L3 mode, the same counters are
+             defined at the IP interface level.
+
+             However note that some of the counters are valid only in L3 or L2
+             forwarding modes. If a particular counter is not valid for a given
+             forwarding mode, it will always remain at its default value of zero.
+
+             In the event of a DHCP packet having multiple errors, only one of
+             the error counters will be incremented and the packet discarded at
+             the first point of failure. The order in which the error checks will
+             be carried out is unspecified.
+
+            ALCATEL NOTE:
+                TABLESIZE: DEP
+                           The table size depends on the number of VLan ports/
+                           IP interfaces for which detailed counters have been
+                           explicitly enabled by the operator. 
+                                Max size = 5*19 = 95
+                           Maximum number of interfaces for which detailed
+                           counters can be enabled is fixed at 5 per LT.  
+            "
+    ::= { extendDhcpRelayPort 5 }
+
+
+    extDhcpRelayPortStatsEntry  OBJECT-TYPE
+        SYNTAX    ExtDhcpRelayPortStatsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "An entry in the DHCP relay port detailed statistics table. All
+             entries in the table are dynamically created by the manager whenever
+             detailed statistics need to be enabled for a particular VLan port/
+             IP interface. Conversely whenever detailed statistics are to be
+             disabled for a particular VLan port/IP interface the corresponding
+             table entries are dynamically deleted by the manager.
+
+                * Row Creation. An entry is created by a set-request with the
+                  extDhcpRelayPortStatsRowStatus set to createAndGo(4). The 
+                  set-request would be successful if:
+                    - the IP interface, if specified as an index,  has already
+                      been configured and exists on the User side.
+                    - the VLan port, if specified as an index, has already been
+                      created on the User side and has been associated with a
+                      L2 forwarder. The L2 Forwarder cannot be of type S-VLan XC,
+                      QoS Aware VLan XC and IPoA XC. For these L2 forwarding
+                      modes DHCP Option 82 insertion is not supported and hence
+                      no statistics can be enabled.
+                    - the detailed counters have not already been enabled for
+                      the specified VLan port/IP interface.
+                    - the total number of VLan ports/IP interfaces for which
+                      detailed counters have already been enabled has not yet
+                      reached the maximum limit. At a given time, only ten
+                      interfaces per LT can be enabled for detailed counters
+                      (Limit is set as five detailed counters for IP Interfaces /
+                      static vlan ports and five detailed counters for dynamic
+                      vlan ports).
+
+                * Row Deletion. A table entry is deleted by a set-request with
+                  the extDhcpRelayPortStatsRowStatus set to destroy(6). A table
+                  entry can also be auto-deleted. The auto-deletion happens when
+                  the associated IP interface gets deleted or the associated
+                  VLan port gets detached from the previously attached L2
+                  forwarder.  
+
+                * Index Usage. The entry is indexed by an external table index,
+                  extDhcpRelayPortIndex (from extDhcpRelayPortStatsSumTable).
+            "
+        INDEX { extDhcpRelayPortIndex }
+    ::= { extDhcpRelayPortStatsTable 1 }
+
+    ExtDhcpRelayPortStatsEntry ::= SEQUENCE
+    {
+        extDhcpRelayPortStatsRowStatus                          RowStatus,
+
+        -- Common Error Counters
+        extDhcpRelayPortInternalContextErrCounter               Counter,
+
+        -- Upstream Error Counters
+        extDhcpRelayPortUpCorruptedPacketCounter                Counter,
+        extDhcpRelayPortUpInvalidL2ProtoCounter                 Counter,
+        extDhcpRelayPortUpUnsupportedL3ProtoCounter             Counter,
+        extDhcpRelayPortUpLargePacketDiscardedCounter           Counter,
+        extDhcpRelayPortUpFragPacketDiscardedCounter            Counter,
+        extDhcpRelayPortUpMalformedOptionsCounter               Counter,
+        extDhcpRelayPortUpInvalidHopsCounter                    Counter,
+        extDhcpRelayPortUpInvalidOpCodeCounter                  Counter,
+        extDhcpRelayPortUpNotAllowedPacketCounter               Counter,
+        extDhcpRelayPortUpOption82TooLongCounter                Counter,
+        extDhcpRelayPortUpNotTrustedCounter                     Counter,
+        extDhcpRelayPortUpInvalidChaddrCounter                  Counter,
+        extDhcpRelayPortUpDuplicateChaddrCounter                Counter,
+        extDhcpRelayPortUpInvalidGiaddrCounter                  Counter,
+        extDhcpRelayPortUpInvalidCiaddrCounter                  Counter,
+        extDhcpRelayPortUpNoFreeCntxtCounter                    Counter,
+        extDhcpRelayPortUpNoSessionCntxtFoundCounter            Counter,
+        extDhcpRelayPortUpNoRelayAgentSupportedCounter          Counter,
+        extDhcpRelayPortUpNoVrfBroadcastVlanCounter             Counter,
+
+        -- Downstream Error Counters
+        extDhcpRelayPortDownNotTrustedCounter                   Counter,
+        extDhcpRelayPortDownInvalidYiaddrCounter                Counter,
+        extDhcpRelayPortDownInvalidServerResponseCounter        Counter,
+        extDhcpRelayPortDownNoFreeSessionCntxtCounter           Counter,
+
+        -- Relay Agent Statistics
+        extDhcpRelayPortOption82InsertedCounter                 Counter,
+        extDhcpRelayPortOption82RemovedCounter                  Counter,
+        extDhcpRelayPortActiveSnoopedSessions                   Gauge,
+        extDhcpRelayPortTotalSnoopedSessionsCounter             Counter
+    }
+
+
+    extDhcpRelayPortStatsRowStatus  OBJECT-TYPE
+        SYNTAX    RowStatus
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The status of this conceptual row. 
+
+             The value of this object has no effect on whether other objects in
+             this conceptual row can be modified. A conceptual row in this table
+             can always be made active.
+
+            ALCATEL NOTE:
+                USAGE:      MAND
+                PERSIST:    YES
+                INSRVMOD:   YES
+                RANGE:      1|4|6
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+                DESCR:      A note on the RowStatus persistence. The counters
+                            themselves are not persistent but the interfaces for
+                            which detailed counters have been enabled is made
+                            persistent. What this means is that after a system
+                            reset the table will retain all the rows created
+                            aprior, but all the counters would be initialized
+                            to zero.
+            "
+    ::= { extDhcpRelayPortStatsEntry 1 }
+
+    extDhcpRelayPortInternalContextErrCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of DHCP packets discarded because of internal context errors.
+             These can also be due to internal software logic errors. Counter is
+             valid for both upstream and downstream. 
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 2 }
+
+    extDhcpRelayPortUpCorruptedPacketCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because of one of the
+             following:
+                * Error in retrieving L2 frame / L2 frame details from the
+                  received buffer.
+
+                * IP checksum does not match the one specified in the IP header.
+
+                * Mis-match between the packet lengths specified in the IP
+                  header and UDP header. The following equation needs to be
+                  true if a packet is valid:
+                    IP Total Length - IP Header Length = UDP Length.
+                  The IP Total Length and IP Header Length are specified in the
+                  IP header while the UDP Length is specified in the UDP header.
+
+                * IP Total Length specified is more than the received L2 Frame
+                  payload size.
+
+                * UDP checksum does not match the one specified in the UDP
+                  header. However if the received packet contains an all zero
+                  checksum, no validation is done. An all zero UDP checksum
+                  indicates that the transmitter has generated no checksum and
+                  hence no validation can be done.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 10 }
+
+    extDhcpRelayPortUpInvalidL2ProtoCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because of invalid Layer 2
+             protocol configuration. The user interface has been configured in
+             L2 forwarding mode and the received packet does not have an Ethernet
+             header. DHCP in L2 forwarding mode is possible only for IPoE user
+             interfaces.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 11 }
+
+    extDhcpRelayPortUpUnsupportedL3ProtoCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because the specified
+             protocol version in the IP header is not IPv4.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 12 }
+
+    extDhcpRelayPortUpLargePacketDiscardedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because the received IP
+             packet size exceeds the MTU for the Ethernet side.  For example,
+             this packet could have been received over a IPoA user interface.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 13 }
+
+    extDhcpRelayPortUpFragPacketDiscardedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because the received DHCP
+             packet is a fragmented IP packet. Fragmented packets are not handled.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 14 }
+
+    extDhcpRelayPortUpMalformedOptionsCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because the 'options'
+             field in the received packet could not pass the error checks. The
+             errors include:
+                * The options field does not start with the magic cookie.
+
+                * Option 82 exists but is not followed by the 'End' option.
+                  Option 82, if present, has to be the last option in the DHCP
+                  options list.
+
+                * Mismatch between the 'Options' length as derived from the
+                  received DHCP packet and the sum of the lengths specified
+                  by each of the individual options.
+
+                * Semantic checks for all the options specified in the packet.
+                  Some of the options that could be specified are:
+                  DHCP Message Type, DHCP Lease Time, DHCP Requested Address,
+                  DHCP Server Identifier etc. The above option list is only
+                  indicative. It is not exhaustive.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 15 }
+
+    extDhcpRelayPortUpInvalidHopsCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because the 'giaddr' field
+             is null but the 'hops' field is not zero. If the 'hops' field has
+             been incremented by another relay agent closer to the user, the 
+             'giaddr' value needs to be set to a valid Relay Agent IP address. 
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 16 }
+
+    extDhcpRelayPortUpInvalidOpCodeCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because the received 
+             DHCP packet header specifies an invalid opcode. It is neither a
+             BOOT REQUEST nor a BOOT REPLY.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 17 }
+
+    extDhcpRelayPortUpNotAllowedPacketCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because the received packet
+             type is not valid in upstream.
+             Residential bridge (residential users): Server initiated 
+             DHCP messages from users are discarded (users cannot act 
+             as a DHCP server) 
+             Cross-connect [Option-82 insertion OR secure-forwarding] 
+             enabled (residential users): Server initiated DHCP 
+             messages from users are discarded (users cannot act as a 
+             DHCP server) 
+             Cross-connect [Option-82 insertion AND secure-forwarding] 
+             disabled (business users): Server initiated DHCP messages 
+             from users are ALLOWED (transparent bit pipe behavior)
+
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 18 }
+
+    extDhcpRelayPortUpOption82TooLongCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "This counter is incremented whenever the received DHCP packet,
+             after Option 82 insertion, exceeds the MTU for the Ethernet side.
+             However in this case the packet will NOT be discarded. The error
+             counter will be incremented and the packet processed without
+             option 82 insertion.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 19 }
+
+    extDhcpRelayPortUpNotTrustedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of Upstream DHCP packets dropped because of the presence of Option 82 in the received packet. Option-82 from the users is not accepted, all users are considered untrusted. As an exception, ISAM accepts the Option-82 inserted by the users only in case cross-connect VLANs while option-82 insertion was disab.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 20 }
+
+    extDhcpRelayPortUpInvalidChaddrCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because the client
+             hardware address, 'chaddr', has been set to an invalid value.
+             Counter incremented in each of the below scenarios:
+                * Received packet has the client hardware address, 'chaddr',
+                  set to zero.
+
+                * The 'chaddr' value specified is not in the MAC address format.
+                  The 'htype' and 'hlen' fields of the received DHCP packet do
+                  not correspond to Ethernet MAC addresses.  
+
+                * There is no further downstream relay agent closer to the user
+                  and the 'chaddr' value specified in the received BROADCAST
+                  DHCP packet does not match the source MAC address of the
+                  ethernet frame. Hence discarded.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 21 }
+
+    extDhcpRelayPortUpDuplicateChaddrCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "In case of DHCP session snooping, number of upstream DHCP packets
+             discarded because of duplicate chaddr. There already exists a DHCP
+             transaction with the same 'chaddr' value as the one specified in the
+             discarded packet on another user interface. 
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 22 }
+
+    extDhcpRelayPortUpInvalidGiaddrCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "In case of DHCP session snooping, number of upstream DHCP packets
+             discarded because of IP anti-spoofing failure for 'giaddr' field.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 23 }
+
+    extDhcpRelayPortUpInvalidCiaddrCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "In case of DHCP session snooping, number of upstream DHCP packets
+             discarded because of IP anti-spoofing failure for 'ciaddr' field or
+             the user specified DHCP option 'Requested IP Address'.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 24 }
+
+    extDhcpRelayPortUpNoFreeCntxtCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "In case of DHCP session snooping, number of upstream DHCP packets
+             discarded because no free context is available. Applicable
+             constraints are as below:
+                * In the upstream, a maximum number of only four contexts can
+                  be created per port.
+                * In addition there is also a global limit across all ports for
+                  a given LT. Currently a maximum of 384 contexts are supported
+                  per LT at any given time.  
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 25 }
+
+    extDhcpRelayPortUpNoSessionCntxtFoundCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "In case of DHCP session snooping, this counter represents the number
+             of upstream DHCP packets received for which no session context could
+             be associated and hence discarded. Upstream DHCP messages of type 
+             DHCP RELEASE and DHCP DECLINE can only be processed if they are
+             related to existing DHCP sessions.    
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 26 }
+
+    extDhcpRelayPortUpNoRelayAgentSupportedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Mac concentration has been enabled for the Relay Agent.This counter
+             represents the number of upstream DHCP packets discarded because they
+             have already been relayed by another relay agent closer to the user.
+             Relay packets are not handled if Mac concentration is enabled.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 27 }
+
+    extDhcpRelayPortUpNoVrfBroadcastVlanCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Number of upstream DHCP packets discarded because no Upstream
+             broadcast Vlan has been configured for this VRF. This needs to be
+             configured as the LT broadcasts the DHCP messages on this Vlan.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 28 }
+
+    extDhcpRelayPortDownNotTrustedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            " In downstream, DHCP packets with Option-82 is not accepted while Option-82 insertion was disabled excpet in case cross-connect VLANs. 
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 50 }
+
+    extDhcpRelayPortDownInvalidYiaddrCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "In case of DHCP session snooping, number of downstream DHCP packets
+             discarded because the client IP address, 'yiaddr', in the received
+             packet has been set to an invalid value. Counter incremented for
+             each of the below scenarios:
+                * Received a unicast DHCP ACK from the server and there is no
+                  further downstream relay agent closer to the user. Packet is
+                  discarded because Yiaddr != Destination IP address.
+
+                * Received a DHCP ACK with a Yiaddr value different from what has
+                  been specified in the upstream DHCP REQUEST.
+
+                * The IP address offered to the User is same as the Server IP
+                  address. The server IP address is specified in the DHCP option
+                  'server-identifier'. Yiaddr value cannot be set by the DHCP
+                  server to its own IP, hence discarded.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 51 }
+
+    extDhcpRelayPortDownInvalidServerResponseCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "In case of DHCP session snooping, number of downstream DHCP packets
+             discarded because of invalid response received from the DHCP Server.
+             The server-identifier option specified in the DHCP ACK/NAK message 
+             does not match the server-identifier as specified in the corresponding
+             upstream DHCP REQUEST message.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 52 }
+
+    extDhcpRelayPortDownNoFreeSessionCntxtCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "In case of DHCP session snooping, number of downstream DHCP packets
+             discarded because no free session context is available. A DHCP
+             session is created on the receipt of a DHCP ACK in the downstream. 
+             For a given LT, there is a global limit across all ports on the
+             number of session contexts that could be created. Currently a maximum
+             of 768 sessions could be created at any given time for a given LT.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 53 }
+
+    extDhcpRelayPortOption82InsertedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Count of all DHCP packets received in the upstream and successfully
+             inserted with option 82. For option 82 insertion to be successful,
+             the Option 82 insertion flag must have been enabled for the
+             associated VRF/VLan and the packet must have passed all the error
+             checks.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 65 }
+
+    extDhcpRelayPortOption82RemovedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Count of all DHCP packets received in the downstream and from
+             which option 82 has been successfully removed. For option 82
+             removal to be successful, the Option 82 insertion flag must have
+             been enabled for the associated VRF/VLan and the packet must have
+             passed all the error checks.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 66 }
+
+    extDhcpRelayPortActiveSnoopedSessions  OBJECT-TYPE
+        SYNTAX    Gauge
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Count of all the DHCP sessions that have been established on
+             this port and are currently being snooped. These DHCP sessions
+             are currently active and hence this mib object always reflects
+             the current state of the system. This object is not affected by
+             a counter reset. 
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 67 }
+
+    extDhcpRelayPortTotalSnoopedSessionsCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "Count of all the DHCP sessions that have been established on
+             this port and which are being or have been snooped. On a 
+             counter reset or when the detailed counters have been enabled,
+             this counter is initialized with the current value held by the
+             extDhcpRelayPortActiveSnoopedSessions object.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpRelayPortStatsEntry 68 }
+
+
+-- ========================================================================
+--         DHCPv6 relay port summary statistics table (L2)
+-- ========================================================================
+    extDhcpv6RelayPortStatsSumTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ExtDhcpv6RelayPortStatsSumEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "The table is used for storing the port level summary statistics
+             related to DHCPv6 relay.
+
+             Note that DHCPv6 relay Option is not supported for the
+             following L2 modes: S-VLan XC, QoS Aware VLan XC and IPoA XC. So 
+             no summary statistics will be defined for Vlan ports configured for
+             those modes.
+            ALCATEL NOTE:
+                TABLESIZE: DEP
+                           The table size depends on the number of VLan ports
+                           that have been configured. 
+            "
+    ::= { extendDhcpRelayPort 6 }
+
+    extDhcpv6RelayPortStatsSumEntry  OBJECT-TYPE
+        SYNTAX    ExtDhcpv6RelayPortStatsSumEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "An entry in the DHCPv6 relay port statistics summary table. All
+             entries in the table are auto-instantiated or auto-deleted.
+
+                * Row Creation. A row in the table is created whenever:
+                  -  A VLan port is created on the User side and has been
+                     associated with a L2 Forwarder. The L2 Forwarder cannot be
+                     of type S-VLan XC, QoS Aware VLan XC and IPoA XC. For these
+                     L2 modes, DHCPv6 Option 18 and option 37 insertion are 
+                     not supported and hence no entries are created.
+
+                * Row Deletion. A row in the table is deleted whenever:
+                  - For the associated VLan port, a previously associated L2
+                    Forwarder is removed. 
+
+         * Index Usage. Each entry will be indexed by a VLan port 
+           interface index. 
+            "
+        INDEX { extDhcpv6RelayPortIndex }
+    ::= { extDhcpv6RelayPortStatsSumTable 1 }
+
+    ExtDhcpv6RelayPortStatsSumEntry ::= SEQUENCE
+    {
+        extDhcpv6RelayPortIndex                   InterfaceIndex,
+        extDhcpv6RelayPortCounterReset            INTEGER,
+        -- Summary Counters
+        extDhcpv6RelayPortErrorSummaryCounter     Counter
+    }
+
+
+    extDhcpv6RelayPortIndex  OBJECT-TYPE
+        SYNTAX    InterfaceIndex
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "This object is the index for the extDhcpv6RelayPortStatsSumTable.
+             The index value will be the VLan port interface index.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpv6RelayPortStatsSumEntry 1 }
+
+    extDhcpv6RelayPortCounterReset  OBJECT-TYPE
+        SYNTAX    INTEGER {
+                           reset(1)
+                          }
+        ACCESS    write-only
+        STATUS    mandatory
+        DESCRIPTION
+            "This object is to reset the summary counters for a given
+             extDhcpv6RelayPortStatsSumEntry.
+ 
+
+             When it is set to 1, the corresponding
+             extDhcpv6RelayPortErrorSummaryCounter is cleared. Additionally, if
+             the detailed statistics have been enabled for the associated VLan
+             port, the detailed counters that exist in the
+             extDhcpv6RelayPortStatsTable for this VLan port are
+             also cleared. 
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NA
+                INSRVMOD:   NO
+                RANGE:      1
+                DEFVALUE:   NA 
+                UNITS:      NA
+                SPARSE:     NA
+            "
+    ::= { extDhcpv6RelayPortStatsSumEntry 2 }
+
+    extDhcpv6RelayPortErrorSummaryCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The total number of DHCPv6 packets that have encountered errors 
+             while processing and hence discarded. The counter value represents 
+             the number of packets discarded since the last user reset or 
+             counter rollover.
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      0..65535
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpv6RelayPortStatsSumEntry 3 }
+
+-- ========================================================================
+--         DHCPv6 relay port detailed statistics table (L2)
+-- ========================================================================
+
+    extDhcpv6RelayPortStatsTable  OBJECT-TYPE
+        SYNTAX    SEQUENCE OF ExtDhcpv6RelayPortStatsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "The table is used for storing the port level detailed statistics
+             related to DHCPv6 relay. 
+
+             In the event of a DHCPv6 packet having multiple errors, only one of
+             the error counters will be incremented and the packet discarded at
+             the first point of failure. The order in which the error checks will
+             be carried out is unspecified.
+            ALCATEL NOTE:
+                TABLESIZE: DEP
+                           The table size depends on the number of VLan ports. 
+                           The maximum number of Vlan ports that can be enabled 
+                           for the port level detailed stats is limited to 5 
+                           per LT.  
+            "
+    ::= { extendDhcpRelayPort 7 }
+
+
+    extDhcpv6RelayPortStatsEntry  OBJECT-TYPE
+        SYNTAX    ExtDhcpv6RelayPortStatsEntry
+        ACCESS    not-accessible
+        STATUS    mandatory
+        DESCRIPTION
+            "An entry in the DHCPv6 relay port detailed statistics table. All
+             entries in the table are dynamically created by the manager whenever
+             detailed statistics need to be enabled for a particular VLan port.
+             Conversely whenever detailed statistics are to be
+             disabled for a particular VLan port, the corresponding
+             table entries are dynamically deleted by the manager.
+
+                * Row Creation. An entry is created by a set-request with the
+                  extDhcpv6RelayPortStatsRowStatus set to createAndGo(4). The 
+                  set-request would be successful if:
+                    - the VLan port, if specified as an index, has already been
+                      created on the User side and has been associated with a
+                      L2 forwarder. The L2 Forwarder cannot be of type S-VLan XC,
+                      QoS Aware VLan XC and IPoA XC. For these L2 forwarding
+                      Modes, DHCPv6 relay is not supported and hence
+                      no statistics can be enabled.
+                    - the detailed counters have not already been enabled for
+                      the specified VLan port.
+                    - the total number of VLan ports for which
+                      detailed counters have already been enabled has not yet
+                      reached the maximum limit. At a given time, the 
+                      detailed counters can be enabled for up to five static 
+                      vlan ports per LT.
+
+                * Row Deletion. A table entry is deleted by a set-request with
+                  the extDhcpv6RelayPortStatsRowStatus set to destroy(6). A table
+                  entry can also be auto-deleted. The auto-deletion happens when
+                  the associated VLan port gets detached from the previously
+                  attached L2 forwarder.  
+
+                * Index Usage. The entry is indexed by an external table index,
+                  extDhcpv6RelayPortIndex (from extDhcpv6RelayPortStatsSumTable).
+            "
+        INDEX { extDhcpv6RelayPortIndex }
+    ::= { extDhcpv6RelayPortStatsTable 1 }
+
+    ExtDhcpv6RelayPortStatsEntry ::= SEQUENCE
+    {
+        extDhcpv6RelayPortStatsRowStatus                          RowStatus,
+
+        -- Upstream Error Counters
+        extDhcpv6RelayPortUpCorruptedPacketCounter                Counter,
+        extDhcpv6RelayPortUpLargePacketDiscardedCounter           Counter,
+        extDhcpv6RelayPortUpNotAllowedPacketCounter               Counter,
+        extDhcpv6RelayPortUpNotTrustedCounter                     Counter,
+        extDhcpv6RelayPortUpOption18TooLongCounter                Counter,
+        extDhcpv6RelayPortUpOption37TooLongCounter                Counter,
+
+        -- Downstream Error Counters
+        extDhcpv6RelayPortDownNotAllowedPacketCounter             Counter,
+
+        -- Relay Agent Statistics
+        extDhcpv6RelayPortOption18InsertedCounter                 Counter,
+        extDhcpv6RelayPortOption37InsertedCounter                 Counter,
+        extDhcpv6RelayPortOption18RemovedCounter                  Counter,
+        extDhcpv6RelayPortOption37RemovedCounter                  Counter,
+        
+-- Downstream Error Counters
+        extDhcpv6RelayPortDownCorruptedPacketCounter              Counter,
+
+        -- Error Counters for dhcpv6 snooping
+	extDhcpv6RelayPortDownNoFreeSessionCounter                Counter,
+
+-- Error Counters for option 17
+	extDhcpv6RelayPortUpOption17TooLongCounter                Counter,
+	extDhcpv6RelayPortOption17InsertedCounter                 Counter,
+	extDhcpv6RelayPortOption17RemovedCounter                  Counter,
+
+-- Error Counters for option 53
+	extDhcpv6RelayPortUpOption53TooLongCounter                Counter,
+	extDhcpv6RelayPortOption53InsertedCounter                 Counter,
+	extDhcpv6RelayPortOption53RemovedCounter                  Counter
+    }
+
+    extDhcpv6RelayPortStatsRowStatus  OBJECT-TYPE
+        SYNTAX    RowStatus
+        ACCESS    read-write
+        STATUS    mandatory
+        DESCRIPTION
+            "The status of this conceptual row. 
+             The value of this object has no effect on whether other objects in
+             this conceptual row can be modified. A conceptual row in this table
+             can always be made active.
+            ALCATEL NOTE:
+                USAGE:      MAND
+                PERSIST:    YES
+                INSRVMOD:   YES
+                RANGE:      1|4|6
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+                DESCR:      A note on the RowStatus persistence. The counters
+                            themselves are not persistent but the interfaces for
+                            which detailed counters have been enabled is made
+                            persistent. What this means is that after a system is
+                            reset, the table will retain all the rows created
+                            before, but all the counters would be initialized
+                            to zero.
+            "
+    ::= { extDhcpv6RelayPortStatsEntry 1 }
+
+    extDhcpv6RelayPortUpCorruptedPacketCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+"The number of upstream DHCPv6 packets discarded because of one of
+             the following:
+                When DHCPv6 relay agent enabled,
+                - UDP checksum does not match the one specified in the UDP 
+                  header or
+                - Payload length in IPv6 header is not equal to payload length in
+                  UDP header or
+                - Hop Count in DHCPv6 relay message header exceeds HOP_COUNT_LIMIT.
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+
+    ::= { extDhcpv6RelayPortStatsEntry 2 }
+
+    extDhcpv6RelayPortUpLargePacketDiscardedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+           "The number of upstream DHCPv6 packets discarded because the 
+             received IP packet size exceeds the MTU for the Ethernet side when
+DHCPv6 relay agent is enabled.  
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+
+    ::= { extDhcpv6RelayPortStatsEntry 3 }
+
+    extDhcpv6RelayPortUpNotAllowedPacketCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of upstream DHCPv6 packets discarded because the 
+             received packet type is not valid in upstream.
+             When DHCPv6 relay agent is enabled, 
+                 - server initiated DHCPv6 messages from users are discarded 
+                   (users cannot act as a DHCPv6 server)
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+
+    ::= { extDhcpv6RelayPortStatsEntry 4 }
+
+    extDhcpv6RelayPortUpNotTrustedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of upstream DHCPv6 packets dropped because the 
+             DHCPv6 relay agent is enabled and the Relay-Forward message 
+             is received from a DHCPv6 untrusted client-facing interface. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+
+    ::= { extDhcpv6RelayPortStatsEntry 5 }
+
+    extDhcpv6RelayPortUpOption18TooLongCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of upstream DHCPv6 packets discarded because the 
+             Relay-Forward message with option-18 inserted exceeds the MTU for
+             the Ethernet side. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpv6RelayPortStatsEntry 6 }
+
+    extDhcpv6RelayPortUpOption37TooLongCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            " The number of upstream DHCPv6 packets discarded because the 
+              Relay-Forward message with option-37 inserted exceeds the MTU for
+              the Ethernet side. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpv6RelayPortStatsEntry 7 }
+
+    extDhcpv6RelayPortDownNotAllowedPacketCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+           "The number of downstream DHCPv6 packets discarded because of one of
+             the following:
+                  When DHCPv6 relay agent is enabled,
+                  - they are not Relay-Reply messages or
+                  - they failed the validity check defined in the RFC3315 
+                    and in the LDRA spec except the deviation for the 
+                    check on option-18 (see below) or
+                  - option-18 is present when option-18 insertion is 
+                    disabled or
+                  - option-18 is not present when option-18 insertion 
+                    is enabled or
+                  - option-18 is present but does not correspond to a 
+                    valid interface when option-18 insertion is enabled or
+                  - prefix length is less than the value defined in capability key MIN_IPV6_PREFIX_LENGTH when secure forwarding enabled.                  
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+
+    ::= { extDhcpv6RelayPortStatsEntry 8 }
+
+
+
+    extDhcpv6RelayPortOption18InsertedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+           "The number of DHCPv6 packets received in the upstream and 
+            successfully inserted with option 18. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpv6RelayPortStatsEntry 9 }
+   
+    extDhcpv6RelayPortOption37InsertedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of DHCPv6 packets received in the upstream and
+             successfully inserted with option 37. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpv6RelayPortStatsEntry 10 }
+
+    extDhcpv6RelayPortOption18RemovedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of DHCPv6 packets received in the downstream and from
+             which option 18 has been successfully removed. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpv6RelayPortStatsEntry 11 }
+
+    extDhcpv6RelayPortOption37RemovedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of DHCPv6 packets received in the downstream and from
+             which option 37 has been successfully removed. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= { extDhcpv6RelayPortStatsEntry 12 }
+
+    
+
+    extDhcpv6RelayPortDownCorruptedPacketCounter OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+" The number of downstream DHCPv6 packets discarded because of one of
+             the following:
+                When DHCPv6 relay agent is enabled,
+                - UDP checksum does not match the one specified in the UDP
+                  header or
+                - Payload length in IPv6 header is not equal to payload length in
+                  UDP header or
+                - No Relay-Message option in Relay-Reply message.
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+
+::= { extDhcpv6RelayPortStatsEntry 13 }
+
+    extDhcpv6RelayPortDownNoFreeSessionCounter OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of DHCPv6 packets discarded in the downstream due to
+             exceed  max dimension. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+	::= { extDhcpv6RelayPortStatsEntry 14 }
+
+
+    extDhcpv6RelayPortUpOption17TooLongCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of upstream DHCPv6 packets discarded because the 
+             Relay-Forward message with option-17 inserted exceeds the MTU for
+             the Ethernet side. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+	::= { extDhcpv6RelayPortStatsEntry 15 }
+
+    extDhcpv6RelayPortOption17InsertedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+           "The number of DHCPv6 packets received in the upstream and 
+            successfully inserted with option 17. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+        ::= { extDhcpv6RelayPortStatsEntry 16 }
+   
+    extDhcpv6RelayPortOption17RemovedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of DHCPv6 packets received in the downstream and from
+             which option 17 has been successfully removed. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+        ::= { extDhcpv6RelayPortStatsEntry 17 }
+
+    extDhcpv6RelayPortUpOption53TooLongCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of upstream DHCPv6 packets discarded because the 
+             Relay-Forward message with option-53 inserted exceeds the MTU for
+             the Ethernet side. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+	::= { extDhcpv6RelayPortStatsEntry 18 }
+
+    extDhcpv6RelayPortOption53InsertedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+           "The number of DHCPv6 packets received in the upstream and 
+            successfully inserted with option 53. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+        ::= { extDhcpv6RelayPortStatsEntry 19 }
+   
+    extDhcpv6RelayPortOption53RemovedCounter  OBJECT-TYPE
+        SYNTAX    Counter
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "The number of DHCPv6 packets received in the downstream and from
+             which option 53 has been successfully removed. 
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+        ::= { extDhcpv6RelayPortStatsEntry 20 }
+
+
+-- **************************************************************************
+-- **   D H C P     S E S S I O N     T A B L E                            **
+-- **                                                                      **
+-- **   dhcpSessionTable ::= { asamDhcpRelay 14 }                          **
+-- **************************************************************************
+
+    dhcpSessionTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF DHCPSessionEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "This table lists stores sessions on a per client-port
+              and per user IP address basis.
+            ALCATEL NOTE:
+                TABLESIZE: DEP (DHCP session number)
+                DESCR: NA
+            "
+    ::= { asamDhcpRelay 14 }
+
+    dhcpSessionEntry OBJECT-TYPE
+        SYNTAX DHCPSessionEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "One entry in table dhcpSessionTable.
+             Row creation: An entry is created by the system when the DHCP
+                           Application snoop a DHCP session is created.
+             Row deletion: An entry is deleted by the system when the DHCP
+                           Application considers a DHCP session is terminated.
+             Index usage:  the index is the IP interface Index and DHCP Client
+                           IP address.
+             Note that entries will be presented to the SNMP manager in full
+             lexicographical order
+            "
+        INDEX { dhcpSessionEntryIfIndex, dhcpSessionEntryClientIPAddress }
+    ::= {dhcpSessionTable 1}
+
+    DHCPSessionEntry ::= SEQUENCE 
+    {
+        dhcpSessionEntryIfIndex                 InterfaceIndex,
+        dhcpSessionEntryClientIPAddress         IpAddress,
+        dhcpSessionEntryClientIPAddressType     InetAddressType,
+        dhcpSessionEntryGatewayIPAddr           IpAddress,
+        dhcpSessionEntryGatewayIPAddrType       InetAddressType,
+        dhcpSessionEntrySubnet                  InetAddressPrefixLength,
+        dhcpSessionEntryDhcpServerIPAddr        IpAddress,
+        dhcpSessionEntryDhcpServerIPAddrType    InetAddressType,
+--      dhcpSessionEntryVrfIndex                VrfIndex,
+        dhcpSessionEntryLeaseTime               NetworkTimeInSeconds, 
+        dhcpSessionEntryForwarderType           INTEGER,
+        dhcpSessionEntryForwarderId             Gauge,
+	dhcpSessionEntryRemainingTime		NetworkTimeInSeconds
+
+
+    }
+
+    dhcpSessionEntryIfIndex  OBJECT-TYPE
+        SYNTAX InterfaceIndex
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "This is an IfIndex identifying a user interface participating
+            in a DHCP session.
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NA           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 1 }
+
+    dhcpSessionEntryClientIPAddress  OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "This index identifies a client IP address assigned by the DHCP
+           server.
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 2 }
+
+    dhcpSessionEntryClientIPAddressType  OBJECT-TYPE
+        SYNTAX InetAddressType
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "This index identifies the type of a client IP address
+           (Ipv4 or Ipv6) assigned by the DHCP server.
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 3 }
+
+    dhcpSessionEntryGatewayIPAddr    OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+           "This identifies the gateway IP address.
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 4 }
+
+    dhcpSessionEntryGatewayIPAddrType  OBJECT-TYPE
+        SYNTAX InetAddressType
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "This index identifies the type of the gateway IP address
+           (Ipv4 or Ipv6).
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 5 }
+
+    dhcpSessionEntrySubnet   OBJECT-TYPE
+        SYNTAX  InetAddressPrefixLength
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+           "This identifies the subnet mask.
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 6 }
+
+    dhcpSessionEntryDhcpServerIPAddr OBJECT-TYPE
+        SYNTAX  IpAddress
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+           "This identifies the IP address of the DHCP Server.
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 7 }
+
+    dhcpSessionEntryDhcpServerIPAddrType OBJECT-TYPE
+        SYNTAX  InetAddressType
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+           "This identifies the IP address type of the DHCP Server
+           (Ipv4 or Ipv6).
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 8 }
+
+--    dhcpSessionEntryVrfIndex OBJECT-TYPE
+--        SYNTAX  VrfIndex
+--        ACCESS  read-only
+--        STATUS  mandatory
+--        DESCRIPTION
+--           "This identifies the VRF index.
+--       ALCATEL NOTE:
+--           ACCESS:      NA           USAGE:       NA
+--           PERSIST:     NO           INSRVMOD:    NA
+--           RANGE:       0..127       DEFVALUE:    NA
+--           UNITS:       NA           SPARSE:      NA
+--           DESCR:       NA"
+--    ::={ dhcpSessionEntry 9 }
+
+    dhcpSessionEntryLeaseTime OBJECT-TYPE
+        SYNTAX  NetworkTimeInSeconds
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+           "This identifies the time period for which a DHCP server leases
+			 or assigns an IP address to a client.
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 10 }
+
+
+dhcpSessionEntryForwarderType OBJECT-TYPE
+        SYNTAX  INTEGER
+                {
+                    layer2Forwarder(1),
+                    layer3Forwarder (2)
+                }
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+           "This identifies the forwarder type to which this session belongs.
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       1..2         DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 11 }
+
+dhcpSessionEntryForwarderId OBJECT-TYPE
+        SYNTAX  Gauge
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+           "This identifies the ID of the forwarder to which this session belongs.
+In the case of Layer2 forwarder, it is the corresponding index of VLAN, 
+While of Layer3 forwarder, it is the corresponding index of VRF.
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 12 }
+
+    dhcpSessionEntryRemainingTime OBJECT-TYPE
+        SYNTAX  NetworkTimeInSeconds
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+           "This identifies the remaining time for each dhcp session.
+       ALCATEL NOTE:
+           ACCESS:      NA           USAGE:       NA
+           PERSIST:     NO           INSRVMOD:    NA
+           RANGE:       NA           DEFVALUE:    NA
+           UNITS:       NA           SPARSE:      NA
+           DESCR:       NA"
+    ::={ dhcpSessionEntry 13 }
+
+-- **************************************************************************
+-- **   D H C P     TRAP     T A B L E                            **
+-- **                                                                      **
+-- **   dhcpTrapPreSession::= { asamDhcpRelay 15 }                          **
+-- **************************************************************************
+  dhcpTrapPreSession OBJECT IDENTIFIER 
+  ::= { asamDhcpRelay 15 }
+
+    dhcpTrapPreSessionForwarderType OBJECT-TYPE
+	SYNTAX INTEGER 
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "Forwarder type which Preempted session belongs to.
+		1. layer2Forwarder,
+		2. layer3Forwarder"
+    ::= { dhcpTrapPreSession 1}
+
+    dhcpTrapPreSessionForwarderId OBJECT-TYPE
+	SYNTAX Gauge
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            " Forwarder ID which Preempted session belongs to."
+    ::= { dhcpTrapPreSession 2}
+
+    dhcpTrapPreSessionIPAddress OBJECT-TYPE
+	SYNTAX IpAddress 
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "IP address of the Preempted session."
+    ::= { dhcpTrapPreSession 3}
+
+    dhcpTrapPreSessionIfIndex OBJECT-TYPE
+	SYNTAX InterfaceIndex
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            " This is an IfIndex identifying a user interface participating
+            in the preempted DHCP session "
+    ::= { dhcpTrapPreSession 4}
+
+    dhcpTrapPreSessionReason OBJECT-TYPE
+	SYNTAX INTEGER 
+        ACCESS read-only
+        STATUS  mandatory
+        DESCRIPTION
+            "The reason for dhcp session preemption.
+                1. conflictWithStatic,
+		2. conflictWithDynamic,
+		3. noResourcesAvailable"
+    ::= { dhcpTrapPreSession 5}
+
+END

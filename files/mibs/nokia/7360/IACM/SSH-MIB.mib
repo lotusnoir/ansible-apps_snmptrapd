@@ -1,0 +1,609 @@
+SSH-MIB DEFINITIONS ::= BEGIN
+
+-- =============================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilization of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance
+--  information contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied,
+--  with respect to the sufficiency, accuracy, or utility of any information
+--  or opinion contained herein. Alcatel-Lucent expressly advises that any
+--  use of for any purpose or reliance upon this technical reference is at
+--  the risk of the user and that Alcatel-Lucent shall not be liable for any
+--  damage or injury incurred by any person arising out of the sufficiency,
+--  accuracy, or utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any
+--  manufacturer to modify or change any of its products, nor does this
+--  document represent any commitment by Alcatel-Lucent to sell or purchase
+--  any product. Nothing contained herein shall be construed as conferring by
+--  implication, estoppels, or otherwise any license or right under any
+--  patent, whether or not the use of any information herein necessarily
+--  employs an invention of any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these
+--  products and to withdraw any or all of them at any future time.
+--  Copyright (C) 2009, Alcatel-Lucent. All Rights Reserved.
+-- =============================================================================
+--
+--  MODULE-IDENTITY
+--  LAST-UPDATED "201201121200"
+--  ORGANIZATION "Alcatel-Lucent"
+--  CONTACT-INFO "email:asam.mibsupport@alcatel-lucent.com"
+--  DESCRIPTION
+--    "The SSH mib contains the objects necessary for managing the SSH server
+--    in ISAM as well as the client username and password the system should
+--    use when contacting with an external SFTP server."
+--
+--  REVISION "201201121200"
+--  DESCRIPTION
+--    "Version:  3FE25576EAAA_V4.4.0.0.0
+--    Editor:   Visvanathan Karthikeyan
+--    Changes:   ALU01625342: SFTP fingerprint of ISAM 
+--		 is not available at CLI or SNMP"
+--
+--  REVISION "200909300900"
+--  DESCRIPTION
+--    "Version:  3FE25576EAAA_V4.0.1.0.0
+--    Editor:   Kevin Mather
+--    Changes:  RCR BDFam52637: Add TL1/Telnet support."
+--
+--  REVISION "200908041200"
+--  DESCRIPTION
+--    "Editor: Peter Van Mele
+--    Changes: ANTmt70610: asamSshSelectChannel MIB object
+--             DEBUG/UDP bit is set to 6. (5 is used by FTTU for TL1/Telnet)"
+--
+--  REVISION "200908141000"
+--  DESCRIPTION
+--    "Version:  3FE25576EAAA_V4.0.0.2.0
+--    Editor:   Channamallikarjuna Patil
+--    Changes:  ANTmt70747: diff. length allowed for oper and ssh user conf"
+--
+--  REVISION "200905151200"
+--  DESCRIPTION
+--    "Version: 3FE25576EAAA_V4.1.0.0.0
+--    Editor: Erwin CLAUS
+--    Changes: ANTmt41040: No security backdoors on mgnt interfaces"
+--
+--  REVISION "200611221200"
+--  DESCRIPTION
+--    "Version: 3FE25576EAAA_V3.2.0.2.0
+--    Editor: Peter DAUWE
+--    Changes: * ANTms02032, ANTms02662, BDFhw80164, BDFhw80165, BDFhw77693:
+--               SFTP/TFTP selection reversed
+--             * ANTms14731: CLI for SSH incorrect
+--             * ANTms21806: password different in mib and mapper (related:
+--               ANTms19863: Migration with SecureFTP: passw issue)"
+--
+--  REVISION "200604131200"
+--  DESCRIPTION
+--    "Version: 3FE25576EAAA_V3.2.0.0.0
+--    Editor: Peter DAUWE
+--    Changes: RCR BDFhw36810: changes for Open SNMP feature"
+--
+--  REVISION "200602071200"
+--  DESCRIPTION
+--    "Version: 3FE25576EAAA_V2.4.1.0.0
+--    Editor: Bart BOGAERT
+--    Changes: RCR BDFhw70643: DTAG smilint corrections"
+--
+--  REVISION "200509011200"
+--  DESCRIPTION
+--    "Version: 3FE25576AAAA_V1.0.0.1.2
+--    Editor: Mohan BABU
+--    Changes: RCR BDFhw27330: Initial creation for SSH feature"
+-- =============================================================================
+
+   IMPORTS  OBJECT-TYPE                FROM RFC-1212
+            asam                       FROM SYSTEM-MIB
+            RowStatus                  FROM SNMPv2-TC
+            DisplayString              FROM RFC1213-MIB;
+
+
+   sshMIB  OBJECT IDENTIFIER ::= { asam 57 }
+
+
+   --
+   -- asamSshServerProfileTable
+   --
+   asamSshServerProfileTable OBJECT-TYPE
+      SYNTAX   SEQUENCE OF AsamSshServerProfileEntry
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+         "This table holds SSH server profiles ('server' refers to the
+         network element). Currently, there is only one server profile which
+         is automatically created at system startup; it is not possible to
+         create a new or delete the existing one.
+         For details on the configurable parameters, refer to the description
+         of the asamSshServerProfileEntry.
+
+         ALCATEL NOTE:
+            TABLESIZE: 1
+            DESCR: NA"
+
+      ::= { sshMIB 1 }
+
+
+   asamSshServerProfileEntry OBJECT-TYPE
+      SYNTAX   AsamSshServerProfileEntry
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+         "An entry (row) in the SSH server profile table
+         (asamSshServerProfileTable).
+         Apart from an integer value uniquely identifying it, a server profile
+         has the following attributes: maximum allowed number of session setup
+         attempts, idle timeout, public key, supported encryption algorithms
+         and supported authentication algorithms.
+         Row creation: at system startup one server profile entry is created,
+         it is not possible to create other entries.
+         Row deletion: it is not possible to delete the server profile entry.
+         Index usage: the index is the server identifier
+         (asamSshServerUniqueIdentifier)."
+
+      INDEX { asamSshServerUniqueIdentifier }
+
+      ::= { asamSshServerProfileTable 1 }
+
+
+   AsamSshServerProfileEntry ::=
+      SEQUENCE {
+         asamSshServerUniqueIdentifier 	      INTEGER,
+         asamSshServerRetries                 INTEGER,
+         asamSshServerIdleTimeOut             INTEGER,
+         asamSshServerPublicKey               OCTET STRING,
+         asamSshEncryptionAlgorithmMap        INTEGER,
+         asamSshAuthentAlgorithmMap    	      INTEGER,
+	 asamSshServerFingerPrintHex   	      OCTET STRING,
+	 asamSshServerFingerPrintBubbleBabble OCTET STRING
+      }
+
+
+   asamSshServerUniqueIdentifier OBJECT-TYPE
+      SYNTAX      INTEGER (0..1)
+      ACCESS      read-only
+      STATUS      mandatory
+      DESCRIPTION
+         "Uniquely identifies an entry (row) in the SSH server profile table
+         (asamSshServerProfileTable).
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      NA
+            PERSIST: YES         INSRVMOD:   NA
+            RANGE:   1..1        DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA"
+
+      ::= { asamSshServerProfileEntry  1 }
+
+
+   asamSshServerRetries OBJECT-TYPE
+      SYNTAX   INTEGER (1..3)
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "This object allows to configure the maximum number of failing
+         consecutive session setup attempts by a client. When this maximum
+         is reached, the system will not allow session setup requests
+         from that user during N minutes (currently N == 0).
+         Note: the name of the object is misleading, its value indicates
+         the number of session setup attempts, including the first one.
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      OPT (*2)
+            PERSIST: YES         INSRVMOD:   YES
+            RANGE:   NA          DEFVALUE:   NA
+            UNITS:   (*1)        SPARSE:     NA
+            DESCR:   NA
+            (*1) number of session setup attempts
+            (*2) at this point in time, a manager cannot create new server
+            profile entries so the USAGE field in the Alcatel Note is not
+            applicable. However, for future-proofness the USAGE field of the
+            Alcatel Note as well as the DEFVAL clause (below) are provided."
+
+      DEFVAL {3}
+
+      ::= { asamSshServerProfileEntry 2 }
+
+
+   asamSshServerIdleTimeOut OBJECT-TYPE
+      SYNTAX   INTEGER  (0..1800)
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "This object allows to configure the maximum number of seconds
+         before a client session is aborted due to lack of activity.
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      OPT (*1)
+            PERSIST: YES         INSRVMOD:   YES
+            RANGE:   NA          DEFVALUE:   NA
+            UNITS:   seconds     SPARSE:     NA
+            DESCR:   NA
+            (*1) at this point in time, a manager cannot create new server
+            profile entries so the USAGE field in the Alcatel Note is not
+            applicable. However, for future-proofness the USAGE field of the
+            Alcatel Note as well as the DEFVAL clause (below) are provided."
+
+      DEFVAL {1800}
+
+      ::= { asamSshServerProfileEntry 3 }
+
+
+   asamSshServerPublicKey OBJECT-TYPE
+      SYNTAX   OCTET STRING
+      ACCESS   read-only
+      STATUS   mandatory
+      DESCRIPTION
+         "This object is the public part of the locally generated private/public
+         key pair in the system. Currently DSA is the only public key algorithm
+         that is supported for setting up the transport layer, i.e.
+         for host to host authentication; for user to host authentication
+         (authentication layer), on the contrary, both the RSA and DSA public
+         key authentication algorithms are supported.
+         The algorithm is selected by the asamSshGenerateServerPublicKey
+         object; also, when (re)setting the latter object, a new key pair will
+         be generated.
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      NA
+            PERSIST: YES         INSRVMOD:   NA
+            RANGE:   NA          DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA"
+
+      ::= { asamSshServerProfileEntry 4 }
+
+
+   asamSshEncryptionAlgorithmMap OBJECT-TYPE
+      SYNTAX   INTEGER (0..255)
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "This object is a bitmap representing the encryption algorithms
+         supported by the server. Any combination of supported algorithms
+         is allowed. Following algorithms can be selected/deselected:
+         BIT 0 - aes128-cbc
+         BIT 1 - 3des-cbc
+         BIT 2 - blowfish-cbc
+         BIT 3 - des56-cbc
+         BIT 4-7 For future extension.
+         Notes:
+         * The bitmap occupies the least significant byte of the
+           asamSshEncryptionAlgorithmMap object; BIT 0 denotes the least
+           significant bit.
+         * A bit value of 1 means enabled.
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      OPT (*1)
+            PERSIST: YES         INSRVMOD:   YES
+            RANGE:   0..15       DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA
+            (*1) at this point in time, a manager cannot create new server
+            profile entries so the USAGE field in the Alcatel Note is not
+            applicable. However, for future-proofness the USAGE field of the
+            Alcatel Note as well as the DEFVAL clause (below) are provided."
+
+      DEFVAL {'0F'H}
+
+      ::=  {asamSshServerProfileEntry 5}
+
+
+   asamSshAuthentAlgorithmMap OBJECT-TYPE
+      SYNTAX   INTEGER (0..255)
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "This object is a bitmap representing the authentication algorithms
+         supported by the server. Any combination of supported algorithms
+         is allowed. Following algorithms can be selected/deselected:
+         BIT 0 - hmac-sha1
+         BIT 1 - hmac-sha1-96
+         BIT 2-7 For future extension
+         Notes:
+         * The bitmap occupies the least significant byte of the
+           asamSshAuthentAlgorithmMap object; BIT 0 denotes the least
+           significant bit.
+         * A bit value of 1 means enabled.
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      OPT (*1)
+            PERSIST: YES         INSRVMOD:   YES
+            RANGE:   0..3        DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA
+            (*1) at this point in time, a manager cannot create new server
+            profile entries so the USAGE field in the Alcatel Note is not
+            applicable. However, for future-proofness the USAGE field of the
+            Alcatel Note as well as the DEFVAL clause (below) are provided."
+
+      DEFVAL {'03'H}
+
+      ::=  {asamSshServerProfileEntry 7}
+
+   asamSshServerFingerPrintHex OBJECT-TYPE
+      SYNTAX   OCTET STRING (SIZE (0..255))
+      ACCESS   read-only
+      STATUS   mandatory
+      DESCRIPTION
+         "This object is the fingerprint of SSH server public key in HEX format.
+	 This value will get changed upon generation of new server public key. The public 
+	 key algorithm is selected by the asamSshGenerateServerPublicKey object.
+	 
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      NA
+            PERSIST: NO          INSRVMOD:   NA
+            RANGE:   NA          DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA"
+
+      ::= { asamSshServerProfileEntry 8 }
+      
+   asamSshServerFingerPrintBubbleBabble OBJECT-TYPE
+      SYNTAX   OCTET STRING (SIZE (0..255))
+      ACCESS   read-only
+      STATUS   mandatory
+      DESCRIPTION
+         "This object is the fingerprint of SSH server public key in BUBBLE-BABBLE format.
+	 This value will get changed upon generation of new server public key. The public 
+	 key algorithm is selected by the asamSshGenerateServerPublicKey object.
+	 
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      NA
+            PERSIST: NO          INSRVMOD:   NA
+            RANGE:   NA          DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA"
+
+      ::= { asamSshServerProfileEntry 9 }
+      
+      
+   --
+   -- asamSshSelectChannel (scalar)
+   --
+   asamSshSelectChannel OBJECT-TYPE
+      SYNTAX   INTEGER (0..511)
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "This object is a bitmap representing which (server) applications are
+	  enabled. CLI over SSH and CLI over telnet cannot be disabled at the
+	  same time. TL1, however, can be completely disabled.
+         BIT 0 - Reserved
+         BIT 1 - CLI/SSH
+         BIT 2 - CLI/TELNET
+         BIT 3 - TL1/SSH
+         BIT 4 - TL1/UDP
+         BIT 5 - TL1/telnet
+         BIT 6 - DEBUG/UDP
+         BIT 7 - DEBUG/SSH
+         BIT 8 - DEBUG/KERNEL
+         Notes:
+         * The bitmap occupies the least significant byte of the
+           asamSshSelectChannel object; BIT 0 denotes the least significant
+           bit.
+         * For BIT 1-7, a bit value of 1 means enabled
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      NA
+            PERSIST: YES         INSRVMOD:   YES
+            RANGE:   2..127 (*1) DEFVALUE:   '7E'H
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA
+            (*1): It is not allowed to disable CLI both over telnet and SSH so
+                  combinations where (BIT 1 == 0) && (BIT 2 == 0) are invalid."
+
+      ::=  { sshMIB 2 }
+
+
+   --
+   -- asamSshClientPublicKeyTable
+   --
+   asamSshClientPublicKeyTable OBJECT-TYPE
+      SYNTAX   SEQUENCE OF AsamSshClientPublicKeyEntry
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+         "This table will be used for authenticating (client) users based on
+         the client's user name and (host) public key. One entry is created
+         per client (user). All entries in this table are dynamic.
+
+         ALCATEL NOTE:
+            TABLESIZE: 10
+            DESCR: NA"
+
+      ::= { sshMIB 3 }
+
+
+   asamSshClientPublicKeyEntry OBJECT-TYPE
+      SYNTAX   AsamSshClientPublicKeyEntry
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+         "An entry (row) in the asamSshClientPublicKeyTable table.
+         Each entry in the table contains the client user name, which also
+         uniquely identifies the entry, the client's public key, the key
+         length and a row status for manipulating (creating and deleting)
+         the entry. All client entries are dynamic.
+         Row creation: row creation is controlled by setting the
+         asamSshClientRowStatus of a new row to createAndGo(4).
+         Row deletion: a row is deleted by setting the
+         asamSshClientRowStatus of the row to destroy(6).
+         Index usage: the index is the client name (asamSshClientName)."
+
+      INDEX { asamSshClientName }
+
+      ::= { asamSshClientPublicKeyTable 1 }
+
+
+   AsamSshClientPublicKeyEntry ::=
+      SEQUENCE {
+         asamSshClientName       DisplayString,
+         asamSshClientPublicKey  OCTET STRING,
+         asamSshClientKeyLen     INTEGER,
+         asamSshClientRowStatus  RowStatus
+      }
+
+
+   asamSshClientName OBJECT-TYPE
+      SYNTAX   DisplayString (SIZE (1..64))
+      ACCESS   read-only
+      STATUS   mandatory
+      DESCRIPTION
+         "Client Name - uniquely identifies an entry in the client public
+         key table (asamSshClientPublicKeyTable)
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      NA
+            PERSIST: YES         INSRVMOD:   NA
+            RANGE:   SIZE(1..11) DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA"
+
+      ::= { asamSshClientPublicKeyEntry  1 }
+
+
+   asamSshClientPublicKey OBJECT-TYPE
+      SYNTAX   OCTET STRING (SIZE (0..1800))
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "The client (host) public key in a particular client entry.
+
+         ALCATEL NOTE:
+            ACCESS:  NA             USAGE:      OPT
+            PERSIST: YES            INSRVMOD:   YES
+            RANGE:   SIZE(1..1800)  DEFVALUE:   NA
+            UNITS:   NA             SPARSE:     NA
+            DESCR:   NA"
+
+      ::= { asamSshClientPublicKeyEntry  2 }
+
+
+   asamSshClientKeyLen OBJECT-TYPE
+      SYNTAX   INTEGER (0..1800)
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "The key length can vary from client to client depending on the
+         encryption algorithm.
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      OPT
+            PERSIST: YES         INSRVMOD:   YES
+            RANGE:   NA          DEFVALUE:   NA
+            UNITS:   bytes       SPARSE:     NA
+            DESCR:   NA"
+
+      ::= { asamSshClientPublicKeyEntry 3 }
+
+
+   asamSshClientRowStatus OBJECT-TYPE
+      SYNTAX   RowStatus
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "This object is used to create, delete or modify a row in this table.
+         To create a new row, this object is initially set to createAndGo(4),
+         after creation its status will automatically be set to active(1). For
+         destroying a row, set the row status to destroy(6). Detailed
+         information in RFC1443.
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      MAND
+            PERSIST: YES         INSRVMOD:   YES
+            RANGE:   1,4,6       DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA"
+
+      ::= { asamSshClientPublicKeyEntry  4 }
+
+
+   --
+   -- asamSshGenerateServerPublicKey (scalar)
+   --
+   asamSshGenerateServerPublicKey OBJECT-TYPE
+      SYNTAX   OCTET STRING (SIZE (0..255))
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "This object selects the public key algorithm of the server. It can
+         take the following values:
+            dsa: ssh-dss
+            rsa: ssh-rsa
+         When this object is (re)set, a new server public/private key pair will
+         be generated. The public part is stored in the asamSshServerPublicKey
+         object in the asamSshServerProfileEntry table.
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      NA
+            PERSIST: YES         INSRVMOD:   YES
+            RANGE:   'dsa'|'rsa' DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA
+         Currently DSA is the only public key algorithm that is supported
+         for setting up the transport layer, i.e. for host to host
+         authentication; for user to host authentication (authentication layer),
+         on the contrary, both the RSA and DSA public key authentication
+         algorithms are supported. The 'rsa' option is foreseen for future
+         extensibility only; apart from throwing an error, the system will not
+         take any action upon an attempt to set the asamSshGenerateServerPublic-
+         Key object to 'rsa'
+         "
+
+      ::=  { sshMIB 4 }
+
+
+   --
+   -- asamSshSFTPClientUsername (scalar)
+   --
+   asamSshSFTPClientUsername OBJECT-TYPE
+      SYNTAX   OCTET STRING (SIZE (0..32))
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "Client username the system has to use when setting up a session
+         with an external SFTP server.
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      NA
+            PERSIST: YES         INSRVMOD:   YES
+            RANGE:   NA          DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA"
+
+      ::= { sshMIB 5 }
+
+
+   --
+   -- asamSshSFTPClientPassword (scalar)
+   --
+   asamSshSFTPClientPassword OBJECT-TYPE
+      SYNTAX   OCTET STRING (SIZE (0..32))
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "Client password the system has to use when setting up a session
+         with an external SFTP server. Note: the user is able to specify the
+         client password via this object but the password will not be displayed
+         in cleartext when reading the object.
+
+         ALCATEL NOTE:
+            ACCESS:  NA          USAGE:      NA
+            PERSIST: YES         INSRVMOD:   YES
+            RANGE:   SIZE(6..32) DEFVALUE:   NA
+            UNITS:   NA          SPARSE:     NA
+            DESCR:   NA"
+
+      ::= { sshMIB 6 }
+
+
+END

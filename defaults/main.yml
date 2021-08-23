@@ -1,0 +1,3 @@
+---
+logs_folder: "/data/logs"
+snmptrapd_logdir: "{{ logs_folder }}/{{ ansible_fqdn }}/snmp"

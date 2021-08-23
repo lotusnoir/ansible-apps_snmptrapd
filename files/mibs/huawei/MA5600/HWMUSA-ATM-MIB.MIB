@@ -1,0 +1,975 @@
+	HUAWEI-ATM-MIB DEFINITIONS ::= BEGIN
+
+		IMPORTS 
+		    ifIndex, InterfaceIndexOrZero, InterfaceIndex
+	        	FROM IF-MIB
+			huaweiUtility
+				FROM HUAWEI-MIB			
+            hwFrameIndex, hwSlotIndex, hwPortIndex
+                FROM HUAWEI-DEVICE-MIB 
+			HWFrameType, HWPCBType, HWSubPCBType, HWPortType			
+				FROM HUAWEI-TC-MIB			
+			Gauge32,TimeTicks, IpAddress, Integer32, OBJECT-TYPE, MODULE-IDENTITY			
+				FROM SNMPv2-SMI			
+			DisplayString, DateAndTime, RowStatus			
+				FROM SNMPv2-TC;
+
+		hwmusaAtm MODULE-IDENTITY
+			LAST-UPDATED "9810190200Z"
+			ORGANIZATION
+				"HAUWEI MIB Standard community
+				固网MIB标准化委员会 "
+			CONTACT-INFO
+				"
+				联系地址：中国广东深圳，华为技术有限公司
+				"
+			DESCRIPTION
+				""
+			REVISION "9810190200Z"
+			DESCRIPTION
+				 ""
+			REVISION "9810190200Z"
+			DESCRIPTION
+				""
+
+			REVISION "9810190200Z"
+			DESCRIPTION
+				" 
+				V01_01_200204220900 第一次制订并发布。"
+			::= { huaweiUtility 99 }
+
+
+--hwAtmInterfaceExtTable
+		hwmusaAtmInterfaceExtTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwmusaAtmInterfaceExtEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwmusaAtm 100 }
+
+		hwmusaAtmInterfaceExtEntry OBJECT-TYPE
+			SYNTAX HwmusaAtmInterfaceExtEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			INDEX { ifIndex }
+			::= { hwmusaAtmInterfaceExtTable 1 }
+
+		HwmusaAtmInterfaceExtEntry ::=
+			SEQUENCE { 
+                hwmusaAtmInterfaceUpcNpcFlag
+                        INTEGER,
+                hwmusaAtmInterfaceAlarmStatus
+                        INTEGER,
+                hwmusaAtmInterfaceVcSubSpace
+                        INTEGER,
+                hwmusaAtmInterfaceMyNeighborIfIndex
+                        InterfaceIndex,
+                hwmusaAtmInterfaceInCurBandWidth
+                        INTEGER,
+                hwmusaAtmInterfaceOutCurBandwidth
+                        INTEGER,
+                hwmusaAtmInterfacePhyType
+                        INTEGER,
+                hwmusaAtmInterfaceLineState
+                	INTEGER,
+				hwmusaAtmInterfaceAlsStatus
+                	INTEGER,
+				hwmusaAtmInterfaceAlsDelayTime
+                	INTEGER,
+				hwmusaAtmInterfaceAlsTxOnTime
+                	INTEGER,
+				hwmusaAtmInterfaceAlsManualTxOnTime
+                	INTEGER,
+				hwmusaAtmInterfaceMaxVpiNo
+					INTEGER,
+				hwmusaAtmInterfaceMinVpiNo
+					INTEGER,
+				hwmusaAtmInterfaceMaxVciNo
+					INTEGER,
+				hwmusaAtmInterfaceMinVciNo
+					INTEGER,				
+				hwmusaAtmInterfacePortMode
+					INTEGER,
+				hwmusaAtmInterfaceUNINNIMode
+					INTEGER,
+				hwmusaAtmInterfaceInTotalBandWidth
+				        INTEGER,
+				hwmusaAtmInterfaceOutTotalBandwidth
+				        INTEGER,
+				hwmusaAtmInterfaceTxClock
+				    INTEGER,
+				hwmusaAtmInterfaceEventInsert
+				    INTEGER,
+				hwmusaAtmInterfaceBipInsert
+				    INTEGER
+			}
+
+	hwmusaAtmInterfaceUpcNpcFlag OBJECT-TYPE
+		SYNTAX      INTEGER {
+				           enabled(1),
+				           disabled(2)
+				           }
+		MAX-ACCESS  read-write
+		STATUS      current
+		DESCRIPTION "The interface UPC/NPC flag."
+		DEFVAL { enabled }
+		::= { hwmusaAtmInterfaceExtEntry 1 }
+
+	hwmusaAtmInterfaceAlarmStatus OBJECT-TYPE
+		SYNTAX      INTEGER
+--                  oof(0),     out of frame    帧失步
+--                  lof(1),     lose of frame   帧丢失
+--				    los(2),	    lose of signal  信号丢失
+--				    lrdi(3),    line remote defect indication   线路远端故障指示
+--				    lais(4),    line alarm indication signal    线路告警指示信号
+--				    lop(5),     lose of pointer SDH数据帧指针丢失(目前未支持)
+--				    pais(6),    path alarm indication signal    通路告警指示信号
+--				    prdi(7),    path remote defect indication   通路远端故障指示
+--				    psbf(8),    protection switching byte failure   保护开关字故障
+--				    sbip(9),    section BIP     段BIP
+--				    sbipe(10),                  段BIP超门限(目前未支持)
+--				    lbip(11),   line BIP        线路BIP
+--				    lbipe(12),                  线路BIP超门限(目前未支持)
+--				    lfebe(13),  line far end block error        线路远端模块错误
+--				    lfebee(14),                 线路远端模块错误超门限(目前未支持)
+--				    pbip(15),   path BIP        通路BIP
+--				    pbipe(16),                  通路BIP超门限(目前未支持)
+--				    pfebe(17),  path far end block error        通路远端模块错误
+--				    pfebee(18),                 通路远端模块错误超门限(目前未支持)
+--				    hcs(19),    head check sequence             信元头校验序列错误
+--				    chcs(20),   correctable head check sequence 可校正信元头校验序列错误
+--				    uhcs(21),   uncorrectable head check sequence 不可校正信元头校验序列错误
+--				    lcd(22),    lose of cell delineation        信元定界丢失
+--				    ocd(23),    out of cell delineation         信元定界失步
+--				    aprdi(24),  auxiliary path remote defect indication
+--                                              辅助通路远端故障指示(目前未支持)
+--				    ber(25),    bit error rate  线路位出错率高(目前未支持)
+--
+
+		MAX-ACCESS  read-only
+		STATUS      current
+		DESCRIPTION     "The interface alarm status which can be
+				the combination of the above"
+		::= { hwmusaAtmInterfaceExtEntry 2 }
+
+	hwmusaAtmInterfaceVcSubSpace OBJECT-TYPE
+		SYNTAX      INTEGER
+		MAX-ACCESS  read-write
+		STATUS      current
+		DESCRIPTION "The interface vci sub space."
+		DEFVAL { 256 }
+		::= { hwmusaAtmInterfaceExtEntry 3 }
+
+    hwmusaAtmInterfaceMyNeighborIfIndex OBJECT-TYPE
+        SYNTAX      InterfaceIndex
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION "The neighbor system ifIndex. "
+        ::= { hwmusaAtmInterfaceExtEntry 4 }
+
+    hwmusaAtmInterfaceInCurBandWidth OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "端口入方向当前可用带宽,单位为KBits/s."
+        ::= { hwmusaAtmInterfaceExtEntry 5 }
+
+    hwmusaAtmInterfaceOutCurBandwidth OBJECT-TYPE
+        SYNTAX      INTEGER
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION "端口出方向当前可用带宽,单位为KBits/s."
+        ::= { hwmusaAtmInterfaceExtEntry 6 }
+
+    hwmusaAtmInterfacePhyType OBJECT-TYPE
+		SYNTAX      INTEGER {
+		               unknown(1),
+			       single-mode(2),
+		    	       multi-mode(3),
+		    	       electric-port(4)
+		            }
+		MAX-ACCESS  read-only
+		STATUS      current
+		DESCRIPTION "ATM interface attribute."
+		::= { hwmusaAtmInterfaceExtEntry 7 }
+
+    hwmusaAtmInterfaceLineState OBJECT-TYPE
+		SYNTAX      INTEGER {
+		               no-signal(1),
+			       have-signal(2)
+		            }
+		MAX-ACCESS  read-only
+		STATUS      current
+		DESCRIPTION "ATM interface attribute."
+		::= { hwmusaAtmInterfaceExtEntry 8 }    
+
+    hwmusaAtmInterfaceAlsStatus OBJECT-TYPE
+		SYNTAX      INTEGER {
+		               off(1),
+			       on(2)
+		            }
+		MAX-ACCESS  read-write
+		STATUS      current
+		DESCRIPTION "
+					 ALS  使能开关
+					 ALS Enable or Disable switcher"
+		::= { hwmusaAtmInterfaceExtEntry 9 }    
+
+    hwmusaAtmInterfaceAlsDelayTime OBJECT-TYPE
+		SYNTAX INTEGER (60..300)
+		MAX-ACCESS  read-write
+		STATUS      current
+		DESCRIPTION "
+					 ALS  自动发送光信号间隔时间
+					 ALS auto delay time for start TxOn signal"
+		::= { hwmusaAtmInterfaceExtEntry 10 }    
+
+    hwmusaAtmInterfaceAlsTxOnTime OBJECT-TYPE
+		SYNTAX INTEGER (1..90)
+		MAX-ACCESS  read-write
+		STATUS      current
+		DESCRIPTION "
+					 ALS  自动发送光信号时间
+					 ALS auto delay time for start TxOn signal"
+		::= { hwmusaAtmInterfaceExtEntry 11 }
+
+    hwmusaAtmInterfaceAlsManualTxOnTime OBJECT-TYPE
+		SYNTAX INTEGER (1..90)
+		MAX-ACCESS  read-write
+		STATUS      current
+		DESCRIPTION "
+					 ALS  手动发送光信号时间
+					 ALS user delay time for start TxOn signal"
+		::= { hwmusaAtmInterfaceExtEntry 12 }
+		
+		hwmusaAtmInterfaceMaxVpiNo OBJECT-TYPE
+			SYNTAX INTEGER(0..4095)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwmusaAtmInterfaceExtEntry 101 }
+
+		hwmusaAtmInterfaceMinVpiNo OBJECT-TYPE
+			SYNTAX INTEGER(0..4095)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwmusaAtmInterfaceExtEntry 102 }
+
+		hwmusaAtmInterfaceMaxVciNo OBJECT-TYPE
+			SYNTAX INTEGER(32..1023)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwmusaAtmInterfaceExtEntry 103 }
+
+		hwmusaAtmInterfaceMinVciNo OBJECT-TYPE
+			SYNTAX INTEGER(32..1023)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwmusaAtmInterfaceExtEntry 104 }
+		hwmusaAtmInterfacePortMode OBJECT-TYPE
+			SYNTAX INTEGER {oc-3corsts-3(1),stm-1(2),oc-12corsts-12(3),stm-4(4)}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwmusaAtmInterfaceExtEntry 105 }
+			
+		hwmusaAtmInterfaceUNINNIMode OBJECT-TYPE
+			SYNTAX INTEGER {uni(1),nni(2)}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The type of interface"
+			::= { hwmusaAtmInterfaceExtEntry 106 }
+
+	        hwmusaAtmInterfaceInTotalBandWidth OBJECT-TYPE
+                        SYNTAX      INTEGER
+                        MAX-ACCESS  read-only
+                        STATUS      current
+                        DESCRIPTION "端口入方向当前总带宽,单位为KBits/s."
+                        ::= { hwmusaAtmInterfaceExtEntry 107 }
+
+                hwmusaAtmInterfaceOutTotalBandwidth OBJECT-TYPE
+                        SYNTAX      INTEGER
+                        MAX-ACCESS  read-only
+                        STATUS      current
+                        DESCRIPTION "端口出方向当前总带宽,单位为KBits/s."
+                        ::= { hwmusaAtmInterfaceExtEntry 108 }
+                        
+        hwmusaAtmInterfaceTxClock OBJECT-TYPE
+			SYNTAX INTEGER {system(1),line(2)}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The transmit clock of interface"
+			::= { hwmusaAtmInterfaceExtEntry 109 }
+			
+	    hwmusaAtmInterfaceEventInsert OBJECT-TYPE
+			SYNTAX INTEGER (0..31)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Insert or cancle alarm event in the interface,
+				 the value is bit map,
+				 Set the bit can insert the event, clear the bit can cancel the event.
+				 The various bit positions are:
+				 1  LAIS
+				 2  LOF  
+				 4  LOS
+				 8  LRDI
+				 16 PAIS"
+			::= { hwmusaAtmInterfaceExtEntry 110 }
+			
+		hwmusaAtmInterfaceBipInsert OBJECT-TYPE
+			SYNTAX INTEGER {lbip(1),pbip(2),sbip(3)}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Insert BIP error code in the interface"
+			::= { hwmusaAtmInterfaceExtEntry 111 }
+
+--统计值
+		hwmusaAtmStatisticTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwmusaAtmStatisticEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwmusaAtm 101 }
+		
+		hwmusaAtmStatisticEntry OBJECT-TYPE
+			SYNTAX HwmusaAtmStatisticEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+                INDEX { ifIndex }
+			::= { hwmusaAtmStatisticTable 1 }
+
+		HwmusaAtmStatisticEntry ::=
+			SEQUENCE { 
+				hwmusaAtmStatisticTxCellSucc
+					Gauge32,
+				hwmusaAtmStatisticRxCellSucc
+					Gauge32,
+				hwmusaAtmStatisticRowStatus
+					RowStatus
+			 }
+
+		hwmusaAtmStatisticTxCellSucc OBJECT-TYPE
+			SYNTAX Gauge32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwmusaAtmStatisticEntry 1 }
+
+		hwmusaAtmStatisticRxCellSucc OBJECT-TYPE
+			SYNTAX Gauge32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwmusaAtmStatisticEntry 2 }
+
+		hwmusaAtmStatisticRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				""
+			::= { hwmusaAtmStatisticEntry 3 }
+			
+			
+--STM-1/STM-4传输性能监视使能状态控制表
+			
+  hwAtmECSMonitorControlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF HwAtmECSMonitorControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "
+      perform monitor status control table
+      STM-1/STM-4传输性能监视使能状态控制表
+      "
+    ::= { hwmusaAtm 102 }
+
+  hwAtmECSMonitorControlEntry OBJECT-TYPE
+    SYNTAX      HwAtmECSMonitorControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "
+      perform monitor status control table
+      STM-1/STM-4传输性能监视使能状态控制表
+      "
+    INDEX { 
+            ifIndex,
+            hwAtmECSMonitorPeriodType
+          }
+    ::= { hwAtmECSMonitorControlTable 1 }
+
+  HwAtmECSMonitorControlEntry ::=
+    SEQUENCE
+    {
+        hwAtmECSMonitorPeriodType                   INTEGER,
+        hwAtmECSMonitorStatusReal                   INTEGER,
+        hwAtmECSMonitorStartTimeReal                DateAndTime,     
+        hwAtmECSMonitorStatusUserSet                INTEGER,
+        hwAtmECSMonitorStartTimeUserSet             DateAndTime             
+    }
+
+  hwAtmECSMonitorPeriodType OBJECT-TYPE
+    SYNTAX      INTEGER{quarter(1),day(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        the period of the monitor, 1:quarter, 2:day.
+        SDH传输性能误码统计的监视周期， 对应于15分钟和24小时。
+        "
+    ::={ hwAtmECSMonitorControlEntry 1 }
+    
+  hwAtmECSMonitorStatusReal OBJECT-TYPE
+    SYNTAX      INTEGER{disable(0),enable(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        current monitor status, 0:disable, 1:enable.
+        SDH传输性能误码统计的监视功能实际的使能状态， 启用或关闭。
+        "
+    DEFVAL {1}
+    ::={ hwAtmECSMonitorControlEntry 2 }
+
+  hwAtmECSMonitorStartTimeReal OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        the start time of the monitor  
+        SDH传输性能误码统计监视周期的实际启用时间点。
+        "
+    ::={ hwAtmECSMonitorControlEntry 3 }
+    
+  hwAtmECSMonitorStatusUserSet OBJECT-TYPE
+    SYNTAX      INTEGER{disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        the monitor status set by user, 0:disable, 1:enable.
+        用户设置的SDH传输性能误码统计监视功能的使能状态， 启用或关闭。
+        "
+    DEFVAL {1}
+    ::={ hwAtmECSMonitorControlEntry 4 }
+
+  hwAtmECSMonitorStartTimeUserSet OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        the start time of the monitor set by user
+        用户设置的启用或关闭SDH传输性能误码统计周期监视的时间点。
+        "
+    ::={ hwAtmECSMonitorControlEntry 5 }
+
+  
+ 
+--STM-1/STM-4传输性能监视门限启用状态控制表
+			
+  hwAtmECSThresholdControlTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF HwAtmECSThresholdControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "
+      STM-1/STM-4 threshold enable table
+      STM-1/STM-4传输性能监视使能状态控制表
+      "
+    ::= { hwmusaAtm 103 }
+
+  hwAtmECSThresholdControlEntry OBJECT-TYPE
+    SYNTAX      HwAtmECSThresholdControlEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "
+      STM-1/STM-4 threshold enable table
+      STM-1/STM-4传输性能监视使能状态控制表
+      "
+    INDEX { 
+            ifIndex,
+            hwAtmECSMonitorObjType,
+            hwAtmECSMonitorPeriodType
+          }
+    ::= { hwAtmECSThresholdControlTable 1 }
+
+  HwAtmECSThresholdControlEntry ::=
+    SEQUENCE
+    {
+        hwAtmECSMonitorObjType                 INTEGER,
+        hwAtmECSThresholdEnabled               INTEGER
+
+    }
+
+  hwAtmECSMonitorObjType OBJECT-TYPE
+    SYNTAX      INTEGER{rs(0),ms(1),hp(2)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        the section of the perform monitor, including:
+        0:regenerator section
+        1:multiplex section
+        2:higher order path
+        
+        SDH传输性能误码统计的监视对象， 对应于再生段、复用段、高阶通道。
+        "
+    ::={ hwAtmECSThresholdControlEntry 1 }
+
+  hwAtmECSThresholdEnabled OBJECT-TYPE
+    SYNTAX      INTEGER{disable(0),enable(1)}
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        SDH threshold enable
+        SDH传输性能误码统计监视门限的启用状态。
+        "
+    DEFVAL {1}
+    ::={ hwAtmECSThresholdControlEntry 2 }
+          
+    			
+--ATM端口STM-1/STM-4传输性能误码统计的监视门限表
+			
+  hwAtmECSThresholdTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF HwAtmECSThresholdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "
+      STM-1/STM-4 monitor threshold table
+      ATM端口STM-1/STM-4传输性能误码统计的监视门限表
+      "
+    ::= { hwmusaAtm 104 }
+
+  hwAtmECSThresholdEntry OBJECT-TYPE
+    SYNTAX      HwAtmECSThresholdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "
+      STM-1/STM-4 monitor threshold table
+      ATM端口STM-1/STM-4传输性能误码统计的监视门限表
+      "
+    INDEX { 
+            ifIndex,
+            hwAtmECSMonitorObjType,
+            hwAtmECSMonitorPeriodType
+          }
+    ::= { hwAtmECSThresholdTable 1 }
+
+  HwAtmECSThresholdEntry ::=
+    SEQUENCE
+    {
+      hwAtmECSThresholdOFS          Gauge32,
+      hwAtmECSThresholdLowBBE       Gauge32,
+      hwAtmECSThresholdHighBBE      Gauge32,
+      hwAtmECSThresholdLowFEBBE     Gauge32,
+      hwAtmECSThresholdHighFEBBE    Gauge32,
+      hwAtmECSThresholdLowES        Gauge32,
+      hwAtmECSThresholdHighES       Gauge32,
+      hwAtmECSThresholdLowFEES      Gauge32,
+      hwAtmECSThresholdHighFEES     Gauge32,
+      hwAtmECSThresholdSES          Gauge32,
+      hwAtmECSThresholdFESES        Gauge32,
+      hwAtmECSThresholdUAS          Gauge32,
+      hwAtmECSThresholdCSES         Gauge32
+      
+    }
+    
+  hwAtmECSThresholdOFS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Out-of-frame second threshold 
+        SDH传输性能监视误码统计的帧失步秒监视门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 1 }
+
+  hwAtmECSThresholdLowBBE OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Background block error low threshold
+        SDH传输性能监视误码统计的背景块误码低门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 2 }
+
+  hwAtmECSThresholdHighBBE OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Background block error high threshold
+        SDH传输性能监视误码统计的背景块误码高门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 3 }
+    
+  hwAtmECSThresholdLowFEBBE OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+         Far end background block error low threshold
+        SDH传输性能监视误码统计的远端背景块误码低门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 4 }
+    
+  hwAtmECSThresholdHighFEBBE OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Far end background block error high threshold
+        SDH传输性能监视误码统计的远端背景块误码高门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 5 }
+
+  hwAtmECSThresholdLowES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Errored second low threshold 
+        SDH传输性能监视误码统计的误码秒低门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 6 }
+
+  hwAtmECSThresholdHighES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Errored second high threshold 
+        SDH传输性能监视误码统计的误码秒高门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 7 }
+
+  hwAtmECSThresholdLowFEES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Far end errored second low threshold 
+        SDH传输性能监视误码统计的远端误码秒低门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 8 }
+    
+  hwAtmECSThresholdHighFEES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Far end errored second high threshold 
+        SDH传输性能监视误码统计的远端误码秒高门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 9 }
+    
+  hwAtmECSThresholdSES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Severely errored second threshold
+        SDH传输性能监视误码统计的严重误码秒监视门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 10 }
+
+  hwAtmECSThresholdFESES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+         Far end severely errored second threshold
+        SDH传输性能监视误码统计的远端严重误码秒监视门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 11 }
+
+  hwAtmECSThresholdUAS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Unavailable second threshold  
+        SDH传输性能监视误码统计的不可用秒监视门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 12 }
+
+  hwAtmECSThresholdCSES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "
+        Consecutive severely errored seconds threshold
+        SDH传输性能监视误码统计的连续严重误码秒监视门限值。
+        "
+    ::={ hwAtmECSThresholdEntry 13 }
+
+
+--ATM端口STM-1/STM-4传输性能误码统计表
+			
+  hwAtmECSDataTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF HwAtmECSDataEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "
+      STM-1/STM-4 perform monitor statistic table
+      ATM端口STM-1/STM-4传输性能误码统计表。
+      "
+    ::= { hwmusaAtm 105 }
+
+  hwAtmECSDataEntry OBJECT-TYPE
+    SYNTAX      HwAtmECSDataEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "
+      STM-1/STM-4 perform monitor statistic table
+      ATM端口STM-1/STM-4传输性能误码统计表。
+      "
+    INDEX { 
+            ifIndex,
+            hwAtmECSMonitorObjType,
+            hwAtmECSMonitorPeriodType,
+            hwAtmECSMonitorStage
+          }
+    ::= { hwAtmECSDataTable 1 }
+
+  HwAtmECSDataEntry ::=
+    SEQUENCE
+    { 
+      hwAtmECSMonitorStage               INTEGER,
+      hwAtmECSMonitorStageStartTime      DateAndTime,
+      hwAtmECSDataBBE                    Gauge32,
+      hwAtmECSDataFEBBE                  Gauge32,
+      hwAtmECSDataES                     Gauge32,
+      hwAtmECSDataFEES                   Gauge32,
+      hwAtmECSDataSES                    Gauge32,
+      hwAtmECSDataFESES                  Gauge32,
+      hwAtmECSDataOFS                    Gauge32,
+      hwAtmECSDataUAS                    Gauge32
+    }
+  
+  hwAtmECSMonitorStage OBJECT-TYPE
+    SYNTAX      INTEGER{current(0),history(1)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        perform monitor period stage,
+        0:current
+        1:history
+        
+        SDH传输性能监视时段。
+        "
+    DEFVAL {0}
+    ::={ hwAtmECSDataEntry 1 }
+       
+  hwAtmECSMonitorStageStartTime OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        the start time of the monitor period.
+        SDH传输性能监视中监视时段的起始时间。
+        "
+    ::={ hwAtmECSDataEntry 2 }
+
+  hwAtmECSDataBBE OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        statistic of the background block error
+        SDH传输性能监视中背景块误码的统计。
+        "
+    ::={ hwAtmECSDataEntry 3 }
+
+  hwAtmECSDataFEBBE OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        statistic of the far end background block error
+        SDH传输性能监视中远端背景块误码的统计。
+        "
+    ::={ hwAtmECSDataEntry 4 }
+
+  hwAtmECSDataES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        statistic of the errored seconds
+        SDH传输性能监视中误码秒的统计。
+        "
+    ::={ hwAtmECSDataEntry 5 }
+    
+  hwAtmECSDataFEES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        statistic of the far end errored seconds
+        SDH传输性能监视中远端误码秒的统计。
+        "
+    ::={ hwAtmECSDataEntry 6 }
+    
+ hwAtmECSDataSES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        statistic of the severely errored seconds
+        SDH传输性能监视中严重误码秒的统计。
+        "
+    ::={ hwAtmECSDataEntry 7 }
+    
+ hwAtmECSDataFESES OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        statistic of the far end severely errored seconds
+        SDH传输性能监视中远端严重误码秒的统计。
+        "
+    ::={ hwAtmECSDataEntry 8 }
+      
+ hwAtmECSDataOFS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        statistic of the out-of-frame seconds
+        SDH传输性能监视中帧失步秒的统计。
+        "
+    ::={ hwAtmECSDataEntry 9 }
+    
+    hwAtmECSDataUAS OBJECT-TYPE
+    SYNTAX      Gauge32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+        statistic of the unavailable seconds
+        SDH传输性能监视中不可用秒的统计。
+        "
+    ::={ hwAtmECSDataEntry 10 }
+			
+			
+--保护对配置表
+		hwmusaAtmProtectTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwmusaAtmProtectEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				该表用于双归属特性1+1、n+1、1+n冗余备份的配置和查询"
+			::= { hwmusaAtm 106 }
+		
+		hwmusaAtmProtectEntry OBJECT-TYPE
+			SYNTAX HwmusaAtmProtectEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				""
+                INDEX { hwmusaAtmProtectWorkIfindex,hwmusaAtmProtectProtectIfindex }
+			::= { hwmusaAtmProtectTable 1 }
+
+		HwmusaAtmProtectEntry ::=
+			SEQUENCE { 
+				hwmusaAtmProtectWorkIfindex
+					INTEGER,
+				hwmusaAtmProtectProtectIfindex
+					INTEGER,
+				hwmusaAtmProtectActiveIfindex
+					INTEGER,
+				hwmusaAtmProtectRowStatus
+					RowStatus
+			 }
+
+		hwmusaAtmProtectWorkIfindex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				工作接口索引"
+			::= { hwmusaAtmProtectEntry 1 }
+
+		hwmusaAtmProtectProtectIfindex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				保护接口索引"
+			::= { hwmusaAtmProtectEntry 2 }
+
+		hwmusaAtmProtectActiveIfindex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				当前主用的接口索引"
+			::= { hwmusaAtmProtectEntry 3 }
+			
+		hwmusaAtmProtectRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				行状态用于管理概念行的创建和删除"
+			::= { hwmusaAtmProtectEntry 4 }
+			
+END

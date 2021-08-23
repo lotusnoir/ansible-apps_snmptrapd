@@ -1,0 +1,495 @@
+--  ------------------------------------------------------------------
+-- Description £º HWMUSA-DEV-MIB
+-- Author      £º  
+-- Create Date £º 2002-04
+-- Modify Date £º 2002-07-20
+-- Version     £º 1.02
+-- Copyright 1985 - 2004 HuaWei Tech, Inc.
+--           ALL RIGHTS RESERVED 
+-- ------------------------------------------------------------------
+
+	HWMUSA-DEV-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			hwFrameIndex, hwSlotIndex
+				FROM HUAWEI-DEVICE-MIB			
+			hwProducts			
+				FROM HUAWEI-MIB			
+			HWPCBType,HWFrameType			
+				FROM HUAWEI-TC-MIB			
+			Integer32, OBJECT-TYPE,Unsigned32		
+				FROM SNMPv2-SMI
+			RowStatus
+				FROM SNMPv2-TC;	
+
+		musa OBJECT IDENTIFIER ::= { hwProducts 6 }
+				
+		ias OBJECT IDENTIFIER ::= { musa 7 }
+		
+		hwIasDev OBJECT IDENTIFIER ::= { ias 1 }
+		
+		--hwIasConfigChange OBJECT IDENTIFIER ::= { ias 5 }
+		
+		hwMusaSlotConf OBJECT IDENTIFIER ::= { hwIasDev 1 }
+		
+		hwMusaFrameExtTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwMusaFrameExtEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Frame Description Extended Table"
+			::= { hwMusaSlotConf 1 }
+		
+		hwMusaFrameExtEntry OBJECT-TYPE
+			SYNTAX HwMusaFrameExtEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Frame Description Extended Table Entity"
+			INDEX { hwFrameIndex }
+			::= { hwMusaFrameExtTable 1 }
+		
+		HwMusaFrameExtEntry ::=
+			SEQUENCE { 
+				hwMusaFrameLimtBandWidth
+					INTEGER,
+				hwMusaFrameDistBandWidth
+					INTEGER,
+				hwMusaFrameTestGroupID
+					INTEGER,
+				hwMusaFrameEmuId1
+					INTEGER,
+				hwMusaFrameEmuId2
+					INTEGER,
+				hwMusaFrameEmuId3
+					INTEGER,
+				hwMusaFrameEmuId4
+					INTEGER,
+				hwMusaFrameEmuId5
+					INTEGER,
+			  hwMusaFrameSlotConnection
+			       OCTET STRING
+			 }
+
+		hwMusaFrameLimtBandWidth OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Frame Limit BandWidth,the maximum bandwidth of the frame. 
+				Unit: K, used in debug mode, 1G=1000M"
+			::= { hwMusaFrameExtEntry 1 }
+		
+		hwMusaFrameDistBandWidth OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Frame Distributed BandWidth,
+				Unit: K, used in debug mode, 1G=1000M"
+			::= { hwMusaFrameExtEntry 2 }
+		
+		hwMusaFrameTestGroupID OBJECT-TYPE
+			SYNTAX INTEGER (0..255)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Frame Test Group Index"
+			::= { hwMusaFrameExtEntry 3 }
+		
+		hwMusaFrameEmuId1 OBJECT-TYPE
+			SYNTAX INTEGER (0..63)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Environment Monitor Unit Index 1"
+			::= { hwMusaFrameExtEntry 4 }
+		
+		hwMusaFrameEmuId2 OBJECT-TYPE
+			SYNTAX INTEGER (0..63)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Environment Monitor Unit Index 2"
+			::= { hwMusaFrameExtEntry 5 }
+		
+		hwMusaFrameEmuId3 OBJECT-TYPE
+			SYNTAX INTEGER (0..63)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Environment Monitor Unit Index 3"
+			::= { hwMusaFrameExtEntry 6 }
+		
+		hwMusaFrameEmuId4 OBJECT-TYPE
+			SYNTAX INTEGER (0..63)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Environment Monitor Unit Index 4"
+			::= { hwMusaFrameExtEntry 7 }
+		
+		hwMusaFrameEmuId5 OBJECT-TYPE
+			SYNTAX INTEGER (0..63)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Environment Monitor Unit Index 5"
+			::= { hwMusaFrameExtEntry 8 }
+
+		hwMusaFrameSlotConnection OBJECT-TYPE
+		  SYNTAX OCTET STRING (SIZE (255))
+                  MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Slot connection
+
+				"
+			::= { hwMusaFrameExtEntry 9 }
+
+		hwMusaSlotConfExtTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwMusaSlotConfExtEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Board Description Extended Table"
+			::= { hwMusaSlotConf 2 }
+		
+		hwMusaSlotConfExtEntry OBJECT-TYPE
+			SYNTAX HwMusaSlotConfExtEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Board Description Extended Table Entity"
+			INDEX { hwFrameIndex, hwSlotIndex }
+			::= { hwMusaSlotConfExtTable 1 }
+		
+		HwMusaSlotConfExtEntry ::=
+			SEQUENCE { 
+				hwMusaBoardLimitBandWidthUp
+					INTEGER,
+				hwMusaBoardLimitBandWidthDown
+					INTEGER,
+				hwMusaBoardHasBandWidthUp
+					INTEGER,
+				hwMusaBoardHasBandWidthDown
+					INTEGER,
+				hwMusaBoardCpuRate
+					INTEGER,
+				hwMusaBoardRamUseRate
+					INTEGER,
+				hwMusaBoardSlotDesc
+					OCTET STRING,
+				hwMusaBoardOnlineState
+				    INTEGER,
+				hwMusaServiceChannelBufferRate
+				    INTEGER,
+				hwMusaBoardTemperature				        
+				    Integer32
+			 }
+
+		hwMusaBoardLimitBandWidthUp OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Board Limit BandWidth Upgoing.Unit: K, different board has different value"
+			::= { hwMusaSlotConfExtEntry 1 }
+		
+		hwMusaBoardLimitBandWidthDown OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Board Limit BandWidth Down.Unit: K, different board has different value"
+			::= { hwMusaSlotConfExtEntry 2 }
+		
+		hwMusaBoardHasBandWidthUp OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Board Distributed BandWidth Upgoing.Unit: K, different board has different value"
+			::= { hwMusaSlotConfExtEntry 3 }
+		
+		hwMusaBoardHasBandWidthDown OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Board Distributed BandWidth Down.Unit: K, different board has different value"
+			::= { hwMusaSlotConfExtEntry 4 }
+		
+		hwMusaBoardCpuRate OBJECT-TYPE
+			SYNTAX INTEGER (0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Cpu Rate.This feature only supports Main Manage Board, it doesn't support RSP, PV8, BAS and other board"
+			::= { hwMusaSlotConfExtEntry 5 }
+		
+		hwMusaBoardRamUseRate OBJECT-TYPE
+			SYNTAX INTEGER (0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Ram Use Rate.This feature only supports Main Manage Board, it doesn't support RSP, PV8, BAS, AIC and other board"
+			::= { hwMusaSlotConfExtEntry 6 }
+			
+		hwMusaBoardSlotDesc OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (0..64))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"				
+				Slot information description,to describe name information of the slot.
+				
+				"
+			::= { hwMusaSlotConfExtEntry 7 }
+			
+			
+		hwMusaBoardOnlineState OBJECT-TYPE
+			SYNTAX INTEGER 
+			{
+			online(1),
+			offline(2),
+			unmanageable(3)
+			}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				online(1),
+			        offline(2),
+			        unmanageable(3),
+				"
+			::= { hwMusaSlotConfExtEntry 8 }  
+			
+		hwMusaServiceChannelBufferRate OBJECT-TYPE
+			SYNTAX INTEGER (0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Service Channel Buffer Occupid Rate.This feature only supports XDSL Service Board in MA5600 and MA5600T product"
+			::= { hwMusaSlotConfExtEntry 9 }
+			
+		hwMusaBoardTemperature OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Query board temperature.This feature only supports H801SCUB and H801SCUL"
+			::= { hwMusaSlotConfExtEntry 10 }
+			
+		hwMusaSlotAverageConfTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwMusaSlotAverageConfEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Board Average Statistic Table"
+			::= { hwMusaSlotConf 3 }
+			
+		hwMusaSlotAverageConfEntry OBJECT-TYPE
+			SYNTAX HwMusaSlotAverageConfEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Board Average Statistic Table Entity
+				"
+			INDEX { hwFrameIndex, hwSlotIndex, hwMusaBoardStatisticTime }
+			::= { hwMusaSlotAverageConfTable 1 }
+		
+		HwMusaSlotAverageConfEntry ::=
+			SEQUENCE { 
+				hwMusaBoardStatisticTime
+					INTEGER,
+				hwMusaBoardCpuAverageRate
+				  INTEGER
+			 }
+
+		hwMusaBoardStatisticTime OBJECT-TYPE
+			SYNTAX INTEGER
+			{
+			five-seconds(1),
+			one-minute(2),
+			ten-minutes(3)
+			}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				5s(1),
+			  1m(2),
+			  10m(3),
+				"
+			::= { hwMusaSlotAverageConfEntry 1 }
+			
+		hwMusaBoardCpuAverageRate OBJECT-TYPE
+			SYNTAX INTEGER 
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Board Average CPU Occupancy
+				"
+			::= { hwMusaSlotAverageConfEntry 2 }
+		-- hwBroadBandFrameOperTable  OBJECT IDENTIFIER ::= { hwIasDev 2 }
+		
+		hwBroadBandFrameOperTable   OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBroadBandFrameOperEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				The sub broad band frame table.
+				"
+			::= { hwIasDev 2 }
+	        
+	        hwBroadBandFrameOperEntry OBJECT-TYPE
+			SYNTAX HwBroadBandFrameOperEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The sub broad band frame entry."
+			INDEX { hwFrameIfIndex }
+			::= { hwBroadBandFrameOperTable 1 }
+		
+		HwBroadBandFrameOperEntry ::=
+			SEQUENCE { 
+				hwFrameIfIndex
+					Integer32,
+				hwBroadBandFrameType
+					HWFrameType,	
+				hwMainBoardSlots
+					Integer32,
+				hwMainBoardType
+					HWPCBType,
+				hwBroadBandFrameID
+					INTEGER,
+				hwBroadBandFrameRowStatus
+					RowStatus
+			 }
+		
+		hwFrameIfIndex OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The interface index of frame"
+			::= { hwBroadBandFrameOperEntry 1 }
+			
+		hwBroadBandFrameType  OBJECT-TYPE
+			SYNTAX  HWFrameType
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The sub broad band frame type."
+			::= { hwBroadBandFrameOperEntry 2 }
+		
+		hwMainBoardSlots OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The slot of the main board in sub broad band frame.
+				"
+			::= { hwBroadBandFrameOperEntry 3 }
+		
+		hwMainBoardType OBJECT-TYPE
+			SYNTAX HWPCBType
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The type of the main board in sub broad band frame."
+			::= { hwBroadBandFrameOperEntry 4 }
+		
+		hwBroadBandFrameID OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The frame ID of the sub broad band frame."
+			::= { hwBroadBandFrameOperEntry 5 }
+			
+		hwBroadBandFrameRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The row status of the sub broad band frame."
+			::= { hwBroadBandFrameOperEntry 6 }
+
+
+                hwIasConfigChange OBJECT IDENTIFIER ::= { ias 5 }			
+                hwIasConfigChangeTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwIasConfigChangeEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Config Change Table"
+			::= { hwIasConfigChange 1 }
+		
+		hwIasConfigChangeEntry OBJECT-TYPE
+			SYNTAX HwIasConfigChangeEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Config Change Table Entity"
+			INDEX { hwIasConfigChangeTrapID }
+			::= { hwIasConfigChangeTable 1 }
+		
+		HwIasConfigChangeEntry ::=
+			SEQUENCE { 
+			        hwIasConfigChangeTrapID
+			                INTEGER,
+				hwIasConfigChangeSerialSN
+					INTEGER
+				 }
+
+		hwIasConfigChangeTrapID OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Config Change Table Trap Number
+				"
+			::= { hwIasConfigChangeEntry 1 }
+			
+		hwIasConfigChangeSerialSN OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Config Change Table Serial Number
+				"
+			::= { hwIasConfigChangeEntry 2 }
+			
+	
+	END

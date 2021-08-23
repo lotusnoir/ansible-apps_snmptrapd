@@ -1,0 +1,1606 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V3.28
+-- History:
+-- pengdonghong add hwLoadAdminStatus, type is RowStatus
+--        add hwLoadOperStatus, inquirying loading status, five kind of status defined.
+-- ============================================================================
+	HUAWEI-LOAD-BACKUP-MIB DEFINITIONS ::= BEGIN
+ 		IMPORTS
+			hwFrameIndex, hwSlotIndex			
+				FROM HUAWEI-DEVICE-MIB			
+			huaweiUtility			
+				FROM HUAWEI-MIB			
+			HWPCBType				
+				FROM HUAWEI-TC-MIB			
+			IpAddress, Integer32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE			
+				FROM SNMPv2-SMI			
+			RowStatus, DisplayString, DateAndTime			
+				FROM SNMPv2-TC;
+	
+	
+		hwLoadBackup MODULE-IDENTITY 
+			LAST-UPDATED "200509120900Z"
+			ORGANIZATION "Fix-Net Dep, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floor 5 ,Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,  P.R.C.
+				http://www.huawei.com
+				Zip:518129
+				"
+			DESCRIPTION 
+				"huawei Load and backup mib.	"
+			::= { huaweiUtility 6 }
+		
+		hwLoadBackupMon OBJECT IDENTIFIER ::= { hwLoadBackup 1 }
+		
+		hwLoadParaTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwLoadParaEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Load parameter table
+                                "
+			::= { hwLoadBackupMon 1 }
+		
+		hwLoadParaEntry OBJECT-TYPE
+			SYNTAX HwLoadParaEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" 
+				Load parameter table entry:
+				"
+			INDEX { hwFrameIndex, hwSlotIndex }
+			::= { hwLoadParaTable 1 }
+		
+		HwLoadParaEntry ::=
+			SEQUENCE { 
+				hwLoadServerIpAddr
+					IpAddress,
+				hwLoadMode
+					INTEGER,
+				hwLoadFileName
+					DisplayString,
+				hwLoadContent
+					INTEGER,
+				hwLoadBoardType
+					HWPCBType,
+				hwPositionPara
+					Integer32,
+				hwLoadProcess
+					Integer32,
+				hwLoadUserName
+					DisplayString,
+				hwLoadPassword
+					DisplayString,
+				hwLoadAdminStatus
+					RowStatus,
+				hwLoadOperStatus
+					INTEGER,
+				hwLoadRequestId
+					Integer32,
+				hwLoadServerPort
+					Unsigned32,
+				hwBatchLoadOptions
+					INTEGER	
+			 }
+
+		hwLoadServerIpAddr OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the IP address of Server
+				"
+			::= { hwLoadParaEntry 1 }
+		
+		hwLoadMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				tftp(1),
+				modem(2),
+				ftp(3),
+				smbLoadAnyBoards(4),
+                                sftp(5),
+				other(255)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Load protocol
+				"
+			::= { hwLoadParaEntry 2 }
+		
+		hwLoadFileName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..127))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the file name
+				"
+			::= { hwLoadParaEntry 3 }
+		
+		hwLoadContent OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				program(1),		-- program file
+				configuration(2),	-- configuration file
+				patch(3),		-- patch file
+				shellMacro(4),       
+				resLocal(5),         
+				resGeneral(6),       
+				cpeDrive(7),         
+				programDatabase(8),	-- database file
+				programBios(9),		-- bios file 
+				programApp(10),		-- application program 
+				logicFpga(11),		-- fpga logic file
+				logicCpld(12),		-- Cpld  logic file
+				logicPci(13),		-- pci logic file
+				logicAfc(14),		-- afc logic file
+				programMicroCode(15),	-- micro code file
+				programFirmware(16),	-- application program of pinch board
+				programHelp(17),
+				programDataFlow(18),	-- flow file of card management point
+				programBootFile(19),	-- Boot program file of board
+				logciPa(20),		-- Boot program file of board start
+				webExp(21),		-- web exp file
+				webNev(22),		-- web nev file
+				webHelp(23),		-- web help file
+				programBsp(24),		-- bsp program file
+				verBinFile(25),     -- packet file
+				configurationFile(26),	-- configuration file
+				configurationIni(40),	-- configuration file of ini formatini
+				configurationEfs(41),	-- configuration file with the header of efs
+				configurationCli(42),	-- configuration file of command line format
+				programCurrent(45),	-- the program being run
+				programOther(46),	-- the program that has not been run presently
+				license(49),             -- license file
+				programchipset(50),     -- AC5 chipset load
+				programExtendedBios(51), --extended bios file
+				programBaseBios(52), 	--base bios file
+				logicCpld2(53),         -- cpld2 file
+				logicCpld3(54),         -- cpld3 file
+				extendedBootRom(55),  -- extended BootRom file
+				defaultCfg(56), -- default configuration file
+				boardManuVersion(57), -- board manufacture information
+				versionDescribe(58), -- version description file
+		  	        announcement(59),        --announcement file
+				voice(60),              --voice file
+				boardtemplatefile(61),  --board template file
+				frametemplatefile(62),   --frame template file
+				r2signalingfile(63),   -- r2 signaling file
+                                declaration(65),        --declaration file
+                                digitmap(66),           -- h248 Digitmap
+                                elabel(67),       		-- elabel file
+                		emuprogram(68),   		-- emu program file    
+                		emuelabel(69),    		-- emu elabel file
+                		emuproofelabel(70),		-- emu proof elabel file
+                		backboardelabel(71), 		---frame back board elabel file
+                		io-packetfile(72),               -- io-packet file 
+                		h248-profile(73),       -- h248 Profile 
+                		sip-profile(74),        -- sip Profile 
+                		sip-digitmap(75)        -- sip Digitmap
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				load content 
+		                "
+			::= { hwLoadParaEntry 4 }
+		
+		hwLoadBoardType OBJECT-TYPE
+			SYNTAX HWPCBType
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the board type the system supports 
+				"
+			::= { hwLoadParaEntry 5 }
+		
+		hwPositionPara OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the position parameter
+				when load emu ,this parameter is emuID.
+				when load port,this parameter is portID.
+				when load subBoard,this parameter is SubBoardID.
+				"
+			::= { hwLoadParaEntry 6 }
+		
+		hwLoadProcess OBJECT-TYPE
+			SYNTAX Integer32 (0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the Process of loading: 0бл100.
+				"
+			::= { hwLoadParaEntry 7 }
+		
+		hwLoadUserName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..31))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the load user name, which is necessary in FTP mode and SFTP mode
+				while unnecessary in TFTP mode
+				"
+			::= { hwLoadParaEntry 8 }
+		
+		hwLoadPassword OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..16))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the load user password, which is necessary in FTP mode and SFTP mode ,
+				while unnecessary in TFTP mode.
+				"
+			::= { hwLoadParaEntry 9 }
+		
+		hwLoadAdminStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Load Adminstatus .
+				"
+			::= { hwLoadParaEntry 10 }
+		
+		hwLoadOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				inition(1),  -- initial state
+				loading(2),  -- loading file
+				flashing(3), -- saving file in Flash
+				success(4),  -- operation success (include loading success, writing flash success and so on)
+				failure(5)   -- operation failure (include loading failure, writing flash failure and so on)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Operational Status."
+			::= { hwLoadParaEntry 11 }
+			
+		hwLoadRequestId OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the request index for xml		
+				"
+			::= { hwLoadParaEntry 12 }
+		
+		hwLoadServerPort OBJECT-TYPE
+			SYNTAX Unsigned32 (0..65535)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"SFTP server listen port.
+				22 is default value.
+				Value range is between 0 and 65535.				"
+			DEFVAL { 22 }
+			::= { hwLoadParaEntry 13 }
+			
+		hwBatchLoadOptions OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				loadActiveAndStandby(1)		-- load mainboard and slaveboard 
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Batch load options."
+			::= { hwLoadParaEntry 14 }
+		
+		hwBackupParaTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBackupParaEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				backup parameter table
+				"
+			::= { hwLoadBackupMon 2 }
+		
+		hwBackupParaEntry OBJECT-TYPE
+			SYNTAX HwBackupParaEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Backup parameter table entry
+				"
+			INDEX { hwFrameIndex, hwSlotIndex }
+			::= { hwBackupParaTable 1 }
+		
+		HwBackupParaEntry ::=
+			SEQUENCE { 
+				hwBackupServerIpAddr
+					IpAddress,
+				hwBackupMode
+					INTEGER,
+				hwBackupFileName
+					DisplayString,
+				hwBackupContent
+					INTEGER,
+				hwBackupProcess
+					Integer32,
+				hwBackupUserName
+					DisplayString,
+				hwBackupPassword
+					DisplayString,
+				hwBackupBoardType
+					HWPCBType,
+				hwBackupRequestID
+					Integer32,
+				hwBackupServerPort
+					Unsigned32,
+				hwPositionPara
+					Integer32
+			 }
+
+		hwBackupServerIpAddr OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the IP address of Server
+				"
+			::= { hwBackupParaEntry 1 }
+		
+		hwBackupMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				tftp(1),
+				modem(2),
+				ftp(3),
+                                sftp(5),
+				other(6)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Load protocol:tftp and MODEM currently supported
+				"
+			::= { hwBackupParaEntry 2 }
+		
+		hwBackupFileName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..127))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Backup file name 
+				"
+			::= { hwBackupParaEntry 3 }
+		
+		hwBackupContent OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				configuration(1),	-- configuration file
+				shellMacro(2),   
+				log(3),			-- log file
+				bill(4),         
+				alarm(5),		-- alarm
+				configurationFile(14),	-- configuration file
+				program(15),		-- program file
+				reslocal(16),    
+				resgeneral(17),
+				patch(18),		-- patch file
+				programDatabase(19),	-- database file
+				programBios(20),	-- bios file
+				programApp(21),		-- application file
+				logicFpga(22),		-- fpga logic file
+				logicCpld(23),		-- Cpld logic file
+				logicPci(24),		-- pci logic file
+				logicAfc(25),		-- afc logic file
+				programMicroCode(26),	-- micro-code file
+				programFireware(27),	-- application program of pinch board
+				programDataFlow(28),	-- flow file of card management point
+				programBootFile(29),	-- boot program file of the board start
+				logciPa(30),		-- fpga logic file of the pinch board
+				webExp(31),		-- web exp file
+				webNev(32),		-- web nev file
+				webHelp(33),		-- web help file
+				programBsp(34),		-- bsp program file
+				configurationIni(40),
+				configurationEfs(41),
+				configurationCli(42),
+				programCurrent(45),
+				programOther(46),
+				bcdcInfo(47),           -- bcdc decsription system in ini file 
+				license(49),            -- license file
+                		programExtendedBios(51),  --extended bios file
+                		boardinfo(60),          -- board information
+				extendedBootRom(61), -- extended BootRom file
+				defaultCfg(62), -- default configuration file
+				exception(63), -- exception file
+				versionDescribe(64), -- version description file
+				emuelabel(65),    		-- emu elabel file
+                		emuproofelabel(66),		-- emu proof elabel file
+                		backboardelabel(67),  		---frame back board elabel file
+                		nmscollectinfo(68),  		---nms collect information file
+                		trapsyninfo(69),             ---trap synchronization information file
+                		digitmap(70),           -- h248 Digitmap
+                		h248-profile(71),       -- h248 profile
+                		sip-profile(72),        -- sip profile
+                		elabel(73),             -- elabel file 
+                		sip-digitmap(74),        -- sip Digitmap
+                		iop(75),        -- iop file
+                		port(76)        -- port file
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				backup content
+
+				"
+			::= { hwBackupParaEntry 4 }
+		
+		hwBackupProcess OBJECT-TYPE
+			SYNTAX Integer32 (0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The Process of backup : 0бл100.
+				"
+			::= { hwBackupParaEntry 5 }
+		
+		hwBackupUserName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..31))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The backup user name,which is necessary in FTP mode  and SFTP mode
+				while unnecessary in TFTP mode. 
+				"
+			::= { hwBackupParaEntry 6 }
+		
+		hwBackupPassword OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..16))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				The backup user password, which is necessary in FTP mode and SFTP mode,
+				while unnecessary in TFTP mode.
+				"
+			::= { hwBackupParaEntry 7 }
+		
+		hwBackupBoardType OBJECT-TYPE
+			SYNTAX HWPCBType
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				board type
+				"
+			::= { hwBackupParaEntry 8 }
+			
+		hwBackupRequestID OBJECT-TYPE
+			SYNTAX Integer32 
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the request index for xml	
+				"
+			::= { hwBackupParaEntry 9 }
+		
+		hwBackupServerPort OBJECT-TYPE
+			SYNTAX Unsigned32 (0..65535)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"SFTP server listen port.
+				22 is default value.
+				Value range is between 0 and 65535."
+			DEFVAL { 22 }
+			::= { hwBackupParaEntry 10 }
+			
+		hwPositionPara OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the position parameter	
+				when backup emu ,this parameter is emuID.
+				when backup port,this parameter is portID.
+				when backup subBoard,this parameter is SubBoardID.
+				"
+			::= { hwBackupParaEntry 11 }
+		
+		-- 1.3.6.1.4.1.2011.6.6.1.3
+		snmpTraps OBJECT IDENTIFIER ::= { hwLoadBackupMon 3 }
+		
+		hwLoadAndBackupTrapsOID OBJECT IDENTIFIER ::= { snmpTraps 0 }
+		
+		hwBackupFailAlarm NOTIFICATION-TYPE
+			OBJECTS { hwFrameIndex, hwSlotIndex, hwTrapBackupResult }
+			STATUS current
+			DESCRIPTION 
+				" back up failure alarm trap.
+
+				"
+			::= { hwLoadAndBackupTrapsOID 1 }
+		
+		hwLoadFailAlarm NOTIFICATION-TYPE
+			OBJECTS { hwFrameIndex, hwSlotIndex, hwTrapLoadResult }
+			STATUS current
+			DESCRIPTION 
+				" load failure alarm trap.
+				"
+			::= { hwLoadAndBackupTrapsOID 2 }
+		
+		hwBackupSuccess NOTIFICATION-TYPE
+			OBJECTS { hwFrameIndex, hwSlotIndex }
+			STATUS current
+			DESCRIPTION 
+				"backup success notification.			
+				"
+			::= { hwLoadAndBackupTrapsOID 3 }
+		
+		hwLoadSuccess NOTIFICATION-TYPE
+			OBJECTS { hwFrameIndex, hwSlotIndex }
+			STATUS current
+			DESCRIPTION 
+				"load success notification.	
+				"
+			::= { hwLoadAndBackupTrapsOID 4 }
+		
+		hwCopyAndSaveFail NOTIFICATION-TYPE
+			OBJECTS { hwCopyAndSaveResult }
+			STATUS current
+			DESCRIPTION 
+				"save configuration to flash failure trap .
+				"
+			::= { hwLoadAndBackupTrapsOID 5 }
+		
+		hwCopyAndSaveSuccess NOTIFICATION-TYPE
+			STATUS current
+			DESCRIPTION 
+				"save configuration to flash success notification .
+				"
+			::= { hwLoadAndBackupTrapsOID 6 }
+		
+		hwConfigurationChangedEvent NOTIFICATION-TYPE
+			OBJECTS { hwConfEventCause }
+			STATUS current
+			DESCRIPTION 
+				"configuration changed event alarm.
+			
+				"
+			::= { hwLoadAndBackupTrapsOID 7 }
+		
+		hwTrapCauseOids OBJECT IDENTIFIER ::= { snmpTraps 1 }
+		
+		hwTrapLoadBackupResult OBJECT IDENTIFIER ::= { hwTrapCauseOids 1 }
+		
+		hwTrapLoadResult OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"
+				Definition node of the backup failure cause
+				"
+			::= { hwTrapLoadBackupResult 1 }
+		
+		hwTrapBackupResult OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"
+				Definition node of backup failure cause
+				"
+			::= { hwTrapLoadBackupResult 2 }
+		
+		hwCopyAndSaveResult OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				copyInProgress(1),
+				copyOperationSuccess(2),
+				copyInvalidOperation(3),
+				copyInvalidProtocol(4),
+				copyInvalidSourceName(5),
+				copyInvalidDestName(6),
+				copyInvalidServerAddress(7),
+				copyDeviceBusy(8),
+				copyDeviceOpenError(9),
+				copyDeviceError(10),
+				copyDeviceNotProgrammable(11),
+				copyDeviceFull(12),
+				copyFileOpenError(13),
+				copyFileTransferError(14),
+				copyFileChecksumError(15),
+				copyNoMemory(16),
+				copyUnknownFailure(17)
+				}
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"
+				The failure cause definition node of the memory running copy and resume
+				"
+			::= { hwTrapLoadBackupResult 3 }
+
+		hwTrapEventCauses OBJECT IDENTIFIER ::= { hwTrapCauseOids 2 }
+
+
+		
+		hwBackupAndRestoreConfig OBJECT IDENTIFIER ::= { hwLoadBackupMon 4 }
+		
+		hwBackupAndRestore OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				copyMemToFlash(1),
+				copyFlashToMemory(2),
+				copyMemToHardDisk(3),
+				copyHardDiskToMem(4)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The running configuration in the system has been backed-up to flash or disk, or restored 
+				"
+			::= { hwBackupAndRestoreConfig 1 }
+	
+
+		hwConfigChangedSequence OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"The sequence of system configuration changed
+                        "
+			::= { hwBackupAndRestoreConfig 2 }
+
+--  Activating rollback operation table
+-- 1.3.6.1.4.1.2011.6.6.1.5
+		hwCfgOperTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwCfgOperEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				New MIB node added by BWA production. Activating rollback operation table, used to activate rollback operation.
+				"
+			::= { hwLoadBackupMon 5 }
+		
+-- Activating rollback operation entry
+		-- 1.3.6.1.4.1.2011.6.6.1.5.1
+		hwCfgOperEntry OBJECT-TYPE
+			SYNTAX HwCfgOperEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Activating rollback operation entry. Frame ID and slot ID needed when operating this entry.
+				"
+			INDEX { hwFrameIndex, hwSlotIndex }
+			::= { hwCfgOperTable 1 }
+		
+		HwCfgOperEntry ::=
+			SEQUENCE { 
+				hwConfigAdminStatus
+					INTEGER,
+				hwConfigOperTimeLine
+					Integer32,
+				hwConfigOperProgress
+					Integer32,
+				hwConfigOperStatus
+					INTEGER
+			 }
+
+-- 0: activate default configuration 1: activate backuped software
+-- 2: rollback begin (standby configuration will cover active configuration) 
+-- 3: rollback cancel (active configuration will cover standby configuration)
+		-- 1.3.6.1.4.1.2011.6.6.1.5.1.1
+		hwConfigAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				activeDefaultCfg(0),
+				activeBackupSw(1),
+				beginRollback(2),
+				cancelRollback(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				configuration administration status
+				0: activate default configuration
+				1: activate backuped software
+				2: rollback begin (standby configuration will cover active configuration) 
+				3: rollback cancel (active configuration will cover standby configuration)
+				"
+			::= { hwCfgOperEntry 1 }
+		
+		-- 1.3.6.1.4.1.2011.6.6.1.5.1.2
+		hwConfigOperTimeLine OBJECT-TYPE
+			SYNTAX Integer32 (0..7)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Time limit of canceling rollback operation, unit is day, 0 means canceling rollback immediately.
+				This node is just used for the rollback canceling operation.
+				"
+			::= { hwCfgOperEntry 2 }
+		
+--  Progress indication 0--100
+-- 
+		-- 1.3.6.1.4.1.2011.6.6.1.5.1.3
+		hwConfigOperProgress OBJECT-TYPE
+			SYNTAX Integer32 (0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Progress indication
+				"
+			::= { hwCfgOperEntry 3 }
+		
+--  1--can be rollbacked
+-- 2--can not be rollbacked
+		-- 1.3.6.1.4.1.2011.6.6.1.5.1.4
+		hwConfigOperStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				enableRollback(1),
+				disableRollback(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" 
+				Flag of whether the file can be rollbacked
+				1--can be rollbacked
+				2--can not be rollbacked
+				"
+			::= { hwCfgOperEntry 4 }
+		
+		hwCpeLoadPara OBJECT IDENTIFIER ::= { hwLoadBackupMon 6 }
+        
+		hwServerIpAddrForTerminal OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				the IP address of Tftp Server for rad shsdsl terminal 
+				"
+			::= { hwCpeLoadPara 1 }
+			
+		--Operation Information Tabel	
+		hwOperationInfo OBJECT IDENTIFIER ::= { hwLoadBackup 4 }
+		
+		hwOperationInfoTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwOperationInfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Operation information table
+				"
+			::= { hwOperationInfo 1 }
+
+		hwOperationInfoEntry OBJECT-TYPE
+			SYNTAX HwOperationInfoEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Operation information table entry
+				"
+			INDEX { hwOperationReqID }
+			::= { hwOperationInfoTable 1 }  
+			
+		HwOperationInfoEntry ::=
+			SEQUENCE { 
+				hwOperationReqID
+					Integer32,
+				hwOperationReqType
+					INTEGER,
+				hwOperationReqStatus
+					INTEGER,
+				hwOperationProgress
+					Integer32,
+				hwOperationReqErrStatus
+					Integer32,
+				hwOperationReqStartTime
+					DateAndTime,
+				hwOperationReqEndTime
+					DateAndTime
+					 }
+
+		hwOperationReqID OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The requestID of this operation
+				"
+			::= { hwOperationInfoEntry 1 }
+			
+		hwOperationReqType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				dataSave(1),
+				load(2),
+				backup(3),
+				uninterruptedAutoUpgrade(4),
+				patchrollback(5),
+				clone(6)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Operation type:dataSave, load, backup,uninterruptedAutoUpgrade,clone.
+				"
+			::= { hwOperationInfoEntry 2 }
+			
+		hwOperationReqStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				initial(1),
+				datascanning(2),
+				transferring(3),
+				saving(4),
+				success(5),
+				fail(6),
+				uninterruptedAutoUpgradeResetStandby(7),
+				uninterruptedAutoUpgradeBatchHotBackupFirst(8),
+				uninterruptedAutoUpgradeSwitchOver(9),
+				uninterruptedAutoUpgradeBatchHotBackupSecond(10)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Operation status:initial,datascanning,transferring,saving,success,fail,uninterruptedAutoUpgradeResetStandby,uninterruptedAutoUpgradeBatchHotBackupFirst,uninterruptedAutoUpgradeSwitchOver,uninterruptedAutoUpgradeBatchHotBackupSecond.
+				"
+			::= { hwOperationInfoEntry 3 }
+			
+		hwOperationProgress OBJECT-TYPE
+			SYNTAX Integer32 (0..100)
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				the Process of the operation: 0бл100.
+				"
+			::= { hwOperationInfoEntry 4 }
+			
+		hwOperationReqErrStatus OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The error code of this operation
+				"
+			::= { hwOperationInfoEntry 5 }
+			
+		hwOperationReqStartTime OBJECT-TYPE
+			SYNTAX DateAndTime
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Time when the operation starts
+				"
+			::= { hwOperationInfoEntry 6 }
+
+		hwOperationReqEndTime OBJECT-TYPE
+			SYNTAX DateAndTime
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Time when the operation ends
+				"
+			::= { hwOperationInfoEntry 7 }
+	
+		hwPatch OBJECT IDENTIFIER ::= { hwLoadBackup 2 }
+		
+		hwPatchTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwPatchEntry
+			MAX-ACCESS not-accessible
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Do operations on single patch
+                                "
+			::= { hwPatch 1 }
+		
+		hwPatchEntry OBJECT-TYPE
+			SYNTAX HwPatchEntry
+			MAX-ACCESS not-accessible
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Do operations on single patch
+				"
+			INDEX { hwFrameIndex, hwSlotIndex, hwPatchId }
+			::= { hwPatchTable 1 }
+		
+		HwPatchEntry ::=
+			SEQUENCE { 
+				hwPatchId
+					Unsigned32,
+				hwPatchDescription
+					DisplayString,
+				hwPatchFuncNum
+					Integer32,
+				hwPatchTextLen
+					Integer32,
+				hwPatchDataLen
+					Integer32,
+				hwPatchType
+					INTEGER,
+				hwPatchAdminStatus
+					INTEGER,
+				hwPatchOperState
+					INTEGER
+			 }
+
+		hwPatchId OBJECT-TYPE
+			SYNTAX Unsigned32
+			MAX-ACCESS not-accessible
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Patch ID
+				"
+			::= { hwPatchEntry 1 }
+		
+		hwPatchDescription OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..64))
+			MAX-ACCESS read-only
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Patch Description
+				"
+			::= { hwPatchEntry 2 }
+		
+		hwPatchFuncNum OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Function number included in patch
+				"
+			::= { hwPatchEntry 3 }
+		
+		hwPatchTextLen OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Patch text length
+				"
+			::= { hwPatchEntry 4 }
+		
+		hwPatchDataLen OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Patch data length
+				"
+			::= { hwPatchEntry 5 }
+		
+		hwPatchType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				common(1),
+				temporary(2)
+				}
+			MAX-ACCESS read-only
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Patch type
+				"
+			::= { hwPatchEntry 6 }
+		
+		hwPatchAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				active(1),
+				deactive(2),
+				delete(3),
+				run(4),
+				withdraw(5)
+				}
+			MAX-ACCESS read-write
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Patch administrative status
+				"
+			::= { hwPatchEntry 7 }
+		
+		hwPatchOperState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				patchActive(1),
+				patchDeActive(2),
+				patchRunning(4)
+				}
+			MAX-ACCESS read-only
+			STATUS obsolete
+			DESCRIPTION
+				"
+				Patch operative state
+				"
+			::= { hwPatchEntry 8 }
+		
+		hwPatchStatTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwPatchStatEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Information of patch statistics
+				"
+			::= { hwPatch 2 }
+		
+		hwPatchStatEntry OBJECT-TYPE
+			SYNTAX HwPatchStatEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Information of patch statistics"
+			INDEX { hwFrameIndex, hwSlotIndex }
+			::= { hwPatchStatTable 1 }
+		
+		HwPatchStatEntry ::=
+			SEQUENCE { 
+				hwPatchStatNumMax
+					Integer32,
+				hwPatchStatTextMax
+					Integer32,
+				hwPatchStatDataMax
+					Integer32,
+				hwPatchStatTextUsed
+					Integer32,
+				hwPatchStatDataUsed
+					Integer32
+			 }
+
+		hwPatchStatNumMax OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				The maximum number of patches can be supported in system
+				"
+			::= { hwPatchStatEntry 1 }
+		
+		hwPatchStatTextMax OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Size of patch code area
+				"
+			::= { hwPatchStatEntry 2 }
+		
+		hwPatchStatDataMax OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Size of patch data area"
+			::= { hwPatchStatEntry 3 }
+		
+		hwPatchStatTextUsed OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Patch code area used"
+			::= { hwPatchStatEntry 4 }
+		
+		hwPatchStatDataUsed OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Patch data area used"
+			::= { hwPatchStatEntry 5 }
+
+
+		hwPatchNewTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwPatchNewEntry 
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Do operations on single patch
+				"
+			::= { hwPatch 3 }
+		
+		hwPatchNewEntry  OBJECT-TYPE
+			SYNTAX HwPatchNewEntry 
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Do operations on single patch
+				"
+			INDEX { hwFrameIndex, hwSlotIndex, hwNewPatchName }
+			::= { hwPatchNewTable 1 }
+		
+		HwPatchNewEntry  ::=
+			SEQUENCE { 
+				hwNewPatchName
+					DisplayString,	
+				hwNewPatchDescription
+					DisplayString,					
+				hwNewPatchType
+					INTEGER,
+				hwNewPatchAdminStatus
+					INTEGER,
+				hwNewPatchOperState
+					INTEGER,
+				hwNewPatchRely
+				        DisplayString,       
+				hwNewPatchRelied
+				        DisplayString,
+				hwNewPatchRequestID
+					Integer32
+			 }
+
+		hwNewPatchName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (17))
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"
+				Patch Name
+				"
+			::= { hwPatchNewEntry  1 }
+		
+		hwNewPatchDescription OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..64))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Patch Description
+				"
+			::= { hwPatchNewEntry  2 }
+					
+				
+		hwNewPatchType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				hot_common(1),
+				hot_temporary(2),
+				cold_common(3),
+				cold_temporary(4)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Patch type
+				"
+			::= { hwPatchNewEntry  3 }
+		
+		hwNewPatchAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				active(1),
+				deactive(2),
+				delete(3),
+				run(4),
+				rollback(6)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"
+				Patch administrative status
+				"
+			::= { hwPatchNewEntry  4 }
+		
+		hwNewPatchOperState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				patchActive(1),
+				patchDeActive(2),
+				patchRunning(4),
+				patchWaitActive(5),
+				patchWaitRunning(6),
+				patchWaitDelete(7)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Patch operative state
+				"
+			::= { hwPatchNewEntry  5 }			
+			
+		hwNewPatchRely OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..255))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Patch Relying
+				"
+			::= { hwPatchNewEntry  6 }		
+			
+		hwNewPatchRelied OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (0..255))
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"
+				Patch Relied
+				"
+			::= { hwPatchNewEntry  7 }			
+			
+		hwNewPatchRequestID OBJECT-TYPE
+			SYNTAX Integer32
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"patch rollback requestid"
+			::= { hwPatchNewEntry 8 }
+			
+		hwBackupDataToServer OBJECT IDENTIFIER ::= { hwLoadBackup 3 }
+
+		hwBackupServerTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBackupServerEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The table contains backup server configuration parameters."
+			::= { hwBackupDataToServer 1 }
+
+		hwBackupServerEntry OBJECT-TYPE
+			SYNTAX HwBackupServerEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Backup server table entry."
+			INDEX { hwBackupDataType, hwBackupServerType }
+			::= { hwBackupServerTable 1 }
+		
+		HwBackupServerEntry ::=
+			SEQUENCE { 
+				hwBackupDataType
+					INTEGER,
+				hwBackupServerType
+					INTEGER,
+				hwBackupServerIpAddress
+					IpAddress,
+				hwBackupServerMode
+					INTEGER,
+				hwBackupUser
+					DisplayString,
+				hwBackupUserPassword
+					DisplayString,
+				hwBackupPathName
+					DisplayString,
+				hwBackupPort
+					Unsigned32,
+				hwBackupServerState
+					INTEGER,
+				hwBackupServerRowStatus
+					RowStatus
+			 }
+
+		hwBackupDataType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				database(1),
+				configurationfile(2),
+				alarm(3),
+				log(4),
+				lastword(5),
+				cdr(6)
+				}
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Backup data type:there are database,configuration file,
+				alarm,log,lastword,and CDR."
+			::= { hwBackupServerEntry 1 }
+
+		hwBackupServerType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				primaryserver(1),
+				secondaryserver(2)
+				}
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Server type:the server may be primary server or secondary server."
+			::= { hwBackupServerEntry 2 }
+
+		hwBackupServerIpAddress OBJECT-TYPE
+			SYNTAX IpAddress
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"The backup server's IP Address."
+			::= { hwBackupServerEntry 3 }
+
+		hwBackupServerMode OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				tftp(1),
+				ftp(2),
+				sftp(3)
+				}
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Protocal be used to transfer the file.
+				they are TFTP,FTP,SFTP."
+			::= { hwBackupServerEntry 4 }
+
+		hwBackupUser OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..40))
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"The backup user name,which is necessary in FTP mode and SFTP mode 
+				while unnecessary in TFTP mode."
+			::= { hwBackupServerEntry 5 }
+
+		hwBackupUserPassword OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..40))
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"The backup password,which is necessary in FTP mode and SFTP mode 
+				while unnecessary in TFTP mode."
+			::= { hwBackupServerEntry 6 }
+
+		hwBackupPathName OBJECT-TYPE
+			SYNTAX DisplayString (SIZE (1..64))
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"The backup path name,which is necessary in FTP mode and SFTP mode 
+				while unnecessary in TFTP mode."
+			::= { hwBackupServerEntry 7 }
+
+		hwBackupPort OBJECT-TYPE
+			SYNTAX Unsigned32 (0..65535)
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"SFTP port number.The default value is 22.It is used by SFTP."
+			::= { hwBackupServerEntry 8 }
+
+		hwBackupServerState OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				currentserver(1),
+				notcurrentserver(2)
+				}
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				"Describe whether the server is current server."
+			::= { hwBackupServerEntry 9 }
+
+		hwBackupServerRowStatus OBJECT-TYPE
+			SYNTAX RowStatus
+			MAX-ACCESS read-create
+			STATUS current
+			DESCRIPTION
+				"Operation status of NMS station,the NMS station 
+				can be added,deleted and modified.
+				"
+			::= { hwBackupServerEntry 10 }
+
+		hwBackupPeriodTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBackupPeriodEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The table contains data backup interval parameters."
+			::= { hwBackupDataToServer 2 }
+
+		hwBackupPeriodEntry OBJECT-TYPE
+			SYNTAX HwBackupPeriodEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Backup interval table entry."
+			INDEX { hwBackupDataType }
+			::= { hwBackupPeriodTable 1 }
+		
+		HwBackupPeriodEntry ::=
+			SEQUENCE { 
+				hwBackupInterval
+					Integer32,
+				hwBackupTime
+					OCTET STRING,
+				hwBackupPeriodSwitch
+					INTEGER
+			 }
+
+		hwBackupInterval OBJECT-TYPE
+			SYNTAX Integer32 (1..10)
+			UNITS "day"
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Backup interval."
+			DEFVAL { 1 }
+			::= { hwBackupPeriodEntry 1 }
+
+		hwBackupTime OBJECT-TYPE
+			SYNTAX OCTET STRING (SIZE (5))
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Backup time.Data's default backup time is 00:00,
+				configuration's default backup time is 01:00,
+				alarm's default backup time is 02:00,
+				log's default backup time is 03:00,
+				lastword's backup time is 04:00."
+			::= { hwBackupPeriodEntry 2 }
+
+		hwBackupPeriodSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Period backup switch."
+			DEFVAL { 2 }
+			::= { hwBackupPeriodEntry 3 }
+
+		hwBackupCondition OBJECT IDENTIFIER ::= { hwBackupDataToServer 3 }
+
+		hwBackupAlarmCondition OBJECT-TYPE
+			SYNTAX Integer32 (500..1000)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Alarm backup condition."
+			DEFVAL { 500 }
+			::= { hwBackupCondition 2 }
+
+		hwBackupLogCondition OBJECT-TYPE
+			SYNTAX Integer32 (100..250)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Log backup condition."
+			DEFVAL { 100 }
+			::= { hwBackupCondition 3 }
+
+		hwBackupLastwordCondition OBJECT-TYPE
+			SYNTAX Integer32 (200..300)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Lastword backup condition."
+			DEFVAL { 200 }
+			::= { hwBackupCondition 4 }
+
+		hwBackupAlarmConditionSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Alarm condition backup switch."
+			DEFVAL { 2 }
+			::= { hwBackupCondition 5 }
+
+		hwBackupLogConditionSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Log condition backup switch."
+			DEFVAL { 2 }
+			::= { hwBackupCondition 6 }
+
+		hwBackupLastwordConditionSwitch OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				on(1),
+				off(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Lastword condition backup switch."
+			DEFVAL { 2 }
+			::= { hwBackupCondition 7 }
+
+		hwBackupByHandTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBackupByHandEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The table is used to trigger data backup. "
+			::= { hwBackupDataToServer 4 }
+
+		hwBackupByHandEntry OBJECT-TYPE
+			SYNTAX HwBackupByHandEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Backup by hand table entry."
+			INDEX { hwBackupDataType }
+			::= { hwBackupByHandTable 1 }
+		
+		HwBackupByHandEntry ::=
+			SEQUENCE { 
+				hwBackupByHand
+					INTEGER
+			 }
+
+		hwBackupByHand OBJECT-TYPE
+			SYNTAX INTEGER (1)
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Backup by hand."
+			::= { hwBackupByHandEntry 1 }
+		
+	
+	END
+

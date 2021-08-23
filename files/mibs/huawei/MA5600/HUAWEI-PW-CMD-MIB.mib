@@ -1,0 +1,1474 @@
+--  =================================================================
+-- Copyright (C) 2005 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description:HUAWEI PW Cmd mib
+-- Reference:This mib is created for unicmo.
+-- Version: V1.0
+-- History:
+-- 
+-- =================================================================
+
+    HUAWEI-PW-CMD-MIB DEFINITIONS ::= BEGIN
+ 
+        IMPORTS 
+            hwMpls            
+                FROM HUAWEI-MIB 
+            InterfaceIndex            
+                FROM IF-MIB            
+            InetAddressType            
+                FROM INET-ADDRESS-MIB
+            IpAddress, Integer32, Unsigned32, Counter32, Counter64, 
+			OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE	
+				FROM SNMPv2-SMI	            
+            TruthValue, TimeStamp, RowStatus      
+                FROM SNMPv2-TC 
+            PwVcType
+                FROM HUAWEI-PW-TC-MIB
+            ;
+    
+        hwPwCmdMIB MODULE-IDENTITY 
+            LAST-UPDATED "200605081047Z"		-- May 08, 2006 at 10:47 GMT
+            ORGANIZATION 
+                "Huawei Technologies Co., Ltd."
+            CONTACT-INFO 
+                "R&D BeiJing, Huawei Technologies co.,Ltd.
+                Huawei Bld.,NO.3 Xinxi Rd., 
+                Shang-Di Information Industry Base,
+                Hai-Dian District Beijing P.R. China
+                Zip:100085 
+                Http://www.huawei.com                                       
+                E-mail:support@huawei.com"
+            DESCRIPTION 
+                "The PW-CMD-MIB contains objects to manage pw commands."
+            REVISION "200605081506Z"		-- May 08, 2006 at 15:06 GMT
+            DESCRIPTION
+                "Initial revision."
+            ::= { hwPw 1 }  
+            
+        hwPw OBJECT IDENTIFIER ::= { hwMpls 8 }   
+
+--  
+-- Textual conventions
+-- 
+        SignalProtocolType ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION 
+                "Set by the operator to indicate the protocol responsible  
+            for establishing this PW. The value 'static' is used in all 
+            cases where no maintenance protocol (PW signaling) is used  
+            to set-up the PW, i.e. require configuration of entries in 
+            the PW tables including PW labels, etc. The value 'ldp' is 
+            used in case of signaling with the Pwid FEC element with LDP 
+            signaling. The value 'rsvp' indicate the use of rsvp  
+            control protocol."
+            SYNTAX INTEGER
+                {
+                ldp(1),
+                static(2),
+                rsvp(3)
+                }
+            
+        VcStatusType ::= TEXTUAL-CONVENTION
+            STATUS current
+            DESCRIPTION 
+                "The status of the PW and the interfaces affecting this PW."
+            SYNTAX INTEGER
+                {
+                down(1),
+                up(2),
+                plugout(3)
+                }
+            
+        hwPwCmdVcNotifications OBJECT IDENTIFIER ::= { hwPwCmdMIB 1 }
+        
+        hwPwCmdVcSwitchWtoP NOTIFICATION-TYPE
+            OBJECTS { hwPwCmdVcIndex,     -- index of working pw
+                      hwPwCmdVcIndex      -- index of protect pw
+                    }
+            STATUS current
+            DESCRIPTION 
+                "This notification is generated when switch from working
+                pw to protect pw happens."
+            ::= { hwPwCmdVcNotifications 1 }
+        
+        hwPwCmdVcSwitchPtoW NOTIFICATION-TYPE
+            OBJECTS { hwPwCmdVcIndex,     -- index of protect pw
+                      hwPwCmdVcIndex      -- index of working pw
+                    }
+            STATUS current
+            DESCRIPTION 
+                "This notification is generated when switch from protect
+                pw to working pw happens."
+            ::= { hwPwCmdVcNotifications 2 }    
+            
+        hwPwCmdVcUp NOTIFICATION-TYPE
+            OBJECTS { hwPwCmdAcBindingConnectIndex,     -- index of pw
+                      hwPwCmdAcBindingVcStatus          -- vc status of pw
+                    }
+            STATUS current
+            DESCRIPTION 
+                "This notification is generated when the vc status 
+                change from other status to up."
+            ::= { hwPwCmdVcNotifications 3 }
+        
+        hwPwCmdVcDown NOTIFICATION-TYPE
+            OBJECTS { hwPwCmdAcBindingConnectIndex,     -- index of pw
+                      hwPwCmdAcBindingVcStatus          -- vc status of pw
+                    }
+            STATUS current
+            DESCRIPTION 
+                "This notification is generated when the vc status 
+                change from other status to down."
+            ::= { hwPwCmdVcNotifications 4 }
+
+
+        --  Tables, Scalars             
+        hwPwCmdObjects OBJECT IDENTIFIER ::= { hwPwCmdMIB 2 }
+            
+        --  PW Virtual Connection (VC) Table     
+        hwPwCmdVcIndexNext OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object contains an appropriate value to be used 
+            for hwPwCmdVcIndex when creating entries in the 
+            hwPwCmdVcTable. The value 0 indicates that no 
+            unassigned entries are available.  To obtain the 
+            value of hwPwCmdVcIndex for a new entry in the 
+            hwPwCmdVcTable, the manager issues a management 
+            protocol retrieval operation to obtain the current 
+            value of hwPwCmdVcIndex.  After each retrieval 
+            operation, the agent should modify the value to 
+            reflect the next unassigned index.  After a manager 
+            retrieves a value the agent will determine through 
+            its local policy when this index value will be made 
+            available for reuse."
+            ::= { hwPwCmdObjects 1 }
+        
+        hwPwCmdVcTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwPwCmdVcEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table specifies information for configuring and 
+            status monitoring which are common to all service types."
+            ::= { hwPwCmdObjects 2 }
+        
+        hwPwCmdVcEntry OBJECT-TYPE
+            SYNTAX HwPwCmdVcEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A row in this table represents a pseudo wire (PW) virtual 
+            connection (VC) across a packet network. It is indexed by 
+            hwPwCmdVcIndex, which uniquely identifying a singular  
+            connection.  
+            A row is created by the operator or by the agent if the PW 
+            is created by non-SNMP application or due to autodiscovery  
+            process. 
+            None of the read-create objects values can be changed  
+            when pwVcRowStatus is in the active(1) state.  
+            If the operator need to change one of the values for an 
+            active row (for example in order to fix a mismatch in 
+            configuration between the local node and the peer), the 
+            pwVcRowStatus should be first changed to notInService(2), 
+            the objects may be changed now, and later to active(1)  
+            in order to re-initiate the signaling process with the 
+            new values in effect. "
+            INDEX { hwPwCmdVcIndex }
+            ::= { hwPwCmdVcTable 1 }
+        
+        HwPwCmdVcEntry ::=
+            SEQUENCE { 
+                hwPwCmdVcIndex
+                    Unsigned32,
+                hwPwCmdVcSignalProtocol
+                    SignalProtocolType,
+                hwPwCmdVcID
+                    Unsigned32,
+                hwPwCmdVcType
+                    PwVcType,
+                hwPwCmdVcPeerAddrType
+                    InetAddressType,
+                hwPwCmdVcPeerAddr
+                    IpAddress,
+                hwPwCmdVcStatus
+                    VcStatusType,
+                hwPwCmdVcInboundLabel
+                    Unsigned32,
+                hwPwCmdVcOutboundLabel
+                    Unsigned32,  
+                hwPwCmdVcSwitchSignalProtocol
+                    SignalProtocolType, 
+                hwPwCmdVcSwitchID
+                    Unsigned32,
+                hwPwCmdVcSwitchPeerAddrType
+                    InetAddressType,
+                hwPwCmdVcSwitchPeerAddr
+                    IpAddress,
+                hwPwCmdVcSwitchInboundLabel
+                    Unsigned32,
+                hwPwCmdVcSwitchOutboundLabel
+                    Unsigned32,
+                hwPwCmdVcGroupID
+                    Unsigned32,
+                hwPwCmdVcIfIndex
+                    InterfaceIndex,
+                hwPwCmdVcAcStatus
+                    INTEGER,
+                hwPwCmdVcMtu
+                    Unsigned32,
+                hwPwCmdVcCw
+                    TruthValue,
+                hwPwCmdVcVCCV
+                    BITS,                    
+                hwPwCmdVcBandwidth
+                    Unsigned32,
+                hwPwCmdVcMaxAtmCells
+                    Unsigned32,
+                hwPwCmdVcTnlPolicyName
+                    OCTET STRING,
+                hwPwCmdVcQoSBehaviorIndex
+                    Unsigned32,
+                hwPwCmdVcExplicitPathName
+                    OCTET STRING,
+                hwPwCmdVcTemplateIndex
+                    Unsigned32,
+                hwPwCmdVcSecondary
+                    TruthValue,
+                hwPwCmdVcUpTime
+                    TimeStamp,
+                hwPwCmdVcRowStatus
+                    RowStatus
+             }
+
+        hwPwCmdVcIndex OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Index for the conceptual row identifying a PW within  
+        this PW Emulation table."
+            ::= { hwPwCmdVcEntry 1 }
+        
+        hwPwCmdVcSignalProtocol OBJECT-TYPE
+            SYNTAX SignalProtocolType
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Set by the operator to indicate the protocol responsible  
+            for establishing this PW. The value 'static' is used in all 
+            cases where no maintenance protocol (PW signaling) is used  
+            to set-up the PW, i.e. require configuration of entries in 
+            the PW tables including PW labels, etc. The value 'ldp' is 
+            used in case of signaling with the Pwid FEC element with LDP 
+            signaling. The value 'rsvp' indicate the use of rsvp  
+            control protocol."
+            ::= { hwPwCmdVcEntry 2 }
+        
+        hwPwCmdVcID OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Used in the outgoing PW ID field within the 'Virtual 
+            Circuit FEC Element'."
+            ::= { hwPwCmdVcEntry 3 }
+        
+        hwPwCmdVcType OBJECT-TYPE
+            SYNTAX PwVcType
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "This value indicate the service to be carried over 
+            this PW."
+            ::= { hwPwCmdVcEntry 4 }
+        
+        hwPwCmdVcPeerAddrType OBJECT-TYPE
+            SYNTAX InetAddressType
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Denotes the address type of the peer node. It should be  
+            set to 'unknown' if PE/PW maintenance protocol is not used 
+            and the address is unknown."
+            DEFVAL { ipv4 }
+            ::= { hwPwCmdVcEntry 5 }
+        
+        hwPwCmdVcPeerAddr OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "This object contain the value of the peer node address 
+            of the PW/PE maintenance protocol entity. This object  
+            SHOULD contain a value of all zeroes if not applicable  
+            (hwPwCmdVcPeerAddrType is 'unknown')."
+            ::= { hwPwCmdVcEntry 6 }
+        
+        hwPwCmdVcStatus OBJECT-TYPE
+            SYNTAX VcStatusType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the status of the PW in the local node."
+            ::= { hwPwCmdVcEntry 7 }
+        
+        hwPwCmdVcInboundLabel OBJECT-TYPE
+            SYNTAX Unsigned32 (16..1023)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The PW label used in the inbound direction (i.e. packets  
+            received from the PSN. It may be set up manually if owner 
+            is 'manual' or automatically otherwise.  
+            Examples: For MPLS PSN, it represents the 20 bits of PW 
+            tag, for L2TP it represent the 32 bits Session ID. 
+            If the label is not yet known (signaling in process), the  
+            object should return a value of 0xFFFF."
+            ::= { hwPwCmdVcEntry 8 }
+        
+        hwPwCmdVcOutboundLabel OBJECT-TYPE
+            SYNTAX Unsigned32 (16..1023)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The PW label used in the outbound direction (i.e. toward  
+            the PSN). It may be set up manually if owner is 'manual'  
+            or automatically otherwise. Examples: For MPLS PSN, it  
+            represents the 20 bits of PW tag, for L2TP it represent  
+            the 32 bits Session ID. 
+            If the label is not yet known (signaling in process), the  
+            object should return a value of 0xFFFF."
+            ::= { hwPwCmdVcEntry 9 }       
+        
+        hwPwCmdVcSwitchSignalProtocol OBJECT-TYPE
+            SYNTAX SignalProtocolType
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Set by the operator to indicate the protocol responsible  
+            for establishing this PW. The value 'static' is used in all 
+            cases where no maintenance protocol (PW signaling) is used  
+            to set-up the PW, i.e. require configuration of entries in 
+            the PW tables including PW labels, etc. The value 'ldp' is 
+            used in case of signaling with the Pwid FEC element with LDP 
+            signaling. The value 'rsvp' indicate the use of rsvp  
+            control protocol."
+            ::= { hwPwCmdVcEntry 10 }
+            
+        hwPwCmdVcSwitchID OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Used in the outgoing PW ID field within the 'Virtual 
+            Circuit FEC Element' of the switch pw."
+            ::= { hwPwCmdVcEntry 11 }
+
+        hwPwCmdVcSwitchPeerAddrType OBJECT-TYPE
+            SYNTAX InetAddressType
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Denotes the address type of the peer node of the switch pw.
+            It should be  
+            set to 'unknown' if PE/PW maintenance protocol is not used 
+            and the address is unknown."
+            ::= { hwPwCmdVcEntry 12 }
+                                            
+        hwPwCmdVcSwitchPeerAddr OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "This object contain the value of the peer node address of the
+            switch pw of the PW/PE maintenance protocol entity. This object  
+            SHOULD contain a value of all zeroes if not applicable  
+            (hwPwCmdVcSwitchPeerAddrType is 'unknown')."
+            ::= { hwPwCmdVcEntry 13 }
+                                     
+        hwPwCmdVcSwitchInboundLabel OBJECT-TYPE
+            SYNTAX Unsigned32 (16..1023)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The PW label used in the inbound direction (i.e. packets  
+            received from the PSN. It may be set up manually if owner 
+            is 'manual' or automatically otherwise.  
+            Examples: For MPLS PSN, it represents the 20 bits of PW 
+            tag, for L2TP it represent the 32 bits Session ID. 
+            If the label is not yet known (signaling in process), the  
+            object should return a value of 0xFFFF."
+            ::= { hwPwCmdVcEntry 14 }  
+                                     
+        hwPwCmdVcSwitchOutboundLabel OBJECT-TYPE
+            SYNTAX Unsigned32 (16..1023)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The PW label used in the outbound direction (i.e. toward  
+            the PSN). It may be set up manually if owner is 'manual'  
+            or automatically otherwise. Examples: For MPLS PSN, it  
+            represents the 20 bits of PW tag, for L2TP it represent  
+            the 32 bits Session ID. 
+            If the label is not yet known (signaling in process), the  
+            object should return a value of 0xFFFF."
+            ::= { hwPwCmdVcEntry 15 }  
+                                               
+        hwPwCmdVcGroupID OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Used in the Group ID field sent to the peer PWES  
+            within the maintenance protocol used for PW setup. 
+            Applicable if pwVcOwner equal 'pwIdFecSignaling' or  
+            'l2tpControlProtocol', should be set to zero otherwise."
+            ::= { hwPwCmdVcEntry 16 }
+
+        hwPwCmdVcIfIndex OBJECT-TYPE
+            SYNTAX InterfaceIndex
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Index of the interface (or the virtual interface) 
+            associated with the PW."
+            ::= { hwPwCmdVcEntry 17 }
+        
+        hwPwCmdVcAcStatus OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                down(1),
+                up(2),
+                plugout(3)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Local AC status."
+            ::= { hwPwCmdVcEntry 18 }
+        
+        hwPwCmdVcMtu OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "If not equal zero, the optional Mtu object in the  
+            signaling protocol will be sent with this value,  
+            representing the locally supported MTU size over the  
+            interface (or the virtual interface) associated with the  
+            PW."
+            ::= { hwPwCmdVcEntry 19 }
+        
+        hwPwCmdVcCw OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "If signaling is used for PW establishment, this object  
+            indicates the status of the control word negotiation,  
+            and in both signaling or manual configuration indicates  
+            if CW is to be present or not for this PW."
+            ::= { hwPwCmdVcEntry 20 }
+
+        hwPwCmdVcVCCV OBJECT-TYPE
+            SYNTAX BITS
+                {
+                ccCw(0),
+                ccAlert(1),
+                ccLabel(2),
+                cvIcmpping(3),
+                cvLspping(4),
+                cvBfd(5)
+                }            
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the optional VCCV capabilities of the pw."
+            ::= { hwPwCmdVcEntry 21 }
+                    
+        hwPwCmdVcBandwidth OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the bandwitdh when signaling protocol is rsvp."
+            ::= { hwPwCmdVcEntry 22 }
+        
+        hwPwCmdVcMaxAtmCells OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the max cell supported when vctype is atm."
+            ::= { hwPwCmdVcEntry 23 }
+        
+        hwPwCmdVcTnlPolicyName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (0..20))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the tunnel policy name used."
+            ::= { hwPwCmdVcEntry 24 }
+        
+        hwPwCmdVcQoSBehaviorIndex OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the traffic behavior Index when QOS is implemented."
+            ::= { hwPwCmdVcEntry 25 }
+        
+        hwPwCmdVcExplicitPathName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (0..20))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the explicit path name set by the operator."
+            ::= { hwPwCmdVcEntry 26 }
+        
+        hwPwCmdVcTemplateIndex OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the pw template index referenced."
+            ::= { hwPwCmdVcEntry 27 }
+        
+        hwPwCmdVcSecondary OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates whether or not the secondary pw is used."
+            ::= { hwPwCmdVcEntry 28 }
+        
+        hwPwCmdVcUpTime OBJECT-TYPE
+            SYNTAX TimeStamp
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the total time this PW status has been  
+            Up(1)."
+            ::= { hwPwCmdVcEntry 29 }
+        
+        hwPwCmdVcRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "For creating and modifying this row. None of the 
+            read-create objects in the conceptual rows may be changed  
+            when this object is in the active(1) state."
+            ::= { hwPwCmdVcEntry 30 }
+
+        hwPwCmdVcTnlTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwPwCmdVcTnlEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table provides per-PW related tunnel information."
+            ::= { hwPwCmdObjects 3 }
+
+        hwPwCmdVcTnlEntry OBJECT-TYPE
+            SYNTAX HwPwCmdVcTnlEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "An entry in this table is created by the agent for 
+            every PW."
+            INDEX { hwPwCmdVcIndex,
+                    hwPwCmdVcTnlIndex
+                  }
+            ::= { hwPwCmdVcTnlTable 1 }
+
+        HwPwCmdVcTnlEntry ::=
+            SEQUENCE { 
+                hwPwCmdVcTnlIndex
+                    Unsigned32
+            }
+
+        hwPwCmdVcTnlIndex OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the tunnel index related to each PW."
+            ::= { hwPwCmdVcTnlEntry 1 }
+                     
+        hwPwCmdRemoteVcTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwPwCmdRemoteVcEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table provides remote PW information for  
+            each local PW."
+            ::= { hwPwCmdObjects 4 }
+        
+        hwPwCmdRemoteVcEntry OBJECT-TYPE
+            SYNTAX HwPwCmdRemoteVcEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "An entry in this table is created by the agent for 
+            every PW."
+            AUGMENTS { hwPwCmdVcEntry }
+            ::= { hwPwCmdRemoteVcTable 1 }
+        
+        HwPwCmdRemoteVcEntry ::=
+            SEQUENCE { 
+                hwPwCmdRemoteVcID
+                    Unsigned32,
+                hwPwCmdRemoteVcType
+                    PwVcType,
+                hwPwCmdRemoteVcStatus
+                    VcStatusType,
+                hwPwCmdRemoteVcGroupID
+                    Unsigned32,
+                hwPwCmdRemoteVcMtu
+                    Unsigned32,
+                hwPwCmdRemoteVcCw
+                    TruthValue,
+                hwPwCmdRemoteVcMaxAtmCells
+                    Unsigned32,
+                hwPwCmdRemoteVcNotif
+                    TruthValue,
+                hwPwCmdRemoteVcSwitchID
+                    Unsigned32,
+                hwPwCmdRemoteVcSwitchType
+                    PwVcType,
+                hwPwCmdRemoteVcSwitchStatus
+                    VcStatusType,
+                hwPwCmdRemoteVcSwitchGroupID
+                    Unsigned32,
+                hwPwCmdRemoteVcSwitchMtu
+                    Unsigned32,
+                hwPwCmdRemoteVcSwitchCw
+                    TruthValue,
+                hwPwCmdRemoteVcSwitchMaxAtmCells
+                    Unsigned32,
+                hwPwCmdRemoteVcSwitchNotif
+                    TruthValue                    
+             }
+
+        hwPwCmdRemoteVcID OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Used in the outgoing PW ID field within the 'Virtual 
+            Circuit FEC Element' of the remote PW."
+            ::= { hwPwCmdRemoteVcEntry 1 }
+        
+        hwPwCmdRemoteVcType OBJECT-TYPE
+            SYNTAX PwVcType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This value indicate the service to be carried over 
+            the remote PW."
+            ::= { hwPwCmdRemoteVcEntry 2 }
+        
+        hwPwCmdRemoteVcStatus OBJECT-TYPE
+            SYNTAX VcStatusType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the status of the remote PW."
+            ::= { hwPwCmdRemoteVcEntry 3 }
+        
+        hwPwCmdRemoteVcGroupID OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the Group ID field of the remote PW."
+            ::= { hwPwCmdRemoteVcEntry 4 }
+        
+        hwPwCmdRemoteVcMtu OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the supported MTU size of the remote PW."
+            ::= { hwPwCmdRemoteVcEntry 5 }
+        
+        hwPwCmdRemoteVcCw OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the control word capability of the remote PW."
+            ::= { hwPwCmdRemoteVcEntry 6 }
+        
+        hwPwCmdRemoteVcMaxAtmCells OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the max cell supported of the remote PW 
+                when vctype is atm."
+            ::= { hwPwCmdRemoteVcEntry 7 }
+        
+        hwPwCmdRemoteVcNotif OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates notification is supported by the remote PW."
+            ::= { hwPwCmdRemoteVcEntry 8 }
+
+        hwPwCmdRemoteVcSwitchID OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Used in the outgoing PW ID field within the 'Virtual 
+            Circuit FEC Element' of the switch PW."
+            ::= { hwPwCmdRemoteVcEntry 9 }
+        
+        hwPwCmdRemoteVcSwitchType OBJECT-TYPE
+            SYNTAX PwVcType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This value indicate the service to be carried over 
+            the switch PW."
+            ::= { hwPwCmdRemoteVcEntry 10 }
+        
+        hwPwCmdRemoteVcSwitchStatus OBJECT-TYPE
+            SYNTAX VcStatusType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the status of the switch PW."
+            ::= { hwPwCmdRemoteVcEntry 11 }
+        
+        hwPwCmdRemoteVcSwitchGroupID OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the Group ID field of the switch PW."
+            ::= { hwPwCmdRemoteVcEntry 12 }
+        
+        hwPwCmdRemoteVcSwitchMtu OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the supported MTU size of the switch PW."
+            ::= { hwPwCmdRemoteVcEntry 13 }
+        
+        hwPwCmdRemoteVcSwitchCw OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the control word capability of the switch PW."
+            ::= { hwPwCmdRemoteVcEntry 14 }
+        
+        hwPwCmdRemoteVcSwitchMaxAtmCells OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the max cell supported of the switch PW 
+            when vctype is atm."
+            ::= { hwPwCmdRemoteVcEntry 15 }
+        
+        hwPwCmdRemoteVcSwitchNotif OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates notification is supported by the switch PW."
+            ::= { hwPwCmdRemoteVcEntry 16 }
+        
+        hwPwCmdAcBindingTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwPwCmdAcBindingEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table specifies information for configuring and 
+            status monitoring for PW used in fixed network."
+            ::= { hwPwCmdObjects 5 }
+        
+        hwPwCmdAcBindingEntry OBJECT-TYPE
+            SYNTAX HwPwCmdAcBindingEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A row in this table represents a pseudo wire (PW) virtual 
+            connection (VC)."
+            INDEX { hwPwCmdAcBindingConnectIndex }
+            ::= { hwPwCmdAcBindingTable 1 }
+        
+        HwPwCmdAcBindingEntry ::=
+            SEQUENCE { 
+                hwPwCmdAcBindingFlowIndex
+                    Unsigned32,
+                hwPwCmdAcBindingVcID
+                    Unsigned32,  
+                hwPwCmdAcBindingVcStatus
+                    VcStatusType,
+                hwPwCmdAcBindingTemplateName
+                    OCTET STRING,
+                hwPwCmdAcBindingOutboundVpi
+                    Integer32,
+                hwPwCmdAcBindingOutboundVci
+                    Integer32,          
+                hwPwCmdAcBindingSignalProtocol
+                    SignalProtocolType,
+                hwPwCmdAcBindingOutboundLabel
+                    Integer32,
+                hwPwCmdAcBindingInboundLabel
+                    Integer32,
+                hwPwCmdAcBindingRowStatus
+                    RowStatus
+             }
+
+        hwPwCmdAcBindingFlowIndex OBJECT-TYPE
+            SYNTAX Unsigned32 (1..16384)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Indicates the flow index referenced."
+            ::= { hwPwCmdAcBindingEntry 1 }
+
+        hwPwCmdAcBindingVcID OBJECT-TYPE
+            SYNTAX Unsigned32 (1..4294967295)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Used in the outgoing PW ID field within the 'Virtual 
+            Circuit FEC Element'."
+            ::= { hwPwCmdAcBindingEntry 2 }
+        
+        hwPwCmdAcBindingVcStatus OBJECT-TYPE
+            SYNTAX VcStatusType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the status of the PW: 
+            down(1),
+            up(2),
+            plugout(3)."
+            ::= { hwPwCmdAcBindingEntry 3 }
+        
+        hwPwCmdAcBindingTemplateName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (1..19))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the description string of the tempalte,
+            MUST be NULL string if not applicable or not known yet."
+            ::= { hwPwCmdAcBindingEntry 4 }
+                
+        hwPwCmdAcBindingOutboundVpi OBJECT-TYPE
+            SYNTAX Integer32 (0..4095)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "VPI value of this ATM VC. 
+            If the pwVcType is atmNto1Transparent then the value will be set
+            to zero."
+            ::= { hwPwCmdAcBindingEntry 5 }
+        
+        hwPwCmdAcBindingOutboundVci OBJECT-TYPE
+            SYNTAX Integer32 (32..65535)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "VCI value of this ATM VC. 
+            If the pwVcType is atmNto1Transparent, atmCell1to1Vpc or
+            atmCellNto1Vpc then the value should be set to zero."
+            ::= { hwPwCmdAcBindingEntry 6 }
+
+        hwPwCmdAcBindingSignalProtocol OBJECT-TYPE
+            SYNTAX SignalProtocolType
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Set by the operator to indicate the protocol responsible  
+            for establishing this PW. The value 'static' is used in all 
+            cases where no maintenance protocol (PW signaling) is used  
+            to set-up the PW, i.e. require configuration of entries in 
+            the PW tables including PW labels, etc. The value 'ldp' is 
+            used in case of signaling with the Pwid FEC element with LDP 
+            signaling. The value 'rsvp' indicate the use of rsvp  
+            control protocol."
+            ::= { hwPwCmdAcBindingEntry 7 }
+                    
+        hwPwCmdAcBindingOutboundLabel OBJECT-TYPE
+            SYNTAX Integer32 (16..1048575)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The PW label used in the outbound direction (i.e. toward  
+            the PSN). It may be set up manually if owner is 'manual'  
+            or automatically otherwise. Examples: For MPLS PSN, it  
+            represents the 20 bits of PW tag, for L2TP it represent  
+            the 32 bits Session ID. 
+            If the label is not yet known (signaling in process), the  
+            object should return a value of 0xFFFF."
+            ::= { hwPwCmdAcBindingEntry 8 }
+        
+        hwPwCmdAcBindingInboundLabel OBJECT-TYPE
+            SYNTAX Integer32 (8448..9343)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The PW label used in the inbound direction (i.e. packets  
+            received from the PSN. It may be set up manually if owner 
+            is 'manual' or automatically otherwise.  
+            Examples: For MPLS PSN, it represents the 20 bits of PW 
+            tag, for L2TP it represent the 32 bits Session ID. 
+            If the label is not yet known (signaling in process), the  
+            object should return a value of 0xFFFF."
+            ::= { hwPwCmdAcBindingEntry 9 }
+
+        hwPwCmdAcBindingRowStatus OBJECT-TYPE
+            SYNTAX RowStatus (1..6)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "For creating and modifying this row. None of the 
+            read-create objects in the conceptual rows may be changed  
+            when this object is in the active(1) state."
+            ::= { hwPwCmdAcBindingEntry 10 }
+         
+        hwPwCmdTemplateIndexNext OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "This object contains an appropriate value to be used 
+            for hwPwCmdTemplateIndex when creating entries in the 
+            hwPwCmdTemplateTable. The value 0 indicates that no 
+            unassigned entries are available.  To obtain the 
+            value of hwPwCmdTemplateIndex for a new entry in the 
+            hwPwCmdTemplateTable, the manager issues a management 
+            protocol retrieval operation to obtain the current 
+            value of hwPwCmdVcIndex.  After each retrieval 
+            operation, the agent should modify the value to 
+            reflect the next unassigned index.  After a manager 
+            retrieves a value the agent will determine through 
+            its local policy when this index value will be made 
+            available for reuse."
+            ::= { hwPwCmdObjects 6 }
+        
+        hwPwCmdTemplateTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwPwCmdTemplateEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table specifies information for configuring and 
+        status monitoring to pw tempalte."
+            ::= { hwPwCmdObjects 7 }
+        
+        hwPwCmdTemplateEntry OBJECT-TYPE
+            SYNTAX HwPwCmdTemplateEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A row in this table represents a pseudo wire (PW) template. 
+            It is indexed by hwPwCmdTemplateIndex, which uniquely 
+            identifying a singular tempalte."
+            INDEX { hwPwCmdTemplateIndex }
+            ::= { hwPwCmdTemplateTable 1 }
+        
+        HwPwCmdTemplateEntry ::=
+            SEQUENCE { 
+                hwPwCmdTemplateIndex
+                    Unsigned32,
+                hwPwCmdTemplateName
+                    OCTET STRING,
+                hwPwCmdTemplateVcType
+                    PwVcType,
+                hwPwCmdTemplatePeerAddrType
+                    InetAddressType,
+                hwPwCmdTemplatePeerAddr
+                    IpAddress,
+                hwPwCmdTemplateMtu
+                    Unsigned32,
+                hwPwCmdTemplateCw
+                    TruthValue,
+                hwPwCmdTemplateVCCV
+                    BITS,
+                hwPwCmdTemplateFrag
+                    TruthValue,
+                hwPwCmdTemplateBandwidth
+                    Unsigned32,        
+                hwPwCmdTemplateMaxAtmCells
+                    Unsigned32,
+                hwPwCmdTemplateTnlPolicyName
+                    OCTET STRING,
+                hwPwCmdTemplateQoSBehaviorIndex
+                    Integer32,
+                hwPwCmdTemplateExplicitPathName
+                    OCTET STRING,
+                hwPwCmdTemplateRowStatus
+                    RowStatus
+             }
+
+        hwPwCmdTemplateIndex OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Index for the conceptual row identifying a PW template within  
+            this PW template table."
+            ::= { hwPwCmdTemplateEntry 1 }
+        
+        hwPwCmdTemplateName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (1..20))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the description string of the tempalte,
+            MUST be NULL string if not applicable or not known yet."
+            ::= { hwPwCmdTemplateEntry 2 }
+        
+        hwPwCmdTemplateVcType OBJECT-TYPE
+            SYNTAX PwVcType
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "This value indicate the service to be carried over 
+            this template."
+            ::= { hwPwCmdTemplateEntry 3 }
+        
+        hwPwCmdTemplatePeerAddrType OBJECT-TYPE
+            SYNTAX InetAddressType
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Denotes the address type of the peer node. It should be  
+            set to 'unknown' if PE/PW maintenance protocol is not used 
+            and the address is unknown."
+            ::= { hwPwCmdTemplateEntry 4 }
+        
+        hwPwCmdTemplatePeerAddr OBJECT-TYPE
+            SYNTAX IpAddress
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "This object contain the value of the peer node address 
+            of the PW/PE maintenance protocol entity. This object  
+            SHOULD contain a value of all zeroes if not applicable  
+            (hwPwCmdTemplatePeerAddrType is 'unknown')."
+            ::= { hwPwCmdTemplateEntry 5 }
+        
+        hwPwCmdTemplateMtu OBJECT-TYPE
+            SYNTAX Unsigned32 (328..1538)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the supported MTU size of the switch PW."
+            ::= { hwPwCmdTemplateEntry 6 }
+        
+        hwPwCmdTemplateCw OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the control word capability of the switch PW."
+            ::= { hwPwCmdTemplateEntry 7 }
+        
+        hwPwCmdTemplateVCCV OBJECT-TYPE
+            SYNTAX BITS
+                {
+                ccCw(0),
+                ccAlert(1),
+                ccLabel(2),
+                cvIcmpping(3),
+                cvLspping(4),
+                cvBfd(5)
+                }            
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the optional VCCV capabilities of the pw."
+            ::= { hwPwCmdTemplateEntry 8 }
+        
+        hwPwCmdTemplateFrag OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates whether or not fragmentaion is supported."
+            ::= { hwPwCmdTemplateEntry 9 }
+        
+        hwPwCmdTemplateBandwidth OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the bandwitdh when signaling protocol is rsvp."
+            ::= { hwPwCmdTemplateEntry 10 }   
+            
+        hwPwCmdTemplateMaxAtmCells OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the max ATM cells when encapsulation is ATM."
+            ::= { hwPwCmdTemplateEntry 11 }
+        
+        hwPwCmdTemplateTnlPolicyName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (0..20))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the tunnel policy name used."
+            ::= { hwPwCmdTemplateEntry 12 }
+        
+        hwPwCmdTemplateQoSBehaviorIndex OBJECT-TYPE
+            SYNTAX Integer32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the traffic behavior Index when QOS is implemented."
+            ::= { hwPwCmdTemplateEntry 13 }
+        
+        hwPwCmdTemplateExplicitPathName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (0..20))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the explicit path name set by the operator."
+            ::= { hwPwCmdTemplateEntry 14 }
+        
+        hwPwCmdTemplateRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "For creating and modifying this row. None of the 
+            read-create objects in the conceptual rows may be changed  
+            when this object is in the active(1) state."
+            ::= { hwPwCmdTemplateEntry 15 }
+        
+        hwPwCmdOperTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwPwCmdOperEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table specifies the reset opreration that can be
+            done to the PW or PW template."
+            ::= { hwPwCmdObjects 8 }
+        
+        hwPwCmdOperEntry OBJECT-TYPE
+            SYNTAX HwPwCmdOperEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A row in this table represents one reset operation."
+            INDEX { hwPwCmdOperIndex }
+            ::= { hwPwCmdOperTable 1 }
+        
+        HwPwCmdOperEntry ::=
+            SEQUENCE { 
+                hwPwCmdOperIndex
+                    Unsigned32,
+                hwPwCmdOperType
+                    INTEGER,
+                hwPwCmdOperVcOrPwtIndex
+                    Unsigned32,
+                hwPwCmdOperStatus
+                    INTEGER,
+                hwPwCmdOperTimeStamp
+                    TimeStamp,
+                hwPwCmdOperRowStatus
+                    RowStatus
+             }
+
+        hwPwCmdOperIndex OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Index for the conceptual row."
+            ::= { hwPwCmdOperEntry 1 }
+        
+        hwPwCmdOperType OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                vcindex(1),
+                pwtindex(2)
+                }
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specifies the reset object."
+            ::= { hwPwCmdOperEntry 2 }
+        
+        hwPwCmdOperVcOrPwtIndex OBJECT-TYPE
+            SYNTAX Unsigned32
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Specifies the object index to be reset."
+            ::= { hwPwCmdOperEntry 3 }
+        
+        hwPwCmdOperStatus OBJECT-TYPE
+            SYNTAX INTEGER
+                {
+                success(1),
+                pwNotExist(2),
+                pwTemplateNotExist(3),
+                resetFailure(4),
+                unknown(5)
+                }
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the result of the reset operation."
+            ::= { hwPwCmdOperEntry 4 }
+        
+        hwPwCmdOperTimeStamp OBJECT-TYPE
+            SYNTAX TimeStamp
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Specifies the total time since last reset operation has been  
+        done."
+            ::= { hwPwCmdOperEntry 5 }
+        
+        hwPwCmdOperRowStatus OBJECT-TYPE
+            SYNTAX RowStatus
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "For creating and deleting this row. None of the 
+            read-create objects in the conceptual rows may be changed  
+            when this object is in the active(1) state."
+            ::= { hwPwCmdOperEntry 6 }
+        
+        hwPwCmdVcSwitchNotifEnable OBJECT-TYPE
+            SYNTAX TruthValue
+            MAX-ACCESS read-write
+            STATUS current
+            DESCRIPTION
+                "If this object is set to true(1), then it enables 
+            the emission of hwPwCmdVcSwitchWtoP and hwPwCmdVcSwitchPtoW 
+            notifications; otherwise these notifications are not 
+            emitted."
+            DEFVAL { false }
+            ::= { hwPwCmdObjects 9 }
+
+
+        hwPwCmdAcVlanBindingTable OBJECT-TYPE
+            SYNTAX SEQUENCE OF HwPwCmdAcVlanBindingEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "This table specifies information for configuring and 
+            status monitoring for PW used in fixed network."
+            ::= { hwPwCmdObjects 10 }
+        
+        hwPwCmdAcVlanBindingEntry OBJECT-TYPE
+            SYNTAX HwPwCmdAcVlanBindingEntry
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "A row in this table represents a pseudo wire (PW) virtual 
+            connection (VC)."
+            INDEX { hwPwCmdAcVlanBindingVlanID }
+            ::= { hwPwCmdAcVlanBindingTable 1 }
+        
+        HwPwCmdAcVlanBindingEntry ::=
+            SEQUENCE { 
+                hwPwCmdAcVlanBindingVlanID
+                    Unsigned32,
+                hwPwCmdAcVlanBindingVcID
+                    Unsigned32,  
+                hwPwCmdAcVlanBindingVcStatus
+                    VcStatusType,
+                hwPwCmdAcVlanBindingTemplateName
+                    OCTET STRING,       
+                hwPwCmdAcVlanBindingSignalProtocol
+                    SignalProtocolType,
+                hwPwCmdAcVlanBindingOutboundLabel
+                    Integer32,
+                hwPwCmdAcVlanBindingInboundLabel
+                    Integer32,
+                hwPwCmdAcVlanBindingRowStatus
+                    RowStatus
+             }
+
+        hwPwCmdAcVlanBindingVlanID OBJECT-TYPE
+            SYNTAX Unsigned32 (2..4093)
+            MAX-ACCESS not-accessible
+            STATUS current
+            DESCRIPTION
+                "Indicates the VLAN ID referenced."
+            ::= { hwPwCmdAcVlanBindingEntry 1 }
+
+        hwPwCmdAcVlanBindingVcID OBJECT-TYPE
+            SYNTAX Unsigned32 (1..4294967295)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Used in the outgoing PW ID field within the 'Virtual 
+            Circuit FEC Element'."
+            ::= { hwPwCmdAcVlanBindingEntry 2 }
+        
+        hwPwCmdAcVlanBindingVcStatus OBJECT-TYPE
+            SYNTAX VcStatusType
+            MAX-ACCESS read-only
+            STATUS current
+            DESCRIPTION
+                "Indicates the status of the PW: 
+            down(1),
+            up(2),
+            plugout(3)."
+            ::= { hwPwCmdAcVlanBindingEntry 3 }
+        
+        hwPwCmdAcVlanBindingTemplateName OBJECT-TYPE
+            SYNTAX OCTET STRING (SIZE (1..19))
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Indicates the description string of the tempalte,
+            MUST be NULL string if not applicable or not known yet."
+            ::= { hwPwCmdAcVlanBindingEntry 4 }
+                
+        hwPwCmdAcVlanBindingSignalProtocol OBJECT-TYPE
+            SYNTAX SignalProtocolType
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "Set by the operator to indicate the protocol responsible  
+            for establishing this PW. The value 'static' is used in all 
+            cases where no maintenance protocol (PW signaling) is used  
+            to set-up the PW, i.e. require configuration of entries in 
+            the PW tables including PW labels, etc. The value 'ldp' is 
+            used in case of signaling with the Pwid FEC element with LDP 
+            signaling. The value 'rsvp' indicate the use of rsvp  
+            control protocol."
+            ::= { hwPwCmdAcVlanBindingEntry 5 }
+                    
+        hwPwCmdAcVlanBindingOutboundLabel OBJECT-TYPE
+            SYNTAX Integer32 (16..1048575)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The PW label used in the outbound direction (i.e. toward  
+            the PSN). It may be set up manually if owner is 'manual'  
+            or automatically otherwise. Examples: For MPLS PSN, it  
+            represents the 20 bits of PW tag, for L2TP it represent  
+            the 32 bits Session ID. 
+            If the label is not yet known (signaling in process), the  
+            object should return a value of 0xFFFF."
+            ::= { hwPwCmdAcVlanBindingEntry 6 }
+        
+        hwPwCmdAcVlanBindingInboundLabel OBJECT-TYPE
+            SYNTAX Integer32 (8448..9343)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "The PW label used in the inbound direction (i.e. packets  
+            received from the PSN. It may be set up manually if owner 
+            is 'manual' or automatically otherwise.  
+            Examples: For MPLS PSN, it represents the 20 bits of PW 
+            tag, for L2TP it represent the 32 bits Session ID. 
+            If the label is not yet known (signaling in process), the  
+            object should return a value of 0xFFFF."
+            ::= { hwPwCmdAcVlanBindingEntry 7 }
+
+        hwPwCmdAcVlanBindingRowStatus OBJECT-TYPE
+            SYNTAX RowStatus (1..6)
+            MAX-ACCESS read-create
+            STATUS current
+            DESCRIPTION
+                "For creating and modifying this row. None of the 
+            read-create objects in the conceptual rows may be changed  
+            when this object is in the active(1) state."
+            ::= { hwPwCmdAcVlanBindingEntry 8 }
+
+        
+        hwPwCmdConformance OBJECT IDENTIFIER ::= { hwPwCmdMIB 3 }
+        
+        hwPwCmdGroups OBJECT IDENTIFIER ::= { hwPwCmdConformance 1 }
+        
+        hwPwCmdVcGroup OBJECT-GROUP
+            OBJECTS { hwPwCmdVcIndexNext, hwPwCmdVcPeerAddr, hwPwCmdVcTemplateIndex, 
+                hwPwCmdVcIfIndex, hwPwCmdVcCw, hwPwCmdVcSecondary, hwPwCmdVcAcStatus, 
+                hwPwCmdVcSignalProtocol, hwPwCmdVcUpTime, hwPwCmdVcType, 
+                hwPwCmdVcBandwidth, hwPwCmdVcPeerAddrType, hwPwCmdVcStatus, 
+                hwPwCmdVcMaxAtmCells, hwPwCmdVcGroupID, hwPwCmdVcMtu, hwPwCmdVcRowStatus, 
+                hwPwCmdVcID, hwPwCmdVcQoSBehaviorIndex, hwPwCmdVcTnlPolicyName, 
+                hwPwCmdVcIpInterworking, hwPwCmdVcExplicitPathName, hwPwCmdVcInboundLabel, 
+                hwPwCmdVcOutboundLabel, hwPwCmdVcVCCV, hwPwCmdVcSwitchID, 
+                hwPwCmdVcSwitchPeerAddrType, hwPwCmdVcSwitchPeerAddr, hwPwCmdVcSwitchInboundLabel, 
+                hwPwCmdVcSwitchOutboundLabel }
+            STATUS current
+            DESCRIPTION 
+                "Collection of objects that are required in all  
+        implementations that support the PW CMD MIB module."
+            ::= { hwPwCmdGroups 1 }
+        
+        hwPwCmdRemoteVcGroup OBJECT-GROUP
+            OBJECTS { hwPwCmdRemoteVcID, hwPwCmdRemoteVcType, hwPwCmdRemoteVcMtu, hwPwCmdRemoteVcGroupID, 
+                      hwPwCmdRemoteVcMaxAtmCells, hwPwCmdRemoteVcCw, hwPwCmdRemoteVcNotif, hwPwCmdRemoteVcStatus, 
+                      hwPwCmdRemoteVcSwitchID, hwPwCmdRemoteVcSwitchType, hwPwCmdRemoteVcSwitchMtu, 
+                      hwPwCmdRemoteVcSwitchGroupID, hwPwCmdRemoteVcSwitchMaxAtmCells, hwPwCmdRemoteVcSwitchCw, 
+                      hwPwCmdRemoteVcSwitchNotif, hwPwCmdRemoteVcSwitchStatus }
+            STATUS current
+            DESCRIPTION 
+                "Collection of objects that are required by remote PW."
+            ::= { hwPwCmdGroups 2 }
+        
+        hwPwCmdTemplateGroup OBJECT-GROUP
+            OBJECTS { hwPwCmdTemplateVcType, hwPwCmdTemplateIndexNext, hwPwCmdTemplateBandwidth, 
+                hwPwCmdTemplatePeerAddrType, hwPwCmdTemplateName, hwPwCmdTemplatePeerAddr, 
+                hwPwCmdTemplateMtu, hwPwCmdTemplateVCCV, hwPwCmdTemplateFrag, hwPwCmdTemplateCw, 
+                hwPwCmdTemplateRowStatus, hwPwCmdTemplateIpInterworking, hwPwCmdTemplateQoSBehaviorIndex, 
+                hwPwCmdTemplateTnlPolicyName, hwPwCmdTemplateExplicitPathName }
+            STATUS current
+            DESCRIPTION 
+                "Collection of objects required to perform pw template related commands."
+            ::= { hwPwCmdGroups 3 }
+        
+        hwPwCmdOperGroup OBJECT-GROUP
+            OBJECTS { hwPwCmdOperType, hwPwCmdOperVcOrPwtIndex, hwPwCmdOperStatus, 
+                hwPwCmdOperRowStatus, hwPwCmdOperTimeStamp }
+            STATUS current
+            DESCRIPTION 
+                "Collection of objects required to perform pw reset related commands."
+            ::= { hwPwCmdGroups 4 }
+        
+        hwPwCmdNonIfGroup OBJECT-GROUP
+            OBJECTS { hwPwCmdNonIfVcIndexNext, hwPwCmdNonIfVcID, hwPwCmdNonIfVcTemplateIndex, 
+                hwPwCmdNonIfVcRowStatus, hwPwCmdNonIfVcInboundLabel, hwPwCmdNonIfVcOutboundLabel, 
+                hwPwCmdNonIfVcAtmIfIndex, hwPwCmdNonIfVcVlanID, hwPwCmdNonIfVcInboundVpi, 
+                hwPwCmdNonIfVcInboundVci, hwPwCmdNonIfVcOutboundVpi, hwPwCmdNonIfVcType, 
+                hwPwCmdNonIfVcOutboundVci, hwPwCmdNonIfVcVlanMode }
+            STATUS current
+            DESCRIPTION 
+                "Collection of objects that are required in fixed nerwork."
+            ::= { hwPwCmdGroups 5 }
+        
+        hwPwCmdVcNotificationControlGroup OBJECT-GROUP
+            OBJECTS { hwPwCmdVcSwitchNotifEnable }
+            STATUS current
+            DESCRIPTION 
+                "Collection of objects for controlling the PW notifications."
+            ::= { hwPwCmdGroups 6 }
+        
+        hwPwCmdVcNotificationGroup NOTIFICATION-GROUP
+            NOTIFICATIONS { hwPwCmdVcSwitchWtoP, hwPwCmdVcSwitchPtoW }
+            STATUS current
+            DESCRIPTION 
+                "Collection PW notifications objects."
+            ::= { hwPwCmdGroups 7 }
+        
+    END
+
+--
+-- HUAWEI-PW-CMD-MIB.mib
+--

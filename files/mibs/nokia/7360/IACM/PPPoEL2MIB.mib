@@ -1,0 +1,385 @@
+PPPoEL2MIB DEFINITIONS ::= BEGIN
+-- =============================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2007, Alcatel. All Rights Reserved.
+-- =============================================================================
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED "2012-06-19"
+--  ORGANIZATION "Alcatel"
+--  CONTACT-INFO
+--
+--          "Email:  asam.mibsupport@alcatel.be"
+--
+--  DESCRIPTION "MIB for the PPPoEL2 Relay counters"
+--
+-- =============================================================================
+--
+-- HISTORY:
+--
+--  DATE: 08/04/2010
+--  DESCRIPTION:
+--        Version: 3FE62656AAAA_V4.2.0.1.0
+--         Editor:  sengottuvelan
+--         Created: to include PPPoE counters tables
+-- DATE: 08/30/2010
+--        Version: 3FE62656AAAA_V4.2.0.2.0
+--         Editor: Reshu Singh
+--         Created:For the below mentioned changes: 
+
+--     "PppoeL2IfCounterEntry:
+--       Summary Counters
+--         pppoeL2IfStatsUpTotalErr            Counter,    changed Rx to Up, Tot to Total
+--         pppoeL2IfStatsDnStreamTotDiscCnt    Counter,    This is moved to On-Demand
+--         pppoeL2IfStatsUpTotalDiscoveryCnt   Counter,    Removed Stream, made Disc .
+--                                                           Discovery to avoid confusion with Discard, and Tot to Total
+--
+--   PppoeL2IfOnDemandCounterEntry:
+--       On demand counters
+--         pppoeL2IfStatsUpInvVersion           Counter,   changed Rx to Up
+--         pppoeL2IfStatsUpInvType              Counter,   changed Rx to Up
+--         pppoeL2IfStatsUpInvCode              Counter,   changed Rx to Up
+--         pppoeL2IfStatsUpInvPayloadLength     Counter,   changed Rx to Up
+--         pppoeL2IfStatsUpInvTagType           Counter,   changed Rx to Up, changed Length to Type
+--         pppoeL2IfStatsUpInvLength            Counter,   changed Rx to Up
+--         pppoeL2IfStatsDnTotalDiscoveryCnt    Counter,   added this attribute.
+
+--   As per discussion with Aravind,Gopal and Pascal"
+-- DATE: 06/19/2012
+-- DESCRIPTION:
+--	   Version: 3FE62656AAAA_V4.4.0.2.0
+--	   Editor:  Kupuswamy R
+--         Changes:
+--	   *Changed TABELSIZE of pppoeL2IfStatsTable to 32667 for FGLT-A
+--	   *Changed TABLESIZE of pppoeL2IfOnDemandStatsTable to 2
+
+-- =============================================================================
+
+IMPORTS OBJECT-TYPE                     FROM RFC-1212
+        RowStatus                       FROM SNMPv2-TC
+        TruthValue                      FROM SNMPv2-TC
+        Counter                         FROM RFC1155-SMI
+        DisplayString                   FROM RFC1213-MIB
+        InterfaceIndex                  FROM ITF-MIB
+        asam                            FROM SYSTEM-MIB
+        AsamProfileIndexOrZero          FROM ASAM-TC-MIB;
+
+-- ***********************************************************
+-- ***        T E X T U A L   C O N V E N T I O N S        ***
+-- ***********************************************************
+
+
+-- ***********************************************************
+-- ***        O B J E C T   D E F I N I T I O N S          ***
+-- ***********************************************************
+
+pppoxrelayMIB                   OBJECT IDENTIFIER ::= {asam 52}
+
+pppoeL2MIB                      OBJECT IDENTIFIER ::= {pppoxrelayMIB 2}
+
+-- ////////////////////////////////////////////////////////////////////////////
+--
+-- PPPoE packet counters on vlan port
+--
+-- ////////////////////////////////////////////////////////////////////////////
+
+pppoeL2IfStatsTable   OBJECT-TYPE
+    SYNTAX SEQUENCE OF PppoeL2IfCounterEntry
+    ACCESS  not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "This table represents the PPPoE packet statistics that are counted
+         on this vlan port interface. These counters are incremented only
+for frames going through CVLAN-iBridge, CVLAN- Cross Connect and S+C-Vlan
+Cross Connect forwarders.
+    ALCATEL NOTE:
+    SUPPORT: YES
+    TABLESIZE: DEP [value depends on nbr of VLAN port where PPPoE
+                    is enabled]. As of ISAM R4.4, 32667 vlanports per LT for FGLT-A
+		    and 11520 for NGLT-A/FGXT-A"
+    ::= {pppoeL2MIB 1}
+
+
+pppoeL2IfCounterEntry  OBJECT-TYPE
+    SYNTAX      PppoeL2IfCounterEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Each entry contains the statistics of a particular Vlan-Port Interface.
+         The index of this table entry is pppoeVlanPortIfIndex and it represents
+         this VLAN port interface.
+    ALCATEL NOTE:
+    SUPPORT:  YES"
+    INDEX     { pppoeVlanPortIfIndex }
+    ::= {pppoeL2IfStatsTable 1}
+
+PppoeL2IfCounterEntry ::=
+    SEQUENCE {
+
+         pppoeVlanPortIfIndex                InterfaceIndex,
+
+        -- Summary Counters
+         pppoeL2IfStatsUpTotalErr               Counter,
+         pppoeL2IfStatsUpTotalDiscoveryCnt    Counter,
+
+        -- reset counter table
+         pppoeL2IfStatsResetCounter          TruthValue
+      }
+
+pppoeVlanPortIfIndex OBJECT-TYPE
+        SYNTAX    InterfaceIndex
+        ACCESS    read-only
+        STATUS    mandatory
+        DESCRIPTION
+            "This object is the index for the pppoeL2IfStatsTable.
+             The index value will either be the VLAN port interface index.
+
+            ALCATEL NOTE:
+                USAGE:      NA
+                PERSIST:    NO
+                INSRVMOD:   NA
+                RANGE:      NA
+                DEFVALUE:   NA
+                UNITS:      NA
+                SPARSE:     NO
+            "
+    ::= {pppoeL2IfCounterEntry 1}
+
+
+pppoeL2IfStatsUpTotalErr  OBJECT-TYPE
+    SYNTAX  Counter
+    ACCESS  read-only
+    STATUS  mandatory
+    DESCRIPTION
+        "Total number of PPPoE packet errors after the PPPoE Relay module received
+         for upstream direction.
+
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= {pppoeL2IfCounterEntry  2}
+
+pppoeL2IfStatsUpTotalDiscoveryCnt OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Total number of PPPoE Discovery packet received
+         from upstream direction.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= {pppoeL2IfCounterEntry  3}
+
+pppoeL2IfStatsResetCounter OBJECT-TYPE
+    SYNTAX TruthValue
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+          "When set to on, this object is used to reset all counters
+           of this entry and pppoeL2IfOnDemandCounterEntry on specified vlanPortIfIndex"
+    ::= { pppoeL2IfCounterEntry  4}
+
+
+pppoeL2IfOnDemandStatsTable   OBJECT-TYPE
+    SYNTAX SEQUENCE OF PppoeL2IfOnDemandCounterEntry
+    ACCESS  not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "This table represents the PPPoE packet on demand statistics that are counted on this vlan port interfaces. The count
+ers are incremented any
+error cause leading to packet discard in the PPPoE relay module.These
+Cunters are incremented only for frames going through CVLAN-iBridge,CVLAN-
+Cross Connect and S+C-Vlan Cross Connect forwarders.
+
+    ALCATEL NOTE:
+    SUPPORT: YES
+    TABLESIZE: DEP [value depends on the number of vlan-port 
+interfaces for which detailed counters have been explicitly 
+enabled by the operator.] -As of ISAM 4.4, 2 vlan ports per LT "
+    ::= {pppoeL2MIB 2}
+
+
+pppoeL2IfOnDemandCounterEntry  OBJECT-TYPE
+    SYNTAX      PppoeL2IfOnDemandCounterEntry
+    ACCESS      not-accessible
+    STATUS      mandatory
+    DESCRIPTION
+        "Each entry contains the statistics of a particular Vlan-Port Interface.
+         The index of this table entry is pppoeVlanPortIfIndex and it represents
+         this VLAN port interface for which on demand counters have been explicitly enabled by the operator.
+    ALCATEL NOTE:
+    SUPPORT:  YES"
+    INDEX     { pppoeVlanPortIfIndex }
+    ::= { pppoeL2IfOnDemandStatsTable 1}
+
+PppoeL2IfOnDemandCounterEntry ::=
+    SEQUENCE {
+        -- Row Status
+         pppoeL2IfStatsRowStatus                 RowStatus,
+
+         -- On demand counters
+         pppoeL2IfStatsUpInvVersion              Counter,
+         pppoeL2IfStatsUpInvType                 Counter,
+         pppoeL2IfStatsUpInvCode                 Counter,
+         pppoeL2IfStatsUpInvPayloadLength        Counter,
+         pppoeL2IfStatsUpInvTagType              Counter,
+         pppoeL2IfStatsUpInvLength               Counter,
+         pppoeL2IfStatsDnTotalDiscoveryCnt       Counter
+      }
+
+pppoeL2IfStatsRowStatus OBJECT-TYPE
+     SYNTAX   RowStatus
+     ACCESS   read-write
+     STATUS   mandatory
+     DESCRIPTION
+         "This object indicates the status of this entry."
+     ::= { pppoeL2IfOnDemandCounterEntry 1}
+
+pppoeL2IfStatsUpInvVersion OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Total number of PPPoE invalid header packets received. If the version
+         field in PPPoE header is not 0x1 in the discovery stage of PPPoE,
+        then this counter is incremented.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= {pppoeL2IfOnDemandCounterEntry  2}
+
+pppoeL2IfStatsUpInvType OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Total number of PPPoE invalid type packets received. If the type
+      field of the PPPoE header is not 0x1 in the discovery stage of PPPoE,
+      then this counter is incremented.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= {pppoeL2IfOnDemandCounterEntry  3}
+
+
+pppoeL2IfStatsUpInvCode OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Total number of PPPoE invalid code packets received. If the code
+         field in PPPoE header is not either PADI, PADR, PADT, in
+         discovery stage of PPPoE this counter is incremented
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= {pppoeL2IfOnDemandCounterEntry 4}
+
+
+pppoeL2IfStatsUpInvPayloadLength OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+          "Total number of packets received with invalid PPPoE payload length (i.e. mismatch
+           between actual tag payload length and the tag payload length advertised in the
+           LENGTH field of the PPPoE header)
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= {pppoeL2IfOnDemandCounterEntry  5}
+
+
+pppoeL2IfStatsUpInvTagType OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+          "Total number of packets received with invalid TAG type(i.e. if the tag type is not present
+           in the list of standard tag types in RFC 2516) 
+           
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= {pppoeL2IfOnDemandCounterEntry  6}
+
+pppoeL2IfStatsUpInvLength OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+          "Total number of generated PPPoE discovery message is too long after insertion of the vendor
+          specific tag
+
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= {pppoeL2IfOnDemandCounterEntry  7}
+
+pppoeL2IfStatsDnTotalDiscoveryCnt OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Total number of PPPoE Discovery packet received
+         from downstream direction.
+
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     NO           INSRVMOD:    NA
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA "
+    ::= {pppoeL2IfOnDemandCounterEntry 8}
+END

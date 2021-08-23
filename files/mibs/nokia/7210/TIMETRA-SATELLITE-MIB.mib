@@ -1,0 +1,387 @@
+TIMETRA-SATELLITE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE,
+        NOTIFICATION-TYPE, Unsigned32, Integer32,
+        Counter32, Gauge32, IpAddress             FROM SNMPv2-SMI
+
+        MODULE-COMPLIANCE, OBJECT-GROUP,
+        NOTIFICATION-GROUP                        FROM SNMPv2-CONF
+
+        TEXTUAL-CONVENTION, RowStatus,
+        TruthValue, TimeStamp, MacAddress         FROM SNMPv2-TC
+
+        timetraSRMIBModules, tmnxSRObjs,
+        tmnxSRNotifyPrefix, tmnxSRConfs           FROM TIMETRA-GLOBAL-MIB
+
+        TmnxPhysChassisClass,
+        TmnxPhysChassisIndex                      FROM TIMETRA-CHASSIS-MIB
+
+        TItemDescription, TmnxAdminState,
+        TmnxDisplayStringURL, TmnxOperState,
+        TNamedItem, TNamedItemOrEmpty             FROM TIMETRA-TC-MIB
+        ;
+
+timetraSatelliteMIBModule MODULE-IDENTITY
+        LAST-UPDATED "201411110000Z"
+        ORGANIZATION "Nokia"
+        CONTACT-INFO
+            "Nokia SROS Support
+             Web: http://www.nokia.com"
+        DESCRIPTION
+
+        "This document is the SNMP MIB module for the Nokia SROS
+        implementation of Satellites.
+
+        Copyright (c) 2014-2015 Nokia. All rights reserved.
+        Reproduction of this document is authorized on the condition that
+        the foregoing copyright notice is included.
+
+        This SNMP MIB module (Specification) embodies Nokia's
+        proprietary intellectual property.  Nokia retains all
+        title and ownership in the Specification, including any
+        revisions.
+
+        Nokia grants all interested parties a non-exclusive
+        license to use and distribute an unmodified copy of this
+        Specification in connection with management of Nokia products,
+        and without fee, provided this copyright notice and license
+        appear on all copies.
+
+        This Specification is supplied `as is', and Nokia makes
+        no warranty, either express or implied, as to the use,
+        operation, condition, or performance of the Specification."
+
+--
+-- Revision History
+--
+        REVISION        "201411110000Z"
+        DESCRIPTION     "Rev 0.1               11 Nov 2014 00:00
+                         Initial version of the TIMETRA-SATELLITE-MIB."
+
+        ::= { timetraSRMIBModules 103 }
+
+tmnxSatelliteObjs                OBJECT IDENTIFIER ::= { tmnxSRObjs         103 }
+tmnxSatelliteConformance         OBJECT IDENTIFIER ::= { tmnxSRConfs        103 }
+tmnxSatelliteNotifyPrefix        OBJECT IDENTIFIER ::= { tmnxSRNotifyPrefix 103 }
+
+-- Object Groups in the Nokia SATELLITE MIB Module
+tmnxSatelliteConfigTimestamps    OBJECT IDENTIFIER ::= { tmnxSatelliteObjs 1 }
+tmnxSatelliteConfigurations      OBJECT IDENTIFIER ::= { tmnxSatelliteObjs 2 }
+tmnxSatelliteStatus              OBJECT IDENTIFIER ::= { tmnxSatelliteObjs 3 }
+tmnxSatelliteStatistics          OBJECT IDENTIFIER ::= { tmnxSatelliteObjs 4 }
+tmnxSatelliteNotifyObjects       OBJECT IDENTIFIER ::= { tmnxSatelliteObjs 5 }
+
+-- Notification Groups in the Nokia SATELLITE MIB Module
+tmnxSatelliteNotifications       OBJECT IDENTIFIER ::= { tmnxSatelliteNotifyPrefix 0 }
+
+-- Compliance Groups in the Nokia SATELLITE MIB Module
+tmnxSatelliteCompliances         OBJECT IDENTIFIER ::= { tmnxSatelliteConformance 1 }
+tmnxSatelliteGroups              OBJECT IDENTIFIER ::= { tmnxSatelliteConformance 2 }
+
+--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+--
+--  TIMETRA-SATELLITE-MIB Textual Conventions
+--
+TmnxSatelliteType                ::= TEXTUAL-CONVENTION
+    STATUS  current
+    DESCRIPTION
+        "An object of type TmnxSatelliteType specifies an Nokia SROS
+         series satellite type.
+
+         A TmnxSatelliteType value is valid when there is a corresponding row in
+         the tmnxSatelliteTypeTable. The tmnxSatelliteTypeTable contains
+         detailed information about the satellite type.
+
+         When the value of TmnxSatelliteType is 0, the satellite type is
+         invalid.
+
+         When the value of TmnxSatelliteType is 1, the satellite has not yet
+         been provisioned."
+    SYNTAX  Unsigned32
+
+--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+--
+--  TIMETRA-SATELLITE-MIB Satellite Table
+--
+tmnxSatelliteTableLastChanged    OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatelliteTableLastChanged indicates the time, since
+         system startup, when tmnxSatelliteTable last changed configuration."
+    ::= { tmnxSatelliteConfigTimestamps 2 }
+
+tmnxSatelliteTable               OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TmnxSatelliteEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The tmnxSatelliteTable contains configuration information for
+         satellites."
+    ::= { tmnxSatelliteConfigurations 2 }
+
+tmnxSatelliteEntry               OBJECT-TYPE
+    SYNTAX      TmnxSatelliteEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The tmnxSatelliteEntry consists of the configurable objects for a given
+         satellite."
+    INDEX { tmnxSatClass, tmnxSatId }
+    ::= { tmnxSatelliteTable 1 }
+
+TmnxSatelliteEntry               ::= SEQUENCE {
+    tmnxSatClass                     TmnxPhysChassisClass,
+    tmnxSatId                        TmnxPhysChassisIndex,
+    tmnxSatRowStatus                 RowStatus,
+    tmnxSatLastChanged               TimeStamp,
+    tmnxSatAdminState                TmnxAdminState,
+    tmnxSatOperState                 TmnxOperState,
+    tmnxSatAssignedType              TmnxSatelliteType,
+    tmnxSatEquippedType              TmnxSatelliteType,
+    tmnxSatMacAddress                MacAddress,
+    tmnxSatSoftwareRepository        TNamedItemOrEmpty,
+    tmnxSatDescription               TItemDescription
+}
+
+tmnxSatClass                     OBJECT-TYPE
+    SYNTAX      TmnxPhysChassisClass
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatClass specifies the class of the satellite.
+
+         Supported values:
+             ethSatChassis (5) - Ethernet Satellite class
+        "
+    ::= { tmnxSatelliteEntry 1 }
+
+tmnxSatId                     OBJECT-TYPE
+    SYNTAX      TmnxPhysChassisIndex
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatId specifies a unique value which identifies
+         the satellite."
+    ::= { tmnxSatelliteEntry 2 }
+
+tmnxSatRowStatus                 OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatRowStatus specifies the row status. It allows
+         the creation and deletion of rows in tmnxSatelliteTable."
+    ::= { tmnxSatelliteEntry 3 }
+
+tmnxSatLastChanged               OBJECT-TYPE
+    SYNTAX      TimeStamp
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatLastChanged indicates the time, since system
+         startup, that the configuration of the row was created or modified."
+    ::= { tmnxSatelliteEntry 4 }
+
+tmnxSatAdminState                OBJECT-TYPE
+    SYNTAX      TmnxAdminState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatAdminState specifies the administrative state
+         of the satellite."
+    DEFVAL  { outOfService }
+    ::= { tmnxSatelliteEntry 5 }
+
+tmnxSatOperState                 OBJECT-TYPE
+    SYNTAX      TmnxOperState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatOperState indicates the operational state
+         of the satellite."
+    ::= { tmnxSatelliteEntry 6 }
+
+tmnxSatAssignedType              OBJECT-TYPE
+    SYNTAX      TmnxSatelliteType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatAssignedType specifies the administratively
+         assigned type of the satellite."
+    DEFVAL  { 1 }
+    ::= { tmnxSatelliteEntry 7 }
+
+tmnxSatEquippedType              OBJECT-TYPE
+    SYNTAX      TmnxSatelliteType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatEquippedType indicates the satellite type that is
+         equipped."
+    ::= { tmnxSatelliteEntry 8 }
+
+tmnxSatMacAddress                OBJECT-TYPE
+    SYNTAX      MacAddress
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatMacAddress specifies the MAC address of the
+         satellite.
+
+         A value of all-zeroes indicates this object has not been configured."
+    DEFVAL  { '000000000000'H }
+    ::= { tmnxSatelliteEntry 9 }
+
+tmnxSatSoftwareRepository        OBJECT-TYPE
+    SYNTAX      TNamedItemOrEmpty
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatSoftwareRepository specifies the software
+         repository to be used by the satellite.
+
+         An empty string indicates this object has not been configured."
+    DEFVAL  { ''H }
+    ::= { tmnxSatelliteEntry 10 }
+
+tmnxSatDescription               OBJECT-TYPE
+    SYNTAX      TItemDescription
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatDescription specifies the description of the
+         satellite.
+
+         An empty string indicates this object has not been configured."
+    DEFVAL  { ''H }
+    ::= { tmnxSatelliteEntry 11 }
+
+--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+--
+--  TIMETRA-SATELLITE-MIB Satellite Type Table
+--
+tmnxSatelliteTypeTable           OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TmnxSatelliteTypeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The tmnxSatelliteTypeTable consists of an entry for each satellite type
+         supported by the system."
+    ::= { tmnxSatelliteStatus 1 }
+
+tmnxSatelliteTypeEntry           OBJECT-TYPE
+    SYNTAX      TmnxSatelliteTypeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Each row entry represents an Nokia SROS series satellite
+         type.  Rows in this table are created by the agent at initialization
+         and cannot be created or destroyed by SNMP Set requests."
+    INDEX { tmnxSatTypeIndex }
+    ::= { tmnxSatelliteTypeTable 1 }
+
+TmnxSatelliteTypeEntry           ::= SEQUENCE {
+    tmnxSatTypeIndex                 TmnxSatelliteType,
+    tmnxSatTypeName                  TNamedItem,
+    tmnxSatTypeDescription           TItemDescription
+}
+
+tmnxSatTypeIndex                 OBJECT-TYPE
+    SYNTAX      TmnxSatelliteType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatTypeIndex specifies the unique index which
+         identifies the type of Nokia SROS series satellite."
+    ::= { tmnxSatelliteTypeEntry 1 }
+
+tmnxSatTypeName                  OBJECT-TYPE
+    SYNTAX      TNamedItem
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatTypeName indicates the administrative name that
+         identifies the type of Nokia SROS series satellite. This name
+         string is used in CLI commands to specify a particular satellite type."
+    ::= { tmnxSatelliteTypeEntry 2 }
+
+tmnxSatTypeDescription           OBJECT-TYPE
+    SYNTAX      TItemDescription
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of tmnxSatTypeDescription indicates the detailed description
+         of this Nokia SROS series satellite type."
+    ::= { tmnxSatelliteTypeEntry 3 }
+
+--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+--
+--  TIMETRA-SATELLITE-MIB Statistics Tables
+--
+
+--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+--
+--  TIMETRA-SATELLITE-MIB Notification Objects
+--
+
+--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+--
+--  TIMETRA-SATELLITE-MIB Notifications
+--
+
+--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+--
+--  TIMETRA-SATELLITE-MIB Compliance Statements
+--
+tmnxSatelliteComplianceV14v0     MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "The compliance statement for the management of satellites for Release
+         14.0 on Nokia SROS series systems."
+    MODULE -- this module
+        MANDATORY-GROUPS {
+            tmnxSatelliteGroupV14v0,
+            tmnxSatelliteTypeGroupV14v0
+        }
+    ::= { tmnxSatelliteCompliances 1 }
+
+--%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+--
+--  TIMETRA-SATELLITE-MIB Group Statements
+--
+tmnxSatelliteV14v0Groups         OBJECT IDENTIFIER ::= { tmnxSatelliteGroups 1 }
+
+tmnxSatelliteGroupV14v0          OBJECT-GROUP
+    OBJECTS {
+        tmnxSatelliteTableLastChanged,
+        tmnxSatRowStatus,
+        tmnxSatLastChanged,
+        tmnxSatAdminState,
+        tmnxSatOperState,
+        tmnxSatAssignedType,
+        tmnxSatEquippedType,
+        tmnxSatMacAddress,
+        tmnxSatSoftwareRepository,
+        tmnxSatDescription
+    }
+    STATUS      current
+    DESCRIPTION
+        "The group of objects maintaining configuration for satellites on
+         Nokia SROS series systems for Release 14.0."
+    ::= { tmnxSatelliteV14v0Groups 1 }
+
+tmnxSatelliteTypeGroupV14v0      OBJECT-GROUP
+    OBJECTS {
+        tmnxSatTypeName,
+        tmnxSatTypeDescription
+    }
+    STATUS      current
+    DESCRIPTION
+        "The group of objects maintaining information for satellite types on
+         Nokia SROS series systems for Release 14.0."
+    ::= { tmnxSatelliteV14v0Groups 2 }
+
+END

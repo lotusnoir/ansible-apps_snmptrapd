@@ -1,0 +1,139 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V3.00
+-- History:
+-- liu chenglong 2003-04-28 Added IPR Decriptions and updated all MIB version to V3.00
+-- ============================================================================
+	HUAWEI-ARP-PROXY-MIB DEFINITIONS ::= BEGIN
+
+		IMPORTS 
+			huaweiMgmt			
+				FROM HUAWEI-MIB			
+			OBJECT-TYPE, MODULE-IDENTITY, OBJECT-IDENTITY			
+				FROM SNMPv2-SMI;
+	
+	
+		hwArpProxy MODULE-IDENTITY
+			LAST-UPDATED "200304280900Z"
+			ORGANIZATION "Fix-Net Dept, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floor 5 ,Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,   P.R.C.
+				http://www.huawei.com
+				Zip:518057
+				"
+			DESCRIPTION 
+				"huawei arp Proxy mib.
+				"
+			REVISION "200211290900Z"
+			DESCRIPTION
+				"V2.00	
+				reunification version based on the  Fix-Net MIBs baseline by the 
+				MIB Standard community.
+				"
+			::= { huaweiMgmt 17 }
+		
+	
+
+	
+		hwArpProxyObject OBJECT-IDENTITY
+			STATUS current
+			DESCRIPTION
+				"Description."
+			::= { hwArpProxy 1 }
+		
+		hwArpProxyEnableTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwArpProxyEnableEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"Contains information that if Arp agent is enabled for every L3 interface.
+				
+				 This table can not be added or deleted. When virtual interface is created, an item will automatically be added.
+				为vlan 虚接口使能Arp代理，该表不可以添加删除，创建虚接口该表会自动添加一项，
+				 "
+			::= { hwArpProxyObject 1 }
+		
+		hwArpProxyEnableEntry OBJECT-TYPE
+			SYNTAX HwArpProxyEnableEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"		
+				 Arp agent enable for every L3 interface. If
+				primary vlan or super vlan is enabled, there will be an entry for each L3 interface.
+				Else, this table will be empty.
+				
+				
+				为vlan 虚接口使能Arp代理.
+				"
+			INDEX { hwArpProxyVlanIfIndex }
+			::= { hwArpProxyEnableTable 1 }
+		
+		HwArpProxyEnableEntry ::=
+			SEQUENCE { 
+				hwArpProxyVlanIfIndex
+					INTEGER,
+				hwArpProxyAdminStatus
+					INTEGER
+			 }
+
+		hwArpProxyVlanIfIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-only
+			STATUS current
+			DESCRIPTION
+				" VLAN interface enable index
+				vlan 虚接口索引. "
+			::= { hwArpProxyEnableEntry 1 }
+		
+		hwArpProxyAdminStatus OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				enabled(1),
+				disabled(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"The enable status forarp agent status of this vlan interface.
+				
+				 Its value range is enabled (1) and disabled (2). By default, it is disabled.
+				 该虚接口上Arp代理的使能状态,取值范围为：enabled（1），disabled（2）,缺省为disabled
+				"
+			::= { hwArpProxyEnableEntry 2 }
+		
+	
+    -- ------------------------------------------------------------------------
+    --       System Management Parameter
+    -- ------------------------------------------------------------------------ 
+       hwArpProxyGlobalStatus   OBJECT-TYPE
+       SYNTAX       INTEGER
+                {
+				enabled(1),
+				disabled(2)
+				}
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "Arp proxy global administer state: enabled/disabled,the default is disabled.
+           Arp代理全局管理状态：开启或者关闭,默认为关闭的."
+       DEFVAL { disabled }
+   ::= { hwArpProxy 11 }
+
+	                       
+	   hwArpExpireTime   OBJECT-TYPE
+       SYNTAX INTEGER (0 | 60..3600)                
+       MAX-ACCESS   read-write
+       STATUS       current
+       DESCRIPTION
+          "Set ARP expire time.
+          设置ARP老化时间"
+   ::= { hwArpProxy 12 }
+
+	
+	END

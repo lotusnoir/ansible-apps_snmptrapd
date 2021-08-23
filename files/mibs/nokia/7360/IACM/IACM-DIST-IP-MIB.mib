@@ -1,0 +1,258 @@
+IACM-DIST-IP-MIB DEFINITIONS ::= BEGIN
+-- =============================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel-Lucent expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel-Lucent shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2010, Alcatel-Lucent. All Rights Reserved.
+-- =============================================================================
+
+-- MODULE-IDENTITY 
+-- LAST-UPDATED "201010260000Z"
+-- ORGANIZATION "Alcatel-Lucent"
+-- CONTACT-INFO
+--
+--            "Email:  asam.mibsupport@alcatel.be" 
+--
+-- DESCRIPTION "This MIB module supports IACM configuration related 
+--              parameters for distributed IP services."
+
+--  REVISION "201010260900Z" 
+--  DESCRIPTION
+--        "Version: <MIB identification>
+--         Editor: <name of document author>
+--         Changes:  Initial Version"
+
+
+
+IMPORTS
+
+	asam
+		FROM SYSTEM-MIB
+
+	InterfaceIndex
+		FROM ITF-MIB
+
+	OBJECT-TYPE
+		FROM RFC-1212
+
+	EqptSlotIndex
+		FROM ASAM-EQUIP-MIB
+
+	VlanIndex
+		FROM Q-BRIDGE-MIB
+
+	InetAddress, InetAddressType, InetAddressPrefixLength 
+		FROM INET-ADDRESS-MIB
+
+	RowStatus 
+		FROM SNMPv2-TC;
+
+
+iacmDistIpMIB OBJECT IDENTIFIER ::= { asam 95 } 
+
+-- Groups in iacmDistIpMIB
+
+iacmDistIpObjects  OBJECT IDENTIFIER ::= { iacmDistIpMIB 1 }
+
+iacmDistIpInterfaceTable OBJECT-TYPE
+	SYNTAX		SEQUENCE OF IacmDistIpInterfaceEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	
+		"This table contains the distributed router ip inteface
+		associated information"
+	::= { iacmDistIpObjects 1 }
+
+iacmDistIpInterfaceEntry OBJECT-TYPE
+	SYNTAX		IacmDistIpInterfaceEntry			
+        ACCESS		not-accessible
+        STATUS		mandatory	
+        DESCRIPTION	
+        	  "A conceptual row in this table is created
+        for every interface.
+        A conceptual row in this table will exist if and only if
+        a corresponding entry in ifTable exists."
+
+	INDEX { iacmDistSlotIndex, iacmDistVlanIndex }
+	::= { iacmDistIpInterfaceTable 1 }
+
+IacmDistIpInterfaceEntry ::= SEQUENCE {
+			iacmDistSlotIndex			EqptSlotIndex,
+			iacmDistVlanIndex			VlanIndex,
+			iacmDistIpInterfaceIndex		InterfaceIndex,
+			iacmDistIpInterfaceAddrType		InetAddressType,
+			iacmDistIpInterfaceAddress		InetAddress,
+			iacmDistIpInterfaceAddrPrefix		InetAddressPrefixLength,
+			iacmDistMplsStatus			INTEGER,	
+			iacmDistIpInterfaceRowStatus		RowStatus
+			}
+iacmDistSlotIndex OBJECT-TYPE
+	SYNTAX		EqptSlotIndex
+        ACCESS		not-accessible
+        STATUS		mandatory
+        DESCRIPTION	
+		"A unique value representing the slot position.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+	::= { iacmDistIpInterfaceEntry 1 }
+
+iacmDistVlanIndex OBJECT-TYPE
+	SYNTAX		VlanIndex	
+	ACCESS		not-accessible
+        STATUS		mandatory
+        DESCRIPTION	
+	"A unique value representing the vlan interface index.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+	::= { iacmDistIpInterfaceEntry 2 }
+
+iacmDistIpInterfaceIndex OBJECT-TYPE
+	SYNTAX		InterfaceIndex
+        ACCESS		read-only
+        STATUS		mandatory
+        DESCRIPTION	
+		"This is a unique index for an entry in the
+        IacmDistIpInterfaceEntry.  The iacmDistIpInterfaceIndex
+        for an entry indicates the ifIndex for the corresponding
+        interface entry in the ifTable.
+        
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+	::= { iacmDistIpInterfaceEntry 3 }
+
+iacmDistIpInterfaceAddrType OBJECT-TYPE
+	SYNTAX		InetAddressType
+        ACCESS		read-write
+        STATUS		optional
+        DESCRIPTION	
+		"Indicates the Internet address type of this 
+		 interface.
+        Only values ipv4(1) or ipv6(2) have to be supported.
+        If any other unsupported values are attempted in a set
+        operation, the agent MUST return an inconsistentValue
+        error.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       1            DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       Only ipv4 is supported.
+	"
+	DEFVAL          { 1 }
+	::= { iacmDistIpInterfaceEntry 4 }
+
+iacmDistIpInterfaceAddress OBJECT-TYPE
+	SYNTAX		InetAddress
+        ACCESS		read-write
+        STATUS		mandatory
+        DESCRIPTION	
+		"The internet ip address configured for this 
+	interface.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+	::= { iacmDistIpInterfaceEntry 5 }
+
+iacmDistIpInterfaceAddrPrefix OBJECT-TYPE
+	SYNTAX		InetAddressPrefixLength
+        ACCESS		read-write
+        STATUS		mandatory
+        DESCRIPTION	
+		"The prefix length associated with this prefix.
+        The value 0 has no special meaning for this object. It
+        simply refers to address '::/0
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       1..31        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+	::= { iacmDistIpInterfaceEntry 6 }
+
+iacmDistMplsStatus OBJECT-TYPE
+	SYNTAX		INTEGER { enabled (1), disabled (2) }
+        ACCESS		read-write
+        STATUS		optional
+	DESCRIPTION
+		"The status of an mpls interface: 'enabled' indicates that
+        mpls is enabled on the interface, while 'disabled' indicates that 
+	it is not.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       OPT
+            PERSIST:     YES          INSRVMOD:    YES
+            RANGE:       1,2          DEFVALUE:    2
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       By default the status is disabled.
+	"
+        DEFVAL          { 2 }
+	::= { iacmDistIpInterfaceEntry 7 }
+
+iacmDistIpInterfaceRowStatus OBJECT-TYPE
+	SYNTAX		RowStatus
+        ACCESS		read-write
+        STATUS		mandatory
+        DESCRIPTION	
+		"This object is used to create or delete a row in
+        this table.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NO           INSRVMOD:    YES
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+	::= { iacmDistIpInterfaceEntry 8 }
+
+END
+

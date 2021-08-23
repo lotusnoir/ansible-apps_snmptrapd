@@ -1,0 +1,1898 @@
+ASAM-SWDB-MIB DEFINITIONS ::= BEGIN
+
+-- ===========================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied,
+--  with respect to the sufficiency, accuracy, or utility of any information
+--  or opinion contained herein. Alcatel-Lucent expressly advises that any use
+--  of for any purpose or reliance upon this technical reference is at the
+--  risk of the user and that Alcatel-Lucent shall not be liable for any
+--  damage or injury incurred by any person arising out of the sufficiency,
+--  accuracy, or utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these
+--  products and to withdraw any or all of them at any future time.
+--  Copyright (C) 2012, Alcatel-Lucent. All Rights Reserved.
+-- ===========================================================================
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED "201211121250Z"
+--  ORGANIZATION "Alcatel-Lucent"
+--  CONTACT-INFO "email:asam.mibsupport@alcatel-lucent.com"
+--  DESCRIPTION
+--     "The ASAM Software and Database Management MIB is a vendor-specific
+--      MIB that is used to manage the software, via the management of
+--      Overall Software Packages (OWSPs), and the system database of the
+--      ASAM subsystem in the ISAM."
+--
+--  REVISION "201701310000Z"
+--  DESCRIPTION
+--    Version: 3FE21367EGAA_V5.6.0.0.0
+--    Editor: Raja Mohamed Rasbudin
+--    Reason for change: FR: ALU02321914 7360: <Syslog> OSWP goes to disabled state    
+--                       when Syslog TFTP upload in progress with non-reachable 
+--                       server.
+--    Change: Attribute asamDbmUploadError: added new option tftpBusy(13).
+--                      asamDbmDownloadError: added new option tftpBusy(14).
+--                      asamSwmOswpDownloadError: added new option tftpBusy(16).
+--
+--  REVISION "201211121250Z"
+--  DESCRIPTION
+--     "Version: 3EC36484EAAA_V4.5.0.0.0
+--      Editor: Philippe Van den Broek
+--      Changes: RCR ALU00123215 Hitless SW Upgrade - SW Upgrade on  Standby NT
+--        * Attribute asamSwmDiskFileType: added value swFileTypeP"
+--
+--  REVISION "201209101354Z"
+--  DESCRIPTION
+--     "Version: 3EC36484EAAA_V4.5.0.0.0
+--      Editor: Karel Meijfroidt
+--      Changes: RCR ALU00123215 Hitless SW Upgrade - SW Upgrade on  Standby NT
+--        * Attribute asamSwmOswpOperActStatus: extended with two more states:
+--          activatingOnActiveNt and activatingOnStandbyNt"
+--
+--  REVISION "201011081038Z"
+--  DESCRIPTION
+--     "Version: 3EC36484EAAA_E5.0.2.0
+--      Editor: Miranda De Bock
+--      Changes: FR ALU00797037: asamSwmFileFormat COFF:
+--	  * Attribute asamSwmFileFormat: new value -> coff
+--
+--  REVISION "201006171705Z"
+--  DESCRIPTION
+--     "Version: 3EC36484EAAA_E5.0.0.8
+--      Editor: Miranda De Bock
+--      Changes: IR ALU00160103: FS/BSP upgrade:
+--        * Attribute asamSwmDiskFileType: added values swFileTypeK, -L, -M, -N"
+--
+--  REVISION "200610141200Z"
+--  DESCRIPTION
+--     "Version: 
+--      Editor: Xu Yue
+--      Changes: RCR BDFhw69160: FTP for backup/restore & SW download
+--               RCR BDFhw69161: Autonomous backup/restore per time interval"
+--
+--  REVISION "200603011200Z"
+--  DESCRIPTION
+--     "Version: 3EC36484EAAA_E3.1.0.0
+--      Editor: Jeroen Van Elsen
+--      Changes: IR BDFhw77888: Optimized SW upgrade process - MIB"
+--
+--  REVISION "200601251200Z"
+--  DESCRIPTION
+--     "Version: 3FE21961EAAA_E2.4.0.6
+--      Editor: Bart Bogaert
+--      Changes: Implement BDFhw70643: strict syntax checking for OPEN-SNMP"
+--
+--  REVISION "200506141200Z"
+--  DESCRIPTION
+--     "Version: 3EC36484EAAA_E2.3.0.0
+--      Editor: Christophe De Ras
+--      Changes: Added file types for LANX and ODM"
+--
+--  REVISION "200501231200Z"
+--  DESCRIPTION
+--     "Version: 3EC36484EAAA_E2.2.0.0
+--      Editor: Fan Min
+--      Changes: to synchronize with ASAM R5.1 changes in 3EC36484AAAA_E5.1.0.0:
+--      * Error type added for asamSwmOswpDownloadError (synch failure)."
+--
+--  REVISION "200401291200Z"
+--  DESCRIPTION
+--     "Version: 3EC36484EAAA_E1.0.0.0
+--      Editor: Rafael Van Driessche
+--      Changes: cipher for OSWP has been modified for the ESAM."
+--
+--  REVISION "200309161200Z"
+--  DESCRIPTION
+--     "Version: 3EC36484AAAA_E5.0.0.4
+--      Editor: Bart Geldof
+--      Changes (see BDFac21009 and BDFhw04218):
+--      * Description of asamSwmOswpName changed.
+--      * Description of asamSwmOswpErroredFileName changed.
+--      * Description of asamDbmDatabaseVersion changed.
+--      * Description of asamSwmSwpCompatibleDatabaseVersionNumber changed."
+--
+--  REVISION "200305261200Z"
+--  DESCRIPTION
+--     "Version: 3EC36484AAAA_E5.0.0.3
+--      Editor: Bart Geldof
+--      Changes (see BDFaa50289):
+--      * Attribute asamSwmOswpNbrFilesMinSet from 0-65535 iso 1-65535.
+--      * Attribute asamSwmOswpNbrFilesActualSet from 0-65535 iso 1-65535.
+--      * Attribute asamSwmOswpNbrFilesCompleteSet from 0-65535 iso 1-65535."
+--
+--  REVISION "200210221200Z"
+--  DESCRIPTION
+--     "Version: 3EC36484AAAA_E5.0.0.2
+--      Editor: Gert Steutelings
+--      Changes:
+--      * Attribute asamSwmFileFormat: new value -> exe.
+--      * Attribute asamSwmFileBoardType: the values 'NOT_SPECIFIED' and
+--        "NOT_APPLICABLE' are not relevant.  All the SW files belonging to
+--        a SWP apply to at least one board type.
+--      * Attribute asamSwmDiskFileType: value 'startupFile' not applicable
+--        anymore.
+--      * Attribute asamSwmOswpName: this string corresponds to a path name.
+--      * Attribute asamDbmTotalSpaceOnFileDisk is not supported -> removed
+--        from MIB.
+--      * Attribute asamDbmFreeSpaceOnFileDisk is not supported -> removed
+--        from MIB."
+--
+--  REVISION "200112111200Z"
+--  DESCRIPTION
+--     "Version: 3EC36484AAAA_E5.0.0.1
+--      Editor: Gert Steutelings
+--      Changes:
+--      * Change in file naming (according to BDFaa38302).
+--      * The File Table is renamed into File Disk Table. It only contains
+--        information about the files (SW files and descriptor files) stored
+--        on the file disk. For each entry the following attributes are
+--        specified: the file name, the file type, the file size and an
+--        attribute that can be used for the removal of the file (see
+--        BDFaa39953).
+--      * The following attributes are added to the entries of the
+--        asamSwmSwmContains FileTable: the file format, the file priority,
+--        the file size, the file type, the availability status of the file
+--        and decompression information of the file (see BDFaa39953).
+--      * In the entries of the database table the attribute
+--        asamDbmDatabaseName is replaced by two attributes:
+--        asamDbmDatabaseName and asamDbmDatabaseVersion.
+--        Both attributes represents a string. No special requirements are
+--        defined for the syntax of the asamDbmDatabaseName string. The syntax
+--        of the asamDbm DatabaseVersion must be <rr.ryz> (see BDFaa39959).
+--      * An extra value for the attribute asamDbmUploadDatabaseSelection is
+--        added: notUseful(9) (see BDFaa36225)."
+--
+--  REVISION "200105091200Z"
+--  DESCRIPTION
+--     "Version: 3EC36484AAAA_E5.0.0.0
+--      Editor: Gert Steutelings
+--      Changes: initial version produced for Alcatel 7301 ASAM R5.0."
+--
+-- =============================================================================
+
+   IMPORTS OBJECT-TYPE        FROM RFC-1212
+           IpAddress, Counter FROM RFC1155-SMI
+           DisplayString      FROM SNMPv2-TC
+           asam               FROM SYSTEM-MIB ;
+
+   -- asam OBJECT IDENTIFIER ::= { iso(1) identified-organization(3) dod(6)
+   --                              internet(1) private(4) enterprises(1)
+   --                              alcatel(637) asd(61) asam(1) }
+
+   asamSwDbMIB OBJECT IDENTIFIER ::= { asam 24 }
+
+   asamSwmObjects OBJECT IDENTIFIER ::= { asamSwDbMIB 1 }
+
+   -- asamSwmOswpTable                OBJECT IDENTIFIER ::= { asamSwmObjects 1 }
+   -- asamSwmSwpTable                 OBJECT IDENTIFIER ::= { asamSwmObjects 2 }
+   -- asamSwmOswpContainsSwpTable     OBJECT IDENTIFIER ::= { asamSwmObjects 3 }
+   -- asamSwmDiskFileTable            OBJECT IDENTIFIER ::= { asamSwmObjects 4 }
+   -- asamSwmSwpContainsFileTable     OBJECT IDENTIFIER ::= { asamSwmObjects 5 }
+   -- asamSwmTotalSpaceOnFileDisk     OBJECT IDENTIFIER ::= { asamSwmObjects 6 }
+   -- asamSwmFreeSpaceOnFileDisk      OBJECT IDENTIFIER ::= { asamSwmObjects 7 }
+   -- asamSwmClearImplicitSwRollbackAlarm
+   --    OBJECT IDENTIFIER ::= { asamSwmObjects 8 }
+   -- asamSwmDemoSingleStream         OBJECT IDENTIFIER ::= { asamSwmObjects 9 }
+
+   asamDbmObjects OBJECT IDENTIFIER ::= { asamSwDbMIB 2 }
+
+   -- asamDbmDatabaseTable           OBJECT IDENTIFIER ::= { asamDbmObjects 1 }
+   -- asamDbmDownloadServerID        OBJECT IDENTIFIER ::= { asamDbmObjects 2 }
+   -- asamDbmDownloadPath            OBJECT IDENTIFIER ::= { asamDbmObjects 3 }
+   -- asamDbmDownloadProgress        OBJECT IDENTIFIER ::= { asamDbmObjects 4 }
+   -- asamDbmDownloadError           OBJECT IDENTIFIER ::= { asamDbmObjects 5 }
+   -- asamDbmUploadServerID          OBJECT IDENTIFIER ::= { asamDbmObjects 6 }
+   -- asamDbmUploadPath              OBJECT IDENTIFIER ::= { asamDbmObjects 7 }
+   -- asamDbmUploadDatabaseSelection OBJECT IDENTIFIER ::= { asamDbmObjects 8 }
+   -- asamDbmUploadProgress          OBJECT IDENTIFIER ::= { asamDbmObjects 9 }
+   -- asamDbmUploadError             OBJECT IDENTIFIER ::= { asamDbmObjects 10 }
+   -- asamDbmClearImplicitDbRollbackAlarm
+   --    OBJECT IDENTIFIER ::= { asamDbmObjects 11 }
+   
+   asamVoiceCdeObjects OBJECT IDENTIFIER ::= { asamSwDbMIB 3 }
+
+   -- voiceCdeProfDownloadTable       OBJECT IDENTIFIER ::= { asamVoiceCdeObjects 1 }
+   -- voiceCDEProfDldServerID         OBJECT IDENTIFIER ::= { asamVoiceCdeObjects 2 }
+   -- voiceCDEProfDldPath             OBJECT IDENTIFIER ::= { asamVoiceCdeObjects 3 }
+   -- voiceCDEProfDldProgress         OBJECT IDENTIFIER ::= { asamVoiceCdeObjects 4 }
+   -- voiceCDEProfDldError            OBJECT IDENTIFIER ::= { asamVoiceCdeObjects 5 }
+   -- voiceCDEProfActivate            OBJECT IDENTIFIER ::= { asamVoiceCdeObjects 6 }
+
+   -- Format of OSWP file names, SWP file names and SW file names.
+   --
+   -- OSWP file names: an OSWP file name is a string with the following syntax:
+   --
+   --    oswp_file_name ::= oswp_file_cipher oswp_file_version
+   --    oswp_file_cipher ::= [A-Z0-9]{4}
+   --    oswp_file_version ::= [A-Za-z0-9]{4} "." [A-Za-z0-9]{4}
+   --
+   -- Notes:
+   -- * oswp_file_cipher is the official cipher assigned for the OSWP name;
+   --   for ESAM, the following cipher has been assigned: "L6GP".
+   -- * oswp_file_version is defined and controlled by the operator.
+   --
+   -- SWP file names: an SWP file name is a string with the following syntax:
+   --  
+   --    swp_file_name ::= swp_file_cipher swp_file_release swpfile_sw_version 
+   --    swp_file_cipher ::= [A-Za-z0-9]{6}
+   --    swp_file_release ::= [A-Za-z0-9]{2} "." [A-Za-z0-9]
+   --    swp_file_sw_version ::= [A-Za-z0-9]{2}
+   --
+   -- Notes:
+   -- * swp_file_name is the cipher uniquely assigned to a specific SWP type
+   --   (e.g. all the ASAM SWPs will have the same cipher);
+   -- * swp_file_release is the release and subrelease number of the SWP;
+   -- * swp_file_sw_version is the software version within the specified
+   --   release and subrelease number;
+   -- * the file_name of a SWP cannot be manipulated by the operator.
+   --
+   -- SW file names: a SW file name is a string with the same syntax as for
+   -- a SWP file name.  The file name of a SW file cannot be manipulated by
+   -- the operator.
+
+   -- Format of database names and versions.
+   --
+   -- A database name is a string with no additional restrictions.
+   --
+   -- A database version is a string with the following syntax:
+   --
+   --    dbase_version ::= dbase_version_conversion_needed dbase_version_release
+   --    dbase_version_conversion_needed ::= [A-F0-9]
+   --    dbase_version_release ::= [A-Za-z0-9] "." [A-Za-z0-9]{3}
+   --
+   -- Notes:
+   -- * dbase_version_release is the major release and subrelease of the
+   --   database;
+   -- * database conversion is always needed between major releases;
+   -- * between subreleases of the same major release, database conversion
+   --   may or may not be needed; dbase_version_conversion_needed has been
+   --   introduced to let a manager find out whether conversion is needed:
+   --   dbase_version_conversion_needed is an alphanumeric digit indicating
+   --   whether a database conversion is needed during an upgrade within a
+   --   major release.
+   
+   -- =======================================================================
+   -- |                         START OSWP TABLE                            |
+   -- =======================================================================
+   
+   asamSwmOswpTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSwmOswpEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "Static OSWP table, representing the OSWPs inside the system.
+
+          Each row in the table contains management information applicable to
+          an available OSWP. The table contains two rows since at most two
+          OSWPs can be available in the system at the same time.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   TABLESIZE: 2"
+      ::= { asamSwmObjects 1 }
+   
+   asamSwmOswpEntry OBJECT-TYPE
+      SYNTAX AsamSwmOswpEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry of the OSWP table.
+
+          ALCATEL NOTE:
+             SUPPORT: YES"
+      INDEX { asamSwmOswpIndex }
+      ::= { asamSwmOswpTable 1 }
+   
+   AsamSwmOswpEntry ::= SEQUENCE {
+      asamSwmOswpIndex                         INTEGER,
+      asamSwmOswpName                          DisplayString,
+      asamSwmOswpOperAvailStatus               INTEGER,
+      asamSwmOswpOperActStatus                 INTEGER,
+      asamSwmOswpOperCommitStatus              INTEGER,
+      asamSwmOswpActivation                    INTEGER,
+      asamSwmOswpCommitment                    INTEGER,
+      asamSwmOswpAbortion                      INTEGER,
+      asamSwmOswpPrimaryFileServerID           IpAddress,
+      asamSwmOswpSecondaryFileServerID         IpAddress,
+      asamSwmOswpDownloadSet                   INTEGER,
+      asamSwmOswpDownloadError                 INTEGER,
+      asamSwmOswpErroredFileName               DisplayString,
+      asamSwmOswpErroredFileServer             IpAddress,
+      asamSwmOswpNbrFilesMinSet                INTEGER,
+      asamSwmOswpNbrFilesActualSet             INTEGER,
+      asamSwmOswpNbrFilesCompleteSet           INTEGER,
+      asamSwmOswpNbrFilesMinSetAvailable       Counter,
+      asamSwmOswpNbrFilesActualSetAvailable    Counter,
+      asamSwmOswpNbrFilesCompleteSetAvailable  Counter,
+      asamSwmOswpAutoFetch                     INTEGER,
+      asamSwmOswpAutoActive                    INTEGER,
+      asamSwmOswpAutoActiveError               INTEGER
+
+   }
+   
+   asamSwmOswpIndex OBJECT-TYPE
+      SYNTAX INTEGER (1..2)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "A unique value to identify an entry in the OSWP table.
+
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: NA   RANGE: 1..2
+             PERSIST: YES [FILE]   DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 1 }
+   
+   asamSwmOswpName OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "A string representing the name of the OSWP that is identified
+          by asamSwmOswpIndex.  The name of an OSWP corresponds to the
+          path name: /path_to_OSWP/file_name.
+
+          In case no OSWP is related to asamSwmOswpIndex, the value of this
+          string will be NO_OSWP.
+
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: YES   RANGE: See above
+             PERSIST: YES [FILE]   DEFVALUE: NA    UNITS: -"
+      ::= { asamSwmOswpEntry 2 }
+   
+   asamSwmOswpOperAvailStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+         empty(1),        -- no OSWP is related to asamSwmOswpIndex
+         enabled(2),      -- related OSWP is active or ready to become
+                          -- active (at least actual set of files is available)
+         disabled(3),     -- download of related OSWP failed and its actual
+                          -- set of files is not available (can not become
+                          -- active)
+         downloading(4),  -- download of related OSWP is still ongoing
+         aborting(5)      -- all the files not belonging to OSWP related
+                          -- to the other asamSwmOswpIndex are being removed
+                          -- from the file disk.
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute informs the operator about the availability
+          status of the OSWP.
+
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: NA   RANGE: 1..5
+             PERSIST: YES [FILE]   DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 3 }
+   
+   asamSwmOswpOperActStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+         active(1),
+         notActive(2),
+         activatingOnActiveNt(3),
+         activatingOnStandbyNt(4)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute informs the operator whether the related OSWP is
+          currently active, not active, being activated on active NT or
+          being activated on standby NT.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..4
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+       ::= { asamSwmOswpEntry 4 }
+   
+   asamSwmOswpOperCommitStatus  OBJECT-TYPE
+      SYNTAX INTEGER {
+         committed(1),
+         unCommitted(2),
+         committing(3)  -- The commit-operation of the OSWP is still ongoing.
+                        -- There are still files on the file disk that do not
+                        -- belong to the OSWP (and that need to be removed).
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute informs the operator whether the OSWP is committed
+          or uncommitted or whether the commit-operation is still ongoing.
+
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: NA   RANGE: 1..3
+             PERSIST: YES [FILE]   DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 5 }
+   
+   asamSwmOswpActivation OBJECT-TYPE
+      SYNTAX INTEGER {
+         activateWithoutDefDb(1),   -- activate the OSWP together with the
+                                    -- linked (and compatible) database.
+         activateWithDefDb(2),      -- activate the OSWP together with the
+                                    -- default database
+         clearDatabases(3),         -- used to prepare the NT board for
+                                    -- migration (not during normal operation)
+         activateWithFactDb(4)      -- activate the OSWP together with the
+                                    -- factory database
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to trigger the activation
+          of the OSWP. The operator can explicitly ask for an activation of
+          the OSWP with default database.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..4
+             PERSIST: NO    DEFVALUE: NA    UNITS: -"
+      ::= { asamSwmOswpEntry 6 }
+   
+   asamSwmOswpCommitment OBJECT-TYPE
+      SYNTAX INTEGER {
+         enabled(1),
+         disabled(2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to trigger the commitment of
+          the OSWP. This commit-operation also implies that all the files on
+          the file disk that do not belong to the OSWP will be removed.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA    UNITS: -"
+      ::= { asamSwmOswpEntry 7 }
+   
+   asamSwmOswpAbortion OBJECT-TYPE
+      SYNTAX INTEGER {
+         enabled(1),
+         disabled(2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to interrupt the download
+          process of the OSWP and/or to remove the OSWP from the system.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA    UNITS: -"
+      ::= { asamSwmOswpEntry 8 }
+   
+   asamSwmOswpPrimaryFileServerID OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to specify the IP address of
+          the file server where the Overall descriptor file of the OSWP can be
+          found.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: See above
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamSwmOswpEntry 9 }
+   
+   asamSwmOswpSecondaryFileServerID  OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to specify the IP address of
+          a possible second file server where the Overall descriptor file of
+          the OSWP can be found.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: See above
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamSwmOswpEntry 10 }
+   
+   asamSwmOswpDownloadSet  OBJECT-TYPE
+      SYNTAX INTEGER {
+         minSet(1),       -- minimum set of files needed to activate the OSWP
+         actualSet(2),    -- set of files applicable for the board types
+                          -- that belong to the actual set of the system
+         completeSet(3)   -- all the files that belong to the OSWP
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to specify the set of files
+          (belonging to the OSWP) that must be available on the file disk
+          before he wants to activate the OSWP.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..3
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamSwmOswpEntry 11 }
+   
+   asamSwmOswpDownloadError OBJECT-TYPE
+      SYNTAX INTEGER {
+         notDefined(0),                    --
+         fileNotFound(1),                  --
+         accessViolation(2),               -- The first 8 errors are
+         diskFull-AllocationExceeded(3),   -- related to the TFTP protocol
+         illegalTftpOperation(4),          -- itself (see RFC1350).
+         unknownTransferId(5),             --
+         fileAlreadyExists(6),             --
+         noSuchUser(7),                    --
+         syntaxErrorDownloadedFile(8),
+         lackOfStorageResources(9),
+         systemRestart(10),
+         noError(11),
+         synchronizationFailed(12),
+         invalidTftpDaemon(13),
+         invalidSftpDaemon(14),
+         invalidFtpDaemon(15),
+         tftpBusy(16)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute describes for what reason the download of the
+          OSWP failed for the requested set of files.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..16
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 12 }
+   
+   asamSwmOswpErroredFileName OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This string represents the name of the file that caused the error
+          specified by the value of attribute 'asamSwmOswpDownloadError'.
+   
+          The string has the syntax of an OSWP file name, an SWP file name
+          or a SW file name depending on which type of file caused the error.
+          The string is set to NOT_APPLICABLE in case the download error is
+          not caused by a specific file.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 13 }
+   
+   asamSwmOswpErroredFileServer OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the IP address of the file server where the
+          file specified by attribute 'asamSwmOswpErroredFileName' can be found.
+   
+          The Ip address 0.0.0.0 will be used in case the value of the
+          attribute 'asamSwmOswpErroredFileName' is set to NOT_APPLICABLE.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 14 } 
+   
+   asamSwmOswpNbrFilesMinSet OBJECT-TYPE
+      SYNTAX INTEGER (0..65535)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the number of files that belong to the
+          minimum set of the OSWP.
+   
+          Note: The Overall descriptor file and the descriptor files of the
+                supported SWPs always belong to the minimum set. The SWP
+                descriptor files specify for each supported SW file if it
+                belongs to the minimum set or not.
+
+          ALCATEL NOTE:
+             SUPPORT: NO   INSRVMOD: NA   RANGE: 0..65535
+             PERSIST: NO   DEFVALUE: NA   UNITS: -"
+       ::= { asamSwmOswpEntry 15 }
+   
+   asamSwmOswpNbrFilesActualSet OBJECT-TYPE
+      SYNTAX INTEGER (0..65535)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the number of files that belong to the
+          actual set of the OSWP.
+
+          ALCATEL NOTE:
+             SUPPORT: NO   INSRVMOD: NA   RANGE: 0..65535
+             PERSIST: NO   DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 16 }
+   
+   asamSwmOswpNbrFilesCompleteSet OBJECT-TYPE
+      SYNTAX INTEGER (0..65535)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the total number of files that belong
+          to the OSWP.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 0..65535
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 17 }
+   
+   asamSwmOswpNbrFilesMinSetAvailable OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the number of files that belong to the
+          minimum set of the OSWP and that are currently available on the
+          file disk.
+
+          ALCATEL NOTE:
+             SUPPORT: NO   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO   DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 18 }
+   
+   asamSwmOswpNbrFilesActualSetAvailable OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the number of files that belong to the
+          actual set of the OSWP and that are currently available on the
+          file disk.
+
+          ALCATEL NOTE:
+             SUPPORT: NO   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO   DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 19 }
+   
+   asamSwmOswpNbrFilesCompleteSetAvailable OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the number of files that belong to the
+          complete set of the OSWP and that are currently available on the
+          file disk.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpEntry 20 }
+   
+   asamSwmOswpAutoFetch OBJECT-TYPE
+      SYNTAX INTEGER {
+         disabled(1),
+         enabledActualSet(2), -- only the missing files belonging to the
+                              -- actual set of the OSWP will be autofetched
+         enabledCompleteSet(3)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to enable or disable the
+          autofetch feature for the OSWP.
+
+          ALCATEL NOTE:
+             SUPPORT: NO   INSRVMOD: YES   RANGE: 1..3
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamSwmOswpEntry 21 }
+   
+   asamSwmOswpAutoActive OBJECT-TYPE
+      SYNTAX INTEGER {
+         manually(1),
+         after-download(2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to configure how to 
+          activate the OSWP, manually or automatically after-download.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..2
+             PERSIST: YES   DEFVALUE: 1     UNITS: -"
+      DEFVAL {1}
+      ::= { asamSwmOswpEntry 22 }
+      
+   asamSwmOswpAutoActiveError OBJECT-TYPE
+      SYNTAX INTEGER {
+         noError(1),
+         anotherSWDBProcessOngoing(2),
+         noCompatibleDB(3),
+         unknownErrorDuringActivation(4),
+         notDefined(5)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute describes for what reason the automatic activation
+          of the downloaded OSWP failed.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..4
+             PERSIST: YES   DEFVALUE: 1     UNITS: -"
+      DEFVAL {1}
+      ::= { asamSwmOswpEntry 23 }
+      
+   
+   -- =======================================================================
+   -- |                         STOP OSWP TABLE                             |
+   -- =======================================================================
+   
+   -- =======================================================================
+   -- |                         START SWP TABLE                             |
+   -- =======================================================================
+   
+   asamSwmSwpTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSwmSwpEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "Dynamic SWP table, representing the SWPs that belong to at
+          least one of the OSWPs available in the system.
+
+          The table contains a row with information for each SWP that belongs
+          to at least one one of the OSWPs available in the system.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   TABLESIZE: DEP as described above."
+      ::= { asamSwmObjects 2 }
+   
+   asamSwmSwpEntry OBJECT-TYPE
+      SYNTAX AsamSwmSwpEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry of the SWP table.
+
+          ALCATEL NOTE:
+             SUPPORT: YES"
+      INDEX { asamSwmSwpName }
+      ::= { asamSwmSwpTable 1 }
+   
+   AsamSwmSwpEntry ::= SEQUENCE {
+      asamSwmSwpName                                 DisplayString,
+      asamSwmSwpType                                 INTEGER,
+      asamSwmSwpCompatibleDatabaseVersionNumber      DisplayString,
+      asamSwmSwpPrimaryFileServerID                  IpAddress,
+      asamSwmSwpSecondaryFileServerID                IpAddress
+   }
+   
+   asamSwmSwpName OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "Index in the SWP table. It contains the name of a SWP supported
+          by at least one of the available OSWPs. The name of a SWP
+          corresponds to the path name: /path_to_SWP/file_name.
+   
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+       ::= { asamSwmSwpEntry 1 }
+   
+   asamSwmSwpType OBJECT-TYPE
+      SYNTAX INTEGER {
+         asamCore(1),
+         vodslGateway(2),
+         ipServer(3)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the type of the SWP.
+
+          Note: For ESAM, this attribute will always have the value
+                asamCore (1).
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..3
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpEntry 2 }
+   
+   asamSwmSwpCompatibleDatabaseVersionNumber OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the version number of the database
+          that is compatible with the SWP.
+   
+          In case of a SWP without an own database the value of this
+          string will be NOT_APPLICABLE.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpEntry 3 }
+   
+   asamSwmSwpPrimaryFileServerID OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the IP address of the file server
+          where the SWP can be found.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpEntry 4 }
+   
+   asamSwmSwpSecondaryFileServerID OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the IP address of a possible second
+          file server where the SWP can be found.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpEntry 5 }
+   
+   
+   -- =======================================================================
+   -- |                         STOP SWP TABLE                              |
+   -- =======================================================================
+   
+   -- =======================================================================
+   -- |                     START OSWP_Contains_SWP TABLE                   |
+   -- =======================================================================
+   
+   asamSwmOswpContainsSwpTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSwmOswpContainsSwpEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "Dynamic table, containing information on the relationships
+          between the OSWPs and the SWPs available in the system. Each OSWP
+          corresponds to a conceptual row in the asamSwmOswpTable and
+          each SWP corresponds to a conceptual row in the asamSwmSwpTable.
+
+          Each row in the table contains information on a particular
+          relationship between an OSWP and a SWP, specifying that the
+          considered SWP belongs to the considered OSWP.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   TABLESIZE: DEP as described above."
+      ::= { asamSwmObjects 3 }
+   
+   asamSwmOswpContainsSwpEntry OBJECT-TYPE
+      SYNTAX AsamSwmOswpContainsSwpEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry of the OSWP_Contains_SWP table.
+
+          ALCATEL NOTE:
+             SUPPORT: YES"
+      INDEX { asamSwmConsideredOswpIndex, asamSwmConsideredSwpName }
+      ::= { asamSwmOswpContainsSwpTable 1 }
+   
+   AsamSwmOswpContainsSwpEntry ::= SEQUENCE {
+      asamSwmConsideredOswpIndex   INTEGER,
+      asamSwmConsideredSwpName     DisplayString
+   }
+   
+   asamSwmConsideredOswpIndex OBJECT-TYPE
+      SYNTAX INTEGER (1..2)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The index value which uniquely identifies the OSWP to which the
+          considered relationship applies to. The OSWP identified by a
+          particular value of this index is the same OSWP as identified
+          by the same value of asamSwmOswpIndex in the asamSwmOswpTable.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpContainsSwpEntry 1 }
+   
+   asamSwmConsideredSwpName OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "Index in the OSWP_Contains_SWP table. It contains the descriptor
+          file name of the SWP where the considered relationship applies to.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmOswpContainsSwpEntry 2 }
+   
+   -- =======================================================================
+   -- |                      STOP OSWP_Contains_SWP TABLE                   |
+   -- =======================================================================
+   
+   -- =======================================================================
+   -- |                         START DISK FILE TABLE                       |
+   -- =======================================================================
+   
+   asamSwmDiskFileTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSwmDiskFileEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "Dynamic table, containing information on the different SW files
+          and descriptor files that are stored on the file disk.
+
+          Each row in the table contains information on a SW file or 
+          descriptor file that is stored on the file disk.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   TABLESIZE: DEP as described above."
+       ::= { asamSwmObjects 4 }
+   
+   asamSwmDiskFileEntry OBJECT-TYPE
+      SYNTAX AsamSwmDiskFileEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry of the Disk File table.
+
+          ALCATEL NOTE:
+             SUPPORT: YES"
+      INDEX { asamSwmDiskFileName }
+      ::= { asamSwmDiskFileTable 1 }
+   
+   AsamSwmDiskFileEntry ::= SEQUENCE {
+      asamSwmDiskFileName          DisplayString,
+      asamSwmDiskFileType          INTEGER,
+      asamSwmDiskFileSize          INTEGER,
+      asamSwmDiskFileRemoval       INTEGER
+   }
+   
+   asamSwmDiskFileName OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "Index of the asamSwmDiskFileTable.  This string represents the 
+          name of the file.
+   
+          The string has the syntax of an OSWP file name, an SWP file name
+          or a SW file name depending on the type of the file.
+   
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+       ::= { asamSwmDiskFileEntry 1 }
+   
+   asamSwmDiskFileType  OBJECT-TYPE
+      SYNTAX INTEGER {
+         overallDescriptorFile(1),
+         swpDescriptorFile(2),
+         swFileTypeA(3),
+         swFileTypeB(4),
+         notSpecified(5),
+         swFileTypeC(6),
+         swFileTypeD(7),
+         swFileTypeE(8),
+         swFileTypeF(9),
+         swFileTypeG(10),
+         swFileTypeH(11),
+         swFileTypeI(12),
+         swFileTypeJ(13),
+	 swFileTypeK(14),
+	 swFileTypeL(15),
+	 swFileTypeM(16),
+         swFileTypeN(17),
+         swFileTypeO(18),
+         swFileTypeP(19),
+         swFileTypeQ(20),
+         swFileTypeR(21),
+         swFileTypeS(22),
+         swFileTypeT(23),
+         swFileTypeU(24),
+         swFileTypeV(25)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the type of the file.
+   
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..25
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmDiskFileEntry 2 }
+   
+   asamSwmDiskFileSize OBJECT-TYPE
+      SYNTAX INTEGER (0.. 4294967295)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the size of the file.
+   
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 0.. 4294967295
+             PERSIST: NO    DEFVALUE: NA   UNITS: bytes"
+      ::= { asamSwmDiskFileEntry 3 }
+   
+   asamSwmDiskFileRemoval OBJECT-TYPE
+      SYNTAX INTEGER {
+         enabled (1),
+         disabled (2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to remove the file from
+          the file disk.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA    UNITS: -"
+      ::= {asamSwmDiskFileEntry 4 }
+   
+   -- =======================================================================
+   -- |                         STOP DISK FILE TABLE                        |
+   -- =======================================================================
+   
+   -- =======================================================================
+   -- |                     START SWP_Contains_FILE TABLE                   |
+   -- =======================================================================
+   
+   asamSwmSwpContainsFileTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSwmSwpContainsFileEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "Dynamic table, containing information on the relationships
+          between the files known by the system and the available OSWPs.
+          Each file corresponds to at least one conceptual row in the
+          asamSwmDiskFileTable and each SWP corresponds to a conceptual row
+          in the asamSwmSwpTable.
+
+          Each row in the table contains information on a particular
+          relationship between a SWP and a file, specifying that the
+          considered file belongs to the considered SWP.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   TABLESIZE: DEP as described above."
+      ::= { asamSwmObjects 5 }
+   
+   asamSwmSwpContainsFileEntry OBJECT-TYPE
+      SYNTAX AsamSwmSwpContainsFileEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry of the SWP_Contains_FILE table.
+
+          ALCATEL NOTE:
+             SUPPORT: YES"
+      INDEX { asamSwmRelatedSwpName, 
+              asamSwmRelatedFileName, asamSwmFileBoardType }
+      ::= { asamSwmSwpContainsFileTable 1 }
+   
+   AsamSwmSwpContainsFileEntry ::= SEQUENCE {
+      asamSwmRelatedSwpName        DisplayString,
+      asamSwmRelatedFileName       DisplayString,
+      asamSwmFileBoardType         DisplayString,
+      asamSwmFileFormat            INTEGER,
+      asamSwmFileAvailStatus       INTEGER,
+      asamSwmFilePriority          INTEGER,
+      asamSwmFileSize              INTEGER,
+      asamSwmFileType              INTEGER,
+      asamSwmFileDecompression     INTEGER
+   }
+   
+   asamSwmRelatedSwpName OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "Index in the SWP_Contains_FILE table. It contains the descriptor
+          file name of the SWP where the considered relationship applies to.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpContainsFileEntry 1 }
+   
+   asamSwmRelatedFileName OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "Index in the SWP_Contains_FILE table. It contains the name of
+          the file where the considered relationship applies to.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpContainsFileEntry 2 }
+   
+   asamSwmFileBoardType OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "Index of the asamSwmSwpContainsFileTable. A string representing
+          the type of board where the file applies to. The string consists
+          of a mnemonic which identifies the board type.
+   
+          Following mnemonics are valid:
+   
+          <BOARD_MNEMONIC> in case the considered file is a SW file supported
+          by at least one of the available OSWPs.
+          Refer to the ETSI Configurations and the US Configurations documents
+          for an overview of the board mnemonics.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpContainsFileEntry 3 }
+   
+   asamSwmFileFormat OBJECT-TYPE
+      SYNTAX INTEGER {
+         tar(1),      -- applicable for ASAM R5 and ESAM LSM/Extender boards
+                      -- for which different files of a specific type (Type_A
+                      -- or Type_B) are supported.
+         lz77(2),     -- applicable for ASAM R4 board types;
+                      -- applicable for ASAM R5 and ESAM LSM/Extender boards
+                      -- for which only one SW file of a specific
+                      -- type (Type_A or Type_B) is supported.
+         ascii(3),    -- applicable for some Type_A SW files of the ASAM R5
+                      -- and ESAM NT board types                 
+         exe(4),      -- applicable for (most of) the SW files (both type_A
+                      -- and Type_B) of the ASAM R5 and ESAM NT board types.
+	 coff(5)      -- applicable for uncompressed lz77 files.	                  
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the format of the file.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..5
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpContainsFileEntry 4 }
+   
+   asamSwmFileAvailStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+         available (1),
+         notAvailable (2)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies whether the file is available on the 
+          file disk or not.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= {asamSwmSwpContainsFileEntry 5 }
+   
+   asamSwmFilePriority OBJECT-TYPE
+      SYNTAX INTEGER {
+         partMinSet(1),
+         noPartMinSet(2)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies whether the file belongs to the minimum
+          set of the related OSWPs.
+          The value partMinSet(1) will always be used for the Overall 
+          descriptor files and for the SWP descriptor files.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpContainsFileEntry 6 }
+   
+   asamSwmFileSize OBJECT-TYPE
+      SYNTAX INTEGER (0..4294967295)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the size of the file.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 0.. 4294967295
+             PERSIST: NO    DEFVALUE: NA   UNITS: bytes"
+      ::= { asamSwmSwpContainsFileEntry 7 }
+   
+   asamSwmFileType  OBJECT-TYPE
+      SYNTAX INTEGER {
+         swFileTypeA(1),
+         swFileTypeB(2),
+         swFileTypeV(3)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the type of the file.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpContainsFileEntry 8 }
+   
+   asamSwmFileDecompression  OBJECT-TYPE
+      SYNTAX INTEGER {
+         decompression(1),   -- used for the ASAM R4 LSM board types
+         noDecompression(2)  -- used for the ASAM R5 and ESAM board types
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies whether the file must be decompressed or
+          not before being sent to the applicable boards.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSwmSwpContainsFileEntry 9 }
+                     
+   -- =======================================================================
+   -- |                      STOP SWP_Contains_FILE TABLE                   |
+   -- =======================================================================
+   
+   asamSwmTotalSpaceOnFileDisk OBJECT-TYPE
+      SYNTAX INTEGER (0..4294967295)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the total space on the file disk that is
+          reserved for the storage of files.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 0.. 4294967295
+             PERSIST: NO    DEFVALUE: NA   UNITS: bytes"
+      ::= { asamSwmObjects 6 }
+   
+   asamSwmFreeSpaceOnFileDisk OBJECT-TYPE
+      SYNTAX INTEGER (0..4294967295)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the space on the file disk that is still
+          available for the storage of files.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 0.. 4294967295
+             PERSIST: NO    DEFVALUE: NA   UNITS: bytes"
+      ::= { asamSwmObjects 7 }
+   
+   asamSwmClearImplicitSwRollbackAlarm OBJECT-TYPE
+      SYNTAX INTEGER {
+         enabled (1),
+         disabled (2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "To clear the alarm 'Implicit-SW-Rollback' the manager must set the
+          value of this attribute to enabled (1). The system will set the
+          value of this attribute back to disabled (2).
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA    UNITS: -"
+      ::= { asamSwmObjects 8 }
+   
+   asamSwmDemoSingleStream OBJECT-TYPE
+      SYNTAX INTEGER {
+         enabled (1),
+         disabled (2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Just a temporary object to prove
+          the single stream concepts
+          
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA    UNITS: -"
+      ::= { asamSwmObjects 9 }
+
+   
+   -- ======================================================================
+   -- |                          START DATABASE TABLE                      |
+   -- ======================================================================
+   
+   asamDbmDatabaseTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamDbmDatabaseEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "Dynamic database table, representing the databases inside the system.
+
+          Each row in the table specifies the operational status of an
+          available database with respect to one of the available OSWPs.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   TABLESIZE: DEP as described above."
+      ::= { asamDbmObjects 1 }
+   
+   asamDbmDatabaseEntry OBJECT-TYPE
+      SYNTAX AsamDbmDatabaseEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry of the database table.
+
+          ALCATEL NOTE:
+             SUPPORT: YES"
+      INDEX { asamDbmDatabaseIndex, asamDbmOswpIndex }
+      ::= { asamDbmDatabaseTable 1 }
+   
+   AsamDbmDatabaseEntry ::= SEQUENCE {
+      asamDbmDatabaseIndex       INTEGER,
+      asamDbmOswpIndex           INTEGER,
+      asamDbmDatabaseName        DisplayString,
+      asamDbmDatabaseOperStatus  INTEGER,
+      asamDbmDatabaseVersion     DisplayString
+   }
+    
+   asamDbmDatabaseIndex OBJECT-TYPE
+      SYNTAX INTEGER {
+         databaseFirstContainer(1),
+         databaseSecondContainer(2),
+         databaseThirdContainer(3)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "Index in the database table. The index uniquely identifies the
+          available databases.
+
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: NA   RANGE: 1..3
+             PERSIST: YES [FILE]   DEFVALUE: NA   UNITS: -"
+      ::= { asamDbmDatabaseEntry 1 }
+   
+   asamDbmOswpIndex OBJECT-TYPE
+      SYNTAX INTEGER (1..2)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The index value which uniquely identifies the OSWP to which the
+          considered relationship applies to. The OSWP identified by a
+          particular value of this index is the same OSWP as identified
+          by the same value of asamSwmOswpIndex in the asamSwmOswpTable.
+
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: NA   RANGE: 1..2
+             PERSIST: YES [FILE]   DEFVALUE: NA   UNITS: -"
+      ::= { asamDbmDatabaseEntry 2 }
+   
+   asamDbmDatabaseName  OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "A string representing the database that is identified by
+          asamDbmDatabaseIndex. The value 'NO-NAME' will be used by the system
+          for the default databases.
+                    
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: NA   RANGE: See above
+             PERSIST: YES [FILE]   DEFVALUE: NA   UNITS: -"
+      ::= { asamDbmDatabaseEntry 3 }
+   
+   asamDbmDatabaseOperStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+         actual(1),
+         preferable(2),
+         previous(3),
+         failed(4),
+         notUseful(5)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the operational status of the database
+         with respect to the OSWP. The considered database is identified
+         by asamDbmDatabaseIndex and the considered OSWP by asamDbmOswpIndex.
+
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: NA   RANGE: 1..5
+             PERSIST: YES [FILE]   DEFVALUE: NA   UNITS: -"
+      ::= { asamDbmDatabaseEntry 4 }
+   
+   asamDbmDatabaseVersion OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "A string representing the version of the database identified by
+          asamDbmDatabaseIndex. 
+
+          ALCATEL NOTE:
+             SUPPORT: YES          INSRVMOD: NA   RANGE: See above
+             PERSIST: YES [FILE]   DEFVALUE: NA   UNITS: -"
+      ::= { asamDbmDatabaseEntry 5 }
+   
+   -- =======================================================================
+   -- |                        STOP DATABASE TABLE                          |
+   -- =======================================================================
+   
+   asamDbmDownloadServerID OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the IP address of the file server
+          where the system can find the database.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: See above
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamDbmObjects 2 }
+   
+   asamDbmDownloadPath OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the directory path inside the file server
+          where the system can find the database. The file server itself is
+          identified by the value of asamDbmDownloadServerID.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: See above
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamDbmObjects 3 }
+   
+   asamDbmDownloadProgress OBJECT-TYPE
+      SYNTAX INTEGER {
+         ongoing(1),
+         finishedAndSuccessfull(2),
+         finishedButFailed(3)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the current status of the database
+          download process.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..3
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { asamDbmObjects 4 }
+   
+   asamDbmDownloadError OBJECT-TYPE
+      SYNTAX INTEGER {
+         notDefined(0),                  --
+         fileNotFound(1),                --
+         accessViolation(2),             -- The first 8 errors are
+         diskFull-AllocationExceeded(3), -- related to the file transfer protocol
+         illegalTftpOperation(4),        -- itself (see RFC1350).
+         unknownTransferId(5),           --
+         fileAlreadyExists(6),           --
+         noSuchUser(7),                  --
+         corruptedDatabase-incompleteDatabase(8),
+         systemRestart(9),
+         noError(10),
+	 corruptedIssConf(11),
+	 corruptedIssProtConf(12),
+	 anotherSWDBProcessOngoing(13),
+         tftpBusy(14)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the reason in case of a database download
+          failure.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..14
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { asamDbmObjects 5 }
+   
+   asamDbmUploadServerID OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the IP address of the file server where the
+          system must send the database to.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: See above
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamDbmObjects 6 }
+   
+   asamDbmUploadPath OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the directory path inside the file server
+          where the system must send the database to. The file server itself
+          is identified by the value of the attribute asamDbmUploadServerID.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: See above
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamDbmObjects 7 }
+   
+   asamDbmUploadDatabaseSelection OBJECT-TYPE
+      SYNTAX INTEGER {
+         actualForActiveOswp(1),
+         preferableForActiveOswp(2),
+         previousForActiveOswp(3),
+         failedForActiveOswp(4),
+         actualForNotActiveOswp(5),
+         preferableForNotActiveOswp(6),
+         previousForNotActiveOswp(7),
+         failedForNotActiveOswp(8),
+         notUseful (9)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used to select the database that needs to be
+          uploaded to the file server identified by the attribute
+          asamDbmUploadServerID. The database is selected based on its
+          operational status with respect to Active or NotActive OSWP.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..9
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamDbmObjects 8 }
+   
+   asamDbmUploadProgress OBJECT-TYPE
+      SYNTAX INTEGER {
+         ongoing(1),
+         finishedAndSuccessful(2),
+         finishedButFailed(3)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the current status of the database upload
+          process.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..3
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { asamDbmObjects 9 }
+   
+   asamDbmUploadError OBJECT-TYPE
+      SYNTAX INTEGER {
+         notDefined(0),                  --
+         fileNotFound(1),                --
+         accessViolation(2),             -- The first 8 errors are
+         diskFull-AllocationExceeded(3), -- related to the file transfer protocol
+         illegalTftpOperation(4),        -- itself (see RFC1350).
+         unknownTransferId(5),           --
+         fileAlreadyExists(6),           --
+         noSuchUser(7),                  --
+         selectedDatabaseNotAvailable(8),
+         systemRestart(9),
+         noError(10),
+         anotherSWDBProcessOngoing(11),
+         authenticationFailure(12),
+         tftpBusy(13)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the reason in case of a database upload
+          failure.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..13
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { asamDbmObjects 10 }
+
+   asamDbmClearImplicitDbRollbackAlarm  OBJECT-TYPE
+      SYNTAX INTEGER {
+         enabled(1),
+         disabled(2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "To clear the alarm 'Implicit-DB-Rollback' the manager must set the
+          value of this attribute to enabled (1). The system will set the
+          value of this attribute back to disabled(2).
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: NA    UNITS: -"
+      ::= { asamDbmObjects 11 }
+
+   asamDbmAutoActive  OBJECT-TYPE
+      SYNTAX INTEGER {
+         manually(1),
+         after-download(2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to configure how to
+          activate the DB, manually or automatically after-download.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..2
+             PERSIST: YES   DEFVALUE: 1     UNITS: -"
+      DEFVAL {1}
+      ::= { asamDbmObjects 12 }
+   
+   asamDbmAutoActiveError  OBJECT-TYPE
+      SYNTAX INTEGER {
+         noError(1),
+         anotherSWDBProcessOngoing(2),
+         noCompatibleOSWP(3),
+         unknownErrorDuringActivation(4),
+         notDefined(5)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute describes for what reason the automatic activation
+          of the restored DB failed.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..4
+             PERSIST: YES   DEFVALUE: 1     UNITS: -"
+      DEFVAL {1}
+      ::= { asamDbmObjects 13 }
+
+   asamDbmAutoBackup  OBJECT-TYPE
+      SYNTAX INTEGER {
+         disabled(1),
+         enabled(2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute is used by the operator to enable or disable the
+          autonomous backup of DB.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..2
+             PERSIST: YES   DEFVALUE: 1     UNITS: -"
+      DEFVAL {1}
+      ::= { asamDbmObjects 14 }
+   
+   asamDbmAutoBackupServerID  OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the IP address of the file server where the
+          system autonomous backup the DB to.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: See above
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamDbmObjects 15 }
+         
+   asamDbmAutoBackupPath  OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This attribute specifies the directory path inside the file server
+          where the system can backup the DB. The file server itself is
+          identified by the value of asamDbmAutoBackupServerID.
+
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: See above
+             PERSIST: YES   DEFVALUE: NA    UNITS: -"
+      ::= { asamDbmObjects 16 }
+
+   asamDbmAutoBackupInterval  OBJECT-TYPE
+      SYNTAX   INTEGER (1..168)
+      ACCESS   read-write
+      STATUS   mandatory
+      DESCRIPTION
+         "The time interval of autonous backup of DB. The unit of numerical
+          value is hour.
+
+         ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..168
+             PERSIST: YES   DEFVALUE: 24    UNITS: hours"
+      DEFVAL {24}
+      ::= { asamDbmObjects 17 }
+   
+-- *****************************************************************
+-- Nt download CDE file from TFTP server, this function is supported by ISAM 3.6V
+-- The below code added by Tanyk, Aug,28,2007 
+-- *****************************************************************
+--   voiceCdeDownloadTable OBJECT-TYPE
+--      SYNTAX SEQUENCE OF VoiceCdeDownloadEntry
+--      ACCESS not-accessible
+--      STATUS mandatory
+--      DESCRIPTION
+--         "Static CDE table, representing the CDE inside the system.
+--                                   
+--          Each row in the table specifies the profile and operational status of an
+--          available CDE profile . 
+--          ALCATEL NOTE:
+--             SUPPORT: YES   INSRVMOD: YES   RANGE: see above
+--             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+--     ::= { asamVoiceCdeObjects 1 }
+--   
+--   voiceCdeDownloadEntry OBJECT-TYPE
+--      SYNTAX VoiceCdeDownloadEntry
+--      ACCESS not-accessible
+--      STATUS mandatory
+--      DESCRIPTION
+--         "An entry of the CDE table.
+--
+--          ALCATEL NOTE:
+--             SUPPORT: YES   INSRVMOD: YES   RANGE: see above
+--             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+--      INDEX {voiceCDETarFileName, voiceCDEProfName}
+--      ::= { voiceCdeDownloadTable 1 }
+--   
+--   VoiceCdeDownloadEntry ::= SEQUENCE {
+--      voiceCDETarFileName                  DisplayString,
+--      voiceCDEProfName                     DisplayString,
+--      voiceCDEProfileType                  INTEGER,
+--      voiceCDEProfOperStatus               INTEGER
+--      }
+--   voiceCDETarFileName  OBJECT-TYPE
+--      SYNTAX DisplayString 
+--      ACCESS read-only
+--      STATUS mandatory
+--      DESCRIPTION " Name of tar file which download from TFTP server to NT.
+--      
+--      ALCATEL NOTE:
+--             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..32
+--             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+--   ::= {voiceCdeDownloadEntry 1}               
+--   
+--   voiceCDEProfName OBJECT-TYPE
+--      SYNTAX DisplayString
+--      ACCESS read-only
+--      STATUS mandatory
+--      DESCRIPTION "Name of  CDE profile .
+--      
+--      ALCATEL NOTE:
+--             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..32
+--             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+--   ::= {voiceCdeDownloadEntry 2}   
+--                          
+--   voiceCDEProfileType OBJECT-TYPE
+--      SYNTAX INTEGER {
+--         xvps(1),
+--         pots(2),
+--         isdn(3)
+--      }
+--      ACCESS read-only
+--      STATUS mandatory
+--      DESCRIPTION "The type information of  CDE profile .
+--      
+--      ALCATEL NOTE:
+--             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..3
+--             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+--   ::= {voiceCdeDownloadEntry 3}                         
+--    
+--   voiceCDEProfOperStatus OBJECT-TYPE
+--      SYNTAX INTEGER {
+--         activated (1),
+--         de-activated (2)
+--      }
+--      ACCESS read-only
+--      STATUS mandatory
+--      DESCRIPTION "This attribute informs the operator whether the related CDE file is
+--          currently active or not.
+--          
+--          ALCATEL NOTE:
+--             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..2
+--             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+--   ::= {voiceCdeDownloadEntry 4}   
+
+   voiceCDETarDldServerID OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION "IP Address of the file server where a given CDE can be taken from.
+      
+      ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..32
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+    ::= { asamVoiceCdeObjects 2 }     
+    
+   voiceCDETarDldPath OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION "Path and Name of tar file including the CDE files to be loaded.
+      
+      ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..128
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+    ::= { asamVoiceCdeObjects 3 }   
+  
+   voiceCDETarDldProgress OBJECT-TYPE
+      SYNTAX INTEGER
+      {
+         ongoing (1),
+         finishedAndSuccessful (2),
+         finishedButFailed (3)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION "Progress of a CDE downloading operation.  
+      
+      ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..3
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+    ::= { asamVoiceCdeObjects 4 } 
+    
+   voiceCDETarDldError OBJECT-TYPE
+      SYNTAX INTEGER
+      {
+         notDefined (1),
+         fileNotFound (2),
+         accessViolation (3),
+         diskFull-AllocationExceeded (4),
+         illegalTftpOperation (5),
+         noSuchUser (6),
+         wrongCDEFileName (7),
+         corruptedCDE (8),
+         missingDownloadServerAddress (9),
+         internalApplicationError (10),
+         noError (20)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION "the result of CDE file downloading.
+      
+      ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..20
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+
+    ::= { asamVoiceCdeObjects 5 }     
+   
+   voiceCDETarActivate OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION "Activates a CDE file previously downloaded.
+      
+      ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: YES   RANGE: 1..128
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+   ::= { asamVoiceCdeObjects 6 }     
+   
+   
+END

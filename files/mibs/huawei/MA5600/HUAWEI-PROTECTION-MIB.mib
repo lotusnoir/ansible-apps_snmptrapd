@@ -1,0 +1,305 @@
+-- =========================================================================================
+-- Copyright (C) 2002 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description：IPMB Aiu Proctect MIB
+-- Reference: Inherit from APMB 
+-- Version: V1.0
+-- History：chenjian 35945 modify
+-- History：fuyong 26377 modify add GAU port protect
+-- History: 许永峰54799 申请修改:增加hwProtectionTable表的叶子hwPgWorkMode的一个取值lacp
+-- History: 刘雅宁67211 增加hwProtectionTable表的叶子hwPgWorkMode的一个取值timebis；增加hwProtectionTable表的叶子：hwPgWeight,hwPgStandbyOnTime,hwPgHoldTime,hwPgCheckFrequency
+-- ========================================================================================
+
+HUAWEI-PROTECTION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, private
+		FROM SNMPv2-SMI
+	MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+		FROM SNMPv2-CONF
+	TEXTUAL-CONVENTION
+		FROM SNMPv2-TC
+	RowStatus
+		FROM SNMPv2-TC
+    ifIndex
+        FROM IF-MIB
+    hwFrameIndex, hwSlotIndex
+        FROM HUAWEI-DEVICE-MIB		
+;
+                   
+hwProtection MODULE-IDENTITY
+	LAST-UPDATED "0503181142Z"
+	ORGANIZATION "Fixed Network department of Huawei Technologies "
+	CONTACT-INFO "R&D Center F4-5-A13R"
+	DESCRIPTION ""
+	::= { huaweiUtility 50 }
+
+
+
+enterprises OBJECT IDENTIFIER ::= { private 1 }
+
+huawei OBJECT IDENTIFIER ::= { enterprises 2011 }
+
+huaweiUtility OBJECT IDENTIFIER ::= { huawei 6 }
+
+
+  hwProtectionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF HwProtectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "
+         index is the IfIndex of work port，for protection group whith protection type ETH,the portid must be 127,and the others must be 0"
+    ::= { hwProtection 1 }
+
+  hwProtectionEntry OBJECT-TYPE
+    SYNTAX      HwProtectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      ""
+    INDEX    {  
+              ifIndex
+             }
+    ::= { hwProtectionTable 1 }
+
+  HwProtectionEntry ::=
+    SEQUENCE
+    {
+      hwPgType	INTEGER,
+      hwPgCurrentWorkEntity	INTEGER,
+      hwPgProtectIfIndex	INTEGER,
+      hwPgMngtEnable	INTEGER,
+      hwPgMngtAdminStatus	INTEGER,
+      hwPgWorkMode	INTEGER,
+      hwPgRowStatus	RowStatus,
+      hwPgWeight   INTEGER,
+      hwPgStandbyOnTime  INTEGER,
+      hwPgHoldTime  INTEGER
+   }
+
+  hwPgType OBJECT-TYPE
+    SYNTAX      INTEGER{e1(1), atm-apm(2),atm-aiu(3),atm-aic(4),atm-mmx-board(5),atm-mmx-port(6),eth(7)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+         protection type "
+    ::= { hwProtectionEntry 1 }
+
+  hwPgCurrentWorkEntity OBJECT-TYPE
+    SYNTAX      INTEGER{work(1),protect(2)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+         board(port) work now  is ps-work or ps-protect:1-work 2-protect "
+    ::= { hwProtectionEntry 2 }
+
+  hwPgProtectIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+         protection port(board) ifindex "
+    ::= { hwProtectionEntry 3 }
+
+  hwPgMngtEnable OBJECT-TYPE
+    SYNTAX      INTEGER{enable(1),disable(2)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+         protection group enable operation: 1-enable,2-disable "
+    ::= { hwProtectionEntry 4 }
+    
+
+  hwPgMngtAdminStatus OBJECT-TYPE
+    SYNTAX      INTEGER{switch(1)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+          protection group operation: 1-switch "
+    ::= { hwProtectionEntry 5 }
+
+  hwPgWorkMode OBJECT-TYPE
+    SYNTAX      INTEGER{ uniformRoute(1), diverseRoute(2), portState(3), time-delay(4), lacp(5),timebis(6)}
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+         protection group workmode:1-uniformRoute, 2-diverseRoute, 3-portState, 4-time-delay, 5-lacp,6-timebis"
+    DEFVAL      { 1 }
+    ::= { hwProtectionEntry 6 }
+
+   hwPgRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+         protection group function:4-creat 6-distroy "
+    ::= { hwProtectionEntry 7 } 
+    
+        
+  hwPgWeight OBJECT-TYPE
+    SYNTAX      INTEGER (1..100)
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+         protection group weight"
+    DEFVAL      { 10 }
+    ::= { hwProtectionEntry 8 }
+    
+  hwPgStandbyOnTime OBJECT-TYPE
+    SYNTAX      INTEGER (40..1000)
+    UNITS       "ten ms"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+         open time of standby port when checking port status of the standby board"
+    DEFVAL      { 100 }
+    ::= { hwProtectionEntry 9 } 
+    
+  hwPgHoldTime OBJECT-TYPE
+    SYNTAX      INTEGER (0..1000)
+    UNITS       "ten ms"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "
+         the delay-time of checking protection group "
+    DEFVAL      { 0 }
+    ::= { hwProtectionEntry 10 } 
+    
+         
+
+  hwProtectionAbilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF HwProtectionAbilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      ""
+    ::= { hwProtection 2 }
+
+  hwProtectionAbilityEntry OBJECT-TYPE
+    SYNTAX      HwProtectionAbilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      ""
+    INDEX    {  
+              hwFrameIndex,
+              hwSlotIndex
+             }
+    ::= { hwProtectionAbilityTable 1 }
+
+  HwProtectionAbilityEntry ::=
+    SEQUENCE
+    {
+      hwPgAbilityType	INTEGER,
+      hwPgOtherFrame	INTEGER,
+      hwPgOtherSlot	INTEGER
+    }
+
+  hwPgAbilityType OBJECT-TYPE
+    SYNTAX      INTEGER{e1(1),atm-apm(2),atm-aiu(3),atm-aic(4),atm-mmx-board(5),atm-mmx-port(6),eth(7)}
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+         保护类型 "
+    ::= { hwProtectionAbilityEntry 1 }
+
+  hwPgOtherFrame OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+         保护组2框号 "
+    ::= { hwProtectionAbilityEntry 2 }
+
+  hwPgOtherSlot OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+         保护组2槽号 "
+    ::= { hwProtectionAbilityEntry 3 }
+-- History：fuyong 26377 modify add GAU port protect
+
+ hwGauPortProtectTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF HwGauPortProtectEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      "Gau port config protective group"
+    ::= { hwProtection 3 }
+
+  hwGauPortProtectEntry OBJECT-TYPE
+    SYNTAX      HwGauPortProtectEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+      ""
+    INDEX    {  
+              hwGauFirstPortIfIndex
+             }
+    ::= { hwGauPortProtectTable 1 }
+
+  HwGauPortProtectEntry ::=
+    SEQUENCE
+    {
+      hwGauFirstPortIfIndex INTEGER,
+      hwGauSecondPortIfIndex	INTEGER,
+      hwGauPortrotectRowStatus	RowStatus,
+      hwGauPortCurrentActiveIfIndex  INTEGER
+    }
+    
+  hwGauFirstPortIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        " Gau first port ifindex"
+    ::= { hwGauPortProtectEntry 1 }
+    
+  hwGauSecondPortIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        "Gau Second port ifindex"
+    ::= { hwGauPortProtectEntry 2 }
+
+  hwGauPortrotectRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+        " Config protective group rowstauts "
+    ::= { hwGauPortProtectEntry 3 }
+    
+   hwGauPortCurrentActiveIfIndex OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " Current active port ifindex "
+    ::= { hwGauPortProtectEntry 4 }
+    
+   hwPgCheckFrequency OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+      "protection group check frequency"
+    ::= { hwProtection 4 }
+
+END

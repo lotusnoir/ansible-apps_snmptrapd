@@ -1,0 +1,317 @@
+IACM-DIST-SDP-MIB DEFINITIONS ::= BEGIN
+-- =============================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel-Lucent expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel-Lucent shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2010, Alcatel-Lucent. All Rights Reserved.
+-- =============================================================================
+
+-- MODULE-IDENTITY 
+--       LAST-UPDATED "201010260900Z"
+--       ORGANIZATION "Alcatel-Lucent"
+--       CONTACT-INFO
+--
+--            "Email:  asam.mibsupport@alcatel.be" 
+--
+-- DESCRIPTION "This MIB module supports the configuration related    
+--              parameters for creating a Service Delivery Point."
+
+--  REVISION "201010260900Z"
+--  DESCRIPTION
+--        "Version: <MIB identification>
+--         Editor: <name of document author>
+--         Changes:  Initial Version"
+
+
+
+IMPORTS
+	
+	asam 
+		FROM SYSTEM-MIB
+
+	OBJECT-TYPE
+		FROM RFC-1212
+
+	IacmDistSdpId, IacmDistLspIdList, iacmDistSvcId
+		FROM IACM-DIST-SERV-MIB
+
+	RowStatus 
+		FROM SNMPv2-TC;
+
+
+iacmDistSdpMIB OBJECT IDENTIFIER ::= { asam 97 } 
+
+-- Groups in iacmDistSdpMIB 
+
+iacmDistSdpObjects  OBJECT IDENTIFIER ::= { iacmDistSdpMIB 1 }
+
+
+-- ============================
+-- SDP Table
+-- ============================
+iacmDistSdpInfoTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF IacmDistSdpInfoEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "A table that contains SDP information."
+    ::= { iacmDistSdpObjects 1 }
+
+iacmDistSdpInfoEntry OBJECT-TYPE
+    SYNTAX          IacmDistSdpInfoEntry
+    ACCESS  	    not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "Information about a specific SDP."
+    INDEX           { iacmDistSdpId }
+    ::= { iacmDistSdpInfoTable 1 }
+
+IacmDistSdpInfoEntry ::= SEQUENCE {
+        iacmDistSdpId		IacmDistSdpId,
+	iacmDistSdpLspList	IacmDistLspIdList,
+        iacmDistSdpRowStatus	RowStatus
+	}
+
+iacmDistSdpId OBJECT-TYPE
+    SYNTAX          IacmDistSdpId
+    ACCESS  	    not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "SDP identifier.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSdpInfoEntry 1 }
+
+iacmDistSdpLspList OBJECT-TYPE
+    SYNTAX          IacmDistLspIdList
+    ACCESS   	    read-write
+    STATUS          mandatory
+    DESCRIPTION     
+	"This object specifies the list of LSPs used to reach 
+         the far-end device. Each LSP ID in the list corresponds
+	 to the iacmDistVRtrMplsLspIndex of the given MPLS LSP.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSdpInfoEntry 2 }
+
+iacmDistSdpRowStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    ACCESS  	    read-write
+    STATUS          mandatory
+    DESCRIPTION     
+	"This object indicates the status of this row. The
+         only values supported during a set operation are
+         'createAndGo' and 'destroy'. To delete an entry
+         from this table, the corresponding SDP entry should 
+	 not bound to any service.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NO           INSRVMOD:    YES
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSdpInfoEntry 3 }
+
+-- =========================
+-- SDP Bind Table
+-- =========================
+iacmDistSdpBindTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF IacmDistSdpBindEntry
+    ACCESS  	    not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "A table that contains SDP binding information."
+    ::= { iacmDistSdpObjects 2 }
+
+iacmDistSdpBindEntry OBJECT-TYPE
+    SYNTAX          IacmDistSdpBindEntry
+    ACCESS  	    not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "Information about a specific SDP binding."
+
+    INDEX           { iacmDistSvcId, iacmDistSdpBindId }
+    ::= { iacmDistSdpBindTable 1 }
+
+IacmDistSdpBindEntry ::= SEQUENCE {
+        iacmDistSdpBindId                           OCTET STRING,
+        iacmDistSdpBindRowStatus                    RowStatus,
+        iacmDistSdpBindAdminIngressLabel            INTEGER,
+        iacmDistSdpBindAdminEgressLabel             INTEGER
+	}
+
+iacmDistSdpBindId OBJECT-TYPE
+    SYNTAX          OCTET STRING (SIZE (8))
+    ACCESS  	    not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "SDP Binding identifier.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       NA           DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSdpBindEntry 1 }
+
+iacmDistSdpBindRowStatus OBJECT-TYPE
+    SYNTAX          RowStatus
+    ACCESS  	    read-write
+    STATUS          mandatory
+    DESCRIPTION     
+	"This object indicates the status of this row. The
+         only values supported during a set operation are
+         'createAndGo' and 'destroy'.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       MAND
+            PERSIST:     NO           INSRVMOD:    YES
+            RANGE:       1,4,6        DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSdpBindEntry 2 }
+
+iacmDistSdpBindAdminIngressLabel OBJECT-TYPE
+    SYNTAX          INTEGER (0 | 1 | 2048..18431)
+    ACCESS  	    read-write
+    STATUS          mandatory
+    DESCRIPTION     "The static MPLS VC label used by the far-end device
+                     to send packets to this device in this service via
+                     this SDP.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       2048..18431  DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSdpBindEntry 3 }
+
+iacmDistSdpBindAdminEgressLabel OBJECT-TYPE
+    SYNTAX          INTEGER (0 | 1..1048575)
+    ACCESS  	    read-write
+    STATUS          mandatory
+    DESCRIPTION     "The static MPLS VC label used by this device to send
+                     packets to the far-end device in this service via
+                     this SDP.
+
+	ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       1..1048575  DEFVALUE:    NA
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA
+	"
+    ::= { iacmDistSdpBindEntry 4 }
+
+-- ====================================
+-- APIPE SDP Bind Table
+-- ====================================
+iacmDistSdpBindApipeTable OBJECT-TYPE
+    SYNTAX          SEQUENCE OF IacmDistSdpBindApipeEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "The IacmDistSdpBindApipeTable has an entry for each apipe sdpBind
+                     configured on this system."
+    ::= { iacmDistSdpObjects 3 }
+
+iacmDistSdpBindApipeEntry OBJECT-TYPE
+    SYNTAX          IacmDistSdpBindApipeEntry
+    ACCESS          not-accessible
+    STATUS          mandatory
+    DESCRIPTION     "Each row entry represents a particular sdpBind related to a
+                     particular Apipe service entry. Entries are created/deleted
+                     by the user."
+    INDEX           { iacmDistSvcId, iacmDistSdpBindId }
+    ::= { iacmDistSdpBindApipeTable 1 }
+
+IacmDistSdpBindApipeEntry ::=
+    SEQUENCE {
+        iacmDistSdpBindApipeAdminConcatCellCount        INTEGER,
+        iacmDistSdpBindApipeConcatMaxDelay              INTEGER
+    }
+
+iacmDistSdpBindApipeAdminConcatCellCount OBJECT-TYPE
+    SYNTAX          INTEGER (1..128)
+    ACCESS          read-write
+    STATUS          optional
+    DESCRIPTION     "The value of IacmDistSdpBindApipeAdminConcatCellCount specifies
+                     the maximum number of ATM cells to accumulate
+                     into an MPLS packet.  The remote peer will also signal the
+                     maximum number of concatenated cells it is willing to
+                     accept in an MPLS packet.  When the lesser of (the
+                     configured value and the signaled value) number of cells
+                     is reached, the MPLS packet is queued for transmission
+                     onto the pseudowire.
+    ALCATEL NOTE:
+            ACCESS:      NA           USAGE:       NA
+            PERSIST:     YES          INSRVMOD:    NO
+            RANGE:       1..8         DEFVALUE:    1
+            UNITS:       NA           SPARSE:      NA
+            DESCR:       NA                 
+                     "
+    DEFVAL { 1 }
+    ::= { iacmDistSdpBindApipeEntry 1 }
+
+
+iacmDistSdpBindApipeConcatMaxDelay OBJECT-TYPE
+    SYNTAX          INTEGER (1..10)
+    ACCESS          read-write
+    STATUS          optional
+    DESCRIPTION     "The value of iacmDistSdpBindApipeConcatMaxDelay object specifies
+                     the maximum amount of time to wait while
+                     performing ATM cell concatenation into an MPLS packet
+                     before transmitting the MPLS packet.  This places an upper
+                     bound on the amount of delay introduced by the
+                     concatenation process.
+                     When this amount of time is reached from when the first
+                     ATM cell for this MPLS packet was received, the MPLS
+                     packet is queued for transmission onto the pseudowire.
+    ALCATEL NOTE:
+            ACCESS:      NA                USAGE:       NA
+            PERSIST:     YES               INSRVMOD:    NO
+            RANGE:       1..10             DEFVALUE:    4
+            UNITS:       milliseconds      SPARSE:      NA
+            DESCR:       NA 
+        "
+    DEFVAL { 4 }
+    ::= { iacmDistSdpBindApipeEntry 4 }
+
+END
+

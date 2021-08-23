@@ -1,0 +1,93 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V3.00
+-- History:
+-- liu chenglong 2003-04-28 Added IPR Decriptions and updated all MIB version to V3.00
+-- ============================================================================
+	HUAWEI-IMA-EXT-MIB DEFINITIONS ::= BEGIN
+
+		IMPORTS 
+			imaGroupEntry
+				FROM IMA-MIB
+			OBJECT-TYPE
+				FROM SNMPv2-SMI
+			TruthValue			
+				FROM SNMPv2-TC;
+
+		imaGroupVersion OBJECT-TYPE
+			SYNTAX      INTEGER
+				{
+					v10(1), -- version 1.0
+					v11(2)  -- version 1.1
+				}
+			MAX-ACCESS  read-create
+			STATUS      current
+			DESCRIPTION
+				"IMA Version
+				IMA协议版本:
+				 "
+		::= { imaGroupEntry 65536 }
+   	
+		imaGroupScramble OBJECT-TYPE
+			SYNTAX		TruthValue
+       		MAX-ACCESS	read-write
+       		STATUS		current
+   			DESCRIPTION
+    			"If scramble of IMA group is set on or off.  
+    			
+    			 设置IMA组扰码开关:
+    			 "
+   		::= { imaGroupEntry 65537 }
+   
+   		imaGroupCRC4 	OBJECT-TYPE
+       		SYNTAX		TruthValue 
+       		MAX-ACCESS	read-write
+       		STATUS		current
+   			DESCRIPTION
+    			"If CRC4 of IMA group is set on or off.
+    			
+    			 设置IMA组CRC4校验开关:
+    			 "
+   		::= { imaGroupEntry 65538 }
+
+   		imaGroupTxClock OBJECT-TYPE
+       		SYNTAX	INTEGER
+       			{
+       				none(1),    -- none
+        				system(2),  -- system clock
+        				line(3)     -- line clock
+				}
+       		MAX-ACCESS	read-write
+       		STATUS		current
+   			DESCRIPTION
+    			"Transmition clock of an IMA group .
+    			
+    			 设置IMA组发送时钟
+    			 "
+   		::= { imaGroupEntry 65539 }
+
+   		imaGroupTxCellCount OBJECT-TYPE
+       	   SYNTAX		Counter32
+       		MAX-ACCESS	read-only
+       		STATUS		current
+   			DESCRIPTION
+    			"IMA group sent cells count.
+    			
+    			 IMA组发送信元计数
+    			 "
+   		::= { imaGroupEntry 65540 }
+
+   		imaGroupRxCellCount OBJECT-TYPE
+       		SYNTAX		Counter32
+       		MAX-ACCESS	read-only
+       		STATUS		current
+   			DESCRIPTION
+    			"IMA group received cells count.
+    			
+    			 IMA组接收信元计数
+    			 "
+   		::= { imaGroupEntry 65541 }
+	END    	

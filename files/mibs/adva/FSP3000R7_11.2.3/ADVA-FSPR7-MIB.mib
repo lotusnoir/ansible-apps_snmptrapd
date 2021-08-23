@@ -1,0 +1,5793 @@
+--  ***************************************************************************
+--  ADVA-FSPR7-MIB.txt
+--
+--               ADVA AG Optical Networking MIB File
+--
+--  Copyright 2011 ADVA AG Optical Networking.
+--
+--  All rights reserved.
+--  ***************************************************************************
+
+
+--  MIB definitions required for entity management.
+
+ADVA-FSPR7-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    RowStatus,
+    RowPointer,
+    DateAndTime,
+    TruthValue
+                                        FROM  SNMPv2-TC
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP,
+    NOTIFICATION-GROUP
+                                        FROM  SNMPv2-CONF
+    OBJECT-TYPE,
+    MODULE-IDENTITY,
+    NOTIFICATION-TYPE,
+    Unsigned32,
+    Integer32,
+    IpAddress
+                                        FROM  SNMPv2-SMI
+    SnmpAdminString
+                                        FROM  SNMP-FRAMEWORK-MIB
+    fspR7,
+    EntityClass,
+    ServiceImpairment,
+    TrapAlarmSeverity,
+    AssignmentState,
+    ApsDirection,
+    FspR7EquipmentType
+                                        FROM  ADVA-MIB
+    ConnectionNotation,
+    EntityClassName,
+    FspR7AdminState,
+    FspR7AlarmListType,
+    FspR7ChannelBandwidth,
+    FspR7ChannelIdentifier,
+    FspR7Conn,
+    FspR7ConnectState,
+    FspR7ConnectorType,
+    FspR7EntitySecondaryStates,
+    FspR7EntityType,
+    FspR7EqlzAdminState,
+    FspR7FecType,
+    FspR7FiberDetect,
+    FspR7FrameFormat,
+    FspR7FunctionCrs,
+    FspR7InitEqualization,
+    FspR7InterfaceFunction,
+    FspR7InterfaceType,
+    FspR7LineCoding,
+    FspR7MaxBitErrorRate,
+    FspR7OperState,
+    FspR7OpticalBand,
+    FspR7OpticalFiberType,
+    FspR7OpticalGroup,
+    FspR7OpticalInterfaceReach,
+    FspR7OpticalMultiplexLevel,
+    FspR7OpticalSubBand,
+    FspR7PathNode,
+    FspR7PmSnapshotStatus,
+    FspR7PmSnapshotParameterTypes,
+    FspR7RedLinedState,
+    FspR7SingleFiberLocation,
+    FspR7StartPmSnapshot,
+    FspR7StateConnection,
+    FspR7TrapModeLegacy,
+    FspR7TypeConnection,
+    FspR7TypeCrs
+                                        FROM  ADVA-FSPR7-TC-MIB;
+    
+
+advaFspR7 MODULE-IDENTITY
+
+    LAST-UPDATED "201105220000Z"
+
+    ORGANIZATION "ADVA Optical Networking"
+
+    CONTACT-INFO "EMEA Support
+                  Phone : +49 89 89 0665 848
+                  Fax   : +49 89 89 0665 22848
+                  Email : support@advaoptical.com
+
+                  North American Support
+                  Phone : 886 442 ADVA (2382) (toll-free within the US, Canada and Mexico)
+                  Fax   : + 1 806 741 8529 (elsewhere)
+                  Email : support-usa@advaoptical.com
+
+                  Asia Pacific Support
+                  Phone : + 1 866 442 2382 (other toll-free numbers available in some countries)
+                  Email : support-asia@advaoptical.com"
+
+    DESCRIPTION   "This is a MIB definition for ADVA AG Optical Networking entity management."
+
+    REVISION      "201105220000Z"
+    DESCRIPTION   "FSP3000 F7 Release 11.2 MIB."
+    ::= { fspR7 7 }
+
+
+containers
+    OBJECT IDENTIFIER ::= { advaFspR7 1 }
+
+entities
+    OBJECT IDENTIFIER ::= { advaFspR7 2 }
+
+management
+    OBJECT IDENTIFIER ::= { advaFspR7 3 }
+
+neMgmt
+    OBJECT IDENTIFIER ::= { management 1 }
+
+specificMgmt
+    OBJECT IDENTIFIER ::= { management 2 }
+
+facilityMgmt
+    OBJECT IDENTIFIER ::= { management 4 }
+
+alarm
+    OBJECT IDENTIFIER ::= { advaFspR7 4 }
+
+trap
+    OBJECT IDENTIFIER ::= { advaFspR7 5 }
+
+fspR7Trap
+    OBJECT IDENTIFIER ::= { trap 0 }
+
+performance
+    OBJECT IDENTIFIER ::= { advaFspR7 6 }
+
+performanceFacility
+    OBJECT IDENTIFIER ::= { performance 4 }
+
+performanceFacilityThreshold
+    OBJECT IDENTIFIER ::= { performanceFacility 1 }
+
+performanceFacilityMonitoring
+    OBJECT IDENTIFIER ::= { performanceFacility 2 }
+
+featureSpecific
+    OBJECT IDENTIFIER ::= { advaFspR7 7 }
+
+fiberMap
+    OBJECT IDENTIFIER ::= { featureSpecific 1 }
+
+pmSnapshot
+    OBJECT IDENTIFIER ::= { featureSpecific 2 }
+
+eci
+    OBJECT IDENTIFIER ::= { featureSpecific 3 }
+
+relationship
+    OBJECT IDENTIFIER ::= { advaFspR7 8 }
+
+notAssignables
+    OBJECT IDENTIFIER ::= { advaFspR7 9 }
+
+containerFacilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ContainerFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "containerFacilityTable"
+    ::=  { containers 7 }
+
+containerFacilityEntry OBJECT-TYPE
+    SYNTAX      ContainerFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of containerFacilityTable"
+    INDEX       {
+                  containerFacilityShelfNo,
+                  containerFacilitySlotNo,
+                  containerFacilityPortNo,
+                  containerFacilityExtNo,
+                  containerFacilityClassName
+                }
+    ::=  { containerFacilityTable 1 }
+
+ContainerFacilityEntry ::=  SEQUENCE
+  { containerFacilityShelfNo Unsigned32,
+    containerFacilitySlotNo Unsigned32,
+    containerFacilityPortNo Unsigned32,
+    containerFacilityExtNo Unsigned32,
+    containerFacilityClassName EntityClassName,
+    containerFacilityAidString SnmpAdminString,
+    containerFacilityClass EntityClass }
+
+containerFacilityShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerFacilityEntry 1 }
+
+containerFacilitySlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerFacilityEntry 2 }
+
+containerFacilityPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerFacilityEntry 3 }
+
+containerFacilityExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerFacilityEntry 4 }
+
+containerFacilityClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerFacilityEntry 5 }
+
+containerFacilityAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { containerFacilityEntry 6 }
+
+containerFacilityClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { containerFacilityEntry 7 }
+
+containerCrossConnTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ContainerCrossConnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "containerCrossConnection"
+    ::=  { containers 8 }
+
+containerCrossConnEntry OBJECT-TYPE
+    SYNTAX      ContainerCrossConnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of containerCrossConnectionTable"
+    INDEX       {
+                  containerCrossConnFromShelfNo,
+                  containerCrossConnFromSlotNo,
+                  containerCrossConnFromPortNo,
+                  containerCrossConnFromExtNo,
+                  containerCrossConnFromClassName,
+                  containerCrossConnToShelfNo,
+                  containerCrossConnToSlotNo,
+                  containerCrossConnToPortNo,
+                  containerCrossConnToExtNo,
+                  containerCrossConnToClassName,
+                  containerCrossConnClassName
+                }
+    ::=  { containerCrossConnTable 1 }
+
+ContainerCrossConnEntry ::=  SEQUENCE
+  { containerCrossConnFromShelfNo Unsigned32,
+    containerCrossConnFromSlotNo Unsigned32,
+    containerCrossConnFromPortNo Unsigned32,
+    containerCrossConnFromExtNo Unsigned32,
+    containerCrossConnFromClassName EntityClassName,
+    containerCrossConnToShelfNo Unsigned32,
+    containerCrossConnToSlotNo Unsigned32,
+    containerCrossConnToPortNo Unsigned32,
+    containerCrossConnToExtNo Unsigned32,
+    containerCrossConnToClassName EntityClassName,
+    containerCrossConnClassName EntityClassName,
+    containerCrossConnAidString SnmpAdminString,
+    containerCrossConnFromId RowPointer,
+    containerCrossConnToId RowPointer,
+    containerCrossConnClass EntityClass }
+
+containerCrossConnFromShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnEntry 1 }
+
+containerCrossConnFromSlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnEntry 2 }
+
+containerCrossConnFromPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnEntry 3 }
+
+containerCrossConnFromExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnEntry 4 }
+
+containerCrossConnFromClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerCrossConnEntry 5 }
+
+containerCrossConnToShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnEntry 6 }
+
+containerCrossConnToSlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnEntry 7 }
+
+containerCrossConnToPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnEntry 8 }
+
+containerCrossConnToExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnEntry 9 }
+
+containerCrossConnToClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerCrossConnEntry 10 }
+
+containerCrossConnClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerCrossConnEntry 11 }
+
+containerCrossConnAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { containerCrossConnEntry 12 }
+
+containerCrossConnFromId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to FROM point entity."
+    ::=  { containerCrossConnEntry 13 }
+
+containerCrossConnToId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to TO point entity."
+    ::=  { containerCrossConnEntry 14 }
+
+containerCrossConnClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { containerCrossConnEntry 15 }
+
+containerCrossConnFromPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ContainerCrossConnFromPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "containerCrossConnFromTable"
+    ::=  { containers 9 }
+
+containerCrossConnFromPointEntry OBJECT-TYPE
+    SYNTAX      ContainerCrossConnFromPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry for containerCrossConnFromTable"
+    INDEX       {
+                  containerCrossConnFromPointShelfNo,
+                  containerCrossConnFromPointSlotNo,
+                  containerCrossConnFromPointPortNo,
+                  containerCrossConnFromPointExtNo,
+                  containerCrossConnFromPointClassName
+                }
+    ::=  { containerCrossConnFromPointTable 1 }
+
+ContainerCrossConnFromPointEntry ::=  SEQUENCE
+  { containerCrossConnFromPointShelfNo Unsigned32,
+    containerCrossConnFromPointSlotNo Unsigned32,
+    containerCrossConnFromPointPortNo Unsigned32,
+    containerCrossConnFromPointExtNo Unsigned32,
+    containerCrossConnFromPointClassName EntityClassName,
+    containerCrossConnFromPointAidString SnmpAdminString,
+    containerCrossConnFromPointFromId RowPointer,
+    containerCrossConnFromPointClass EntityClass }
+
+containerCrossConnFromPointShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnFromPointEntry 1 }
+
+containerCrossConnFromPointSlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnFromPointEntry 2 }
+
+containerCrossConnFromPointPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnFromPointEntry 3 }
+
+containerCrossConnFromPointExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrossConnFromPointEntry 4 }
+
+containerCrossConnFromPointClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerCrossConnFromPointEntry 5 }
+
+containerCrossConnFromPointAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { containerCrossConnFromPointEntry 6 }
+
+containerCrossConnFromPointFromId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to FROM point entity."
+    ::=  { containerCrossConnFromPointEntry 7 }
+
+containerCrossConnFromPointClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { containerCrossConnFromPointEntry 8 }
+
+containerTerminPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ContainerTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "containerTerminPointTable"
+    ::=  { containers 10 }
+
+containerTerminPointEntry OBJECT-TYPE
+    SYNTAX      ContainerTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry for containerTerminPointTable"
+    INDEX       {
+                  containerTerminPointIndexNo1,
+                  containerTerminPointIndexNo2,
+                  containerTerminPointIndexNo3,
+                  containerTerminPointIndexNo4,
+                  containerTerminPointClassName
+                }
+    ::=  { containerTerminPointTable 1 }
+
+ContainerTerminPointEntry ::=  SEQUENCE
+  { containerTerminPointIndexNo1 Unsigned32,
+    containerTerminPointIndexNo2 Unsigned32,
+    containerTerminPointIndexNo3 Unsigned32,
+    containerTerminPointIndexNo4 Unsigned32,
+    containerTerminPointClassName EntityClassName,
+    containerTerminPointAidString SnmpAdminString,
+    containerTerminPointClass EntityClass }
+
+containerTerminPointIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerTerminPointEntry 1 }
+
+containerTerminPointIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerTerminPointEntry 2 }
+
+containerTerminPointIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerTerminPointEntry 3 }
+
+containerTerminPointIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerTerminPointEntry 4 }
+
+containerTerminPointClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerTerminPointEntry 5 }
+
+containerTerminPointAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { containerTerminPointEntry 6 }
+
+containerTerminPointClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { containerTerminPointEntry 7 }
+
+containerConnectStdTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ContainerConnectStdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "containerConnectStdTable"
+    ::=  { containers 11 }
+
+containerConnectStdEntry OBJECT-TYPE
+    SYNTAX      ContainerConnectStdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry for containerConnectStdTable"
+    INDEX       {
+                  containerConnectStdNotation,
+                  containerConnectStdFromIndexNo1,
+                  containerConnectStdFromIndexNo2,
+                  containerConnectStdFromIndexNo3,
+                  containerConnectStdFromIndexNo4,
+                  containerConnectStdFromClassName,
+                  containerConnectStdToIndexNo1,
+                  containerConnectStdToIndexNo2,
+                  containerConnectStdToIndexNo3,
+                  containerConnectStdToIndexNo4,
+                  containerConnectStdToClassName,
+                  containerConnectStdClassName
+                }
+    ::=  { containerConnectStdTable 1 }
+
+ContainerConnectStdEntry ::=  SEQUENCE
+  { containerConnectStdNotation ConnectionNotation,
+    containerConnectStdFromIndexNo1 Unsigned32,
+    containerConnectStdFromIndexNo2 Unsigned32,
+    containerConnectStdFromIndexNo3 Unsigned32,
+    containerConnectStdFromIndexNo4 Unsigned32,
+    containerConnectStdFromClassName EntityClassName,
+    containerConnectStdToIndexNo1 Unsigned32,
+    containerConnectStdToIndexNo2 Unsigned32,
+    containerConnectStdToIndexNo3 Unsigned32,
+    containerConnectStdToIndexNo4 Unsigned32,
+    containerConnectStdToClassName EntityClassName,
+    containerConnectStdClassName EntityClassName,
+    containerConnectStdAidString SnmpAdminString,
+    containerConnectStdFromId RowPointer,
+    containerConnectStdToId RowPointer,
+    containerConnectStdClass EntityClass }
+
+containerConnectStdNotation OBJECT-TYPE
+    SYNTAX      ConnectionNotation
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Notation indicates how to interpret the following indexes (keys) of
+         the table. It has two values:
+         fromToNotation(1) - first five idnexes represent FROM enity while next five indexes represent TO enity,
+         toFromNotation(2) - first five idnexes represent TO enity while next five indexes represent FROM enity
+        "
+    ::=  { containerConnectStdEntry 1 }
+
+containerConnectStdFromIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectStdEntry 2 }
+
+containerConnectStdFromIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectStdEntry 3 }
+
+containerConnectStdFromIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectStdEntry 4 }
+
+containerConnectStdFromIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectStdEntry 5 }
+
+containerConnectStdFromClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerConnectStdEntry 6 }
+
+containerConnectStdToIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectStdEntry 7 }
+
+containerConnectStdToIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectStdEntry 8 }
+
+containerConnectStdToIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectStdEntry 9 }
+
+containerConnectStdToIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectStdEntry 10 }
+
+containerConnectStdToClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerConnectStdEntry 11 }
+
+containerConnectStdClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerConnectStdEntry 12 }
+
+containerConnectStdAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { containerConnectStdEntry 13 }
+
+containerConnectStdFromId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to FROM point entity."
+    ::=  { containerConnectStdEntry 14 }
+
+containerConnectStdToId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to TO point entity."
+    ::=  { containerConnectStdEntry 15 }
+
+containerConnectStdClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { containerConnectStdEntry 16 }
+
+containerConnectNonStdTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ContainerConnectNonStdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "containerConnectNonStdTable"
+    ::=  { containers 12 }
+
+containerConnectNonStdEntry OBJECT-TYPE
+    SYNTAX      ContainerConnectNonStdEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry for containerConnectNonStdTable"
+    INDEX       {
+                  containerConnectNonStdNotation,
+                  containerConnectNonStdFromIndexNo1,
+                  containerConnectNonStdFromIndexNo2,
+                  containerConnectNonStdFromIndexNo3,
+                  containerConnectNonStdFromIndexNo4,
+                  containerConnectNonStdFromClassName,
+                  containerConnectNonStdToIndexNo1,
+                  containerConnectNonStdToIndexNo2,
+                  containerConnectNonStdToIndexNo3,
+                  containerConnectNonStdToIndexNo4,
+                  containerConnectNonStdToClassName,
+                  containerConnectNonStdClassName
+                }
+    ::=  { containerConnectNonStdTable 1 }
+
+ContainerConnectNonStdEntry ::=  SEQUENCE
+  { containerConnectNonStdNotation ConnectionNotation,
+    containerConnectNonStdFromIndexNo1 Unsigned32,
+    containerConnectNonStdFromIndexNo2 Unsigned32,
+    containerConnectNonStdFromIndexNo3 Unsigned32,
+    containerConnectNonStdFromIndexNo4 Unsigned32,
+    containerConnectNonStdFromClassName EntityClassName,
+    containerConnectNonStdToIndexNo1 Unsigned32,
+    containerConnectNonStdToIndexNo2 Unsigned32,
+    containerConnectNonStdToIndexNo3 Unsigned32,
+    containerConnectNonStdToIndexNo4 Unsigned32,
+    containerConnectNonStdToClassName EntityClassName,
+    containerConnectNonStdClassName EntityClassName,
+    containerConnectNonStdAidString SnmpAdminString,
+    containerConnectNonStdFromId RowPointer,
+    containerConnectNonStdToId RowPointer,
+    containerConnectNonStdClass EntityClass }
+
+containerConnectNonStdNotation OBJECT-TYPE
+    SYNTAX      ConnectionNotation
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Notation indicates how to interpret the following indexes (keys) of
+         the table. It has two values:
+         fromToNotation(1) - first five idnexes represent FROM enity while next five indexes represent TO enity,
+         toFromNotation(2) - first five idnexes represent TO enity while next five indexes represent FROM enity
+        "
+    ::=  { containerConnectNonStdEntry 1 }
+
+containerConnectNonStdFromIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectNonStdEntry 2 }
+
+containerConnectNonStdFromIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectNonStdEntry 3 }
+
+containerConnectNonStdFromIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectNonStdEntry 4 }
+
+containerConnectNonStdFromIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectNonStdEntry 5 }
+
+containerConnectNonStdFromClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerConnectNonStdEntry 6 }
+
+containerConnectNonStdToIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectNonStdEntry 7 }
+
+containerConnectNonStdToIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectNonStdEntry 8 }
+
+containerConnectNonStdToIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectNonStdEntry 9 }
+
+containerConnectNonStdToIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerConnectNonStdEntry 10 }
+
+containerConnectNonStdToClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerConnectNonStdEntry 11 }
+
+containerConnectNonStdClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerConnectNonStdEntry 12 }
+
+containerConnectNonStdAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { containerConnectNonStdEntry 13 }
+
+containerConnectNonStdFromId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to FROM point entity."
+    ::=  { containerConnectNonStdEntry 14 }
+
+containerConnectNonStdToId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to TO point entity."
+    ::=  { containerConnectNonStdEntry 15 }
+
+containerConnectNonStdClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { containerConnectNonStdEntry 16 }
+
+containerExternalPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ContainerExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "containerExternalPort"
+    ::=  { containers 13 }
+
+containerExternalPortEntry OBJECT-TYPE
+    SYNTAX      ContainerExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of containerExternalPort"
+    INDEX       {
+                  containerExternalPortShelfNo,
+                  containerExternalPortSlotNo,
+                  containerExternalPortPortNo,
+                  containerExternalPortExtNo,
+                  containerExternalPortClassName
+                }
+    ::=  { containerExternalPortTable 1 }
+
+ContainerExternalPortEntry ::=  SEQUENCE
+  { containerExternalPortShelfNo Unsigned32,
+    containerExternalPortSlotNo Unsigned32,
+    containerExternalPortPortNo Unsigned32,
+    containerExternalPortExtNo Unsigned32,
+    containerExternalPortClassName EntityClassName,
+    containerExternalPortAidString SnmpAdminString,
+    containerExternalPortClass EntityClass }
+
+containerExternalPortShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerExternalPortEntry 1 }
+
+containerExternalPortSlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerExternalPortEntry 2 }
+
+containerExternalPortPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerExternalPortEntry 3 }
+
+containerExternalPortExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerExternalPortEntry 4 }
+
+containerExternalPortClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerExternalPortEntry 5 }
+
+containerExternalPortAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { containerExternalPortEntry 6 }
+
+containerExternalPortClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { containerExternalPortEntry 7 }
+
+containerCrsOptLineTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ContainerCrsOptLineEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "containerCrsOptLineTable"
+    ::=  { containers 14 }
+
+containerCrsOptLineEntry OBJECT-TYPE
+    SYNTAX      ContainerCrsOptLineEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of containerCrsOptLineTable"
+    INDEX       {
+                  containerCrsOptLineFromIndexNo1,
+                  containerCrsOptLineFromIndexNo2,
+                  containerCrsOptLineFromIndexNo3,
+                  containerCrsOptLineFromIndexNo4,
+                  containerCrsOptLineFromClassName,
+                  containerCrsOptLineToIndexNo1,
+                  containerCrsOptLineToIndexNo2,
+                  containerCrsOptLineToIndexNo3,
+                  containerCrsOptLineToIndexNo4,
+                  containerCrsOptLineToClassName,
+                  containerCrsOptLineClassName
+                }
+    ::=  { containerCrsOptLineTable 1 }
+
+ContainerCrsOptLineEntry ::=  SEQUENCE
+  { containerCrsOptLineFromIndexNo1 Unsigned32,
+    containerCrsOptLineFromIndexNo2 Unsigned32,
+    containerCrsOptLineFromIndexNo3 Unsigned32,
+    containerCrsOptLineFromIndexNo4 Unsigned32,
+    containerCrsOptLineFromClassName EntityClassName,
+    containerCrsOptLineToIndexNo1 Unsigned32,
+    containerCrsOptLineToIndexNo2 Unsigned32,
+    containerCrsOptLineToIndexNo3 Unsigned32,
+    containerCrsOptLineToIndexNo4 Unsigned32,
+    containerCrsOptLineToClassName EntityClassName,
+    containerCrsOptLineClassName EntityClassName,
+    containerCrsOptLineAidString SnmpAdminString,
+    containerCrsOptLineFromId RowPointer,
+    containerCrsOptLineToId RowPointer,
+    containerCrsOptLineClass EntityClass }
+
+containerCrsOptLineFromIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineEntry 1 }
+
+containerCrsOptLineFromIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineEntry 2 }
+
+containerCrsOptLineFromIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineEntry 3 }
+
+containerCrsOptLineFromIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineEntry 4 }
+
+containerCrsOptLineFromClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerCrsOptLineEntry 5 }
+
+containerCrsOptLineToIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineEntry 6 }
+
+containerCrsOptLineToIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineEntry 7 }
+
+containerCrsOptLineToIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineEntry 8 }
+
+containerCrsOptLineToIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineEntry 9 }
+
+containerCrsOptLineToClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerCrsOptLineEntry 10 }
+
+containerCrsOptLineClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerCrsOptLineEntry 11 }
+
+containerCrsOptLineAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { containerCrsOptLineEntry 12 }
+
+containerCrsOptLineFromId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to FROM point entity."
+    ::=  { containerCrsOptLineEntry 13 }
+
+containerCrsOptLineToId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to TO point entity."
+    ::=  { containerCrsOptLineEntry 14 }
+
+containerCrsOptLineClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { containerCrsOptLineEntry 15 }
+
+containerCrsOptLineFromPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ContainerCrsOptLineFromPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "containerCrsOptLineFromTable"
+    ::=  { containers 15 }
+
+containerCrsOptLineFromPointEntry OBJECT-TYPE
+    SYNTAX      ContainerCrsOptLineFromPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry for containerCrsOptLineFromTable"
+    INDEX       {
+                  containerCrsOptLineFromPointIndexNo1,
+                  containerCrsOptLineFromPointIndexNo2,
+                  containerCrsOptLineFromPointIndexNo3,
+                  containerCrsOptLineFromPointIndexNo4,
+                  containerCrsOptLineFromPointClassName
+                }
+    ::=  { containerCrsOptLineFromPointTable 1 }
+
+ContainerCrsOptLineFromPointEntry ::=  SEQUENCE
+  { containerCrsOptLineFromPointIndexNo1 Unsigned32,
+    containerCrsOptLineFromPointIndexNo2 Unsigned32,
+    containerCrsOptLineFromPointIndexNo3 Unsigned32,
+    containerCrsOptLineFromPointIndexNo4 Unsigned32,
+    containerCrsOptLineFromPointClassName EntityClassName,
+    containerCrsOptLineFromPointAidString SnmpAdminString,
+    containerCrsOptLineFromPointFromId RowPointer,
+    containerCrsOptLineFromPointClass EntityClass }
+
+containerCrsOptLineFromPointIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineFromPointEntry 1 }
+
+containerCrsOptLineFromPointIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineFromPointEntry 2 }
+
+containerCrsOptLineFromPointIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineFromPointEntry 3 }
+
+containerCrsOptLineFromPointIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { containerCrsOptLineFromPointEntry 4 }
+
+containerCrsOptLineFromPointClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { containerCrsOptLineFromPointEntry 5 }
+
+containerCrsOptLineFromPointAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { containerCrsOptLineFromPointEntry 6 }
+
+containerCrsOptLineFromPointFromId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to FROM point entity."
+    ::=  { containerCrsOptLineFromPointEntry 7 }
+
+containerCrsOptLineFromPointClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { containerCrsOptLineFromPointEntry 8 }
+
+entityOptLineChannelTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF EntityOptLineChannelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "entityOptLineChannelTable"
+    ::=  { entities 4 }
+
+entityOptLineChannelEntry OBJECT-TYPE
+    SYNTAX      EntityOptLineChannelEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of entityOptLineChannelTable"
+    INDEX       {
+                  entityOptLineChannelIndexNo1,
+                  entityOptLineChannelIndexNo2,
+                  entityOptLineChannelIndexNo3,
+                  entityOptLineChannelIndexNo4,
+                  entityOptLineChannelClassName
+                }
+    ::=  { entityOptLineChannelTable 1 }
+
+EntityOptLineChannelEntry ::=  SEQUENCE
+  { entityOptLineChannelIndexNo1 Unsigned32,
+    entityOptLineChannelIndexNo2 Unsigned32,
+    entityOptLineChannelIndexNo3 Unsigned32,
+    entityOptLineChannelIndexNo4 Unsigned32,
+    entityOptLineChannelClassName EntityClassName,
+    entityOptLineChannelAidString SnmpAdminString,
+    entityOptLineChannelType FspR7EntityType,
+    entityOptLineChannelTableId RowPointer,
+    entityOptLineChannelParentId RowPointer,
+    entityOptLineChannelOneIndex Unsigned32,
+    entityOptLineChannelClass EntityClass }
+
+entityOptLineChannelIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityOptLineChannelEntry 1 }
+
+entityOptLineChannelIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityOptLineChannelEntry 2 }
+
+entityOptLineChannelIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityOptLineChannelEntry 3 }
+
+entityOptLineChannelIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityOptLineChannelEntry 4 }
+
+entityOptLineChannelClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityOptLineChannelEntry 5 }
+
+entityOptLineChannelAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { entityOptLineChannelEntry 6 }
+
+entityOptLineChannelType OBJECT-TYPE
+    SYNTAX      FspR7EntityType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "The type of entity."
+    ::=  { entityOptLineChannelEntry 7 }
+
+entityOptLineChannelTableId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to managment table of entity."
+    ::=  { entityOptLineChannelEntry 8 }
+
+entityOptLineChannelParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { entityOptLineChannelEntry 9 }
+
+entityOptLineChannelOneIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityOptLineChannelEntry 10 }
+
+entityOptLineChannelClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { entityOptLineChannelEntry 11 }
+
+entityFacilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF EntityFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "entityFacilityTable"
+    ::=  { entities 7 }
+
+entityFacilityEntry OBJECT-TYPE
+    SYNTAX      EntityFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of entityFacilityTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { entityFacilityTable 1 }
+
+EntityFacilityEntry ::=  SEQUENCE
+  { entityFacilityShelfNo Unsigned32,
+    entityFacilitySlotNo Unsigned32,
+    entityFacilityPortNo Unsigned32,
+    entityFacilityExtNo Unsigned32,
+    entityFacilityClassName EntityClassName,
+    entityFacilityAidString SnmpAdminString,
+    entityFacilityType FspR7EntityType,
+    entityFacilityTableId RowPointer,
+    entityFacilityParentId RowPointer,
+    entityFacilityClass EntityClass }
+
+entityFacilityShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityFacilityEntry 1 }
+
+entityFacilitySlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityFacilityEntry 2 }
+
+entityFacilityPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityFacilityEntry 3 }
+
+entityFacilityExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityFacilityEntry 4 }
+
+entityFacilityClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityFacilityEntry 5 }
+
+entityFacilityAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { entityFacilityEntry 6 }
+
+entityFacilityType OBJECT-TYPE
+    SYNTAX      FspR7EntityType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "The type of entity."
+    ::=  { entityFacilityEntry 7 }
+
+entityFacilityTableId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to managment table of entity."
+    ::=  { entityFacilityEntry 8 }
+
+entityFacilityParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { entityFacilityEntry 9 }
+
+entityFacilityClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { entityFacilityEntry 10 }
+
+entityCrossConnTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF EntityCrossConnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "entityCrossConnTable"
+    ::=  { entities 8 }
+
+entityCrossConnEntry OBJECT-TYPE
+    SYNTAX      EntityCrossConnEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of entityCrossConnTable"
+    INDEX       {
+                  entityCrossConnFromShelfNo,
+                  entityCrossConnFromSlotNo,
+                  entityCrossConnFromPortNo,
+                  entityCrossConnFromExtNo,
+                  entityCrossConnFromClassName,
+                  entityCrossConnToShelfNo,
+                  entityCrossConnToSlotNo,
+                  entityCrossConnToPortNo,
+                  entityCrossConnToExtNo,
+                  entityCrossConnToClassName,
+                  entityCrossConnClassName
+                }
+    ::=  { entityCrossConnTable 1 }
+
+EntityCrossConnEntry ::=  SEQUENCE
+  { entityCrossConnFromShelfNo Unsigned32,
+    entityCrossConnFromSlotNo Unsigned32,
+    entityCrossConnFromPortNo Unsigned32,
+    entityCrossConnFromExtNo Unsigned32,
+    entityCrossConnFromClassName EntityClassName,
+    entityCrossConnToShelfNo Unsigned32,
+    entityCrossConnToSlotNo Unsigned32,
+    entityCrossConnToPortNo Unsigned32,
+    entityCrossConnToExtNo Unsigned32,
+    entityCrossConnToClassName EntityClassName,
+    entityCrossConnClassName EntityClassName,
+    entityCrossConnAidString SnmpAdminString,
+    entityCrossConnType FspR7EntityType,
+    entityCrossConnTableId RowPointer,
+    entityCrossConnParentId RowPointer,
+    entityCrossConnFromId RowPointer,
+    entityCrossConnToId RowPointer,
+    entityCrossConnClass EntityClass }
+
+entityCrossConnFromShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrossConnEntry 1 }
+
+entityCrossConnFromSlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrossConnEntry 2 }
+
+entityCrossConnFromPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrossConnEntry 3 }
+
+entityCrossConnFromExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrossConnEntry 4 }
+
+entityCrossConnFromClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityCrossConnEntry 5 }
+
+entityCrossConnToShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrossConnEntry 6 }
+
+entityCrossConnToSlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrossConnEntry 7 }
+
+entityCrossConnToPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrossConnEntry 8 }
+
+entityCrossConnToExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrossConnEntry 9 }
+
+entityCrossConnToClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityCrossConnEntry 10 }
+
+entityCrossConnClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityCrossConnEntry 11 }
+
+entityCrossConnAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { entityCrossConnEntry 12 }
+
+entityCrossConnType OBJECT-TYPE
+    SYNTAX      FspR7EntityType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "The type of entity."
+    ::=  { entityCrossConnEntry 13 }
+
+entityCrossConnTableId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to managment table of entity."
+    ::=  { entityCrossConnEntry 14 }
+
+entityCrossConnParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { entityCrossConnEntry 15 }
+
+entityCrossConnFromId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to FROM point entity."
+    ::=  { entityCrossConnEntry 16 }
+
+entityCrossConnToId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to TO point entity."
+    ::=  { entityCrossConnEntry 17 }
+
+entityCrossConnClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { entityCrossConnEntry 18 }
+
+entityTerminPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF EntityTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "entityTerminPointTable"
+    ::=  { entities 10 }
+
+entityTerminPointEntry OBJECT-TYPE
+    SYNTAX      EntityTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of entityTerminPointTable"
+    INDEX       {
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName
+                }
+    ::=  { entityTerminPointTable 1 }
+
+EntityTerminPointEntry ::=  SEQUENCE
+  { entityTerminPointIndexNo1 Unsigned32,
+    entityTerminPointIndexNo2 Unsigned32,
+    entityTerminPointIndexNo3 Unsigned32,
+    entityTerminPointIndexNo4 Unsigned32,
+    entityTerminPointClassName EntityClassName,
+    entityTerminPointAidString SnmpAdminString,
+    entityTerminPointType FspR7EntityType,
+    entityTerminPointAssignState AssignmentState,
+    entityTerminPointTableId RowPointer,
+    entityTerminPointParentId RowPointer,
+    entityTerminPointOneIndex Unsigned32,
+    entityTerminPointReferencedTo RowPointer,
+    entityTerminPointClass EntityClass }
+
+entityTerminPointIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityTerminPointEntry 1 }
+
+entityTerminPointIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityTerminPointEntry 2 }
+
+entityTerminPointIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityTerminPointEntry 3 }
+
+entityTerminPointIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityTerminPointEntry 4 }
+
+entityTerminPointClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityTerminPointEntry 5 }
+
+entityTerminPointAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { entityTerminPointEntry 6 }
+
+entityTerminPointType OBJECT-TYPE
+    SYNTAX      FspR7EntityType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "The type of entity."
+    ::=  { entityTerminPointEntry 7 }
+
+entityTerminPointAssignState OBJECT-TYPE
+    SYNTAX      AssignmentState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Assignment state of entity."
+    ::=  { entityTerminPointEntry 8 }
+
+entityTerminPointTableId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to managment table of entity."
+    ::=  { entityTerminPointEntry 9 }
+
+entityTerminPointParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { entityTerminPointEntry 10 }
+
+entityTerminPointOneIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityTerminPointEntry 11 }
+
+entityTerminPointReferencedTo OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to refer object."
+    ::=  { entityTerminPointEntry 12 }
+
+entityTerminPointClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { entityTerminPointEntry 13 }
+
+entityConnectionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF EntityConnectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "entityConnectionTable"
+    ::=  { entities 11 }
+
+entityConnectionEntry OBJECT-TYPE
+    SYNTAX      EntityConnectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of entityConnectionTable"
+    INDEX       {
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  entityConnectionClassName
+                }
+    ::=  { entityConnectionTable 1 }
+
+EntityConnectionEntry ::=  SEQUENCE
+  { entityConnectionClassName EntityClassName,
+    entityConnectionAidString SnmpAdminString,
+    entityConnectionType FspR7EntityType,
+    entityConnectionTableId RowPointer,
+    entityConnectionParentId RowPointer,
+    entityConnectionFromId RowPointer,
+    entityConnectionToId RowPointer,
+    entityConnectionClass EntityClass }
+
+entityConnectionClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityConnectionEntry 1 }
+
+entityConnectionAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { entityConnectionEntry 2 }
+
+entityConnectionType OBJECT-TYPE
+    SYNTAX      FspR7EntityType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "The type of entity."
+    ::=  { entityConnectionEntry 3 }
+
+entityConnectionTableId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to managment table of entity."
+    ::=  { entityConnectionEntry 4 }
+
+entityConnectionParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { entityConnectionEntry 5 }
+
+entityConnectionFromId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to FROM point entity."
+    ::=  { entityConnectionEntry 6 }
+
+entityConnectionToId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to TO point entity."
+    ::=  { entityConnectionEntry 7 }
+
+entityConnectionClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { entityConnectionEntry 8 }
+
+entityExternalPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF EntityExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "entityExternalPortTable"
+    ::=  { entities 12 }
+
+entityExternalPortEntry OBJECT-TYPE
+    SYNTAX      EntityExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of entityExternalPortTable"
+    INDEX       {
+                  entityExternalPortShelfNo,
+                  entityExternalPortSlotNo,
+                  entityExternalPortPortNo,
+                  entityExternalPortExtNo,
+                  entityExternalPortClassName
+                }
+    ::=  { entityExternalPortTable 1 }
+
+EntityExternalPortEntry ::=  SEQUENCE
+  { entityExternalPortShelfNo Unsigned32,
+    entityExternalPortSlotNo Unsigned32,
+    entityExternalPortPortNo Unsigned32,
+    entityExternalPortExtNo Unsigned32,
+    entityExternalPortClassName EntityClassName,
+    entityExternalPortAidString SnmpAdminString,
+    entityExternalPortType FspR7EntityType,
+    entityExternalPortTableId RowPointer,
+    entityExternalPortParentId RowPointer,
+    entityExternalPortClass EntityClass }
+
+entityExternalPortShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityExternalPortEntry 1 }
+
+entityExternalPortSlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityExternalPortEntry 2 }
+
+entityExternalPortPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityExternalPortEntry 3 }
+
+entityExternalPortExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityExternalPortEntry 4 }
+
+entityExternalPortClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityExternalPortEntry 5 }
+
+entityExternalPortAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { entityExternalPortEntry 6 }
+
+entityExternalPortType OBJECT-TYPE
+    SYNTAX      FspR7EntityType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "The type of entity."
+    ::=  { entityExternalPortEntry 7 }
+
+entityExternalPortTableId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to managment table of entity."
+    ::=  { entityExternalPortEntry 8 }
+
+entityExternalPortParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { entityExternalPortEntry 9 }
+
+entityExternalPortClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { entityExternalPortEntry 10 }
+
+entityCrsOptLineTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF EntityCrsOptLineEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "entityCrsOptLineTable"
+    ::=  { entities 13 }
+
+entityCrsOptLineEntry OBJECT-TYPE
+    SYNTAX      EntityCrsOptLineEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of entityCrsOptLineTable"
+    INDEX       {
+                  entityCrsOptLineFromIndexNo1,
+                  entityCrsOptLineFromIndexNo2,
+                  entityCrsOptLineFromIndexNo3,
+                  entityCrsOptLineFromIndexNo4,
+                  entityCrsOptLineFromClassName,
+                  entityCrsOptLineToIndexNo1,
+                  entityCrsOptLineToIndexNo2,
+                  entityCrsOptLineToIndexNo3,
+                  entityCrsOptLineToIndexNo4,
+                  entityCrsOptLineToClassName,
+                  entityCrsOptLineClassName
+                }
+    ::=  { entityCrsOptLineTable 1 }
+
+EntityCrsOptLineEntry ::=  SEQUENCE
+  { entityCrsOptLineFromIndexNo1 Unsigned32,
+    entityCrsOptLineFromIndexNo2 Unsigned32,
+    entityCrsOptLineFromIndexNo3 Unsigned32,
+    entityCrsOptLineFromIndexNo4 Unsigned32,
+    entityCrsOptLineFromClassName EntityClassName,
+    entityCrsOptLineToIndexNo1 Unsigned32,
+    entityCrsOptLineToIndexNo2 Unsigned32,
+    entityCrsOptLineToIndexNo3 Unsigned32,
+    entityCrsOptLineToIndexNo4 Unsigned32,
+    entityCrsOptLineToClassName EntityClassName,
+    entityCrsOptLineClassName EntityClassName,
+    entityCrsOptLineAidString SnmpAdminString,
+    entityCrsOptLineType FspR7EntityType,
+    entityCrsOptLineTableId RowPointer,
+    entityCrsOptLineParentId RowPointer,
+    entityCrsOptLineFromId RowPointer,
+    entityCrsOptLineToId RowPointer,
+    entityCrsOptLineClass EntityClass }
+
+entityCrsOptLineFromIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrsOptLineEntry 1 }
+
+entityCrsOptLineFromIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrsOptLineEntry 2 }
+
+entityCrsOptLineFromIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrsOptLineEntry 3 }
+
+entityCrsOptLineFromIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrsOptLineEntry 4 }
+
+entityCrsOptLineFromClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityCrsOptLineEntry 5 }
+
+entityCrsOptLineToIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrsOptLineEntry 6 }
+
+entityCrsOptLineToIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrsOptLineEntry 7 }
+
+entityCrsOptLineToIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrsOptLineEntry 8 }
+
+entityCrsOptLineToIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { entityCrsOptLineEntry 9 }
+
+entityCrsOptLineToClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityCrsOptLineEntry 10 }
+
+entityCrsOptLineClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { entityCrsOptLineEntry 11 }
+
+entityCrsOptLineAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { entityCrsOptLineEntry 12 }
+
+entityCrsOptLineType OBJECT-TYPE
+    SYNTAX      FspR7EntityType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "The type of entity."
+    ::=  { entityCrsOptLineEntry 13 }
+
+entityCrsOptLineTableId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to managment table of entity."
+    ::=  { entityCrsOptLineEntry 14 }
+
+entityCrsOptLineParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { entityCrsOptLineEntry 15 }
+
+entityCrsOptLineFromId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to FROM point entity."
+    ::=  { entityCrsOptLineEntry 16 }
+
+entityCrsOptLineToId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to TO point entity."
+    ::=  { entityCrsOptLineEntry 17 }
+
+entityCrsOptLineClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { entityCrsOptLineEntry 18 }
+
+trapModeLegacy OBJECT-TYPE
+    SYNTAX      FspR7TrapModeLegacy
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Scalar indicate MIB from which will be taken OID of entity to trap
+         when entity is supported by more than one MIB."
+    ::=  { neMgmt 1 }
+
+crossConnectionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CrossConnectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "crossConnectionTable"
+    ::=  { specificMgmt 6 }
+
+crossConnectionEntry OBJECT-TYPE
+    SYNTAX      CrossConnectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of crossConnectionTable"
+    INDEX       {
+                  entityCrossConnFromShelfNo,
+                  entityCrossConnFromSlotNo,
+                  entityCrossConnFromPortNo,
+                  entityCrossConnFromExtNo,
+                  entityCrossConnFromClassName,
+                  entityCrossConnToShelfNo,
+                  entityCrossConnToSlotNo,
+                  entityCrossConnToPortNo,
+                  entityCrossConnToExtNo,
+                  entityCrossConnToClassName,
+                  entityCrossConnClassName
+                }
+    ::=  { crossConnectionTable 1 }
+
+CrossConnectionEntry ::=  SEQUENCE
+  { crossConnectionRowStatus RowStatus,
+    crossConnectionAdmin FspR7AdminState,
+    crossConnectionRedLineState FspR7RedLinedState,
+    crossConnectionCrsFunction FspR7FunctionCrs,
+    crossConnectionConn FspR7Conn,
+    crossConnectionCrsType FspR7TypeCrs,
+    crossConnectionAlias SnmpAdminString,
+    crossConnectionPathNode FspR7PathNode,
+    crossConnectionTunnelAid SnmpAdminString,
+    crossConnectionIngressTid SnmpAdminString,
+    crossConnectionIngressNodeIp IpAddress,
+    crossConnectionOperState FspR7OperState,
+    crossConnectionSecondaryStates FspR7EntitySecondaryStates,
+    crossConnectionType FspR7InterfaceType }
+
+crossConnectionRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Connection RowStatus. Object is used to create
+         or delete a row in the table."
+    ::=  { crossConnectionEntry 1 }
+
+crossConnectionAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Connection Adminstrative State."
+    ::=  { crossConnectionEntry 2 }
+
+crossConnectionRedLineState OBJECT-TYPE
+    SYNTAX      FspR7RedLinedState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Connection Red Lined State."
+    ::=  { crossConnectionEntry 3 }
+
+crossConnectionCrsFunction OBJECT-TYPE
+    SYNTAX      FspR7FunctionCrs
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Connection configuration."
+    ::=  { crossConnectionEntry 4 }
+
+crossConnectionConn OBJECT-TYPE
+    SYNTAX      FspR7Conn
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Connection Direction."
+    ::=  { crossConnectionEntry 5 }
+
+crossConnectionCrsType OBJECT-TYPE
+    SYNTAX      FspR7TypeCrs
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Type."
+    ::=  { crossConnectionEntry 6 }
+
+crossConnectionAlias OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Connection Alias."
+    ::=  { crossConnectionEntry 7 }
+
+crossConnectionPathNode OBJECT-TYPE
+    SYNTAX      FspR7PathNode
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Connection Path Node. Node count along a signal
+         path on a unidirectional basis from the client signal
+         ingress to egress."
+    ::=  { crossConnectionEntry 8 }
+
+crossConnectionTunnelAid OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Connection Tunnel AID."
+    ::=  { crossConnectionEntry 9 }
+
+crossConnectionIngressTid OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Ingress Target ID."
+    ::=  { crossConnectionEntry 10 }
+
+crossConnectionIngressNodeIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Ingress Node IP."
+    ::=  { crossConnectionEntry 11 }
+
+crossConnectionOperState OBJECT-TYPE
+    SYNTAX      FspR7OperState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Operational State."
+    ::=  { crossConnectionEntry 12 }
+
+crossConnectionSecondaryStates OBJECT-TYPE
+    SYNTAX      FspR7EntitySecondaryStates
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Connection Secondary States."
+    ::=  { crossConnectionEntry 13 }
+
+crossConnectionType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Connection Type Facility."
+    ::=  { crossConnectionEntry 14 }
+
+crossOpticalLineTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CrossOpticalLineEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "crossOpticalLineTable"
+    ::=  { specificMgmt 7 }
+
+crossOpticalLineEntry OBJECT-TYPE
+    SYNTAX      CrossOpticalLineEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of crossOpticalLineTable"
+    INDEX       {
+                  entityCrsOptLineFromIndexNo1,
+                  entityCrsOptLineFromIndexNo2,
+                  entityCrsOptLineFromIndexNo3,
+                  entityCrsOptLineFromIndexNo4,
+                  entityCrsOptLineFromClassName,
+                  entityCrsOptLineToIndexNo1,
+                  entityCrsOptLineToIndexNo2,
+                  entityCrsOptLineToIndexNo3,
+                  entityCrsOptLineToIndexNo4,
+                  entityCrsOptLineToClassName,
+                  entityCrsOptLineClassName
+                }
+    ::=  { crossOpticalLineTable 1 }
+
+CrossOpticalLineEntry ::=  SEQUENCE
+  { crossOpticalLineRowStatus RowStatus,
+    crossOpticalLineRedLineState FspR7RedLinedState,
+    crossOpticalLineCrsFunction FspR7FunctionCrs,
+    crossOpticalLineConn FspR7Conn,
+    crossOpticalLineCrsType FspR7TypeCrs,
+    crossOpticalLineAlias SnmpAdminString,
+    crossOpticalLineTunnelAid SnmpAdminString,
+    crossOpticalLineIngressTid SnmpAdminString,
+    crossOpticalLineIngressNodeIp IpAddress }
+
+crossOpticalLineRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line RowStatus. Object is used to create
+         or delete a row in the table."
+    ::=  { crossOpticalLineEntry 1 }
+
+crossOpticalLineRedLineState OBJECT-TYPE
+    SYNTAX      FspR7RedLinedState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Red Lined State."
+    ::=  { crossOpticalLineEntry 2 }
+
+crossOpticalLineCrsFunction OBJECT-TYPE
+    SYNTAX      FspR7FunctionCrs
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line configuration."
+    ::=  { crossOpticalLineEntry 3 }
+
+crossOpticalLineConn OBJECT-TYPE
+    SYNTAX      FspR7Conn
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Direction."
+    ::=  { crossOpticalLineEntry 4 }
+
+crossOpticalLineCrsType OBJECT-TYPE
+    SYNTAX      FspR7TypeCrs
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Type."
+    ::=  { crossOpticalLineEntry 5 }
+
+crossOpticalLineAlias OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Alias."
+    ::=  { crossOpticalLineEntry 6 }
+
+crossOpticalLineTunnelAid OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Tunnel AID."
+    ::=  { crossOpticalLineEntry 7 }
+
+crossOpticalLineIngressTid OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Ingress Target ID."
+    ::=  { crossOpticalLineEntry 8 }
+
+crossOpticalLineIngressNodeIp OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Cross Optical Line Ingress Node IP."
+    ::=  { crossOpticalLineEntry 9 }
+
+physicalPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PhysicalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "physicalPortTable"
+    ::=  { facilityMgmt 1 }
+
+physicalPortEntry OBJECT-TYPE
+    SYNTAX      PhysicalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of physicalPortTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { physicalPortTable 1 }
+
+PhysicalPortEntry ::=  SEQUENCE
+  { physicalPortRowStatus RowStatus,
+    physicalPortType FspR7InterfaceType,
+    physicalPortAdmin FspR7AdminState,
+    physicalPortConnector FspR7ConnectorType,
+    physicalPortFiber FspR7OpticalFiberType,
+    physicalPortConnType FspR7TypeConnection,
+    physicalPortOperState FspR7OperState,
+    physicalPortLaneChannel FspR7ChannelIdentifier,
+    physicalPortLaserBiasCurrLevel Unsigned32,
+    physicalPortLaserTemp Integer32,
+    physicalPortInputPower Integer32,
+    physicalPortOutputPower Integer32,
+    physicalPortSecondaryStates FspR7EntitySecondaryStates }
+
+physicalPortRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Physical Port RowStatus. Object is used to create or
+         delete a row in the table."
+    ::=  { physicalPortEntry 1 }
+
+physicalPortType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Physical Port Facility Type."
+    ::=  { physicalPortEntry 2 }
+
+physicalPortAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Physical Port Adminstrative State."
+    ::=  { physicalPortEntry 3 }
+
+physicalPortConnector OBJECT-TYPE
+    SYNTAX      FspR7ConnectorType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Connector Type."
+    ::=  { physicalPortEntry 4 }
+
+physicalPortFiber OBJECT-TYPE
+    SYNTAX      FspR7OpticalFiberType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Fiber of Optical Interface."
+    ::=  { physicalPortEntry 5 }
+
+physicalPortConnType OBJECT-TYPE
+    SYNTAX      FspR7TypeConnection
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Connectivity Type."
+    ::=  { physicalPortEntry 6 }
+
+physicalPortOperState OBJECT-TYPE
+    SYNTAX      FspR7OperState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Operational State."
+    ::=  { physicalPortEntry 7 }
+
+physicalPortLaneChannel OBJECT-TYPE
+    SYNTAX      FspR7ChannelIdentifier
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Lane Channel."
+    ::=  { physicalPortEntry 8 }
+
+physicalPortLaserBiasCurrLevel OBJECT-TYPE
+    SYNTAX      Unsigned32 
+    UNITS       "0.001 A"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Laser Bias Current Level."
+    ::=  { physicalPortEntry 9 }
+
+physicalPortLaserTemp OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 degree Celsius"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Instantaneous Laser Temperature."
+    ::=  { physicalPortEntry 10 }
+
+physicalPortInputPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Total Optical Input Power Received."
+    ::=  { physicalPortEntry 11 }
+
+physicalPortOutputPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Instantaneous Optical Power Transmitted (Output)."
+    ::=  { physicalPortEntry 12 }
+
+physicalPortSecondaryStates OBJECT-TYPE
+    SYNTAX      FspR7EntitySecondaryStates
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Port Secondary States."
+    ::=  { physicalPortEntry 13 }
+
+virtualPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF VirtualPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "virtualPortTable"
+    ::=  { facilityMgmt 2 }
+
+virtualPortEntry OBJECT-TYPE
+    SYNTAX      VirtualPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of virtualPortTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { virtualPortTable 1 }
+
+VirtualPortEntry ::=  SEQUENCE
+  { virtualPortRowStatus RowStatus,
+    virtualPortChannelBand FspR7ChannelBandwidth,
+    virtualPortType FspR7InterfaceType,
+    virtualPortAlias SnmpAdminString,
+    virtualPortFunction FspR7InterfaceFunction,
+    virtualPortChannelProv FspR7ChannelIdentifier,
+    virtualPortLambda Unsigned32,
+    virtualPortFrequency Unsigned32,
+    virtualPortAdmin FspR7AdminState,
+    virtualPortOperState FspR7OperState,
+    virtualPortConnState FspR7ConnectState,
+    virtualPortEqlzAdmin FspR7EqlzAdminState,
+    virtualPortInitEqlz FspR7InitEqualization,
+    virtualPortInputPower Integer32,
+    virtualPortOutputPower Integer32,
+    virtualPortSecondaryStates FspR7EntitySecondaryStates }
+
+virtualPortRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Virtual Port RowStatus. Object is used to create or delete
+         a row in the table."
+    ::=  { virtualPortEntry 1 }
+
+virtualPortChannelBand OBJECT-TYPE
+    SYNTAX      FspR7ChannelBandwidth
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Virtual Port Channel Bandwidth."
+    ::=  { virtualPortEntry 2 }
+
+virtualPortType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Virtual Port Facility Type."
+    ::=  { virtualPortEntry 3 }
+
+virtualPortAlias OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Virtual Port Alias."
+    ::=  { virtualPortEntry 4 }
+
+virtualPortFunction OBJECT-TYPE
+    SYNTAX      FspR7InterfaceFunction
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Interface Function."
+    ::=  { virtualPortEntry 5 }
+
+virtualPortChannelProv OBJECT-TYPE
+    SYNTAX      FspR7ChannelIdentifier
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Channel."
+    ::=  { virtualPortEntry 6 }
+
+virtualPortLambda OBJECT-TYPE
+    SYNTAX      Unsigned32 
+    UNITS       "0.01 nm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Wavelength of Optical Interface"
+    ::=  { virtualPortEntry 7 }
+
+virtualPortFrequency OBJECT-TYPE
+    SYNTAX      Unsigned32 
+    UNITS       "0.01 THz"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Frequency of Optical Interface."
+    ::=  { virtualPortEntry 8 }
+
+virtualPortAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Virtual Port Adminstrative State."
+    ::=  { virtualPortEntry 9 }
+
+virtualPortOperState OBJECT-TYPE
+    SYNTAX      FspR7OperState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Operational State."
+    ::=  { virtualPortEntry 10 }
+
+virtualPortConnState OBJECT-TYPE
+    SYNTAX      FspR7ConnectState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Connection State."
+    ::=  { virtualPortEntry 11 }
+
+virtualPortEqlzAdmin OBJECT-TYPE
+    SYNTAX      FspR7EqlzAdminState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Virtual Port Fiber Connection Attenuation."
+    ::=  { virtualPortEntry 12 }
+
+virtualPortInitEqlz OBJECT-TYPE
+    SYNTAX      FspR7InitEqualization
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Virtual Port Initiate Equalization."
+    ::=  { virtualPortEntry 13 }
+
+virtualPortInputPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Total Optical Input Power Received."
+    ::=  { virtualPortEntry 14 }
+
+virtualPortOutputPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Instantaneous Optical Power Transmitted (Output)."
+    ::=  { virtualPortEntry 15 }
+
+virtualPortSecondaryStates OBJECT-TYPE
+    SYNTAX      FspR7EntitySecondaryStates
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Virtual Port Secondary States."
+    ::=  { virtualPortEntry 16 }
+
+alarmFacilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AlarmFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "alarmFacilityTable"
+    ::=  { alarm 7 }
+
+alarmFacilityEntry OBJECT-TYPE
+    SYNTAX      AlarmFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of alarmFacilityTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName,
+                  alarmFacilityType
+                }
+    ::=  { alarmFacilityTable 1 }
+
+AlarmFacilityEntry ::=  SEQUENCE
+  { alarmFacilityType FspR7AlarmListType,
+    alarmFacilitySeverity TrapAlarmSeverity,
+    alarmFacilityAffect ServiceImpairment,
+    alarmFacilityTimeStamp DateAndTime }
+
+alarmFacilityType OBJECT-TYPE
+    SYNTAX      FspR7AlarmListType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "List of all interface conditions."
+    ::=  { alarmFacilityEntry 1 }
+
+alarmFacilitySeverity OBJECT-TYPE
+    SYNTAX      TrapAlarmSeverity
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Object identifies the current severity of alarm."
+    ::=  { alarmFacilityEntry 2 }
+
+alarmFacilityAffect OBJECT-TYPE
+    SYNTAX      ServiceImpairment
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Object indicates the service impairment affect of the alarm."
+    ::=  { alarmFacilityEntry 3 }
+
+alarmFacilityTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Timestamp."
+    ::=  { alarmFacilityEntry 4 }
+
+alarmSeverityFacilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AlarmSeverityFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "alarmSeverityFacilityTable"
+    ::=  { alarm 8 }
+
+alarmSeverityFacilityEntry OBJECT-TYPE
+    SYNTAX      AlarmSeverityFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of alarmSeverityFacilityTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName,
+                  alarmSeverityFacilityType
+                }
+    ::=  { alarmSeverityFacilityTable 1 }
+
+AlarmSeverityFacilityEntry ::=  SEQUENCE
+  { alarmSeverityFacilityType FspR7AlarmListType,
+    alarmSeverityFacilityValue TrapAlarmSeverity }
+
+alarmSeverityFacilityType OBJECT-TYPE
+    SYNTAX      FspR7AlarmListType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Type of severity."
+    ::=  { alarmSeverityFacilityEntry 1 }
+
+alarmSeverityFacilityValue OBJECT-TYPE
+    SYNTAX      TrapAlarmSeverity
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Value of severity."
+    ::=  { alarmSeverityFacilityEntry 2 }
+
+alarmTerminPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AlarmTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "alarmTerminPointTable"
+    ::=  { alarm 9 }
+
+alarmTerminPointEntry OBJECT-TYPE
+    SYNTAX      AlarmTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of alarmTerminPointTable"
+    INDEX       {
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  alarmTerminPointType
+                }
+    ::=  { alarmTerminPointTable 1 }
+
+AlarmTerminPointEntry ::=  SEQUENCE
+  { alarmTerminPointType FspR7AlarmListType,
+    alarmTerminPointSeverity TrapAlarmSeverity,
+    alarmTerminPointAffect ServiceImpairment,
+    alarmTerminPointTimeStamp DateAndTime }
+
+alarmTerminPointType OBJECT-TYPE
+    SYNTAX      FspR7AlarmListType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "List of all interface conditions."
+    ::=  { alarmTerminPointEntry 1 }
+
+alarmTerminPointSeverity OBJECT-TYPE
+    SYNTAX      TrapAlarmSeverity
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Object identifies the current severity of alarm."
+    ::=  { alarmTerminPointEntry 2 }
+
+alarmTerminPointAffect OBJECT-TYPE
+    SYNTAX      ServiceImpairment
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Object indicates the service impairment affect of the alarm."
+    ::=  { alarmTerminPointEntry 3 }
+
+alarmTerminPointTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Timestamp."
+    ::=  { alarmTerminPointEntry 4 }
+
+alarmSeverityTerminPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AlarmSeverityTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "alarmSeverityTerminPointTable"
+    ::=  { alarm 10 }
+
+alarmSeverityTerminPointEntry OBJECT-TYPE
+    SYNTAX      AlarmSeverityTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of alarmSeverityTerminPointTable"
+    INDEX       {
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  alarmSeverityTerminPointType
+                }
+    ::=  { alarmSeverityTerminPointTable 1 }
+
+AlarmSeverityTerminPointEntry ::=  SEQUENCE
+  { alarmSeverityTerminPointType FspR7AlarmListType,
+    alarmSeverityTerminPointValue TrapAlarmSeverity }
+
+alarmSeverityTerminPointType OBJECT-TYPE
+    SYNTAX      FspR7AlarmListType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Type of severity."
+    ::=  { alarmSeverityTerminPointEntry 1 }
+
+alarmSeverityTerminPointValue OBJECT-TYPE
+    SYNTAX      TrapAlarmSeverity
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Value of severity."
+    ::=  { alarmSeverityTerminPointEntry 2 }
+
+alarmExternalPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AlarmExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "alarmExternalPort"
+    ::=  { alarm 11 }
+
+alarmExternalPortEntry OBJECT-TYPE
+    SYNTAX      AlarmExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of alarmExternalPort"
+    INDEX       {
+                  entityExternalPortShelfNo,
+                  entityExternalPortSlotNo,
+                  entityExternalPortPortNo,
+                  entityExternalPortExtNo,
+                  entityExternalPortClassName,
+                  alarmExternalPortType
+                }
+    ::=  { alarmExternalPortTable 1 }
+
+AlarmExternalPortEntry ::=  SEQUENCE
+  { alarmExternalPortType FspR7AlarmListType,
+    alarmExternalPortSeverity TrapAlarmSeverity,
+    alarmExternalPortAffect ServiceImpairment,
+    alarmExternalPortTimeStamp DateAndTime }
+
+alarmExternalPortType OBJECT-TYPE
+    SYNTAX      FspR7AlarmListType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "List of all interface conditions."
+    ::=  { alarmExternalPortEntry 1 }
+
+alarmExternalPortSeverity OBJECT-TYPE
+    SYNTAX      TrapAlarmSeverity
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Object identifies the current severity of alarm."
+    ::=  { alarmExternalPortEntry 2 }
+
+alarmExternalPortAffect OBJECT-TYPE
+    SYNTAX      ServiceImpairment
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Object indicates the service impairment affect of the alarm."
+    ::=  { alarmExternalPortEntry 3 }
+
+alarmExternalPortTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Timestamp."
+    ::=  { alarmExternalPortEntry 4 }
+
+alarmSeverityExternalPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AlarmSeverityExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "alarmSeverityExternalPort"
+    ::=  { alarm 12 }
+
+alarmSeverityExternalPortEntry OBJECT-TYPE
+    SYNTAX      AlarmSeverityExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of alarmSeverityExternalPort"
+    INDEX       {
+                  entityExternalPortShelfNo,
+                  entityExternalPortSlotNo,
+                  entityExternalPortPortNo,
+                  entityExternalPortExtNo,
+                  entityExternalPortClassName,
+                  alarmSeverityExternalPortType
+                }
+    ::=  { alarmSeverityExternalPortTable 1 }
+
+AlarmSeverityExternalPortEntry ::=  SEQUENCE
+  { alarmSeverityExternalPortType FspR7AlarmListType,
+    alarmSeverityExternalPortValue TrapAlarmSeverity }
+
+alarmSeverityExternalPortType OBJECT-TYPE
+    SYNTAX      FspR7AlarmListType
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Type of severity."
+    ::=  { alarmSeverityExternalPortEntry 1 }
+
+alarmSeverityExternalPortValue OBJECT-TYPE
+    SYNTAX      TrapAlarmSeverity
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Value of severity."
+    ::=  { alarmSeverityExternalPortEntry 2 }
+
+
+fspR7CreationTrap NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "This trap is sent every time an entity is created."
+    ::=  { fspR7Trap 1 }
+
+fspR7DeletionTrap NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "This trap is sent every time an entity is destroyed."
+    ::=  { fspR7Trap 2 }
+
+fspR7StateChangeTrap NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "This trap is sent when an entity state is changed."
+    ::=  { fspR7Trap 3 }
+
+fspR7ObjectChangeTrap NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "This trap is sent when an object is changed."
+    ::=  { fspR7Trap 4 }
+
+alarmTerminalLoopback NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Inward Loopback on Interface"
+    ::=  { fspR7Trap 5 }
+
+
+alarmOosDisabled NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Non-Specific Disablement of Management Access"
+    ::=  { fspR7Trap 6 }
+
+
+alarmOosManagement NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Alarms are logged but not notified, service affecting changes are permitted"
+    ::=  { fspR7Trap 7 }
+
+
+alarmOosMaintenance NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Alarms are logged but not notified, service affecting changes and operations are permitted"
+    ::=  { fspR7Trap 8 }
+
+
+alarmOosAins NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Automatic In Service"
+    ::=  { fspR7Trap 9 }
+
+
+alarmRemoved NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "The equipment has been removed / unplugged / disconnected.
+         This condition has been determined to be more probable than that below,
+         which is also supersedes."
+    ::=  { fspR7Trap 10 }
+
+
+alarmLossOfSignal NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Loss Of Signal"
+    ::=  { fspR7Trap 11 }
+
+
+alarmOptInputPwrReceivedTooLow NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Optical Power Rx too Low"
+    ::=  { fspR7Trap 12 }
+
+
+alarmOptInputPwrReceivedTooHigh NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Optical Power Rx too High"
+    ::=  { fspR7Trap 13 }
+
+
+alarmLaserTemperatureTooHigh NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "TCA - Fixed high threshold of Laser Temperature has been crossed."
+    ::=  { fspR7Trap 14 }
+
+
+alarmLaserTemperatureTooLow NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "TCA - Fixed low threshold of Laser Temperature has been crossed."
+    ::=  { fspR7Trap 15 }
+
+
+alarmOptOutputPowerTransTooLow NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "TCA - Optical Power Transmitted (output) too low"
+    ::=  { fspR7Trap 16 }
+
+
+alarmOptOutputPowerTransTooHigh NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "TCA - Optical Power Transmitted (output) too high"
+    ::=  { fspR7Trap 17 }
+
+
+alarmAutoShutdownToHighTemp NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Facility Autonomously Shut Down with Transmitter OFF due to Temperature."
+    ::=  { fspR7Trap 18 }
+
+
+alarmAutoShutdownToHighTxPwr NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Facility Autonomously Shut Down with Transmitter OFF because of excessiv optical Power Transmitted."
+    ::=  { fspR7Trap 19 }
+
+
+alarmLaserEndOfLife NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "End Of Life [laser degrade]."
+    ::=  { fspR7Trap 20 }
+
+
+alarmServerSignalFailureVf NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Aggregate level failure"
+    ::=  { fspR7Trap 21 }
+
+
+alarmEqualizationProgress NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Equalization and countdown in progress"
+    ::=  { fspR7Trap 22 }
+
+
+alarmUPortFailure NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Internal U Port Failure"
+    ::=  { fspR7Trap 23 }
+
+
+alarmAutoShutdownBlock NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Auto Shutdown Block"
+    ::=  { fspR7Trap 24 }
+
+
+alarmAutoPowerShutdown NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Automatic Power Shutdown"
+    ::=  { fspR7Trap 25 }
+
+
+alarmConfOutPowerTransTooHigh NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "TCA - Optical Power Transmitted (output) too high"
+    ::=  { fspR7Trap 26 }
+
+
+alarmConfOutPowerTransTooLow NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "TCA - Optical Power Transmitted (output) too low"
+    ::=  { fspR7Trap 27 }
+
+
+alarmOptSignalFailure NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Optical Power Transmit Signal Failure"
+    ::=  { fspR7Trap 28 }
+
+
+alarmDsbdChannelPowerTooHigh NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Optical power is not blocked when service is disabled (OPT > -25 dBm)."
+    ::=  { fspR7Trap 29 }
+
+
+alarmLossOfSignalCPort NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Loss of signal on C Port that corresponds to the network VCH via CRS"
+    ::=  { fspR7Trap 30 }
+
+
+alarmLossOfSignalNPort NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Internal N Port Failure"
+    ::=  { fspR7Trap 31 }
+
+
+alarmOutputPowerFault NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "There is no channel output power while the input power for the channel is above the LOS TH and the channel attenuation is set to a valid value."
+    ::=  { fspR7Trap 32 }
+
+
+alarmEqlzAdjust NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Channel power adjustment is in progress"
+    ::=  { fspR7Trap 33 }
+
+
+alarmAmpFailure NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "SGEO-AMP is raised at a dependent entity due to an AMP auto shutdown condition at the associated supporting entity."
+    ::=  { fspR7Trap 34 }
+
+
+alarmEqptProvMismatch NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Provisioning incompatible with configuration"
+    ::=  { fspR7Trap 35 }
+
+
+alarmBackreflectionTooHigh NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Backreflection Power too High, at Tx port"
+    ::=  { fspR7Trap 36 }
+
+
+transientEqlzStart NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Start of Connection Equalization"
+    ::=  { fspR7Trap 37 }
+
+
+transientEqlzFailed NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Failure of Connection Equalization"
+    ::=  { fspR7Trap 38 }
+
+
+transientEqlzCompleted NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Completion of Connection Equalization"
+    ::=  { fspR7Trap 39 }
+
+
+transientEqlzRequestDenied NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Equalization request denied (could not be performed) by enity"
+    ::=  { fspR7Trap 40 }
+
+
+transientEqlzNotRequired NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Equalization Null - Not Required - channel(s) are currently equalized"
+    ::=  { fspR7Trap 41 }
+
+
+transientEqlzProcessPassed NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Equalization Operation completed sucessfully"
+    ::=  { fspR7Trap 42 }
+
+
+transientEqlzProcessWait NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Eqalization is in progress, User must wait then request equalization"
+    ::=  { fspR7Trap 43 }
+
+
+transientPmSnapshotStarted NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Reference value save start"
+    ::=  { fspR7Trap 44 }
+
+
+transientEqlzAuto NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Scheduled Equalization resulted in adjustment of VCH"
+    ::=  { fspR7Trap 45 }
+
+
+transientEqlzRamanAdjust NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Auto equalization for RAMAN adjustment on existing in-service cross-connected VCHs"
+    ::=  { fspR7Trap 46 }
+
+
+alarmFiberConnLos NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Fiber Connection Loss of Signal"
+    ::=  { fspR7Trap 48 }
+
+
+alarmFiberConnOptFault NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Fiber connection transmit optical power failure."
+    ::=  { fspR7Trap 49 }
+
+
+alarmFiberConnInvalid NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "The fiber connection is in violation of the fiber connection rules."
+    ::=  { fspR7Trap 50 }
+
+
+alarmFiberConnMismatch NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "The fiber connection does not match the existing fiber-map in database."
+    ::=  { fspR7Trap 51 }
+
+
+alarmFiberConnCommError NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Fiber Connection Communications Fault"
+    ::=  { fspR7Trap 52 }
+
+
+alarmFiberConnProtocolFailure NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Fiber Connection Protocol Fault"
+    ::=  { fspR7Trap 53 }
+
+
+alarmFiberConnDataFailure NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Fiber Connection Data Fault"
+    ::=  { fspR7Trap 54 }
+
+
+alarmFiberAttenuationHigh NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Fiber Connection Attenuation High"
+    ::=  { fspR7Trap 55 }
+
+
+transientFiberConnStatChange NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Fiber Connection Status Change"
+    ::=  { fspR7Trap 56 }
+
+
+alarmLaserBiasCurrAbnormal NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Abnormally High Laser Bias Current Level under the current operating conditions."
+    ::=  { fspR7Trap 57 }
+
+
+alarmFiberConnInvalidTx NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "The fiber connection is in violation of the fiber connection rules."
+    ::=  { fspR7Trap 58 }
+
+
+alarmFiberConnMismatchTx NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "The fiber connection does not match the existing fiber-map in database."
+    ::=  { fspR7Trap 59 }
+
+
+alarmFiberAttenuationHighTx NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Fiber Connection Attenuation High Tx"
+    ::=  { fspR7Trap 60 }
+
+
+alarmLaserFailure NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Optical Power Transmitted Failure: Laser Failure"
+    ::=  { fspR7Trap 61 }
+
+
+alarmLossOfReceiverClockRecovery NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Rx Clock Sync Failure"
+    ::=  { fspR7Trap 62 }
+
+
+alarmFiberAttenuationCond NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "High Fiber Attenuation Condition"
+    ::=  { fspR7Trap 63 }
+
+
+alarmChannelMismatch NOTIFICATION-TYPE 
+    STATUS      current
+    DESCRIPTION   "Channel provisioning incompatible with associated port configuration"
+    ::=  { fspR7Trap 64 }
+
+
+optThresholdConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF OptThresholdConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "optThresholdConfigTable"
+    ::=  { performanceFacilityThreshold 1 }
+
+optThresholdConfigEntry OBJECT-TYPE
+    SYNTAX      OptThresholdConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of optThresholdConfigTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { optThresholdConfigTable 1 }
+
+OptThresholdConfigEntry ::=  SEQUENCE
+  { optThresholdConfigLowFixed Integer32,
+    optThresholdConfigHighFixed Integer32,
+    optThresholdConfigLowConfig Integer32,
+    optThresholdConfigHighConfig Integer32 }
+
+optThresholdConfigLowFixed OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Low fixed threshold of the Optical Power Transmitted (output)" 
+    ::=  { optThresholdConfigEntry 1 }
+
+optThresholdConfigHighFixed OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "High fixed threshold of the Optical Power Transmitted (output)" 
+    ::=  { optThresholdConfigEntry 2 }
+
+optThresholdConfigLowConfig OBJECT-TYPE
+    SYNTAX      Integer32 (-500..300) 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Configurable threshold of the Optical Power Transmitted (output)" 
+    ::=  { optThresholdConfigEntry 3 }
+
+optThresholdConfigHighConfig OBJECT-TYPE
+    SYNTAX      Integer32 (-500..300) 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Configurable high threshold of the Optical Power Transmitted (output)" 
+    ::=  { optThresholdConfigEntry 4 }
+
+oprThresholdConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF OprThresholdConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "oprThresholdConfigTable"
+    ::=  { performanceFacilityThreshold 2 }
+
+oprThresholdConfigEntry OBJECT-TYPE
+    SYNTAX      OprThresholdConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of oprThresholdConfigTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { oprThresholdConfigTable 1 }
+
+OprThresholdConfigEntry ::=  SEQUENCE
+  { oprThresholdConfigLowConfig Integer32,
+    oprThresholdConfigHighConfig Integer32 }
+
+oprThresholdConfigLowConfig OBJECT-TYPE
+    SYNTAX      Integer32 (-450..260) 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprThresholdConfigEntry 1 }
+
+oprThresholdConfigHighConfig OBJECT-TYPE
+    SYNTAX      Integer32 (-450..260) 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprThresholdConfigEntry 2 }
+
+lsrtempThresholdConfigTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF LsrtempThresholdConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "lsrtempThresholdConfigTable"
+    ::=  { performanceFacilityThreshold 3 }
+
+lsrtempThresholdConfigEntry OBJECT-TYPE
+    SYNTAX      LsrtempThresholdConfigEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of lsrtempThresholdConfigTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { lsrtempThresholdConfigTable 1 }
+
+LsrtempThresholdConfigEntry ::=  SEQUENCE
+  { lsrtempThresholdConfigLowFixed Integer32,
+    lsrtempThresholdConfigHighFixed Integer32 }
+
+lsrtempThresholdConfigLowFixed OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 degree Celsius"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Laser temperature fixed low threshold." 
+    ::=  { lsrtempThresholdConfigEntry 1 }
+
+lsrtempThresholdConfigHighFixed OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 degree Celsius"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Laser temperature fixed high threshold." 
+    ::=  { lsrtempThresholdConfigEntry 2 }
+
+optIntervalPm15minTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF OptIntervalPm15minEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "optIntervalPm15minTable"
+    ::=  { performanceFacilityMonitoring 1 }
+
+optIntervalPm15minEntry OBJECT-TYPE
+    SYNTAX      OptIntervalPm15minEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of optIntervalPm15minTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName,
+                  optIntervalPm15minNumber
+                }
+    ::=  { optIntervalPm15minTable 1 }
+
+OptIntervalPm15minEntry ::=  SEQUENCE
+  { optIntervalPm15minNumber Integer32,
+    optIntervalPm15minLow Integer32,
+    optIntervalPm15minMean Integer32,
+    optIntervalPm15minHigh Integer32,
+    optIntervalPm15minValidFlag TruthValue,
+    optIntervalPm15minTimeStamp DateAndTime }
+
+optIntervalPm15minNumber OBJECT-TYPE
+    SYNTAX      Integer32 (1..96)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A number between 1 and 96, which identifies the interval for
+         which the set of statistics is available. The interval
+         identified by 1 is the most recently completed 15 minute
+         interval, and the interval identified by N is the interval
+         immediately preceding the one identified by N-1." 
+    ::=  { optIntervalPm15minEntry 1 }
+
+optIntervalPm15minLow OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Output Power Transmitted" 
+    ::=  { optIntervalPm15minEntry 2 }
+
+optIntervalPm15minMean OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Output Power Transmitted" 
+    ::=  { optIntervalPm15minEntry 3 }
+
+optIntervalPm15minHigh OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Output Power Transmitted" 
+    ::=  { optIntervalPm15minEntry 4 }
+
+optIntervalPm15minValidFlag OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Valid Flag" 
+    ::=  { optIntervalPm15minEntry 5 }
+
+optIntervalPm15minTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp" 
+    ::=  { optIntervalPm15minEntry 6 }
+
+optIntervalPm1dayTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF OptIntervalPm1dayEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "optIntervalPm1dayTable"
+    ::=  { performanceFacilityMonitoring 2 }
+
+optIntervalPm1dayEntry OBJECT-TYPE
+    SYNTAX      OptIntervalPm1dayEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of optIntervalPm1dayTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName,
+                  optIntervalPm1dayNumber
+                }
+    ::=  { optIntervalPm1dayTable 1 }
+
+OptIntervalPm1dayEntry ::=  SEQUENCE
+  { optIntervalPm1dayNumber Integer32,
+    optIntervalPm1dayLow Integer32,
+    optIntervalPm1dayMean Integer32,
+    optIntervalPm1dayHigh Integer32,
+    optIntervalPm1dayValidFlag TruthValue,
+    optIntervalPm1dayTimeStamp DateAndTime }
+
+optIntervalPm1dayNumber OBJECT-TYPE
+    SYNTAX      Integer32 (1..31)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A number, which identifies the interval for
+         which the set of statistics is available. The interval
+         identified by 1 is the most recently completed 1 day
+         interval." 
+    ::=  { optIntervalPm1dayEntry 1 }
+
+optIntervalPm1dayLow OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Output Power Transmitted" 
+    ::=  { optIntervalPm1dayEntry 2 }
+
+optIntervalPm1dayMean OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Output Power Transmitted" 
+    ::=  { optIntervalPm1dayEntry 3 }
+
+optIntervalPm1dayHigh OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Output Power Transmitted" 
+    ::=  { optIntervalPm1dayEntry 4 }
+
+optIntervalPm1dayValidFlag OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Valid Flag" 
+    ::=  { optIntervalPm1dayEntry 5 }
+
+optIntervalPm1dayTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp" 
+    ::=  { optIntervalPm1dayEntry 6 }
+
+optIntervalPm1weekTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF OptIntervalPm1weekEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "optIntervalPm1weekTable"
+    ::=  { performanceFacilityMonitoring 3 }
+
+optIntervalPm1weekEntry OBJECT-TYPE
+    SYNTAX      OptIntervalPm1weekEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of optIntervalPm1weekTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName,
+                  optIntervalPm1weekNumber
+                }
+    ::=  { optIntervalPm1weekTable 1 }
+
+OptIntervalPm1weekEntry ::=  SEQUENCE
+  { optIntervalPm1weekNumber Integer32,
+    optIntervalPm1weekLow Integer32,
+    optIntervalPm1weekMean Integer32,
+    optIntervalPm1weekHigh Integer32,
+    optIntervalPm1weekValidFlag TruthValue,
+    optIntervalPm1weekTimeStamp DateAndTime }
+
+optIntervalPm1weekNumber OBJECT-TYPE
+    SYNTAX      Integer32 (1..52)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Number 1week" 
+    ::=  { optIntervalPm1weekEntry 1 }
+
+optIntervalPm1weekLow OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Output Power Transmitted" 
+    ::=  { optIntervalPm1weekEntry 2 }
+
+optIntervalPm1weekMean OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Output Power Transmitted" 
+    ::=  { optIntervalPm1weekEntry 3 }
+
+optIntervalPm1weekHigh OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Output Power Transmitted" 
+    ::=  { optIntervalPm1weekEntry 4 }
+
+optIntervalPm1weekValidFlag OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Valid Flag" 
+    ::=  { optIntervalPm1weekEntry 5 }
+
+optIntervalPm1weekTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp" 
+    ::=  { optIntervalPm1weekEntry 6 }
+
+oprIntervalPm15minTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF OprIntervalPm15minEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "oprIntervalPm15minTable"
+    ::=  { performanceFacilityMonitoring 4 }
+
+oprIntervalPm15minEntry OBJECT-TYPE
+    SYNTAX      OprIntervalPm15minEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of oprIntervalPm15minTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName,
+                  oprIntervalPm15minNumber
+                }
+    ::=  { oprIntervalPm15minTable 1 }
+
+OprIntervalPm15minEntry ::=  SEQUENCE
+  { oprIntervalPm15minNumber Integer32,
+    oprIntervalPm15minLow Integer32,
+    oprIntervalPm15minMean Integer32,
+    oprIntervalPm15minHigh Integer32,
+    oprIntervalPm15minValidFlag TruthValue,
+    oprIntervalPm15minTimeStamp DateAndTime }
+
+oprIntervalPm15minNumber OBJECT-TYPE
+    SYNTAX      Integer32 (1..96)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A number between 1 and 96, which identifies the interval for
+         which the set of statistics is available. The interval
+         identified by 1 is the most recently completed 15 minute
+         interval, and the interval identified by N is the interval
+         immediately preceding the one identified by N-1." 
+    ::=  { oprIntervalPm15minEntry 1 }
+
+oprIntervalPm15minLow OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprIntervalPm15minEntry 2 }
+
+oprIntervalPm15minMean OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprIntervalPm15minEntry 3 }
+
+oprIntervalPm15minHigh OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprIntervalPm15minEntry 4 }
+
+oprIntervalPm15minValidFlag OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Valid Flag" 
+    ::=  { oprIntervalPm15minEntry 5 }
+
+oprIntervalPm15minTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp" 
+    ::=  { oprIntervalPm15minEntry 6 }
+
+oprIntervalPm1dayTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF OprIntervalPm1dayEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "oprIntervalPm1dayTable"
+    ::=  { performanceFacilityMonitoring 5 }
+
+oprIntervalPm1dayEntry OBJECT-TYPE
+    SYNTAX      OprIntervalPm1dayEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of oprIntervalPm1dayTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName,
+                  oprIntervalPm1dayNumber
+                }
+    ::=  { oprIntervalPm1dayTable 1 }
+
+OprIntervalPm1dayEntry ::=  SEQUENCE
+  { oprIntervalPm1dayNumber Integer32,
+    oprIntervalPm1dayLow Integer32,
+    oprIntervalPm1dayMean Integer32,
+    oprIntervalPm1dayHigh Integer32,
+    oprIntervalPm1dayValidFlag TruthValue,
+    oprIntervalPm1dayTimeStamp DateAndTime }
+
+oprIntervalPm1dayNumber OBJECT-TYPE
+    SYNTAX      Integer32 (1..31)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A number, which identifies the interval for
+         which the set of statistics is available. The interval
+         identified by 1 is the most recently completed 1 day
+         interval." 
+    ::=  { oprIntervalPm1dayEntry 1 }
+
+oprIntervalPm1dayLow OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprIntervalPm1dayEntry 2 }
+
+oprIntervalPm1dayMean OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprIntervalPm1dayEntry 3 }
+
+oprIntervalPm1dayHigh OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprIntervalPm1dayEntry 4 }
+
+oprIntervalPm1dayValidFlag OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Valid Flag" 
+    ::=  { oprIntervalPm1dayEntry 5 }
+
+oprIntervalPm1dayTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp" 
+    ::=  { oprIntervalPm1dayEntry 6 }
+
+oprIntervalPm1weekTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF OprIntervalPm1weekEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "oprIntervalPm1weekTable"
+    ::=  { performanceFacilityMonitoring 6 }
+
+oprIntervalPm1weekEntry OBJECT-TYPE
+    SYNTAX      OprIntervalPm1weekEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of oprIntervalPm1weekTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName,
+                  oprIntervalPm1weekNumber
+                }
+    ::=  { oprIntervalPm1weekTable 1 }
+
+OprIntervalPm1weekEntry ::=  SEQUENCE
+  { oprIntervalPm1weekNumber Integer32,
+    oprIntervalPm1weekLow Integer32,
+    oprIntervalPm1weekMean Integer32,
+    oprIntervalPm1weekHigh Integer32,
+    oprIntervalPm1weekValidFlag TruthValue,
+    oprIntervalPm1weekTimeStamp DateAndTime }
+
+oprIntervalPm1weekNumber OBJECT-TYPE
+    SYNTAX      Integer32 (1..52)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Number 1week" 
+    ::=  { oprIntervalPm1weekEntry 1 }
+
+oprIntervalPm1weekLow OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprIntervalPm1weekEntry 2 }
+
+oprIntervalPm1weekMean OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprIntervalPm1weekEntry 3 }
+
+oprIntervalPm1weekHigh OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Optical Input Power Received" 
+    ::=  { oprIntervalPm1weekEntry 4 }
+
+oprIntervalPm1weekValidFlag OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Valid Flag" 
+    ::=  { oprIntervalPm1weekEntry 5 }
+
+oprIntervalPm1weekTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Timestamp" 
+    ::=  { oprIntervalPm1weekEntry 6 }
+
+terminationPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TerminationPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "terminationPoint"
+    ::=  { fiberMap 1 }
+
+terminationPointEntry OBJECT-TYPE
+    SYNTAX      TerminationPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of terminationPoint"
+    INDEX       {
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName
+                }
+    ::=  { terminationPointTable 1 }
+
+TerminationPointEntry ::=  SEQUENCE
+  { terminationPointRowStatus RowStatus,
+    terminationPointPartnerAid RowPointer,
+    terminationPointAdmin FspR7AdminState,
+    terminationPointFiberDetect FspR7FiberDetect,
+    terminationPointFiberDetectStat FspR7FiberDetect,
+    terminationPointFunction FspR7InterfaceFunction,
+    terminationPointAlias SnmpAdminString,
+    terminationPointValidSigTimer Unsigned32,
+    terminationPointConnector FspR7ConnectorType,
+    terminationPointFiber FspR7OpticalFiberType,
+    terminationPointConnType FspR7TypeConnection,
+    terminationPointOper FspR7OperState,
+    terminationPointOutputPower Integer32,
+    terminationPointInputPower Integer32,
+    terminationPointFiberConnAtten Integer32,
+    terminationPointConnEqptState FspR7ConnectState,
+    terminationPointTermType FspR7EquipmentType,
+    terminationPointChannel FspR7ChannelIdentifier,
+    terminationPointLambda Unsigned32,
+    terminationPointFrequency Unsigned32,
+    terminationPointReach FspR7OpticalInterfaceReach,
+    terminationPointBand FspR7OpticalBand,
+    terminationPointSubBand FspR7OpticalSubBand,
+    terminationPointGroup FspR7OpticalGroup,
+    terminationPointSfProvision FspR7SingleFiberLocation,
+    terminationPointDirection ApsDirection,
+    terminationPointLevel FspR7OpticalMultiplexLevel,
+    terminationPointSecondaryStates FspR7EntitySecondaryStates }
+
+terminationPointRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Termination Point RowStatus. Object is used to
+         create or delete a row in the table."
+    ::=  { terminationPointEntry 1 }
+
+terminationPointPartnerAid OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Partner AID."
+    ::=  { terminationPointEntry 2 }
+
+terminationPointAdmin OBJECT-TYPE
+    SYNTAX      FspR7AdminState
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Termination Point Adminstrative State."
+    ::=  { terminationPointEntry 3 }
+
+terminationPointFiberDetect OBJECT-TYPE
+    SYNTAX      FspR7FiberDetect
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Termination Point Fiber Detect."
+    ::=  { terminationPointEntry 4 }
+
+terminationPointFiberDetectStat OBJECT-TYPE
+    SYNTAX      FspR7FiberDetect
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Fiber Detect Status."
+    ::=  { terminationPointEntry 5 }
+
+terminationPointFunction OBJECT-TYPE
+    SYNTAX      FspR7InterfaceFunction
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Interface Function."
+    ::=  { terminationPointEntry 6 }
+
+terminationPointAlias OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Termination Point Alias."
+    ::=  { terminationPointEntry 7 }
+
+terminationPointValidSigTimer OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..5760) 
+    UNITS       "min"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Valid Signal Timer."
+    ::=  { terminationPointEntry 8 }
+
+terminationPointConnector OBJECT-TYPE
+    SYNTAX      FspR7ConnectorType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Connector Type."
+    ::=  { terminationPointEntry 9 }
+
+terminationPointFiber OBJECT-TYPE
+    SYNTAX      FspR7OpticalFiberType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Fiber Type."
+    ::=  { terminationPointEntry 10 }
+
+terminationPointConnType OBJECT-TYPE
+    SYNTAX      FspR7TypeConnection
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Connectivity Type."
+    ::=  { terminationPointEntry 11 }
+
+terminationPointOper OBJECT-TYPE
+    SYNTAX      FspR7OperState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Operational State."
+    ::=  { terminationPointEntry 12 }
+
+terminationPointOutputPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Optical Power Tx."
+    ::=  { terminationPointEntry 13 }
+
+terminationPointInputPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Optical Power Rx."
+    ::=  { terminationPointEntry 14 }
+
+terminationPointFiberConnAtten OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Fiber Connection Attenuation."
+    ::=  { terminationPointEntry 15 }
+
+terminationPointConnEqptState OBJECT-TYPE
+    SYNTAX      FspR7ConnectState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Fiber Connection Eqpt State."
+    ::=  { terminationPointEntry 16 }
+
+terminationPointTermType OBJECT-TYPE
+    SYNTAX      FspR7EquipmentType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Termination Type."
+    ::=  { terminationPointEntry 17 }
+
+terminationPointChannel OBJECT-TYPE
+    SYNTAX      FspR7ChannelIdentifier
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Channel Provision."
+    ::=  { terminationPointEntry 18 }
+
+terminationPointLambda OBJECT-TYPE
+    SYNTAX      Unsigned32 
+    UNITS       "0.01 nm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Lambda."
+    ::=  { terminationPointEntry 19 }
+
+terminationPointFrequency OBJECT-TYPE
+    SYNTAX      Unsigned32 
+    UNITS       "0.01 THz"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Frequency."
+    ::=  { terminationPointEntry 20 }
+
+terminationPointReach OBJECT-TYPE
+    SYNTAX      FspR7OpticalInterfaceReach
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Reach Provision."
+    ::=  { terminationPointEntry 21 }
+
+terminationPointBand OBJECT-TYPE
+    SYNTAX      FspR7OpticalBand
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Band Provision."
+    ::=  { terminationPointEntry 22 }
+
+terminationPointSubBand OBJECT-TYPE
+    SYNTAX      FspR7OpticalSubBand
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point SubBand Provision."
+    ::=  { terminationPointEntry 23 }
+
+terminationPointGroup OBJECT-TYPE
+    SYNTAX      FspR7OpticalGroup
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Group Provision."
+    ::=  { terminationPointEntry 24 }
+
+terminationPointSfProvision OBJECT-TYPE
+    SYNTAX      FspR7SingleFiberLocation
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Sf Provision."
+    ::=  { terminationPointEntry 25 }
+
+terminationPointDirection OBJECT-TYPE
+    SYNTAX      ApsDirection
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Direction."
+    ::=  { terminationPointEntry 26 }
+
+terminationPointLevel OBJECT-TYPE
+    SYNTAX      FspR7OpticalMultiplexLevel
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Point Level."
+    ::=  { terminationPointEntry 27 }
+
+terminationPointSecondaryStates OBJECT-TYPE
+    SYNTAX      FspR7EntitySecondaryStates
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Termination Secondary States."
+    ::=  { terminationPointEntry 28 }
+
+connectionTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ConnectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "connectionTable"
+    ::=  { fiberMap 2 }
+
+connectionEntry OBJECT-TYPE
+    SYNTAX      ConnectionEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of connectionTable"
+    INDEX       {
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  entityConnectionClassName
+                }
+    ::=  { connectionTable 1 }
+
+ConnectionEntry ::=  SEQUENCE
+  { connectionRowStatus RowStatus,
+    connectionType FspR7TypeConnection,
+    connectionState FspR7StateConnection }
+
+connectionRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Physical Connection RowStatus. Object is used to create
+         or delete a row in the table."
+    ::=  { connectionEntry 1 }
+
+connectionType OBJECT-TYPE
+    SYNTAX      FspR7TypeConnection
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "Physical Connection Type."
+    ::=  { connectionEntry 2 }
+
+connectionState OBJECT-TYPE
+    SYNTAX      FspR7StateConnection
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Physical Connection State."
+    ::=  { connectionEntry 3 }
+
+facilityReferByTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF FacilityReferByEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "facilityReferByTable"
+    ::=  { fiberMap 3 }
+
+facilityReferByEntry OBJECT-TYPE
+    SYNTAX      FacilityReferByEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of facilityReferByTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { facilityReferByTable 1 }
+
+FacilityReferByEntry ::=  SEQUENCE
+  { facilityReferByTerminPoint RowPointer }
+
+facilityReferByTerminPoint OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to object which refer to."
+    ::=  { facilityReferByEntry 1 }
+
+externalPortReferByTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExternalPortReferByEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "externalPortReferByTable"
+    ::=  { fiberMap 4 }
+
+externalPortReferByEntry OBJECT-TYPE
+    SYNTAX      ExternalPortReferByEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of externalPortReferByTable"
+    INDEX       {
+                  entityExternalPortShelfNo,
+                  entityExternalPortSlotNo,
+                  entityExternalPortPortNo,
+                  entityExternalPortExtNo,
+                  entityExternalPortClassName
+                }
+    ::=  { externalPortReferByTable 1 }
+
+ExternalPortReferByEntry ::=  SEQUENCE
+  { externalPortReferByTerminPoint RowPointer }
+
+externalPortReferByTerminPoint OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to object which refer to."
+    ::=  { externalPortReferByEntry 1 }
+
+startPmSnapshot OBJECT-TYPE
+    SYNTAX      FspR7StartPmSnapshot
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION   "Apply PM reference values"
+    ::=  { pmSnapshot 1 }
+
+pmSnapshotStatus OBJECT-TYPE
+    SYNTAX      FspR7PmSnapshotStatus
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "PM Reference value Status"
+    ::=  { pmSnapshot 2 }
+
+pmSnapshotCurrentFacilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmSnapshotCurrentFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "pmSnapshotCurrentFacilityTable"
+    ::=  { pmSnapshot 3 }
+
+pmSnapshotCurrentFacilityEntry OBJECT-TYPE
+    SYNTAX      PmSnapshotCurrentFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of pmSnapshotCurrentFacilityTable"
+    INDEX       {
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName
+                }
+    ::=  { pmSnapshotCurrentFacilityTable 1 }
+
+PmSnapshotCurrentFacilityEntry ::=  SEQUENCE
+  { pmSnapshotCurrentFacilityOutputPower Integer32,
+    pmSnapshotCurrentFacilityInputPower Integer32,
+    pmSnapshotCurrentFacilityAttenuation Integer32,
+    pmSnapshotCurrentFacilityAttenOfVoa Unsigned32,
+    pmSnapshotCurrentFacilityOscGain Unsigned32,
+    pmSnapshotCurrentFacilityBckreflecPwrRx Integer32,
+    pmSnapshotCurrentFacilityRamanPumpPower Integer32,
+    pmSnapshotCurrentFacilityOscPwrReceived Integer32,
+    pmSnapshotCurrentFacilityVariableGain Unsigned32,
+    pmSnapshotCurrentFacilityTxLineAtten Integer32,
+    pmSnapshotCurrentFacilityRxLineAtten Integer32 }
+
+pmSnapshotCurrentFacilityOutputPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Instantaneous Optical Power Transmitted (Output)."
+    ::=  { pmSnapshotCurrentFacilityEntry 1 }
+
+pmSnapshotCurrentFacilityInputPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Total Optical Input Power Received."
+    ::=  { pmSnapshotCurrentFacilityEntry 2 }
+
+pmSnapshotCurrentFacilityAttenuation OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "The attenuation in dB from the TRMT of the 1st stage to the RCV of the 2nd stage.'"
+    ::=  { pmSnapshotCurrentFacilityEntry 3 }
+
+pmSnapshotCurrentFacilityAttenOfVoa OBJECT-TYPE
+    SYNTAX      Unsigned32 
+    UNITS       "0.1 dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "The attenuation of VOA in dB."
+    ::=  { pmSnapshotCurrentFacilityEntry 4 }
+
+pmSnapshotCurrentFacilityOscGain OBJECT-TYPE
+    SYNTAX      Unsigned32 
+    UNITS       "0.1 dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Current Raman OSC gain."
+    ::=  { pmSnapshotCurrentFacilityEntry 5 }
+
+pmSnapshotCurrentFacilityBckreflecPwrRx OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Backreflection Received Current."
+    ::=  { pmSnapshotCurrentFacilityEntry 6 }
+
+pmSnapshotCurrentFacilityRamanPumpPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Total raman pump power."
+    ::=  { pmSnapshotCurrentFacilityEntry 7 }
+
+pmSnapshotCurrentFacilityOscPwrReceived OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Optical Supervisory Channel Input Power Received Current."
+    ::=  { pmSnapshotCurrentFacilityEntry 8 }
+
+pmSnapshotCurrentFacilityVariableGain OBJECT-TYPE
+    SYNTAX      Unsigned32 
+    UNITS       "0.1 dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Variable Gain of EDFA."
+    ::=  { pmSnapshotCurrentFacilityEntry 9 }
+
+pmSnapshotCurrentFacilityTxLineAtten OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Attenuation on Transmit Fiber."
+    ::=  { pmSnapshotCurrentFacilityEntry 10 }
+
+pmSnapshotCurrentFacilityRxLineAtten OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Instantaneous Attenuation on Receive Fiber."
+    ::=  { pmSnapshotCurrentFacilityEntry 11 }
+
+pmSnapshotHistoricalFacilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmSnapshotHistoricalFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "pmSnapshotHistoricalFacilityTable"
+    ::=  { pmSnapshot 4 }
+
+pmSnapshotHistoricalFacilityEntry OBJECT-TYPE
+    SYNTAX      PmSnapshotHistoricalFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of pmSnapshotHistoricalFacilityTable"
+    INDEX       {
+                  pmSnapshotHistoricalFacilityParameter,
+                  entityFacilityShelfNo,
+                  entityFacilitySlotNo,
+                  entityFacilityPortNo,
+                  entityFacilityExtNo,
+                  entityFacilityClassName,
+                  pmSnapshotHistoricalFacilityNumber
+                }
+    ::=  { pmSnapshotHistoricalFacilityTable 1 }
+
+PmSnapshotHistoricalFacilityEntry ::=  SEQUENCE
+  { pmSnapshotHistoricalFacilityParameter FspR7PmSnapshotParameterTypes,
+    pmSnapshotHistoricalFacilityNumber Unsigned32,
+    pmSnapshotHistoricalFacilityValue Integer32,
+    pmSnapshotHistoricalFacilityValidFlag TruthValue,
+    pmSnapshotHistoricalFacilityTimeStamp DateAndTime }
+
+pmSnapshotHistoricalFacilityParameter OBJECT-TYPE
+    SYNTAX      FspR7PmSnapshotParameterTypes
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Index representing the PM parameter"
+    ::=  { pmSnapshotHistoricalFacilityEntry 1 }
+
+pmSnapshotHistoricalFacilityNumber OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..10)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Record number of optical power reference level."
+    ::=  { pmSnapshotHistoricalFacilityEntry 2 }
+
+pmSnapshotHistoricalFacilityValue OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Different units are used for specific parameters (intervalPmSnapshotParameter - the first index of the table):
+         'dBm' for OutputPower, InputPower, RamanPumpPower, OscPowerReceived;
+         'dB' for Attenuation, AttenuationOfVoa, OscGain, BackreflectionPowerReceived, TxLineAttenuation, RxLineAttenuation;
+         'no unit' for VariableGain."
+    ::=  { pmSnapshotHistoricalFacilityEntry 3 }
+
+pmSnapshotHistoricalFacilityValidFlag OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Valid Flag."
+    ::=  { pmSnapshotHistoricalFacilityEntry 4 }
+
+pmSnapshotHistoricalFacilityTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Timestamp."
+    ::=  { pmSnapshotHistoricalFacilityEntry 5 }
+
+pmSnapshotCurrentTerminPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmSnapshotCurrentTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "pmSnapshotCurrentTerminPointTable"
+    ::=  { pmSnapshot 5 }
+
+pmSnapshotCurrentTerminPointEntry OBJECT-TYPE
+    SYNTAX      PmSnapshotCurrentTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of pmSnapshotCurrentTerminPointTable"
+    INDEX       {
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName
+                }
+    ::=  { pmSnapshotCurrentTerminPointTable 1 }
+
+PmSnapshotCurrentTerminPointEntry ::=  SEQUENCE
+  { pmSnapshotCurrentTerminPointOutputPower Integer32,
+    pmSnapshotCurrentTerminPointInputPower Integer32,
+    pmSnapshotCurrentTerminPointFiberConnAtten Integer32 }
+
+pmSnapshotCurrentTerminPointOutputPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Instantaneous Optical Power Transmitted (Output)."
+    ::=  { pmSnapshotCurrentTerminPointEntry 1 }
+
+pmSnapshotCurrentTerminPointInputPower OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Total Optical Input Power Received."
+    ::=  { pmSnapshotCurrentTerminPointEntry 2 }
+
+pmSnapshotCurrentTerminPointFiberConnAtten OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1 dB"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Fiber Connection Attenuation."
+    ::=  { pmSnapshotCurrentTerminPointEntry 3 }
+
+pmSnapshotHistoricalTerminPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PmSnapshotHistoricalTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "pmSnapshotHistoricalTerminPointTable"
+    ::=  { pmSnapshot 6 }
+
+pmSnapshotHistoricalTerminPointEntry OBJECT-TYPE
+    SYNTAX      PmSnapshotHistoricalTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of pmSnapshotHistoricalTerminPointTable"
+    INDEX       {
+                  pmSnapshotHistoricalTerminPointParameter,
+                  entityTerminPointIndexNo1,
+                  entityTerminPointIndexNo2,
+                  entityTerminPointIndexNo3,
+                  entityTerminPointIndexNo4,
+                  entityTerminPointClassName,
+                  pmSnapshotHistoricalTerminPointNumber
+                }
+    ::=  { pmSnapshotHistoricalTerminPointTable 1 }
+
+PmSnapshotHistoricalTerminPointEntry ::=  SEQUENCE
+  { pmSnapshotHistoricalTerminPointParameter FspR7PmSnapshotParameterTypes,
+    pmSnapshotHistoricalTerminPointNumber Unsigned32,
+    pmSnapshotHistoricalTerminPointValue Integer32,
+    pmSnapshotHistoricalTerminPointValidFlag TruthValue,
+    pmSnapshotHistoricalTerminPointTimeStamp DateAndTime }
+
+pmSnapshotHistoricalTerminPointParameter OBJECT-TYPE
+    SYNTAX      FspR7PmSnapshotParameterTypes
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Index representing the PM parameter"
+    ::=  { pmSnapshotHistoricalTerminPointEntry 1 }
+
+pmSnapshotHistoricalTerminPointNumber OBJECT-TYPE
+    SYNTAX      Unsigned32 (1..10)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Record number of optical power reference level."
+    ::=  { pmSnapshotHistoricalTerminPointEntry 2 }
+
+pmSnapshotHistoricalTerminPointValue OBJECT-TYPE
+    SYNTAX      Integer32 
+    UNITS       "0.1"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Different units are used for specific parameters (intervalPmSnapshotParameter - the first index of the table):
+         'dBm' for OutputPower, InputPower, RamanPumpPower, OscPowerReceived;
+         'dB' for Attenuation, AttenuationOfVoa, OscGain, BackreflectionPowerReceived, TxLineAttenuation, RxLineAttenuation;
+         'no unit' for VariableGain."
+    ::=  { pmSnapshotHistoricalTerminPointEntry 3 }
+
+pmSnapshotHistoricalTerminPointValidFlag OBJECT-TYPE
+    SYNTAX      TruthValue
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Valid Flag."
+    ::=  { pmSnapshotHistoricalTerminPointEntry 4 }
+
+pmSnapshotHistoricalTerminPointTimeStamp OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Timestamp."
+    ::=  { pmSnapshotHistoricalTerminPointEntry 5 }
+
+externalPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "externalPort"
+    ::=  { eci 1 }
+
+externalPortEntry OBJECT-TYPE
+    SYNTAX      ExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of externalPort"
+    INDEX       {
+                  entityExternalPortShelfNo,
+                  entityExternalPortSlotNo,
+                  entityExternalPortPortNo,
+                  entityExternalPortExtNo,
+                  entityExternalPortClassName
+                }
+    ::=  { externalPortTable 1 }
+
+ExternalPortEntry ::=  SEQUENCE
+  { externalPortRowStatus RowStatus,
+    externalPortConnectionState FspR7ConnectState,
+    externalPortType FspR7InterfaceType,
+    externalPortTransmitChannel FspR7ChannelIdentifier,
+    externalPortChannelBandwith FspR7ChannelBandwidth,
+    externalPortAlias SnmpAdminString,
+    externalPortFarEndLocation SnmpAdminString,
+    externalPortBitrate Unsigned32,
+    externalPortFecType FspR7FecType,
+    externalPortLineCoding FspR7LineCoding,
+    externalPortFrameFormat FspR7FrameFormat,
+    externalPortOpticalPowerTx Integer32,
+    externalPortOsnrTransmit Unsigned32,
+    externalPortPmdTransmit Unsigned32,
+    externalPortChromDisperTx Integer32,
+    externalPortMinOsnrRcv Unsigned32,
+    externalPortMinOptPowerRcv Integer32,
+    externalPortMaxOptPowerRcv Integer32,
+    externalPortMaxPmdRcv Unsigned32,
+    externalPortMinChromDisperRcv Integer32,
+    externalPortMaxChromDisperRcv Integer32,
+    externalPortMaxBitErrorRate FspR7MaxBitErrorRate,
+    externalPortSourceProfile SnmpAdminString }
+
+externalPortRowStatus OBJECT-TYPE
+    SYNTAX      RowStatus
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port RowStatus. Object is used to
+         create or delete a row in the table."
+    ::=  { externalPortEntry 1 }
+
+externalPortConnectionState OBJECT-TYPE
+    SYNTAX      FspR7ConnectState
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "External Port Connection State."
+    ::=  { externalPortEntry 2 }
+
+externalPortType OBJECT-TYPE
+    SYNTAX      FspR7InterfaceType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Facility Type."
+    ::=  { externalPortEntry 3 }
+
+externalPortTransmitChannel OBJECT-TYPE
+    SYNTAX      FspR7ChannelIdentifier
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Channel."
+    ::=  { externalPortEntry 4 }
+
+externalPortChannelBandwith OBJECT-TYPE
+    SYNTAX      FspR7ChannelBandwidth
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Channel Bandwidth."
+    ::=  { externalPortEntry 5 }
+
+externalPortAlias OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port User Applied Descriptor."
+    ::=  { externalPortEntry 6 }
+
+externalPortFarEndLocation OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port FEND Location."
+    ::=  { externalPortEntry 7 }
+
+externalPortBitrate OBJECT-TYPE
+    SYNTAX      Unsigned32 
+    UNITS       "Mbit/s"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Bitrate."
+    ::=  { externalPortEntry 8 }
+
+externalPortFecType OBJECT-TYPE
+    SYNTAX      FspR7FecType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Forward Error Correction."
+    ::=  { externalPortEntry 9 }
+
+externalPortLineCoding OBJECT-TYPE
+    SYNTAX      FspR7LineCoding
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Line Coding."
+    ::=  { externalPortEntry 10 }
+
+externalPortFrameFormat OBJECT-TYPE
+    SYNTAX      FspR7FrameFormat
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Frame Format."
+    ::=  { externalPortEntry 11 }
+
+externalPortOpticalPowerTx OBJECT-TYPE
+    SYNTAX      Integer32 (-9900..600) 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Optical Power Transmit."
+    ::=  { externalPortEntry 12 }
+
+externalPortOsnrTransmit OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..58) 
+    UNITS       "dB"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Optical Signal to Noise Ratio Transmit."
+    ::=  { externalPortEntry 13 }
+
+externalPortPmdTransmit OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..30) 
+    UNITS       "ps"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Polarization Mode Dispersion Transmit."
+    ::=  { externalPortEntry 14 }
+
+externalPortChromDisperTx OBJECT-TYPE
+    SYNTAX      Integer32 (-60000..60000) 
+    UNITS       "ps/nm"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Chromatic Dispersion Transmit."
+    ::=  { externalPortEntry 15 }
+
+externalPortMinOsnrRcv OBJECT-TYPE
+    SYNTAX      Unsigned32 (10..58) 
+    UNITS       "dB"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Minimum Optical Signal to Noise Ratio, Rcv."
+    ::=  { externalPortEntry 16 }
+
+externalPortMinOptPowerRcv OBJECT-TYPE
+    SYNTAX      Integer32 (-2500..0) 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Minimum Optical Pwr Rcv."
+    ::=  { externalPortEntry 17 }
+
+externalPortMaxOptPowerRcv OBJECT-TYPE
+    SYNTAX      Integer32 (-1000..1000) 
+    UNITS       "0.1 dBm"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Maximum Optical Pwr Rcv."
+    ::=  { externalPortEntry 18 }
+
+externalPortMaxPmdRcv OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..30) 
+    UNITS       "ps"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Maximum Polarization Mode Dispersion Rcv."
+    ::=  { externalPortEntry 19 }
+
+externalPortMinChromDisperRcv OBJECT-TYPE
+    SYNTAX      Integer32 (-60000..60000) 
+    UNITS       "ps/nm"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Minimum Chromatic Dispersion Rcv."
+    ::=  { externalPortEntry 20 }
+
+externalPortMaxChromDisperRcv OBJECT-TYPE
+    SYNTAX      Integer32 (-60000..60000) 
+    UNITS       "ps/nm"
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Maximum Chromatic Dispersion Rcv."
+    ::=  { externalPortEntry 21 }
+
+externalPortMaxBitErrorRate OBJECT-TYPE
+    SYNTAX      FspR7MaxBitErrorRate
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Maximum Bit Error Rate."
+    ::=  { externalPortEntry 22 }
+
+externalPortSourceProfile OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION   "External Port Source Profile."
+    ::=  { externalPortEntry 23 }
+
+upwardFacilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UpwardFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "upwardFacilityTable"
+    ::=  { relationship 13 }
+
+upwardFacilityEntry OBJECT-TYPE
+    SYNTAX      UpwardFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of upwardFacilityTable"
+    INDEX       {
+                  upwardFacilityShelfNo,
+                  upwardFacilitySlotNo,
+                  upwardFacilityPortNo,
+                  upwardFacilityExtNo,
+                  upwardFacilityClassName,
+                  upwardFacilityIndex
+                }
+    ::=  { upwardFacilityTable 1 }
+
+UpwardFacilityEntry ::=  SEQUENCE
+  { upwardFacilityShelfNo Unsigned32,
+    upwardFacilitySlotNo Unsigned32,
+    upwardFacilityPortNo Unsigned32,
+    upwardFacilityExtNo Unsigned32,
+    upwardFacilityClassName EntityClassName,
+    upwardFacilityIndex Unsigned32,
+    upwardFacilityParentId RowPointer }
+
+upwardFacilityShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardFacilityEntry 1 }
+
+upwardFacilitySlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardFacilityEntry 2 }
+
+upwardFacilityPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardFacilityEntry 3 }
+
+upwardFacilityExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardFacilityEntry 4 }
+
+upwardFacilityClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { upwardFacilityEntry 5 }
+
+upwardFacilityIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Number of sequence."
+    ::=  { upwardFacilityEntry 6 }
+
+upwardFacilityParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { upwardFacilityEntry 7 }
+
+downwardFacilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DownwardFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "ddownwardFacilityTable"
+    ::=  { relationship 14 }
+
+downwardFacilityEntry OBJECT-TYPE
+    SYNTAX      DownwardFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of downwardFacilityTable"
+    INDEX       {
+                  downwardFacilityShelfNo,
+                  downwardFacilitySlotNo,
+                  downwardFacilityPortNo,
+                  downwardFacilityExtNo,
+                  downwardFacilityClassName,
+                  downwardFacilityIndex
+                }
+    ::=  { downwardFacilityTable 1 }
+
+DownwardFacilityEntry ::=  SEQUENCE
+  { downwardFacilityShelfNo Unsigned32,
+    downwardFacilitySlotNo Unsigned32,
+    downwardFacilityPortNo Unsigned32,
+    downwardFacilityExtNo Unsigned32,
+    downwardFacilityClassName EntityClassName,
+    downwardFacilityIndex Unsigned32,
+    downwardFacilityChildId RowPointer }
+
+downwardFacilityShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardFacilityEntry 1 }
+
+downwardFacilitySlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardFacilityEntry 2 }
+
+downwardFacilityPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardFacilityEntry 3 }
+
+downwardFacilityExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardFacilityEntry 4 }
+
+downwardFacilityClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { downwardFacilityEntry 5 }
+
+downwardFacilityIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Number of sequence."
+    ::=  { downwardFacilityEntry 6 }
+
+downwardFacilityChildId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to child entity."
+    ::=  { downwardFacilityEntry 7 }
+
+upwardTerminPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UpwardTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "upwardTerminPointTable"
+    ::=  { relationship 19 }
+
+upwardTerminPointEntry OBJECT-TYPE
+    SYNTAX      UpwardTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of upwardTerminPointTable"
+    INDEX       {
+                  upwardTerminPointIndexNo1,
+                  upwardTerminPointIndexNo2,
+                  upwardTerminPointIndexNo3,
+                  upwardTerminPointIndexNo4,
+                  upwardTerminPointClassName,
+                  upwardTerminPointIndex
+                }
+    ::=  { upwardTerminPointTable 1 }
+
+UpwardTerminPointEntry ::=  SEQUENCE
+  { upwardTerminPointIndexNo1 Unsigned32,
+    upwardTerminPointIndexNo2 Unsigned32,
+    upwardTerminPointIndexNo3 Unsigned32,
+    upwardTerminPointIndexNo4 Unsigned32,
+    upwardTerminPointClassName EntityClassName,
+    upwardTerminPointIndex Unsigned32,
+    upwardTerminPointParentId RowPointer }
+
+upwardTerminPointIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardTerminPointEntry 1 }
+
+upwardTerminPointIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardTerminPointEntry 2 }
+
+upwardTerminPointIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardTerminPointEntry 3 }
+
+upwardTerminPointIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardTerminPointEntry 4 }
+
+upwardTerminPointClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { upwardTerminPointEntry 5 }
+
+upwardTerminPointIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Number of sequence."
+    ::=  { upwardTerminPointEntry 6 }
+
+upwardTerminPointParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { upwardTerminPointEntry 7 }
+
+downwardTerminPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DownwardTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "downwardTerminPointTable"
+    ::=  { relationship 20 }
+
+downwardTerminPointEntry OBJECT-TYPE
+    SYNTAX      DownwardTerminPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of downwardTerminPointTable"
+    INDEX       {
+                  downwardTerminPointIndexNo1,
+                  downwardTerminPointIndexNo2,
+                  downwardTerminPointIndexNo3,
+                  downwardTerminPointIndexNo4,
+                  downwardTerminPointClassName,
+                  downwardTerminPointIndex
+                }
+    ::=  { downwardTerminPointTable 1 }
+
+DownwardTerminPointEntry ::=  SEQUENCE
+  { downwardTerminPointIndexNo1 Unsigned32,
+    downwardTerminPointIndexNo2 Unsigned32,
+    downwardTerminPointIndexNo3 Unsigned32,
+    downwardTerminPointIndexNo4 Unsigned32,
+    downwardTerminPointClassName EntityClassName,
+    downwardTerminPointIndex Unsigned32,
+    downwardTerminPointChildId RowPointer }
+
+downwardTerminPointIndexNo1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardTerminPointEntry 1 }
+
+downwardTerminPointIndexNo2 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardTerminPointEntry 2 }
+
+downwardTerminPointIndexNo3 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardTerminPointEntry 3 }
+
+downwardTerminPointIndexNo4 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardTerminPointEntry 4 }
+
+downwardTerminPointClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { downwardTerminPointEntry 5 }
+
+downwardTerminPointIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Number of sequence."
+    ::=  { downwardTerminPointEntry 6 }
+
+downwardTerminPointChildId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to child entity."
+    ::=  { downwardTerminPointEntry 7 }
+
+upwardExternalPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF UpwardExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "upwardExternalPortTable"
+    ::=  { relationship 23 }
+
+upwardExternalPortEntry OBJECT-TYPE
+    SYNTAX      UpwardExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of upwardExternalPortTable"
+    INDEX       {
+                  upwardExternalPortShelfNo,
+                  upwardExternalPortSlotNo,
+                  upwardExternalPortPortNo,
+                  upwardExternalPortExtNo,
+                  upwardExternalPortClassName,
+                  upwardExternalPortIndex
+                }
+    ::=  { upwardExternalPortTable 1 }
+
+UpwardExternalPortEntry ::=  SEQUENCE
+  { upwardExternalPortShelfNo Unsigned32,
+    upwardExternalPortSlotNo Unsigned32,
+    upwardExternalPortPortNo Unsigned32,
+    upwardExternalPortExtNo Unsigned32,
+    upwardExternalPortClassName EntityClassName,
+    upwardExternalPortIndex Unsigned32,
+    upwardExternalPortParentId RowPointer }
+
+upwardExternalPortShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardExternalPortEntry 1 }
+
+upwardExternalPortSlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardExternalPortEntry 2 }
+
+upwardExternalPortPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardExternalPortEntry 3 }
+
+upwardExternalPortExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { upwardExternalPortEntry 4 }
+
+upwardExternalPortClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { upwardExternalPortEntry 5 }
+
+upwardExternalPortIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Number of sequence."
+    ::=  { upwardExternalPortEntry 6 }
+
+upwardExternalPortParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { upwardExternalPortEntry 7 }
+
+downwardExternalPortTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DownwardExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "downwardExternalPortTable"
+    ::=  { relationship 24 }
+
+downwardExternalPortEntry OBJECT-TYPE
+    SYNTAX      DownwardExternalPortEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of downwardExternalPortTable"
+    INDEX       {
+                  downwardExternalPortShelfNo,
+                  downwardExternalPortSlotNo,
+                  downwardExternalPortPortNo,
+                  downwardExternalPortExtNo,
+                  downwardExternalPortClassName,
+                  downwardExternalPortIndex
+                }
+    ::=  { downwardExternalPortTable 1 }
+
+DownwardExternalPortEntry ::=  SEQUENCE
+  { downwardExternalPortShelfNo Unsigned32,
+    downwardExternalPortSlotNo Unsigned32,
+    downwardExternalPortPortNo Unsigned32,
+    downwardExternalPortExtNo Unsigned32,
+    downwardExternalPortClassName EntityClassName,
+    downwardExternalPortIndex Unsigned32,
+    downwardExternalPortChildId RowPointer }
+
+downwardExternalPortShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardExternalPortEntry 1 }
+
+downwardExternalPortSlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardExternalPortEntry 2 }
+
+downwardExternalPortPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardExternalPortEntry 3 }
+
+downwardExternalPortExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { downwardExternalPortEntry 4 }
+
+downwardExternalPortClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { downwardExternalPortEntry 5 }
+
+downwardExternalPortIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Number of sequence."
+    ::=  { downwardExternalPortEntry 6 }
+
+downwardExternalPortChildId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to child entity."
+    ::=  { downwardExternalPortEntry 7 }
+
+notAssignableFacilityTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NotAssignableFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "facilityNotAssignable"
+    ::=  { notAssignables 7 }
+
+notAssignableFacilityEntry OBJECT-TYPE
+    SYNTAX      NotAssignableFacilityEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entry of facilityNotAssignable"
+    INDEX       {
+                  notAssignableFacilityShelfNo,
+                  notAssignableFacilitySlotNo,
+                  notAssignableFacilityPortNo,
+                  notAssignableFacilityExtNo,
+                  notAssignableFacilityClassName
+                }
+    ::=  { notAssignableFacilityTable 1 }
+
+NotAssignableFacilityEntry ::=  SEQUENCE
+  { notAssignableFacilityShelfNo Unsigned32,
+    notAssignableFacilitySlotNo Unsigned32,
+    notAssignableFacilityPortNo Unsigned32,
+    notAssignableFacilityExtNo Unsigned32,
+    notAssignableFacilityClassName EntityClassName,
+    notAssignableFacilityAidString SnmpAdminString,
+    notAssignableFacilityParentId RowPointer,
+    notAssignableFacilityClass EntityClass }
+
+notAssignableFacilityShelfNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { notAssignableFacilityEntry 1 }
+
+notAssignableFacilitySlotNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { notAssignableFacilityEntry 2 }
+
+notAssignableFacilityPortNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { notAssignableFacilityEntry 3 }
+
+notAssignableFacilityExtNo OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Adress index."
+    ::=  { notAssignableFacilityEntry 4 }
+
+notAssignableFacilityClassName OBJECT-TYPE
+    SYNTAX      EntityClassName
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION   "Entity Class Name."
+    ::=  { notAssignableFacilityEntry 5 }
+
+notAssignableFacilityAidString OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "Aid string of entity."
+    ::=  { notAssignableFacilityEntry 6 }
+
+notAssignableFacilityParentId OBJECT-TYPE
+    SYNTAX      RowPointer
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "RowPointer to parent entity reported in corresponding entity table."
+    ::=  { notAssignableFacilityEntry 7 }
+
+notAssignableFacilityClass OBJECT-TYPE
+    SYNTAX      EntityClass
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION   "EntityClass"
+    ::=  { notAssignableFacilityEntry 8 }
+
+
+-- conformance information
+
+conformance OBJECT IDENTIFIER ::= { advaFspR7 10 }
+
+compliances OBJECT IDENTIFIER ::= { conformance 1 }
+
+groups      OBJECT IDENTIFIER ::= { conformance 2 }
+
+-- compliance statements
+
+compliance MODULE-COMPLIANCE
+  STATUS  current
+  DESCRIPTION
+    "The compliance statement for entities implementing the ADVA FSPR7 MIB."
+  MODULE  -- this module
+  MANDATORY-GROUPS { objectGroup, notificationGroup }
+  ::= { compliances 1 }
+
+
+-- units of conformance
+
+objectGroup OBJECT-GROUP
+  OBJECTS {
+    containerFacilityAidString,
+    containerFacilityClass,
+    containerCrossConnAidString,
+    containerCrossConnFromId,
+    containerCrossConnToId,
+    containerCrossConnClass,
+    containerCrossConnFromPointAidString,
+    containerCrossConnFromPointFromId,
+    containerCrossConnFromPointClass,
+    containerTerminPointAidString,
+    containerTerminPointClass,
+    containerConnectStdAidString,
+    containerConnectStdFromId,
+    containerConnectStdToId,
+    containerConnectStdClass,
+    containerConnectNonStdAidString,
+    containerConnectNonStdFromId,
+    containerConnectNonStdToId,
+    containerConnectNonStdClass,
+    containerExternalPortAidString,
+    containerExternalPortClass,
+    containerCrsOptLineAidString,
+    containerCrsOptLineFromId,
+    containerCrsOptLineToId,
+    containerCrsOptLineClass,
+    containerCrsOptLineFromPointAidString,
+    containerCrsOptLineFromPointFromId,
+    containerCrsOptLineFromPointClass,
+    entityOptLineChannelIndexNo1,
+    entityOptLineChannelAidString,
+    entityOptLineChannelType,
+    entityOptLineChannelTableId,
+    entityOptLineChannelParentId,
+    entityOptLineChannelOneIndex,
+    entityOptLineChannelClass,
+    entityFacilityShelfNo,
+    entityFacilityAidString,
+    entityFacilityType,
+    entityFacilityTableId,
+    entityFacilityParentId,
+    entityFacilityClass,
+    entityCrossConnFromShelfNo,
+    entityCrossConnAidString,
+    entityCrossConnType,
+    entityCrossConnTableId,
+    entityCrossConnParentId,
+    entityCrossConnFromId,
+    entityCrossConnToId,
+    entityCrossConnClass,
+    entityTerminPointIndexNo1,
+    entityTerminPointAidString,
+    entityTerminPointAssignState,
+    entityTerminPointType,
+    entityTerminPointTableId,
+    entityTerminPointParentId,
+    entityTerminPointOneIndex,
+    entityTerminPointReferencedTo,
+    entityTerminPointClass,
+    entityConnectionClassName,
+    entityConnectionAidString,
+    entityConnectionType,
+    entityConnectionTableId,
+    entityConnectionParentId,
+    entityConnectionFromId,
+    entityConnectionToId,
+    entityConnectionClass,
+    entityExternalPortShelfNo,
+    entityExternalPortAidString,
+    entityExternalPortType,
+    entityExternalPortTableId,
+    entityExternalPortParentId,
+    entityExternalPortClass,
+    entityCrsOptLineFromIndexNo1,
+    entityCrsOptLineAidString,
+    entityCrsOptLineType,
+    entityCrsOptLineTableId,
+    entityCrsOptLineParentId,
+    entityCrsOptLineFromId,
+    entityCrsOptLineToId,
+    entityCrsOptLineClass,
+    trapModeLegacy,
+    crossConnectionRowStatus,
+    crossConnectionAdmin,
+    crossConnectionRedLineState,
+    crossConnectionCrsFunction,
+    crossConnectionConn,
+    crossConnectionCrsType,
+    crossConnectionAlias,
+    crossConnectionPathNode,
+    crossConnectionTunnelAid,
+    crossConnectionIngressTid,
+    crossConnectionIngressNodeIp,
+    crossConnectionOperState,
+    crossConnectionSecondaryStates,
+    crossConnectionType,
+    crossOpticalLineRowStatus,
+    crossOpticalLineRedLineState,
+    crossOpticalLineCrsFunction,
+    crossOpticalLineConn,
+    crossOpticalLineCrsType,
+    crossOpticalLineAlias,
+    crossOpticalLineTunnelAid,
+    crossOpticalLineIngressTid,
+    crossOpticalLineIngressNodeIp,
+    physicalPortRowStatus,
+    physicalPortType,
+    physicalPortAdmin,
+    physicalPortConnector,
+    physicalPortFiber,
+    physicalPortConnType,
+    physicalPortOperState,
+    physicalPortLaneChannel,
+    physicalPortLaserBiasCurrLevel,
+    physicalPortLaserTemp,
+    physicalPortInputPower,
+    physicalPortOutputPower,
+    physicalPortSecondaryStates,
+    virtualPortRowStatus,
+    virtualPortChannelBand,
+    virtualPortType,
+    virtualPortAlias,
+    virtualPortFunction,
+    virtualPortChannelProv,
+    virtualPortLambda,
+    virtualPortFrequency,
+    virtualPortAdmin,
+    virtualPortOperState,
+    virtualPortConnState,
+    virtualPortEqlzAdmin,
+    virtualPortInitEqlz,
+    virtualPortInputPower,
+    virtualPortOutputPower,
+    virtualPortSecondaryStates,
+    alarmFacilitySeverity,
+    alarmFacilityAffect,
+    alarmFacilityTimeStamp,
+    alarmSeverityFacilityValue,
+    alarmTerminPointSeverity,
+    alarmTerminPointAffect,
+    alarmTerminPointTimeStamp,
+    alarmSeverityTerminPointValue,
+    alarmExternalPortSeverity,
+    alarmExternalPortAffect,
+    alarmExternalPortTimeStamp,
+    alarmSeverityExternalPortValue,
+    optThresholdConfigHighFixed,
+    optThresholdConfigLowFixed,
+    optThresholdConfigLowConfig,
+    optThresholdConfigHighConfig,
+    oprThresholdConfigLowConfig,
+    oprThresholdConfigHighConfig,
+    lsrtempThresholdConfigLowFixed,
+    lsrtempThresholdConfigHighFixed,
+    optIntervalPm15minLow,
+    optIntervalPm15minMean,
+    optIntervalPm15minHigh,
+    optIntervalPm15minValidFlag,
+    optIntervalPm15minTimeStamp,
+    optIntervalPm1dayLow,
+    optIntervalPm1dayMean,
+    optIntervalPm1dayHigh,
+    optIntervalPm1dayValidFlag,
+    optIntervalPm1dayTimeStamp,
+    optIntervalPm1weekLow,
+    optIntervalPm1weekMean,
+    optIntervalPm1weekHigh,
+    optIntervalPm1weekValidFlag,
+    optIntervalPm1weekTimeStamp,
+    oprIntervalPm15minLow,
+    oprIntervalPm15minMean,
+    oprIntervalPm15minHigh,
+    oprIntervalPm15minValidFlag,
+    oprIntervalPm15minTimeStamp,
+    oprIntervalPm1dayLow,
+    oprIntervalPm1dayMean,
+    oprIntervalPm1dayHigh,
+    oprIntervalPm1dayValidFlag,
+    oprIntervalPm1dayTimeStamp,
+    oprIntervalPm1weekLow,
+    oprIntervalPm1weekMean,
+    oprIntervalPm1weekHigh,
+    oprIntervalPm1weekValidFlag,
+    oprIntervalPm1weekTimeStamp,
+    terminationPointRowStatus,
+    terminationPointPartnerAid,
+    terminationPointAdmin,
+    terminationPointFiberDetect,
+    terminationPointFiberDetectStat,
+    terminationPointFunction,
+    terminationPointAlias,
+    terminationPointValidSigTimer,
+    terminationPointConnector,
+    terminationPointFiber,
+    terminationPointConnType,
+    terminationPointOper,
+    terminationPointOutputPower,
+    terminationPointInputPower,
+    terminationPointFiberConnAtten,
+    terminationPointConnEqptState,
+    terminationPointTermType,
+    terminationPointChannel,
+    terminationPointLambda,
+    terminationPointFrequency,
+    terminationPointReach,
+    terminationPointBand,
+    terminationPointSubBand,
+    terminationPointGroup,
+    terminationPointSfProvision,
+    terminationPointDirection,
+    terminationPointLevel,
+    terminationPointSecondaryStates,
+    connectionRowStatus,
+    connectionType,
+    connectionState,
+    facilityReferByTerminPoint,
+    externalPortReferByTerminPoint,
+    startPmSnapshot,
+    pmSnapshotStatus,
+    pmSnapshotCurrentFacilityOutputPower,
+    pmSnapshotCurrentFacilityInputPower,
+    pmSnapshotCurrentFacilityAttenuation,
+    pmSnapshotCurrentFacilityAttenOfVoa,
+    pmSnapshotCurrentFacilityOscGain ,
+    pmSnapshotCurrentFacilityBckreflecPwrRx,
+    pmSnapshotCurrentFacilityRamanPumpPower,
+    pmSnapshotCurrentFacilityOscPwrReceived,
+    pmSnapshotCurrentFacilityVariableGain,
+    pmSnapshotCurrentFacilityTxLineAtten,
+    pmSnapshotCurrentFacilityRxLineAtten,
+    pmSnapshotHistoricalFacilityValue,
+    pmSnapshotHistoricalFacilityValidFlag,
+    pmSnapshotHistoricalFacilityTimeStamp,
+    pmSnapshotCurrentTerminPointOutputPower,
+    pmSnapshotCurrentTerminPointInputPower,
+    pmSnapshotCurrentTerminPointFiberConnAtten,
+    pmSnapshotHistoricalTerminPointValue,
+    pmSnapshotHistoricalTerminPointValidFlag,
+    pmSnapshotHistoricalTerminPointTimeStamp,
+    externalPortRowStatus,
+    externalPortConnectionState,
+    externalPortType,
+    externalPortTransmitChannel,
+    externalPortChannelBandwith,
+    externalPortAlias,
+    externalPortFarEndLocation,
+    externalPortBitrate,
+    externalPortMaxChromDisperRcv,
+    externalPortMaxBitErrorRate,
+    externalPortSourceProfile,
+    externalPortFecType,
+    externalPortLineCoding,
+    externalPortFrameFormat,
+    externalPortOpticalPowerTx,
+    externalPortOsnrTransmit,
+    externalPortPmdTransmit,
+    externalPortChromDisperTx,
+    externalPortMinOsnrRcv,
+    externalPortMinOptPowerRcv,
+    externalPortMaxOptPowerRcv,
+    externalPortMaxPmdRcv,
+    externalPortMinChromDisperRcv,
+    upwardFacilityParentId,
+    downwardFacilityChildId,
+    upwardTerminPointParentId,
+    downwardTerminPointChildId,
+    upwardExternalPortParentId,
+    downwardExternalPortChildId,
+    notAssignableFacilityAidString,
+    notAssignableFacilityParentId,
+    notAssignableFacilityClass
+  }
+  STATUS  current
+  DESCRIPTION
+    "A list of objects used for configuration of an entity in ADVA FSPR7 MIB."
+  ::= { groups 1 }
+
+notificationGroup NOTIFICATION-GROUP
+  NOTIFICATIONS {
+    fspR7CreationTrap,
+    fspR7DeletionTrap,
+    fspR7StateChangeTrap,
+    fspR7ObjectChangeTrap,
+    alarmTerminalLoopback,
+    alarmOosDisabled,
+    alarmOosManagement,
+    alarmOosMaintenance,
+    alarmOosAins,
+    alarmRemoved,
+    alarmLossOfSignal,
+    alarmOptInputPwrReceivedTooLow,
+    alarmOptInputPwrReceivedTooHigh,
+    alarmLaserTemperatureTooHigh,
+    alarmLaserTemperatureTooLow,
+    alarmOptOutputPowerTransTooLow,
+    alarmOptOutputPowerTransTooHigh,
+    alarmAutoShutdownToHighTemp,
+    alarmAutoShutdownToHighTxPwr,
+    alarmLaserEndOfLife,
+    alarmServerSignalFailureVf,
+    alarmEqualizationProgress,
+    alarmUPortFailure,
+    alarmAutoShutdownBlock,
+    alarmAutoPowerShutdown,
+    alarmConfOutPowerTransTooHigh,
+    alarmConfOutPowerTransTooLow,
+    alarmOptSignalFailure,
+    alarmDsbdChannelPowerTooHigh,
+    alarmLossOfSignalCPort,
+    alarmLossOfSignalNPort,
+    alarmOutputPowerFault,
+    alarmEqlzAdjust,
+    alarmAmpFailure,
+    alarmEqptProvMismatch,
+    alarmBackreflectionTooHigh,
+    transientEqlzStart,
+    transientEqlzFailed,
+    transientEqlzCompleted,
+    transientEqlzRequestDenied,
+    transientEqlzNotRequired,
+    transientEqlzProcessPassed,
+    transientEqlzProcessWait,
+    transientPmSnapshotStarted,
+    transientEqlzAuto,
+    transientEqlzRamanAdjust,
+    alarmFiberConnLos,
+    alarmFiberConnOptFault,
+    alarmFiberConnInvalid,
+    alarmFiberConnMismatch,
+    alarmFiberConnCommError,
+    alarmFiberConnProtocolFailure,
+    alarmFiberConnDataFailure,
+    alarmFiberAttenuationHigh,
+    transientFiberConnStatChange,
+    alarmLaserBiasCurrAbnormal,
+    alarmFiberConnInvalidTx,
+    alarmFiberConnMismatchTx,
+    alarmFiberAttenuationHighTx,
+    alarmLaserFailure,
+    alarmLossOfReceiverClockRecovery,
+    alarmFiberAttenuationCond,
+    alarmChannelMismatch
+  }
+  STATUS  current
+  DESCRIPTION
+    "A list of notifications."
+  ::= { groups 2 }
+
+
+END
+

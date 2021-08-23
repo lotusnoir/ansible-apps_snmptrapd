@@ -1,0 +1,255 @@
+BCMP-MIB DEFINITIONS ::= BEGIN
+
+-- =============================================================================
+-- This specification is published by Alcatel under Non-Disclosure
+-- Agreement(s) (NDA) with specific parties and has to be considered as
+-- Confidential Information as defined in such NDA.
+-- Alcatel reserves the right to revise this document for any reason,
+-- including but not limited to conformity with standards promulgated by
+-- various agencies, utilization of advances in the state of the technical
+-- areas, or the reflection of changes in the design of any equipment,
+-- techniques, or procedures described or referred to herein.
+-- The product specifications and other technical or performance
+-- information contained herein are subject to change without notice.
+-- Updates of this document will be issued under the above NDA's.
+-- Alcatel makes no representation or warranty, expressed or implied, with
+-- respect to the sufficiency, accuracy, or utility of any information or
+-- opinion contained herein. Alcatel expressly advises that any use of for
+-- any purpose or reliance upon this technical reference is at the risk of
+-- the user and that Alcatel shall not be liable for any damage or injury
+-- incurred by any person arising out of the sufficiency, accuracy, or
+-- utility of any information or opinion contained herein.
+-- This document is not to be construed as a suggestion to any manufacturer
+-- to modify or change any of its products, nor does this document
+-- represent any commitment by Alcatel to sell or purchase any product.
+-- Nothing contained herein shall be construed as conferring by implication,
+-- estoppel, or otherwise any license or right under any patent, whether or
+-- not the use of any information herein necessarily employs an invention
+-- of any existing or later issued patent.
+-- Alcatel reserves the right not to offer any or all of these products and
+-- to withdraw any or all of them at any future time.
+-- Copyright (C) 2006, Alcatel. All Rights Reserved.
+-- =============================================================================
+--
+--  MODULE-IDENTITY
+--  LAST-UPDATED   "201112020000Z"
+--  ORGANIZATION   "Alcatel"
+--  CONTACT-INFO
+--
+--          Email:  "fang.lu@alcatel-sbell.com.cn"
+--
+--
+--  DESCRIPTION
+--        "This MIB module defines objects for management of
+--         BCMP (Broadband-access-network Cluster Management Protocol).
+--         The BCMP MIB module is composed of these elements:
+--             * Bcmp System Table,
+--             * Bcmp Statistics Table
+-- =============================================================================
+
+IMPORTS
+    OBJECT-TYPE FROM RFC-1212
+    InterfaceIndex
+        FROM ITF-MIB
+    RowStatus, TruthValue
+        FROM SNMPv2-TC
+    IpAddress, Gauge, Counter
+        FROM RFC1155-SMI
+    AtmTrafficDescrParamIndex, AtmServiceCategory, AtmVcIdentifier,
+    AtmVpIdentifier
+        FROM ATM-TC-MIB
+    asam
+        FROM SYSTEM-MIB
+    NetworkTimeInSeconds, AsamProfilePointer, AsamProfileIndex, AsamProfileName, AsamProfileRefCount,
+    AsamNextProfileIndex, AsamMaxProfileIndex
+        FROM ASAM-TC-MIB
+    VlanId
+        FROM Q-BRIDGE-MIB;
+--    eponOntIndex
+--        FROM EPON-MIB
+
+IfIndex ::= INTEGER (1..2147483647)
+
+-- ===========================================================================
+-- iso.org.dod.internet.private.enterprises.alcatel.asd.asam.bcmpMIB
+-- (1.3.6.1.4.1.637.61.1.102)
+-- ===========================================================================
+
+bcmpMIB OBJECT IDENTIFIER ::= {asam 102}
+
+bcmpAdminState OBJECT-TYPE
+    SYNTAX TruthValue
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        " This object allows the operator to enable / disable BCMP protocol handling in the system. 
+        When this object is set to 'true', the BCMP subsystem will start to handle BCMP protocol packet.
+        When set to 'false', the BCMP subsystem will stop to handle BCMP protocol packet .
+        ALCATEL NOTE:
+            ACCESS:      NA            USAGE:       NA
+            PERSIST:     YES           INSRVMOD:    YES
+            RANGE:       NA            DEFVALUE:    false
+            UNITS:       NA            SPARSE:      NA
+            DESCR:       NA"
+    ::={bcmpMIB 1}
+
+bcmpServerIPAddr  OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "This object allows to configure the Bcmp server IP address.
+        this Bcmp server IP address is in network-byte order (big-endian).
+It must not be class D, or class E, or loopback IP address or broadcast IP address.
+        ALCATEL NOTE:
+            ACCESS:      NA            USAGE:       NA
+            PERSIST:     YES           INSRVMOD:    YES
+            RANGE:       NA            DEFVALUE:    192.168.100.100
+            UNITS:       NA            SPARSE:      NA
+            DESCR:       NA"
+    ::={bcmpMIB 2}
+
+bcmpServerUdpPort  OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "This object allows to configure the Bcmp Server Udp port.
+        This udp port is short bytes.
+        ALCATEL NOTE:
+            ACCESS:      NA            USAGE:       NA
+            PERSIST:     YES           INSRVMOD:    YES
+            RANGE:       1..65535      DEFVALUE:    5000
+            UNITS:       secs          SPARSE:      NA
+            DESCR:       NA"
+    ::={bcmpMIB 3}
+ 
+-- ===============================================================================
+--  Bcmp Statistics Table.
+-- ===============================================================================
+
+bcmpStatisticsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF BcmpStatisticsEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "This table contains the statistics maintained for BCMP proxy
+        in onu level.
+        ALCATEL NOTE:
+            TABLESIZE: nmbr of max Onu
+            DESCR: NA"
+    ::= {bcmpMIB 4}
+
+bcmpStatisticsEntry OBJECT-TYPE
+    SYNTAX BcmpStatisticsEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Each entry reflects the statistics maintained for
+        BCMP proxy in ONU level"
+    INDEX { bcmpEponOntIndex }
+    ::= {bcmpStatisticsTable 1}
+
+BcmpStatisticsEntry ::=
+        SEQUENCE {
+                bcmpEponOntIndex                   IfIndex,
+                bcmpRxRegisterCounter              Counter,
+                bcmpRxTickCounter                  Counter,
+                bcmpTxRegisterResponseCounter      Counter,
+                bcmpTxParaChangeCounter            Counter,
+                bcmpDiscardCounter                 Counter
+
+        }
+
+bcmpEponOntIndex OBJECT-TYPE
+    SYNTAX IfIndex
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This index identifies the ifIndex of EPON ont index.
+        ALCATEL NOTE:
+            ACCESS:      NA            USAGE:       NA
+            PERSIST:     YES           INSRVMOD:    NA
+            RANGE:       1..2^32       DEFVALUE:    NA
+            UNITS:       NA            SPARSE:      NO
+            DESCR:       NA"
+    ::={bcmpStatisticsEntry 1}
+
+bcmpRxRegisterCounter OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This statistic is the total number of BCMP register request packet
+         received from users.
+        ALCATEL NOTE:
+            ACCESS:      NA            USAGE:       NA
+            PERSIST:     NO            INSRVMOD:    NA
+            RANGE:       NA            DEFVALUE:    0
+            UNITS:       packet        SPARSE:      NO
+            DESCR:       NA"
+    ::={bcmpStatisticsEntry 2}
+
+bcmpRxTickCounter OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This statistic is the total number of BCMP tick packets which
+        are received from users.
+        ALCATEL NOTE:
+            ACCESS:      NA            USAGE:       NA
+            PERSIST:     NO            INSRVMOD:    NA
+            RANGE:       NA            DEFVALUE:    0
+            UNITS:       packet        SPARSE:      NO
+            DESCR:       NA"
+    ::={bcmpStatisticsEntry 3}
+
+bcmpTxRegisterResponseCounter OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This statistic is the total number of Bcmp regiter response packets which
+        are sent to users. 
+        ALCATEL NOTE:
+            ACCESS:      NA            USAGE:       NA
+            PERSIST:     NO            INSRVMOD:    NA
+            RANGE:       NA            DEFVALUE:    0
+            UNITS:       packet        SPARSE:      NO
+            DESCR:       NA"
+    ::={bcmpStatisticsEntry 4}
+
+bcmpTxParaChangeCounter OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This statistic is the total number of Bcmp parameter change notify packets which
+        are sent to users.
+        ALCATEL NOTE:
+            ACCESS:      NA            USAGE:       NA
+            PERSIST:     NO            INSRVMOD:    NA
+            RANGE:       NA            DEFVALUE:    0
+            UNITS:       packet        SPARSE:      NO
+            DESCR:       NA"
+    ::={bcmpStatisticsEntry 5}
+
+bcmpDiscardCounter OBJECT-TYPE
+    SYNTAX Counter
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "This statistic is the total number of invalid Bcmp packets from user 
+        after checking the packet failed.
+        ALCATEL NOTE:
+            ACCESS:      NA            USAGE:       NA
+            PERSIST:     NO            INSRVMOD:    NA
+            RANGE:       NA            DEFVALUE:    0
+            UNITS:       packet        SPARSE:      NO
+            DESCR:       NA"
+    ::={bcmpStatisticsEntry 6}
+
+
+END
+

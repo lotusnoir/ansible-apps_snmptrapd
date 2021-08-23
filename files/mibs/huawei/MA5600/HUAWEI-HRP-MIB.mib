@@ -1,0 +1,231 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V3.00
+-- History:
+-- liu chenglong 2003-04-28 Added IPR Decriptions and updated all MIB version to V3.00
+-- ============================================================================
+HUAWEI-HRP-MIB DEFINITIONS ::= BEGIN
+IMPORTS	
+       MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY, NOTIFICATION-TYPE,Unsigned32
+                        FROM SNMPv2-SMI
+        huaweiUtility
+                        FROM HUAWEI-MIB
+        hwFrameIndex,hwSlotIndex,hwPortIndex
+            FROM HUAWEI-DEVICE-MIB ;
+
+hwHrp MODULE-IDENTITY
+			LAST-UPDATED "0312280900Z"
+			ORGANIZATION 
+			"Huawei Technologies co.,Ltd."
+			CONTACT-INFO 
+			"Administration Building
+                         Huawei Technologies Co., Ltd.
+                         Bantian, Longgang District 
+                         Shenzhen, P. R. China
+                         Postal Code: 518129
+                         http://www.huawei.com
+			"
+
+			DESCRIPTION
+			"
+			huawei DSLAM PITP mib.
+			"
+			REVISION "0211290900Z"
+			DESCRIPTION
+			"It was initailized by FixNet Mib Group .
+			"
+
+   ::= { huaweiUtility 98 } 
+
+        hwHrpMibObjects     OBJECT IDENTIFIER   ::= { hwHrp             1 }
+        hwHrpMibTrap        OBJECT IDENTIFIER   ::= { hwHrp             2 }
+
+        hwHrpTrapOid        OBJECT IDENTIFIER   ::= { hwHrpMibTrap      0 }
+
+
+        HrpConfigTable OBJECT-TYPE
+            SYNTAX      SEQUENCE OF HrpConfigEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "
+                Hrp配置管理表
+                "
+            ::= { hwHrpMibObjects 1 }
+
+        HrpConfigEntry OBJECT-TYPE
+            SYNTAX      HrpConfigEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "
+                Hrp配置管理实体
+                "
+            INDEX
+                {
+                hwFrameIndex,
+                hwSlotIndex
+                }
+            ::= { HrpConfigTable 1 }
+
+        HrpConfigEntry ::=
+            SEQUENCE
+                {
+                hwHRPEnableStatus                    INTEGER,
+                hwHRPHandshakeTime                    INTEGER,
+                hwHRPUpperFrame                    INTEGER,
+                hwHRPUpperSlot                    INTEGER,
+                hwHRPUpperPhyport                    INTEGER,
+                hwHRPSwitchStatus                    INTEGER,
+                hwHRPMainIsuFrame                    INTEGER,
+                hwHRPMainIsuSlot                    INTEGER,
+                hwHRPUpperSwitch                    INTEGER
+
+                }
+
+
+        hwHRPEnableStatus OBJECT-TYPE
+            SYNTAX      INTEGER
+                {
+                Disable(1),
+                Enable(2)
+                }
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "
+                1.Disable, 2.Enable     
+                HRP特性是否启用
+
+                "
+            ::= { HrpConfigEntry 1 }
+
+        hwHRPHandshakeTime OBJECT-TYPE
+            SYNTAX      INTEGER(3..100)
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "
+                HRP特性中的握手时间，单位：秒
+
+                "
+            DEFVAL { 3 }
+            ::= { HrpConfigEntry 2 }
+
+        hwHRPUpperFrame OBJECT-TYPE
+            SYNTAX      INTEGER(0..63)
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "
+                上行口的机框号
+
+                "
+            ::= { HrpConfigEntry 3 }
+
+        hwHRPUpperSlot OBJECT-TYPE
+            SYNTAX      INTEGER(0..63)
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "
+                上行口的槽位号
+
+                "
+            ::= { HrpConfigEntry 4 }
+
+        hwHRPUpperPhyport OBJECT-TYPE
+            SYNTAX      INTEGER(0..63)
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "
+                上行口的物理端口号
+
+                "
+            ::= { HrpConfigEntry 5 }
+
+        hwHRPSwitchStatus OBJECT-TYPE
+            SYNTAX      INTEGER
+                {
+                Horizon(1),
+                Cross(2)
+                }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "
+                用于上行口切换的开关的状态
+                1：缺省态
+                2：交叉态
+
+                "
+            DEFVAL { 1 }
+            ::= { HrpConfigEntry 6 }
+
+        hwHRPMainIsuFrame OBJECT-TYPE
+            SYNTAX      INTEGER(0..63)
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "
+                当前处于主用状态的ISU的机框号
+
+                "
+            ::= { HrpConfigEntry 7 }
+
+        hwHRPMainIsuSlot OBJECT-TYPE
+            SYNTAX      INTEGER(0..63)
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "
+                当前处于主用状态的ISU的槽位号
+
+                "
+            ::= { HrpConfigEntry 8 }
+
+        hwHRPUpperSwitch OBJECT-TYPE
+            SYNTAX      INTEGER(0..0)
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "
+                进行上行口的切换,每set一次主控板就进行一次上行口的切换
+
+                "
+            ::= { HrpConfigEntry 9 }
+
+
+----------  Notification type under Node hwHrpTrapOid--------
+
+        hwHrpIsuUpperPortFailTrapOid NOTIFICATION-TYPE
+        OBJECTS { hwFrameIndex,hwSlotIndex,hwHRPMainIsuFrame,hwHRPMainIsuSlot }
+        STATUS current
+        DESCRIPTION
+            "ISU Upper Port Fail
+             ISU上行口故障"
+        ::= { hwHrpTrapOid 1 }
+
+        hwHrpUpperSwitchTrapOid NOTIFICATION-TYPE
+        OBJECTS { hwFrameIndex,hwSlotIndex,hwHRPMainIsuFrame,hwHRPMainIsuSlot }
+        STATUS current
+        DESCRIPTION
+            "Upper Isu Switch
+             SCU上行口切换"
+        ::= { hwHrpTrapOid 2 }
+
+        hwHrpUpperSwitchSuccTrapOid NOTIFICATION-TYPE
+        OBJECTS { hwFrameIndex,hwSlotIndex,hwHRPMainIsuFrame,hwHRPMainIsuSlot }
+        STATUS current
+        DESCRIPTION
+            "Upper Isu Switch Success
+             SCU上行口切换成功"
+        ::= { hwHrpTrapOid 3 }            
+            
+
+END
+

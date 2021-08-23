@@ -1,0 +1,3332 @@
+NTR-MIB DEFINITIONS ::= BEGIN
+
+
+-- =============================================================================
+--  This specification is published by Alcatel-Lucent under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel-Lucent reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel-Lucent makes no representation or warranty, expressed or implied,
+--  with respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel-Lucent expressly advises that any use of 
+--  for any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel-Lucent shall not be liable for any damage or
+--  injury incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel-Lucent to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel-Lucent reserves the right not to offer any or all of these products
+--  and to withdraw any or all of them at any future time.
+--  Copyright (C) 2010, Alcatel-Lucent. All Rights Reserved.
+-- =============================================================================
+--
+--  MODULE-IDENTITY
+--  REVISION "201103220000Z "
+--  ORGANIZATION "Alcatel-Lucent"
+--  CONTACT-INFO "email:asam.mibsupport@alcatel-lucent.be"
+--  DESCRIPTION
+--     "The NTR MIB contains all objects related to clock synchronisation."
+--
+--  LAST-UPDATED "201308250000Z "
+--  DESCRIPTION
+--     "Version:  3FE21961EAAA_V5.0
+--     "Editor: Guo Shenping & hu jiaojian
+--      Changes: requirements 5.0 (ALU00483115, ALU01113569)
+--               ToD support for MBH on FANT-F, ToD support on GPON LTs "
+--
+--  REVISION "201304020000Z "
+--  DESCRIPTION
+--     " requirements for 4.6.02 and 5.0 (ALU01826287) extension of IEEE1588-related objects to support IEEE1588 redundancy."
+--  REVISION "201110190000Z "
+--  DESCRIPTION
+--     "Clarifications on the table ntrConfigT4outTable."
+-- 
+--   REVISION "201103220000Z"
+--  DESCRIPTION
+--     "Version: 3FE62635_V4.3.0.0.1
+--      Editor : Mark Sabbe
+--      Changes: 
+--         Requirements for R4.3
+--             - SSM out for xDSL ports, extend with rowStatus (GPON preparation)
+--
+--   REVISION "201102070000Z"
+--  DESCRIPTION
+--     "Version: 3FE62635_V4.3.0.0.0
+--      Editor : Mark Sabbe
+--      Changes: 
+--         Requirements for R4.3
+--             * Add T4 table configuration
+--             * Add SSM out info 
+--                   - SSM out for BITS out
+--                   - SSM out for Ethernet ports
+--                   - SSM out for xDSL ports 
+--
+--
+--  REVISION "201006150000Z"
+--  DESCRIPTION
+--     "Version: 3FE62635_V4.2.0.0.0
+--      Editor : Bart Libert
+--      Changes: 
+--             * Ported clock objects from ASAM-SYSTEM-MIB
+--             * Added IEEE15888 objects
+--             * Added new asamSysClkStatusActual values: 'missing' and 
+--              'invalid'
+--             * Changes for SysClkSrcQL definitions:
+--                   clk-QL-SSU-A (4) -> clk-QL-SSU-A-TNC (4)
+--                   clk-QL-DNU (15) -> clk-QL-DNU-DUS (15)
+--             * ref1 and ref2 renamed to synce-1 and synce-2
+--             * SysClkSrcQL range corrected
+--
+--
+--  ====================================================================
+--
+--      The clock mgmt system was enhanced to support multiple external 
+--      clock source types, switching modes, and configurable priority 
+--      for each clock source. 
+--      The original clock mgmt is still supported and is referred to as 
+--      the Basic or legacy clock mgmt and the new clock selection are referred to 
+--      as the Enhanced clock mgmt. 
+--      Refer to the applicability section for NT support of the specific
+--      clock mgmt system.
+-- ====================================================================
+
+
+IMPORTS 
+	   OBJECT-TYPE			  	FROM RFC-1212
+	   Counter, IpAddress		FROM RFC1155-SMI
+        asamSystemClockSelect 	FROM ASAM-SYSTEM-MIB    
+        EqptSlotIndex 			FROM ASAM-EQUIP-MIB
+		InterfaceIndex			FROM ITF-MIB
+        RowStatus                FROM SNMPv2-TC
+        AsamNextProfileIndex,
+        AsamProfileRefCount,
+        AsamProfileIndex,
+        AsamProfilePointer,
+        AsamProfileName  FROM ASAM-TC-MIB;
+
+ 
+
+ SysClkSrcPriorityScheme ::= INTEGER {
+         autoselect (1),             -- select scheme based on location
+         local (2),                  -- always select local clock
+         networkLocal (3),           -- network clock > local clock
+         externalLocal (4),          -- external clock > local clock
+         networkExternalLocal (5),   -- network > external > local clock
+         externalNetworkLocal (6)    -- external > network > local clock
+      }
+
+   -- This type gives possible priority schemes to use in the selection of the
+   -- source for the system clock.  The sources are named in order of priority,
+   -- from highest to lowest priority.  The following sources are possible:
+   --    * external clock: timing supply provided by synchronisation network,
+   --    * network clock: timing derived from the network interface,
+   --    * local clock: local oscillator on the NT board.
+   -- Note:
+   -- The external clock is usually referred to as:
+   --    * BITS (Building Integrated Timing Supply) in the ANSI world,
+   --    * SETS (Synchronous Equipment Timing Source) in the ETSI world,
+   --    * DCS (Digital Clock Supply) in Japan.
+ 
+  SystemClockSource ::= INTEGER {
+         activeExternal (1),  -- external clock on active NT 
+         activeNetwork (2),   -- network clock on active NT
+         activeLocal (3)      -- local clock on active NT
+      }
+
+   -- This type gives possible sources for the system clock.  Notice that this
+   -- type only provides values to identify the selection of a clock source on
+   -- the active NT.  Indeed, only a clock on the active NT can currently be
+   -- selected as the source for the system clock.  This type will have to be
+   -- extended with additional values as soon as it becomes possible to select
+   -- a clock on the standby NT as the source for the system clock.
+
+   SysClkSrcQL ::= INTEGER {
+         clk-QL-STU  (0), -- Synchronized-Traceability Unknown (Option II SDH)
+         clk-QL-PRS  (1), -- Primary Reference Source          (Option II SDH)
+         clk-QL-PRC  (2), -- Primary Reference Clock           (Option I SDH)
+         clk-QL-INV3 (3), -- Quality Level unallocated         (Option I & II)
+         clk-QL-SSU-A-TNC(4), -- Traced to Sync Supply Unit-A  (Option I SDH)
+                              -- Traced to Transmit Node Clock (Option II SDH)
+         clk-QL-INV5 (5), -- Quality Level unallocated         (Option I & II)
+         clk-QL-INV6 (6), -- Quality Level unallocated         (Option I & II)
+         clk-QL-ST2  (7), -- Traceable to Stratum 2            (Option II SDH)
+         clk-QL-SSU-B(8), -- Traced to Sync Supply Unit-B      (Option I SDH)
+         clk-QL-INV9 (9), -- Quality Level unallocated         (Option I & II)
+         clk-QL-ST3  (10),-- Traceable to Stratum 3            (Option II SDH)
+         clk-QL-SEC  (11),-- Traceable to SDH Equipment Clock  (Option I SDH)
+         clk-QL-SMC  (12),-- Traceable to SONET Clock SelfTimed(Option II SDH)
+         clk-QL-ST3E (13),-- Traceable to Stratum 3E           (Option II SDH)
+         clk-QL-PROV (14),-- Operator Provisioned             (Option II SDH)
+         clk-QL-DNU-DUS  (15),-- Signal should not be used for sync(Option I & II)
+         useSystemDefault (16) -- Special identifier for SSM QL default 
+                          -- indicating this clock source uses the system 
+                          -- default when its QL has not been configured.
+      }
+   -- This type gives the possible Quality Level (QL) for the clock sources.
+   --     Note: the QL for the Option not listed for a particular level 
+   --           indicates it is unallocated (QL-INV) for that Option, 
+   --           i.e. the value 2 corresponds to QL-INV2 for Option II,
+   --           except for the QL value 4 which corresponds to Transmit 
+   --           Node Clock (QL-TNC) for Option II. 
+   --           Refer to STD ITU-T G.781 for further details.
+
+
+SysClkT4PriorityReference ::= INTEGER {
+         none 	(1),  -- no clock is specified for this priority
+         local 	(2),  -- holdover specified (always enable last priority)
+         synce-1	 (3),  -- 1st SyncE clock is specified for this priority
+         synce-2  (4),  -- 2nd SyncE clock is specified for this priority
+         asSysClk (5)  -- referring to T0 system clock (DTAG synce-split config)
+      }
+
+   -- This type is used by the ntrConfigT4outTable to assign the T4 clock source 
+   -- to the corresponding priority for the automatic selection of the 
+   -- T4 clock reference.
+   -- The synce-1 and synce-2 correspond to the configured SyncE ports in the
+   -- asamSysClkSynceTable.
+   -- asSysClk (5) is depreciated, an no longer in use
+
+
+   SysClkStatusActual  ::=  INTEGER {
+         reference  (1),       -- clock is selected as the reference clock
+         valid      (2),       -- clock is available for selection
+         failed     (3),       -- clock failed (HW fail, freq. error, phase error,
+                               --   unlocked,...)
+         doNotUse   (4),       -- clock must not be used as indicated by SSM
+         unknown    (5),       -- clock status unknown (startup, system fault)
+         forced     (6),       -- clock is manually selected
+         noSynceConfig (7),    -- SyncE clock is not bound to a port
+         noSynceSupport (8),   -- SyncE clock is bound to a port that 
+                               --   does not support SyncE clock extraction
+         onNonReadyPeerNt(9),  -- clock is configured on the faceplate of a 
+                               --   Peer NT that is not ready to participate
+                               --   in clock management
+         synceNotAvailable(10),-- SyncE clock is not available because the 
+                               --   required equipment is not available
+         noIeee1588Config(11), -- ieee1588 is not configured
+         missing(12),          -- no SSM-QL received 
+         invalid(13)           -- clock not available for selection 
+      }
+
+--  This type corresponds to the operational status of the configured clock source.
+
+
+   asamClockSelectAdminState OBJECT-TYPE
+   -- obsolete
+      SYNTAX INTEGER {
+         loopTiming (1),
+         bitsClock (2), 
+         localClock (3)
+      }
+      ACCESS read-write
+      STATUS obsolete
+      DESCRIPTION
+         "Specifies the desired reference clock of the system."
+   ::= { asamSystemClockSelect 1 }
+
+   asamClockSelectOperState OBJECT-TYPE
+   -- obsolete
+      SYNTAX INTEGER {
+         loopTiming (1),
+         bitsClock (2), 
+         localClock (3)
+      }
+      ACCESS read-only
+      STATUS obsolete
+      DESCRIPTION
+         "Reflects the reference clock chosen by the system."
+      ::= { asamSystemClockSelect 2 } 
+
+   asamClockSelectStatus OBJECT-TYPE
+   -- obsolete
+      SYNTAX INTEGER (1..30)  
+      ACCESS read-only
+      STATUS obsolete
+      DESCRIPTION
+         "This variable indicates the status of the system for what concerns
+          its reference clock. It is a bitmap represented as a sum, therefore,
+          it can represent multiple failures simultaneously.
+          The asamClockSelectNoDefect should be set if and only if no other
+          flag is set.
+          BITS A is the BITS interface terminated by NT A.
+          BITS B is the BITS interface terminated by NT B.
+          The various bit positions are:
+             1       asamClockSelectNoDefect;
+             2       asamClockSelectionBitsALoss;
+             4       asamClockSelectionBitsBLoss;
+             8       asamClockSelectionLoopTimingALoss;
+             16      asamClockSelectionLoopTimingBLoss."
+      ::= { asamSystemClockSelect 3 }
+
+   asamConfSysClkSrcPriorityScheme OBJECT-TYPE
+   -- basic clock mgmt
+      SYNTAX SysClkSrcPriorityScheme
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies the desired priority scheme to be used in the
+          selection of the source for the system clock.  A value of <autoselect>
+          indicates that the most suitable priority scheme must be used
+          depending on whether the equipment is used.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Legacy Clock Mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: See above
+             PERSIST: YES  DEFVALUE: autoselect  UNITS: -"
+      ::= { asamSystemClockSelect 4 }
+
+   asamActualSysClkSrcPriorityScheme OBJECT-TYPE
+   -- basic clock mgmt
+      SYNTAX SysClkSrcPriorityScheme
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies the actual priority scheme that will be used
+          in the selection of the source for the system clock.
+
+          If asamConfSysClkSrcPriorityScheme is not equal to <autoselect>,
+          asamActualSysClkSrcPriorityScheme will simply be equal to
+          asamConfSysClkSrcPriorityScheme, else
+          asamActualSysClkSrcPriorityScheme will indicate the autoselected
+          priority scheme ( which will be by default <externalNetworkLocal>
+          if configured priority scheme is default <autoselect>).
+          ALCATEL NOTE: Applicable to NTs supporting the Legacy Clock Mgmt
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSystemClockSelect 5 }
+
+   asamSysClkSrcStatus OBJECT-TYPE
+   -- basic clock mgmt
+      SYNTAX INTEGER (1..4294967295)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This variable indicates the status of the system for what concerns the
+          sources for the system clock.  It is a bitmap so that it can represent
+          multiple failures simultaneously.
+          Bitmap:
+          Bit 0: bit 0 is set if and only if none of the other bits is set.
+          Bit 1: external clock failure on NT A.
+          Bit 2: external clock failure on NT B.
+          Bit 3: network clock failure on NT-A.
+          Bit 4: network clock failure on NT-B.
+          Bit 5: local clock failure on NT-A.
+          Bit 6: local clock failure on NT-B.
+	  Bit 7..31: reserved for future extensions.
+
+
+          ALCATEL NOTE: Applicable to NTs supporting the Legacy Clock Mgmt
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..4294967295
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSystemClockSelect 6 }
+
+   asamSysClkSrcSelection OBJECT-TYPE
+   -- basic clock mgmt
+      SYNTAX SystemClockSource
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This variable indicates the clock chosen by the system as the source
+          for the system clock.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Legacy Clock Mgmt
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSystemClockSelect 7 }
+
+
+   asamSysClkBITSMode OBJECT-TYPE
+   -- basic & enhanced clock mgmt
+      SYNTAX INTEGER {
+         ds1 (1),
+         e1 (2),
+         khz2048 (3),
+         autoselect (4)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Specifies the type of the BITS interface as 
+          ds1 (ANSI),
+          e1 (ETSI),
+          khz2048 (ETSI),
+          autoselect (DEFAULT VALUE).
+
+          ALCATEL NOTE: Applicable to NTs supporting either clock mgmt
+             SUPPORT: YES   INSRVMOD: NA          RANGE: 1..4     
+             PERSIST: YES   DEFVALUE: autoselect  UNITS: NA"
+      ::= { asamSystemClockSelect 11 }
+
+   asamActualSysClkBITSMode OBJECT-TYPE
+   -- basic & enhanced clock mgmt
+      SYNTAX INTEGER {
+         ds1 (1),
+         e1 (2),
+         khz2048 (3)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies the actual external source.
+          If asamSysClkBITSMode is not equal to <autoselect>,
+          asamActualSysClkBITSMode will be equal to AsamSysClkBITSMode, else
+          asamActualSysClkBITSMode will indicate the autoselected
+          external source (which will be by default ds1 for T1/
+          e1 for E1 based on the NT RIP info for board capability 
+         for clock device type).
+
+          ALCATEL NOTE: Applicable to NTs supporting either clock mgmt
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: NA   UNITS: -"
+      ::= { asamSystemClockSelect 13 }
+      
+   asamSysClkAisSensitivity OBJECT-TYPE
+   -- basic & enhanced clock mgmt
+      SYNTAX INTEGER {
+         enable (1),
+         disable (2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies if the system needs to react upon
+          detection of an Alarm Indication Signal (AIS) on an incoming
+          BITS signal used as NTR source. The system shall not lock
+          on a BITS source for which AIS has been detected, as AIS
+          detection is assimilated to a BITS input failure.
+
+          ALCATEL NOTE: Applicable to NTs supporting either clock mgmt
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..2
+             PERSIST: YES   DEFVALUE: disable(2)    UNITS: NA"
+      ::= { asamSystemClockSelect 51 }
+
+-- ==========================================================================
+-- The following objects for ntr are defined and used 
+-- exclusively by enhanced Clock mgmt.
+-- ==========================================================================
+
+   asamSysClkSwitchingMode OBJECT-TYPE
+      SYNTAX INTEGER {
+         revertive (1),
+         non-revertive (2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies the switching mode. In revertive mode, the 
+          system automatically switches from a selected alternate source when a 
+          failed higher priority source has been restored. In non-revertive mode,
+          the system only switches when the selected clock source fails.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 1..2
+             PERSIST: YES   DEFVALUE: revertive   UNITS: NA"
+      ::= { asamSystemClockSelect 14 }
+
+   asamSysClkForceReference OBJECT-TYPE
+      SYNTAX INTEGER {
+         none   (1),  -- no manual clock selection
+         local  (2)   -- Force manual selection: local clock (holdover/free run)
+                      -- Future: Force manual selection: bits-a
+                      -- Future: Force manual selection: bits-b
+                      -- Future: Force manual selection: synce-1
+                      -- Future: Force manual selection: synce-2
+                      -- Future: Force manual selection: ieee1588-a
+                      -- Future: Force manual selection: ieee1588-b
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies which clock to manually select. 
+          The default is <none> and corresponds to automatic clock selection.
+          The manual selection <local> corresponds to the local clock 
+          which is in holdover or free run after a system reset.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 1..2
+             PERSIST: YES   DEFVALUE: none (1)    UNITS: NA"
+      ::= { asamSystemClockSelect 15 }
+
+   asamSysClkPriorityTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSysClkPriorityEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the prioritised list of configured clock source
+          for automatic selection(T0 selection). The first table entry 
+          corresponds to the first priority, the second entry, to the next 
+          priority clock source, etc.
+         All entries are factory defaulted to <none>, except for the last entry 
+         which is defaulted to <local>, and this last entry cannot be modified.
+         ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+            TABLESIZE: 3
+         " 
+     ::=  { asamSystemClockSelect 16 }
+
+   asamSysClkPriorityEntry OBJECT-TYPE
+      SYNTAX AsamSysClkPriorityEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the AsamSysClkPriorityTable."
+      INDEX { asamSysClkPriorityIndex }
+
+     ::= { asamSysClkPriorityTable 1}
+
+   AsamSysClkPriorityEntry ::=
+      SEQUENCE {
+               asamSysClkPriorityIndex          INTEGER,
+               asamSysClkPriorityReference      INTEGER
+               }
+
+   asamSysClkPriorityIndex          OBJECT-TYPE
+      SYNTAX INTEGER (1..3)
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+        " This object is used by the asamSysClkPriorityTable to identify 
+          the priority of the clock source; the first index corresponds 
+          to the highest priority. The last index  corresponds to the 
+          preset entry for the clock <local> and cannot be changed as
+          the clock assigned the lowest priority.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..3
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+
+      ::= { asamSysClkPriorityEntry 1}
+
+   asamSysClkPriorityReference          OBJECT-TYPE
+      SYNTAX INTEGER {
+         none       (1), -- no clock is specified for this priority
+         local      (2), -- holdover specified (always enable last priority)
+         bits-a     (3), -- BITS-A is specified for this priority
+         bits-b     (4), -- BITS-B is specified for this priority
+         synce-1    (5), -- 1st SyncE clock is specified for this priority
+         synce-2    (6), -- 2nd SyncE clock is specified for this priority
+         ieee1588-a (7), -- IEEE 1588-A source is specified for this priority
+         ieee1588-b (8),  -- IEEE 1588-B source is specified for this priority
+         gnss-a     (9), -- gnss-a source is specified for this priority
+         gnss-b     (10), -- gnss-b source is specified for this priority
+	 pon-8k	    (11) -- pon source is specified for this priority,it only used for remote
+               }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " This object is used by the asamSysClkPriorityTable to assign 
+          the clock source to the corresponding priority for the automatic
+          selection of the clock reference. 
+          The entries <synce-1> and <synce-2> correspond to the configured SyncE
+          ports in the asamSysClkSynceTable.
+          The entries <gnss-a> and <gnss-b> is not supported in current release.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..11
+             PERSIST: YES    DEFVALUE: none (1)     UNITS: NA"
+
+      ::= { asamSysClkPriorityEntry 2}
+
+   asamSysClkStatusTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSysClkStatusEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the operational status of the configured clocks.
+         ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+            TABLESIZE: 3
+         "
+     ::=  { asamSystemClockSelect 17 }
+
+   asamSysClkStatusEntry OBJECT-TYPE
+      SYNTAX AsamSysClkStatusEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the AsamSysClkStatusTable."
+      INDEX { asamSysClkPriorityIndex }
+
+     ::= { asamSysClkStatusTable 1}
+
+   AsamSysClkStatusEntry ::=
+      SEQUENCE {
+               asamSysClkStatusQL          SysClkSrcQL,
+               asamSysClkStatusActual      SysClkStatusActual
+               }
+
+   asamSysClkStatusQL          OBJECT-TYPE
+      SYNTAX SysClkSrcQL 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+        " This object corresponds to the Quality Level (QL) of the
+          configured clock source as identified in the Sync Status
+          Message (SSM) or the assigned default value if SSM is disabled. 
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE: 0..15
+             PERSIST: NO     DEFVALUE: NA           UNITS: NA"
+      ::= { asamSysClkStatusEntry 1}
+
+   asamSysClkStatusActual          OBJECT-TYPE
+      SYNTAX SysClkStatusActual 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the operational status of the 
+          configured clock source.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE: 1..13
+             PERSIST: NO     DEFVALUE: 5            UNITS: NA"
+      ::= { asamSysClkStatusEntry 2}
+
+   asamSysClkSynceTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSysClkSynceEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the configuration of the binding of the
+          SyncE port from which to enable clock sync recovery.
+         ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+            TABLESIZE: 2
+         "
+     ::=  { asamSystemClockSelect 18 }
+
+   asamSysClkSynceEntry OBJECT-TYPE
+      SYNTAX AsamSysClkSynceEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the AsamSysClkSynceTable."
+      INDEX { asamSysClkSynceIndex }
+
+     ::= { asamSysClkSynceTable 1}
+
+   AsamSysClkSynceEntry ::=
+      SEQUENCE {
+               asamSysClkSynceIndex          INTEGER,
+               asamSysClkSynceLogicalSlot    EqptSlotIndex,
+               asamSysClkSyncePortType       INTEGER,
+               asamSysClkSyncePortNumber     INTEGER
+               }
+
+   asamSysClkSynceIndex          OBJECT-TYPE
+      SYNTAX INTEGER (1..2)
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+        " This object corresponds to the reference number of the port 
+          supporting the SyncE clock. The first index corresponds to 
+          synce-1 and the second index to synce-2 - to be configured in 
+          asamSysClkPriorityTable and monitored in asamSysClkStatusTable.
+
+      ALCATEL NOTE:
+             SUPPORT: YES    INSRVMOD: NA           RANGE: 1..2
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+      ::= { asamSysClkSynceEntry 1}
+
+   asamSysClkSynceLogicalSlot          OBJECT-TYPE
+      SYNTAX EqptSlotIndex
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the logical slot ID of the equipment 
+          (as defined in the Equipment MIB) which hold the SyncE port.
+          The value <65535> indicates that no selection is made for this entry.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: see above
+             PERSIST: YES    DEFVALUE: 65535        UNITS: NA"
+
+      ::= { asamSysClkSynceEntry 2}
+
+   asamSysClkSyncePortType          OBJECT-TYPE
+      SYNTAX INTEGER {
+         none (1),        -- no entry for this index
+         sfp  (2),        -- SFP port type
+         xfp  (3)         -- XFP or SFP+ port type
+                     }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the port type of the SyncE port to 
+          configure. 
+          The value <none:(1)> indicates that no selection is made for this 
+          entry.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..3
+             PERSIST: YES    DEFVALUE: none(1)      UNITS: NA"
+
+      ::= { asamSysClkSynceEntry 3}
+
+   asamSysClkSyncePortNumber          OBJECT-TYPE
+      SYNTAX INTEGER (0..511)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the faceplate port number of the 
+          SyncE port to configure. The number of the faceplate port of the 
+          board combined with the port type and slot ID uniquely identify the port.
+          The value <511> indicates that no selection is made for this entry.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 0..511
+             PERSIST: YES    DEFVALUE: 511          UNITS: NA"
+
+      ::= { asamSysClkSynceEntry 4}
+
+   asamSysClkSSMTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSysClkSSMEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the SSM configuration for the clock sources.
+         ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+            TABLESIZE: 4
+         "
+     ::=  { asamSystemClockSelect 19 }
+
+   asamSysClkSSMEntry OBJECT-TYPE
+      SYNTAX AsamSysClkSSMEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the AsamSysClkSSMTable."
+      INDEX { asamSysClkSSMIndex }
+
+     ::= { asamSysClkSSMTable 1}
+
+   AsamSysClkSSMEntry ::=
+      SEQUENCE {
+               asamSysClkSSMIndex         INTEGER,
+               asamSysClkSSMConfig        INTEGER,
+               asamSysClkDefaultQL        SysClkSrcQL,
+               asamSysClkTargetQL         SysClkSrcQL
+               }
+
+   asamSysClkSSMIndex          OBJECT-TYPE
+      SYNTAX INTEGER {
+         bits-a     (1), -- BITS clock source on NT-A
+         bits-b     (2), -- BITS clock source on NT-B
+         synce-1    (3), -- SyncE clock source in asamSysClkSynceTable
+         synce-2    (4), -- SyncE clock source in asamSysClkSynceTable
+         ieee1588-a (5), -- IEEE 1588 clock source on NT-A
+         ieee1588-b (6), -- IEEE 1588 clock source on NT-B
+         gnss-a     (7), -- GNSS clock source on NT-A
+         gnss-b     (8), -- GNSS clock source on NT-B
+	 pon-8k     (9)  -- PON 8K clock source, it only used for remote
+      }
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+        " This object corresponds to the index in the SSM table for each
+          supported clock source.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NO           RANGE: 1..9
+             PERSIST: YES    DEFVALUE: DEP          UNITS: NA"
+
+      ::= { asamSysClkSSMEntry 1}
+
+   asamSysClkSSMConfig          OBJECT-TYPE
+      SYNTAX INTEGER {
+         enable  (1),
+         disable (2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the configuration of the reception 
+          of the Sync Status Message (SSM) for the selected source. 
+          NOTE: The value selected is not changed when the SyncE 
+          sources synce-1 or synce-2 are changed in the asamSysClkSynceTable.
+          The value cannot be changed for the BITS, IEEE1588 and gnss clock sources
+          (bits-a, bits-b and ieee1588-a, ieee1588-b, gnss-a, gnss-b).
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..2
+             PERSIST: YES    DEFVALUE: disable      UNITS: NA"
+
+      ::= { asamSysClkSSMEntry 2}
+
+   asamSysClkDefaultQL             OBJECT-TYPE
+      SYNTAX SysClkSrcQL
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the configuration of the default 
+          value that the system assigns to the clock source when SSM is 
+          disabled for SyncE, BITS or IEEE1588. 
+          The system initially sets the default QL value based on 
+          the configuration of asamSysClkBITSMode.
+          For BITS/SyncE/IEEE1588 clock:
+           SDH Option     BITS Mode    SSM default       QL
+               I             E1             2         QL-PRC
+               I           2048KHZ          2         QL-PRC
+               II            DS1            0         QL-STU
+          For local clock:
+           SDH Option     BITS Mode    SSM default       QL
+               I             E1            11         QL-SEC
+               I           2048KHZ         11         QL-SEC
+               II            DS1           10         QL-ST3
+          The default QL value can not be configured for the Local clock.
+          Changing this value may result in clock reselection. 
+
+          The range is 0..15 because the value useSystemDefault is
+          only used internally.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 0..15
+             PERSIST: YES    DEFVALUE: see descr    UNITS: NA"
+
+      ::= { asamSysClkSSMEntry 3}
+
+   asamSysClkTargetQL              OBJECT-TYPE
+      SYNTAX SysClkSrcQL
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the configuration of the target 
+          threshold that the system compares to the QL of the clock source 
+          (from QL of SSM frames) when SSM is enabled. 
+          If the SSM-QL is of better or equal quality compared to the target
+          value, the port is eligible to be selected as the clock 
+          input port.  This selection mechanism however involves many more 
+          criteria.  When the SSM-QL quality becomes worse than the 
+          target value, switchover to another port happens, if possible.
+          Changing this value may result in clock reselection. 
+
+          The range is 0..15 because the value useSystemDefault is
+          only used internally.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 0..15
+             PERSIST: YES    DEFVALUE: DNU (15)     UNITS: NA"
+
+      ::= { asamSysClkSSMEntry 4}
+
+   asamSysClkOutputQLThreshold OBJECT-TYPE
+      SYNTAX SysClkSrcQL 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable corresponds to the configuration of the ISAM NTR 
+          output threshold. If the system QL - the QL of the current 
+          reference clock - becomes worse than this configured value, 
+          the T4 output (only BITS supported) is shut down.
+
+          The range is 0..15 because the value useSystemDefault is
+          only used internally.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 0..15
+             PERSIST: YES   DEFVALUE: DNU (15)    UNITS: NA"
+      ::= { asamSystemClockSelect 20 }
+
+    asamSysClkNTRSwitchWaitTime OBJECT-TYPE
+      SYNTAX INTEGER (0..720) 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION 
+         "This variable corresponds to the configuration of the value of the
+          wait-to-restore timer in seconds.  When the quality of the clock becomes 
+          sufficient to make the clock eligible (nominated) for clock selection
+          after the quality was insufficient, the timer is started.  
+          In order for the clock to become a reference clock, it has to stay 
+          eligible for as long as the timer runs.
+          It is used to prevent continuous switchovers in case of unstable clock  
+          sources.  Value 0 means the switch wait timer mechanism is disabled.
+          The range 0..65 is for MX/SX.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 0..720
+             PERSIST: YES   DEFVALUE: 10          UNITS: NA"
+      ::= { asamSystemClockSelect 21 }
+
+   asamNumOfNTRReferenceChanges OBJECT-TYPE
+      SYNTAX Counter
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies the number of times a NTR switchover
+          occurred since start up.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above
+             PERSIST: NO    DEFVALUE: 0    UNITS: -"
+      ::= { asamSystemClockSelect 22 }
+
+
+
+-- ====================================================================
+-- The following objects are for the implementation of IEEE 1588.
+-- They were added in R4.2/R4.6 and are only applicable for certain 
+-- variants of the NANT-E and FANT-F NT types. See 3HH-11489-8002-DFZZA
+-- ====================================================================
+
+  -- this id is made obsolete from R5001 onwards
+  NtrPtpPacketMode ::= INTEGER
+  -- obsolete
+  {
+         multicast (1),   -- Not supported in this release
+         unicast (2),
+         unicast-multicast (3)
+  }
+
+  -- this id is made obsolete from R5001 onwards
+  ntrPtpPacketMode OBJECT-TYPE
+      SYNTAX NtrPtpPacketMode
+      ACCESS read-write
+      STATUS obsolete
+      DESCRIPTION
+             "This parameter determines the PTP Packet Processing Mode.
+              It is intended to be managed by the System Operator.
+              ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 2..3
+             PERSIST: YES   DEFVALUE: 3           UNITS: NA"
+
+      DEFVAL { 3 }
+      ::= { asamSystemClockSelect 23 }
+
+  NtrPtpDevice ::= INTEGER
+  {
+        ieee1588-a   (1),
+        ieee1588-b   (2),     
+	ieee1588-a-0 (3),
+        ieee1588-b-0 (4),
+        ieee1588-a-1 (5),
+        ieee1588-b-1 (6)	
+  }
+  NtrPtpPort ::= INTEGER
+  {
+        nta-ptp   (1),
+        ntb-ptp   (2),
+        nta-ptp-0 (3),
+        ntb-ptp-0 (4),
+	nta-ptp-1 (5),
+        ntb-ptp-1 (6)
+  } 
+
+  ntrTransmissionProtocolTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrTransmissionProtocolEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "This table contains the transmission protocol configuration for the
+         IEEE1588 clock sources.
+         ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+           TABLESIZE: 6
+           "
+      ::= { asamSystemClockSelect 24 }
+
+  ntrTransmissionProtocolEntry OBJECT-TYPE
+      SYNTAX NtrTransmissionProtocolEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrTransmissionProtocolTable."
+      INDEX { ntrTransmissionProtocolIndex }
+
+      ::= { ntrTransmissionProtocolTable 1 }
+
+  NtrTransmissionProtocolEntry ::=
+      SEQUENCE {
+               ntrTransmissionProtocolIndex    NtrPtpDevice,
+               ntrTransmissionProtocolAddress  IpAddress,
+               ntrTransmissionProtocolMask     IpAddress,
+               ntrTransmissionProtocolGateway  IpAddress,
+               ntrTransmissionProtocolPortVlan   INTEGER
+      }
+
+   ntrTransmissionProtocolIndex OBJECT-TYPE
+      SYNTAX NtrPtpDevice
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the index in the transmission 
+          protocol table for both the IEEE 1588 sources 
+          Modified in R5.6 extend the ptp port from 2 to 6.
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+             SUPPORT: YES     INSRVMOD: NO          RANGE: 1..6  
+             PERSIST: YES     DEFVALUE: DEP         UNITS: NA
+        "
+      ::= { ntrTransmissionProtocolEntry 1 }
+
+    ntrTransmissionProtocolAddress OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+               "This parameter determines the IP Address of the clock extraction
+                function (the IEEE 1588 device on the NT).
+                It is intended to be managed by the System Operator.  A value of 0 
+                Indicates a non-valid value.
+
+                ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+                 SUPPORT: YES     INSRVMOD: YES         RANGE: NA  
+                 PERSIST: YES     DEFVALUE: 0           UNITS: NA
+                "
+        DEFVAL { '00000000'H }
+      ::= { ntrTransmissionProtocolEntry 2 }
+
+    ntrTransmissionProtocolMask OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+               "This parameter determines the subnet mask for the clock extraction
+                function. The masters for an IEEE 1588 entry should belong to the same
+                subnet. It is intended to be managed by the System Operator.  A value
+                of 0 indicates a non-valid value. 
+
+                ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+                 SUPPORT: YES     INSRVMOD: YES         RANGE: NA  
+                 PERSIST: YES     DEFVALUE: 0           UNITS: NA
+                "
+        DEFVAL { '00000000'H }
+        ::= { ntrTransmissionProtocolEntry 3 }
+
+    ntrTransmissionProtocolGateway OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+               "This parameter determines the default gateway clock extraction
+                function.
+                It is intended to be managed by the System Operator.  A value of 0  
+                indicates a non-valid value. 
+                ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+                   SUPPORT: YES     INSRVMOD: YES         RANGE: NA  
+                   PERSIST: YES     DEFVALUE: 0           UNITS: NA
+                "
+        DEFVAL { '00000000'H }
+        ::= { ntrTransmissionProtocolEntry 4 }
+
+    ntrTransmissionProtocolPortVlan OBJECT-TYPE
+        SYNTAX INTEGER(0..4093)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+               "This parameter determines the vlan id of ieee1588 chip phy port
+                It is intended to distinguish different ptp flow in multicast mode.  A value of 0  indicate the phy port is untag. 
+                ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+                   SUPPORT: YES     INSRVMOD: YES         RANGE: 0-4093  
+                   PERSIST: YES     DEFVALUE: 0           UNITS: NA
+                "
+        DEFVAL { 0 }
+        ::= { ntrTransmissionProtocolEntry 5 }
+
+
+  -- *********************************************
+  -- The ntrAcceptableMasterTable defines the list of
+  -- clock masters that are deemed to be acceptable, 
+  -- by the system operator
+  -- *********************************************
+
+    ntrAcceptableMasterTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrAcceptableMasterEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+           "This object is a table that identifies the clock masters that are
+            acceptable.  At least one acceptable master must be provisioned for 
+            operation of the feature.
+            It is intended to be managed by the System Operator.
+            ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+              TABLESIZE: 12
+            "
+      ::= { asamSystemClockSelect 25 }
+
+  ntrAcceptableMasterEntry OBJECT-TYPE
+      SYNTAX NtrAcceptableMasterEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+           "Rows of this table identify the clock masters that are acceptable"
+      INDEX { ntrAcceptableMasterIndex }
+      ::= { ntrAcceptableMasterTable 1 }
+
+  NtrAcceptableMasterEntry ::=
+      SEQUENCE {
+             ntrAcceptableMasterIndex	        INTEGER,
+             ntrAcceptableMasterAddress	        IpAddress,
+             ntrAcceptableMasterPriority1	INTEGER,
+             ntrAcceptableMasterPriority2	INTEGER,
+             ntrAcceptableMasterPortIndex   	NtrPtpPort
+  }
+
+  ntrAcceptableMasterIndex OBJECT-TYPE
+      SYNTAX INTEGER (1..12)
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "Identifies the instance of an acceptable clock master
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+             SUPPORT: YES     INSRVMOD: NO          RANGE: 1..12  
+             PERSIST: YES     DEFVALUE: DEP         UNITS: NA
+       "
+      ::= { ntrAcceptableMasterEntry 1 }
+
+  ntrAcceptableMasterAddress OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+             "The IP address of the Acceptable Master.  A value if 0 indicates a
+              non-valid value. 
+
+              ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+                SUPPORT: YES   INSRVMOD: YES         RANGE: NA
+                PERSIST: YES   DEFVALUE: 0           UNITS: NA
+             "
+      DEFVAL { '00000000'H }
+      ::= { ntrAcceptableMasterEntry 2 }
+
+  ntrAcceptableMasterPriority1 OBJECT-TYPE
+      SYNTAX INTEGER (0..255)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+             "The Priority of the Acceptable Master.
+        Low values of priority1 will be selected as current master in preference
+        to higher values.
+
+        A designation that the IEEE 1588 clock belongs to an ordered set of
+        clocks from which a master is selected.
+
+        ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+         SUPPORT: YES   INSRVMOD: YES         RANGE: 0..255
+         PERSIST: YES   DEFVALUE: 128         UNITS: NA
+        "
+      DEFVAL { 128 }
+      ::= { ntrAcceptableMasterEntry 3 }
+
+  ntrAcceptableMasterPriority2 OBJECT-TYPE
+      SYNTAX INTEGER (0..255)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+             "A designation that provides finer grained ordering among otherwise
+              equivalent IEEE 1588 clocks.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+       SUPPORT: YES   INSRVMOD: YES         RANGE: 0..255
+       PERSIST: YES   DEFVALUE: 128         UNITS: NA
+      "
+      DEFVAL { 128 }
+      ::= { ntrAcceptableMasterEntry 4 }
+
+    ntrAcceptableMasterPortIndex OBJECT-TYPE
+      SYNTAX NtrPtpPort
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " Applicable from R4.6 onwards, where each NT can receive an IEEE 1588
+          signal independently. This object corresponds to the index in the
+          acceptable master entry table for both the IEEE 1588 sources.
+Modified from R5.6, where each Nt can manage 2 PTP port independently, This object corresponds to the index in the PTP domain table for 4 ptp port in 1588 redundancy system.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+             SUPPORT: YES     INSRVMOD: NO          RANGE: 1..6
+             PERSIST: YES     DEFVALUE: DEP         UNITS: NA
+             "
+      ::= { ntrAcceptableMasterEntry 5 }
+
+  -- =====================================================
+  -- =====================================================
+
+   --ntrPtpDomain OBJECT-TYPE
+      --::= { asamSystemClockSelect 26 }	
+      -- this id is made obsolete from R4.6 onwards
+
+  --ntrPtpMode OBJECT-TYPE     
+      --::= { asamSystemClockSelect 27 }
+      -- this id is made obsolete from R4.6 onwards
+
+
+-- ====================================================================
+-- The following objects are for the implementation of R4.3 :
+--       - DTAG special configurations (synce-transfer & split)mode
+--       - SSM out for T4 (BITS)
+--       - SSM out for Synce ports
+--       - SSM out for xDSL ports
+-- ====================================================================
+
+
+ntrConfigT4outTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrConfigT4outEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+       "This table contains the T4 D-PLL parameters, required for the R4.3 DTAG
+        configurations. The table has only one entry. 
+        In standard mode, the T4 parameters are optional.
+ 
+                T4mode            T4PrioRef-1    T4PrioRef-2
+                 standard           none	          none
+                 synce-transfer     synce-1         synce-2
+                 synce-split        synce-1         synce-2
+
+      When we go from standard to synce-transfer or to synce-split, the system
+      will copy the (T0) prio-ref-1 and prio-ref-2 to the T4 prio-references.
+      The operator is allowed to overrule this, by filling in the T4PrioRef-1
+      and T4PrioRef-2. For the synce-split mode, the system will automatically
+      configure the BITS as reference to T0 DPLL. Once operating in synce-transfer
+      or synce-split mode, the operator can modify at any time the T4 parameters
+      (as long as there is no conflict).
+
+      In standard mode no T4 parameters can be modified (not the T4PrioRef-1,
+      not T4PrioRef-2, not T4DampingFactor, not T4JitterBandwith)
+
+      TABLESIZE: 1
+         " 
+     ::=  { asamSystemClockSelect 28 }
+
+   ntrConfigT4outEntry OBJECT-TYPE
+      SYNTAX NtrConfigT4outEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrConfigT4outTable."
+      INDEX { ntrT4Index }
+
+     ::= { ntrConfigT4outTable 1}
+
+   NtrConfigT4outEntry ::= 
+     SEQUENCE {
+               ntrT4Index      		INTEGER,
+               ntrT4mode     		 	INTEGER,
+               ntrT4DampingFactor		INTEGER,
+               ntrT4JitterBandwidth	INTEGER,
+               ntrT4PrioRef-1			SysClkT4PriorityReference,
+               ntrT4PrioRef-2			SysClkT4PriorityReference
+               }
+
+   ntrT4Index  OBJECT-TYPE
+      SYNTAX INTEGER (1)
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+       "This object is used by the ntrConfigT4outTable to identify an entry the
+        T4out D-PLL parameters. Only one entry is foreseen in R4.3
+
+        ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+
+      ::= { ntrConfigT4outEntry 1}
+
+
+   ntrT4mode OBJECT-TYPE
+      SYNTAX INTEGER {
+         standard (1),    		-- standard configuration
+         synce-transfer (2),  	-- DTAG configuration
+         synce-split (3)      	-- DTAG configuration
+      }
+      ACCESS read-write
+      STATUS optional
+      DESCRIPTION     
+       "This object indicates the configuration mode.
+        Standard and 2 specific DTAG configurations are supported.
+        The parameter is only needed to change the mode. This parameter 
+        is no longer needed if other T4 parameters are modified,
+        and we are in the synce-transfer or synce-split mode.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..3
+             PERSIST: YES    DEFVALUE: 1            UNITS: NA"
+
+      ::= { ntrConfigT4outEntry 2}
+
+
+   ntrT4DampingFactor OBJECT-TYPE
+      SYNTAX INTEGER {
+         factor-1-2   (1),     -- 1.2 db
+         factor-2-5   (2),     -- 2.5 db
+         factor-5-0   (3),     -- 5.0 db
+         factor-10-0  (4),     -- 10.0 db
+         factor-20-0  (5)      -- 20.0 db
+      }
+
+      ACCESS read-write
+      STATUS optional
+      DESCRIPTION     
+       " This object indicates the damping factor to be used in the T4 D-PLL
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES         RANGE: 1..5
+             PERSIST: YES    DEFVALUE: 3           UNITS: NA"
+
+      ::= { ntrConfigT4outEntry 3}
+
+   ntrT4JitterBandwidth OBJECT-TYPE
+      SYNTAX INTEGER (0..1024)
+      ACCESS read-write
+      STATUS optional
+      DESCRIPTION     
+       " This object indicates the jitter Bandwidth filter in the T4 D-PLL.
+        The supported values in R4.3 are : 18, 35, 70, 560.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 18,35,70,560
+             PERSIST: YES    DEFVALUE: 18           UNITS: NA"
+
+      ::= { ntrConfigT4outEntry 4}
+
+
+   ntrT4PrioRef-1 OBJECT-TYPE
+      SYNTAX SysClkT4PriorityReference
+      ACCESS read-write
+      STATUS optional
+      DESCRIPTION     
+       " this object refers to the 1st SyncE reference.
+       SyncE ref-1 is configured in asamSysClkSynceTable.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..5
+             PERSIST: YES    DEFVALUE: NA            UNITS: NA"
+
+      ::= { ntrConfigT4outEntry 5}
+
+
+   ntrT4PrioRef-2 OBJECT-TYPE
+      SYNTAX SysClkT4PriorityReference
+      ACCESS read-write
+      STATUS optional
+      DESCRIPTION     
+       " this object refers to the 2nd SyncE reference
+       SyncE ref-2 is configured in asamSysClkSynceTable.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..5
+             PERSIST: YES    DEFVALUE: NA            UNITS: NA"
+
+      ::= { ntrConfigT4outEntry 6}
+
+
+
+ntrT4ClkStatusTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrT4ClkStatusEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the operational status of the configured clocks 
+         for the T4 PLL (DTAG configurations)
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+      TABLESIZE: 3
+         "
+     ::=  { asamSystemClockSelect 29 }
+
+   ntrT4ClkStatusEntry OBJECT-TYPE
+      SYNTAX NtrT4ClkStatusEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the NtrT4ClkStatusEntry."
+      INDEX {ntrT4ClkPriorityIndex  }
+
+     ::= { ntrT4ClkStatusTable 1}
+
+   NtrT4ClkStatusEntry ::=
+      SEQUENCE {
+               ntrT4ClkPriorityIndex		INTEGER,
+               ntrT4PriorityRef           SysClkT4PriorityReference,
+               ntrT4StatusQL				SysClkSrcQL,
+               ntrT4StatusActual          SysClkStatusActual 
+               }
+
+   ntrT4ClkPriorityIndex         OBJECT-TYPE
+      SYNTAX INTEGER (1..3)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+        " This object is used in the ntrT4ClokcStatusTable to identify the 
+        priority  of the clock source. The first index corresponds to the 
+        highest priority. The last index corresponds to the preset entry for 
+        the local clock, and cannot be changed as the clock assigned the 
+        lowest priority.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE: 1..3
+             PERSIST: NO     DEFVALUE: NA           UNITS: NA"
+      ::= { ntrT4ClkStatusEntry 1}
+
+   ntrT4PriorityRef          OBJECT-TYPE
+      SYNTAX SysClkT4PriorityReference 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+        " This object refers to the clock source synce-1 and synce-2 or local.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE: 1..5
+             PERSIST: NO     DEFVALUE: NA           UNITS: NA"
+      ::= { ntrT4ClkStatusEntry 2}
+
+
+   ntrT4StatusQL          OBJECT-TYPE
+      SYNTAX SysClkSrcQL 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+        " This object corresponds to the Quality Level (QL) of the
+          configured clock source as identified in the Sync Status
+          Message (SSM) or the assigned default value if SSM is disabled. 
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE: 0..15
+             PERSIST: NO     DEFVALUE: NA           UNITS: NA"
+      ::= { ntrT4ClkStatusEntry 3}
+
+
+   ntrT4StatusActual          OBJECT-TYPE
+      SYNTAX SysClkStatusActual 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+        " This object corresponds to operational status of the T4 configured 
+          clock sources
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE: 1..13
+             PERSIST: NO     DEFVALUE: NA           UNITS: NA"
+      ::= { ntrT4ClkStatusEntry 4}
+
+
+
+   ntrSSMoutBITSConfig OBJECT-TYPE
+      SYNTAX INTEGER {
+        enable  (1),
+        disable (2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+       " this object refers to SSM-out configured state of the BITS interface.
+
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES         RANGE: 1..2
+             PERSIST: YES    DEFVALUE: 2          UNITS: NA"
+
+      ::= { asamSystemClockSelect 30 }
+
+
+ntrSSMoutQLCeiling  OBJECT-TYPE
+      SYNTAX SysClkSrcQL
+
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+       " this object corresponds to the configuration of the ISAM NTR SSM QL 
+         Output maximum. If the system QL - the QL of the current reference clock - 
+         is higher or equal the QL-Ceiling, then the QL ceiling value will be 
+         send out.
+  Default values : ETSI : 2 (prc), ANSI : 1 (prs)
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 0..15
+             PERSIST: YES    DEFVALUE: 1 or 2       UNITS: NA"
+
+      ::= { asamSystemClockSelect 31 }
+
+-- ========================================================================
+-- tables which configures the SSMout for SyncE port (network ports)
+-- =========================================================================
+
+   ntrSSMoutSynceTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrSSMoutSynceEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+       " the table holds the list of SyncE ports, which will be allowed to send 
+         out SSM-QL messages.  
+         In R4.3, 64 entries are reserved. (network-ports , nt + ntio)
+
+      TABLESIZE: 64
+         " 
+     ::=  { asamSystemClockSelect 32 }
+
+   ntrSSMoutSynceEntry OBJECT-TYPE
+      SYNTAX NtrSSMoutSynceEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         " An entry in the ntrSSMoutSynceTable."
+      INDEX { ntrSSMoutLogSlotid, ntrSSMoutPortType, ntrSSMoutPortNumber }
+
+     ::= { ntrSSMoutSynceTable 1}
+
+   NtrSSMoutSynceEntry ::= 
+     SEQUENCE {
+               ntrSSMoutLogSlotid 		 	EqptSlotIndex,
+               ntrSSMoutPortType				INTEGER,
+               ntrSSMoutPortNumber			INTEGER,
+               ntrSSMoutSyncePortConfig		INTEGER
+               }
+
+
+   ntrSSMoutLogSlotid  OBJECT-TYPE
+      SYNTAX EqptSlotIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+       " the object corresponds to the logical slot identifier for nt-a, nt-b, ntio
+        (as defined in Equipment MIB).
+        The value 65535 (0xFFFF) indicates that no selection is made for 
+        this entry.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: NA
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+
+      ::= { ntrSSMoutSynceEntry 1}
+
+
+   ntrSSMoutPortType  OBJECT-TYPE
+      SYNTAX INTEGER {
+         none (1),        -- no entry for this index
+         sfp  (2),        -- SFP port type
+         xfp  (3)         -- XFP or SFP+ port type
+                     }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+       " the porttype of the Synce to configure
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..3
+             PERSIST: YES    DEFVALUE: 1            UNITS: NA"
+
+      ::= { ntrSSMoutSynceEntry 2}
+
+
+   ntrSSMoutPortNumber  OBJECT-TYPE
+      SYNTAX INTEGER (0..511)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+       " the faceplate number of the SyncE port to configure. The number of 
+        The faceplate port of the board combined with the porttype and 
+        Slotid uniquely identify the port. 
+        The value <511> indicates that no selection is made for this entry.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 0..511
+             PERSIST: YES    DEFVALUE: 511          UNITS: NA"
+
+      ::= { ntrSSMoutSynceEntry 3}
+
+
+   ntrSSMoutSyncePortConfig  OBJECT-TYPE
+      SYNTAX INTEGER {
+        enable  (1),
+        disable (2) 
+      }
+
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+       " this object refers to SSM-out configured state of the SyncE port
+         interface.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..2
+             PERSIST: YES    DEFVALUE: 2           UNITS: NA"
+
+      ::= { ntrSSMoutSynceEntry 4}
+
+-- ========================================================================
+-- tables which configures the SSMout for xDSL ports
+-- =========================================================================
+
+ntrSSMoutPortTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrSSMoutPortEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+       " the table holds the list of xDSL ports, which will be allowed to send out
+         SSM-QL messages.  
+         In R4.3, 72 x 18 entries are reserved. (18 LTs, each with 72 ports)
+         In R5.2.01, the table will extend for GPON UNI and 16K entries are reserved for GPON UNI ports.
+
+      TABLESIZE: 16384 "
+
+     ::=  { asamSystemClockSelect 33 }
+
+   ntrSSMoutPortEntry OBJECT-TYPE
+      SYNTAX NtrSSMoutPortEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrSSMoutPortTable.
+          An entry is created in the table, by setting the ntrSSMoutRowStatus
+          to createAndGo. The new row, will be filled in by default values
+          The entry will automatic come to ntrSSMoutRowStatus = active.
+          Once the entry is active, the parameters can be modified for this entry.
+          An entry is removed from the table by setting the RowStatus to 
+          destroy."
+
+      INDEX { ntrSSMoutPortIfIndex }
+
+     ::= { ntrSSMoutPortTable 1}
+
+   NtrSSMoutPortEntry ::= 
+     SEQUENCE {
+               ntrSSMoutPortIfIndex	InterfaceIndex,
+               ntrSSMoutPortConfig 	INTEGER,
+               ntrSSMoutRowStatus     RowStatus
+               }
+
+   ntrSSMoutPortIfIndex  OBJECT-TYPE
+      SYNTAX InterfaceIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+       "index in the list of DSL ports, For GPON LTs, IfIndex point to GPON UNI port.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: NA
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+
+      ::= { ntrSSMoutPortEntry 1}
+
+
+   ntrSSMoutPortConfig  OBJECT-TYPE
+      SYNTAX INTEGER {
+        enable  (1),
+        disable (2) 
+      }
+
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+       " this object refers to SSM-out configured state of the DSL port interface.
+         Default is enabled(1), see ALU01473200)
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..2
+             PERSIST: YES    DEFVALUE: 1            UNITS: NA"
+
+      ::= { ntrSSMoutPortEntry 2}
+
+   ntrSSMoutRowStatus  OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+       "This object indicates the status of an entry in the table ntrSSMoutTable.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1, 4, 6
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+
+      ::= { ntrSSMoutPortEntry 3}
+
+
+
+
+ntrSSMoutVlan  OBJECT-TYPE
+      SYNTAX INTEGER (0 .. 4093)
+      ACCESS read-write
+      STATUS obsolete
+      DESCRIPTION     
+       " this object allows the operator to reconfigure the internal SSM-VLAN
+       from its default value 4092. This internal VLAN is needed between NT - LT 
+       SSM-packet forwarding.
+       Objet moved to Vlan-MIB.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 0..4093
+             PERSIST: YES    DEFVALUE: 4092         UNITS: NA"
+
+      ::= { asamSystemClockSelect 34 }
+
+
+   ntrPtpDomainTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrPtpDomainEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "This table contains the configuration of the PTP domain for both IEEE1588
+          extraction functions. Introduced in R4.6 for support of IEEE1588 redundancy.
+Introduced in R5.6 for supporting 4 ptp port in 1588 redundancy system. 
+            TABLESIZE: 6
+         "
+      ::= { asamSystemClockSelect 35 }
+
+   ntrPtpDomainEntry OBJECT-TYPE
+      SYNTAX NtrPtpDomainEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrPtpDomainTable."
+      INDEX { ntrPtpDomainPortIndex }
+      ::= { ntrPtpDomainTable 1 }
+
+
+   NtrPtpDomainEntry ::=
+      SEQUENCE {
+               ntrPtpDomainPortIndex     NtrPtpPort,
+               ntrPtpDomainIdentifier      INTEGER
+      }
+
+   ntrPtpDomainPortIndex OBJECT-TYPE
+      SYNTAX NtrPtpPort
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+        " Applicable from R4.6 onwards, where each NT can manage an IEEE 1588
+          signal independently. This object corresponds to the index in the
+          PTP domain table for both the IEEE 1588 sources.
+          Modified from R5.6, where each Nt can manage 2 PTP port independently, This object corresponds to the index in the PTP domain table for 4 ptp port in 1588 redundancy system.  
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+             SUPPORT: YES     INSRVMOD: NO          RANGE: 1..6
+             PERSIST: YES     DEFVALUE: DEP         UNITS: NA
+         "
+      ::= { ntrPtpDomainEntry 1 }
+
+   ntrPtpDomainIdentifier OBJECT-TYPE
+      SYNTAX INTEGER (0..255)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+             "The PTP domain. Value (decimal) definition:
+        0               Default domain
+        1               Alternate domain 1
+        2               Alternate domain 2
+        3               Alternate domain 3
+        4-127           User-defined domains
+        128-255         Reserved
+
+        Definition from the standard:
+
+        A logical grouping of PTP clocks that synchronize to each other using the
+        PTP protocol but that are not necessarily synchronized to PTP clocks in
+        another PTP subdomain.  NOTE: It should be emphasized that this grouping is
+        logical. Clocks sharing a PTP communication path may or may not be in the
+        same PTP subdomain, and clocks in the same PTP subdomain may or may not
+        share a PTP communication path.
+        It is intended to be managed by the System Operator.
+             ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+               SUPPORT: YES   INSRVMOD: YES      RANGE: 0..255
+               PERSIST: YES   DEFVALUE: 0        UNITS: NA
+         "
+      DEFVAL { 0 }
+      ::= { ntrPtpDomainEntry 2 } 
+
+
+   NtrPtpMode ::= INTEGER
+                  {
+      portFaulty(1), -- A port in this state is considered inactive. No activity on this port shall affect the active ports of the boundary clock or of any other port in the subdomain. If fault activity on a port in this state cannot be confined to the port, then all ports shall be in this state. 
+   
+      portDisabled(2), -- A port in this state is considered inactive. No activity on this port shall affect the active ports of the boundary clock or of any other port in the subdomain. 
+
+      portListening(3), -- Any or all ports may be in this state.  
+
+
+      portPreMaster(4), -- Same as "portMaster", except that the port shall not place any non-management messages on its associated communication path.  
+
+      portMaster(5), -- If one port is in this state either: No active port is in the PTP_SLAVE state and the boundary clock is also the grandmaster clock of the subdomain for all communication paths for which the boundary clock communicates via a port in the PTP_MASTER state, or One active port is in the PTP_SLAVE state and the grandmaster clock of the subdomain is a clock communicating with the boundary clock directly or indirectly via the slave port.  The boundary clock will be the master (but not the grandmaster) for all communication paths for which the boundary clock communicates via a port in the PTP_MASTER state. 
+
+      portPassive(6), --  Any or all ports may be in this state.  Slave has not yet detected the Master. But the other configuration looks OK.
+
+      portUncalibrated(7), -- The PTP port is not calibrated
+
+      portSlave(8)   -- one where the Master and Slave is communicating each other, it is the state where the Master is locked to the Slave. In this state also, the slave may or not may not be locked to the Master.
+
+      }
+
+
+   ntrPtpModeTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrPtpModeEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "This table contains the view of the configuration of the PTP mode for both 
+          IEEE1588 extraction functions.
+          Introduced in R4.6 for support of IEEE1588 redundancy.
+          Modified in R5.6 for support 4 ptp port in IEEE1588 redundancy system.
+            TABLESIZE: 6
+         "
+      ::= { asamSystemClockSelect 36 }
+
+   ntrPtpModeEntry OBJECT-TYPE
+      SYNTAX NtrPtpModeEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrPtpModeTable."
+      INDEX { ntrPtpModePortIndex }
+      ::= { ntrPtpModeTable 1 }
+
+   NtrPtpModeEntry ::=
+      SEQUENCE {
+                ntrPtpModePortIndex      NtrPtpPort,
+               ntrPtpModeIdentifier      INTEGER
+      }
+
+   ntrPtpModePortIndex OBJECT-TYPE
+      SYNTAX NtrPtpPort
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "Applicable from R4.6 onwards, where each NT can manage an IEEE 1588
+          signal independently. This object corresponds to the index in the
+          PTP mode table for both the IEEE 1588 sources.
+Modified from R5.6, where each Nt can manage 2 PTP port independently, 
+This object corresponds to the index in the PTP mode table for 4 ptp port in 1588 redundancy system.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+             SUPPORT: YES     INSRVMOD: NO          RANGE: 1..6
+             PERSIST: YES     DEFVALUE: DEP         UNITS: NA
+         "
+      ::= { ntrPtpModeEntry 1 }
+
+   ntrPtpModeIdentifier OBJECT-TYPE
+      SYNTAX NtrPtpMode
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+        "This parameter represents the operational mode of the NE's PTP
+         functionality.
+         It is intended to be only read by the System Operator.
+
+         ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+               SUPPORT: YES   INSRVMOD: YES      RANGE: 1..8
+               PERSIST: NO    DEFVALUE: 0        UNITS: NA
+        "
+      ::= { ntrPtpModeEntry 2 }
+
+
+
+ asamSysTodPriorityTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSysTodPriorityEntry 
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the prioritised list of configured tod source
+          for automatic selection.The first table entry corresponds to the
+          first priority, the second entry, to the next priority clock source,
+          etc.
+          All entries are factory defaulted to <none>, except for the last entry 
+          which is defaulted to <local>, and this last entry cannot be modified.
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+            TABLESIZE: 3
+         " 
+     ::=  { asamSystemClockSelect 37 }
+
+   asamSysTodPriorityEntry OBJECT-TYPE
+      SYNTAX AsamSysTodPriorityEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the AsamSysTodPriorityEntry."
+      INDEX { asamSysTodPriorityIndex }
+
+     ::= { asamSysTodPriorityTable 1}
+
+   AsamSysTodPriorityEntry ::=
+      SEQUENCE {
+               asamSysTodPriorityIndex          INTEGER,
+               asamSysTodPriorityReference      INTEGER,
+               asamSysTodPrioritySyntonized     INTEGER
+               }
+
+   asamSysTodPriorityIndex          OBJECT-TYPE
+      SYNTAX INTEGER (1..3)
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+        " This object is used by the asamSysTodPriorityTable to identify 
+          the priority of the tod source; the first index corresponds 
+          to the highest priority. The last index  corresponds to the 
+          preset entry for the tod <local> and cannot be changed as
+          the tod assigned the lowest priority.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..3
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+
+      ::= { asamSysTodPriorityEntry 1}
+
+   asamSysTodPriorityReference          OBJECT-TYPE
+      SYNTAX INTEGER {
+         none       (1), -- no tod source is specified for this priority
+         local      (2), -- holdover specified (always enable last priority)         
+         ieee1588-a (3), -- IEEE 1588-A source is specified for this priority
+         ieee1588-b (4), -- IEEE 1588-B source is specified for this priority
+         gnss-a     (5), -- gnss-a source is specified for this priority
+         gnss-b     (6)  -- gnss-b source is specified for this priority
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " This object is used by the asamSysTodPriorityTable to assign 
+          the tod source to the corresponding priority for the automatic
+          selection of the tod reference. 
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..6
+             PERSIST: YES    DEFVALUE: none (1)     UNITS: NA"
+
+      ::= { asamSysTodPriorityEntry 2}
+
+   -- This ID is defined for future use, not supported in current release
+   asamSysTodPrioritySyntonized          OBJECT-TYPE
+      SYNTAX INTEGER {
+         yes        (1), -- PTP grandmaster is traceable to the local Layer 1 reference 
+         no         (2)  -- PTP grandMaster is locked to a GPS, while the 
+                         -- Layer 1 clock is traceable to a free running PRC
+                         -- Not supported in current release
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " This object is used by the asamSysTodPriorityTable to indicate whehter
+          the ptp grandmaster is traceable to the layer 1 clock source.
+          In current release, the system assumes that each external ToD clock source is always syntonized.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..2
+             PERSIST: YES    DEFVALUE: yes (1)     UNITS: NA"
+
+      ::= { asamSysTodPriorityEntry 3}
+
+    SysTodStatusActual  ::=  INTEGER {
+         reference  (1),       -- tod is selected as the reference tod
+         valid      (2),       -- tod is available for selection
+         failed     (3),       -- tod failed (HW fail, freq. error, phase error,
+                               --   unlocked,...)
+         doNotUse   (4),       -- tod  must not be used as indicated by SSM
+         unknown    (5)        -- tod status unknown (startup, system fault)
+      }
+ 
+ asamSysTodStatusTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF AsamSysTodStatusEntry 
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the operational status of the configured tod.
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+          TABLESIZE: 3
+            " 
+     ::=  { asamSystemClockSelect 38 }
+
+   asamSysTodStatusEntry OBJECT-TYPE
+      SYNTAX AsamSysTodStatusEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the asamSysTodStatusTable."
+      INDEX { asamSysTodPriorityIndex }
+
+     ::= { asamSysTodStatusTable 1}
+
+   AsamSysTodStatusEntry ::=
+      SEQUENCE {
+               asamSysTodStatusActual           SysTodStatusActual
+               }
+
+   asamSysTodStatusActual          OBJECT-TYPE
+      SYNTAX SysTodStatusActual  
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+        " This object corresponds to the operational status of the 
+          configured tod source.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA          RANGE: 1..5
+             PERSIST: NO     DEFVALUE: 5           UNITS: NA"
+
+      ::= { asamSysTodStatusEntry 1}
+
+   ntrPtpTransportMode  OBJECT-TYPE
+      SYNTAX INTEGER {
+         ucast-over-udp   (1),
+         ucast-mcast-over-udp (2),
+         mcast-over-udp   (3),          -- Not supported in current release
+         ucast-over-ethernet  (4),      -- Not supported in current release
+         ucast-mcast-over-ethernet (5), -- Not supported in current release
+         mcast-over-ethernet  (6)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         " This variable specifies the protocol, in combination with the addressing mode, 
+           used to carry the PTP packets. The PTP packets can either be encapsulated in UDP over IP 
+           (L3/L4, which is referred to as xxx-over-udp) or transported in Ethernet packets (L2, 
+           which is referred to as xxx-over-ethernet). The packets can be sent using pure unicast addressing mode
+           (referred to as ucast-over-xxx) or pure multicast mode (referred to as mcast-over-xxx).
+           When the master supports it, the packets can also be sent using a specific addressing mode 
+           based on the PTP message type : in current release the PTP device on the NT can receive Announce messages 
+           from the master in multicast, while the other Event messages will be exchanged in unicast only 
+           (this sort of mixed mode is referred to as ucast-mcast-over-xxx).
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 1..2,6
+             PERSIST: YES   DEFVALUE: 2           UNITS: NA"
+      ::= { asamSystemClockSelect 39 }
+
+
+   TimeOfTai ::= OCTET STRING (SIZE (10))
+
+   TimeOfUTC ::= OCTET STRING(SIZE(7))
+
+   ntrTodUTCTime  OBJECT-TYPE
+      SYNTAX TimeOfUTC
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies UTC time of the NT.The UTC time format
+         is yyyy-mm-dd-hh-mm-ss (2013-09-23-23-55-55). The object data 
+         dosn't include the separator.
+         
+         |yy | yy | mm | dd | hh | mm | ss |
+         | 1 |  2 |  3 |  4 |  5 |  6 |  7 |
+         
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: NA
+             PERSIST: NO    DEFVALUE: 0           UNITS: NA"
+      ::= { asamSystemClockSelect 40 }
+   
+      
+   ntrTodTAITime  OBJECT-TYPE
+      SYNTAX TimeOfTai
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies TAI time of the NT.The format is seconds:nanoseconds
+         the second data length is 6 bytes, the nanoseconds data length is 4 bytes.
+         |   second   |   nanoseconds   |
+         |     1~6    |       7~10      |
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: NA
+             PERSIST: NO    DEFVALUE: 0           UNITS: NA"
+      ::= { asamSystemClockSelect 41 }
+                 
+                 
+   ntrTodFormat   OBJECT-TYPE
+      SYNTAX INTEGER {
+         gps-cmcc        (1),       
+         nmea0183-gpzda   (2),       
+         nmea0183-gprmc   (3),       
+         test            (4)       
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies tod format of extenal tod source.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 1..4
+             PERSIST: YES   DEFVALUE: 1           UNITS: NA"
+      ::= { asamSystemClockSelect 43 }
+      
+      
+
+ ntrTodPpsIntfaceControlTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrTodPpsInterfaceControlEntry 
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the 1pps interface configration.
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+          TABLESIZE: 4
+            " 
+     ::=  { asamSystemClockSelect 44 }
+
+   ntrTodPpsInterfaceControlEntry OBJECT-TYPE
+      SYNTAX NtrTodPpsInterfaceControlEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrTodPpsIntfaceControlTable."
+      INDEX { ntrTodPpsInterfaceIndex }
+
+     ::= { ntrTodPpsIntfaceControlTable 1}
+
+   NtrTodPpsInterfaceControlEntry ::=
+      SEQUENCE {
+               ntrTodPpsInterfaceIndex              INTEGER,
+               ntrTodPpsInterfaceDirection          INTEGER,
+               ntrTodPpsInterfaceEnable             INTEGER,    
+               ntrTodPpsInterfaceCableCompensation  INTEGER, 
+               ntrTodPpsInterfaceSignalStatus       INTEGER
+               }
+
+   ntrTodPpsInterfaceIndex          OBJECT-TYPE
+      SYNTAX INTEGER {
+         rj45-a       (1), 
+         rj45-b       (2), 
+         sma-a        (3),  
+         sma-b        (4)  
+      }
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+        " This object is used by the ntrTodPpsIntfaceControlTable to config 
+          the parameter of the 1pps interface.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..4
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+
+      ::= { ntrTodPpsInterfaceControlEntry 1}
+
+
+   ntrTodPpsInterfaceDirection        OBJECT-TYPE
+      SYNTAX  INTEGER {
+         input        (1), 
+         output       (2)  
+      } 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies to the 1pps direction of the 1pps
+          interface.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES     INSRVMOD: NA          RANGE: 1..2
+             PERSIST: YES     DEFVALUE: 2           UNITS: NA"
+
+      ::= { ntrTodPpsInterfaceControlEntry 2}
+
+   ntrTodPpsInterfaceEnable        OBJECT-TYPE
+      SYNTAX  INTEGER {
+         enable        (1), 
+         disable       (2)  
+      } 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies the port enable or diable
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES     INSRVMOD: NA          RANGE: 1..2
+             PERSIST: YES     DEFVALUE: 2           UNITS: NA"
+
+      ::= { ntrTodPpsInterfaceControlEntry 3}
+      
+   ntrTodPpsInterfaceCableCompensation        OBJECT-TYPE
+      SYNTAX  INTEGER (0..1000)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object corresponds to the cable compensation value of
+         the 1pps interface. because transport delay of the the 1pps
+         signal in cable,  the delay value should be measured and 
+         compensated in HW, the unit is nano-second.
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES     INSRVMOD: NA         RANGE: 0..1000 
+             PERSIST: YES     DEFVALUE: 0          UNITS: NS"
+
+      ::= { ntrTodPpsInterfaceControlEntry 4}
+      
+   ntrTodPpsInterfaceSignalStatus        OBJECT-TYPE
+      SYNTAX  INTEGER {
+           valid          (1),
+           invalid        (2)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION     
+        " This object corresponds to signal status of the 1pps interface
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE:1..2 
+             PERSIST: NO     DEFVALUE: NA           UNITS: NA"
+
+      ::= { ntrTodPpsInterfaceControlEntry 5}
+
+ ntrTodPpsSerialPortTable   OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrTodPpsSerialPortEntry  
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the 1pps serial parameter configured.
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+          TABLESIZE: 2
+            " 
+     ::=  { asamSystemClockSelect 45 }
+
+   ntrTodPpsSerialPortEntry  OBJECT-TYPE
+      SYNTAX NtrTodPpsSerialPortEntry 
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrTodPpsSerialPortTable."
+      INDEX { ntrTodPpsSerialPortIndex }
+
+     ::= { ntrTodPpsSerialPortTable 1}
+
+   NtrTodPpsSerialPortEntry ::=
+      SEQUENCE {
+               ntrTodPpsSerialPortIndex            INTEGER,
+               ntrTodPpsSerialPortBaudRate         INTEGER,
+               ntrTodPpsSerialPortDataBit          INTEGER,    
+               ntrTodPpsSerialPortStopBit          INTEGER, 
+               ntrTodPpsSerialPortParity           INTEGER      
+               }
+
+   ntrTodPpsSerialPortIndex          OBJECT-TYPE
+      SYNTAX INTEGER {
+         rj45-a       (1),
+         rj45-b       (2) 
+      }
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+        " This object is used by the ntrTodPpsSerialPortTable to config 
+          the parameter of the serial port.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..2
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+
+      ::= { ntrTodPpsSerialPortEntry 1}
+
+
+   ntrTodPpsSerialPortBaudRate        OBJECT-TYPE
+      SYNTAX INTEGER (4800..38400) 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies to the baudrate  of the 1pps
+          serial port,the supported values are 4800,9600,19200
+          and 38400.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA             RANGE: 4800..38400
+             PERSIST: YES     DEFVALUE: 4800          UNITS: bits/sec"
+
+      ::= { ntrTodPpsSerialPortEntry 2}
+
+   ntrTodPpsSerialPortDataBit        OBJECT-TYPE
+      SYNTAX INTEGER (7..8)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies the data bit of the serial port.
+    
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA          RANGE: 7..8
+             PERSIST: YES     DEFVALUE: 8          UNITS: NA"
+
+      ::= { ntrTodPpsSerialPortEntry 3}
+      
+   ntrTodPpsSerialPortStopBit        OBJECT-TYPE
+      SYNTAX  INTEGER (1..2)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object corresponds to the stop bits of the serial port.
+         the 1pps interface.
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES     INSRVMOD: NA         RANGE:1..2 
+             PERSIST: YES     DEFVALUE: 1          UNITS: NA"
+
+      ::= { ntrTodPpsSerialPortEntry 4}
+      
+   ntrTodPpsSerialPortParity        OBJECT-TYPE
+      SYNTAX  INTEGER {
+           none          (1),
+           odd           (2),
+           even          (3)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object corresponds to parity of the serial port.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE:1..3 
+             PERSIST: YES    DEFVALUE: none(1)      UNITS: NA"
+
+      ::= { ntrTodPpsSerialPortEntry 5}
+      
+      ClockId ::= OCTET STRING (SIZE (8))
+      
+ ntrPtpDefaultDataSetTable     OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrPtpDefaultDataSetEntry  
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the ptp default dataset. When a downstream clock
+          node  works as a ptp master, it need the parent ptp node dataset 
+          information, so the olt need translate this information to downstream node. 
+          unfortunately not all the tod source can provide this dataset, such
+          as gnss, so operator need config a default dataset for all tod source in
+          this table, if one tod source has been selectd as the system tod, and 
+          that tod type could not provide default dataset(gnss), the default dataset
+          store in this table will be translated to downstream node.  For those 
+          tod source could provide default dataset(ptp), operator can deside translate
+          the dataset in this table or the data extract from ptp packets, by the 
+          object ntrPtpDynamicUpdateDefaultDataSet.
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+          TABLESIZE: 5
+            " 
+     ::=  { asamSystemClockSelect 46 }
+
+   ntrPtpDefaultDataSetEntry  OBJECT-TYPE
+      SYNTAX NtrPtpDefaultDataSetEntry 
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrPtpDefaultDataSetTable."
+      INDEX { ntrPtpDefaultDataSetIndex }
+
+     ::= { ntrPtpDefaultDataSetTable 1}
+
+   NtrPtpDefaultDataSetEntry ::=
+      SEQUENCE {
+               ntrPtpDefaultDataSetIndex              INTEGER,
+               ntrPtpDefaultDataSetClkId              ClockId,
+               ntrPtpDefaultDataSetPriority1          INTEGER,      
+               ntrPtpDefaultDataSetPriority2          INTEGER,
+               ntrPtpDefaultDataSetClockClass         INTEGER,
+               ntrPtpDefaultDataSetClockAccuracy      INTEGER,
+               ntrPtpDefaultDataSetDomain             INTEGER,
+               ntrPtpDefaultDataSetSlaveOnly          INTEGER
+               }
+
+   ntrPtpDefaultDataSetIndex          OBJECT-TYPE
+      SYNTAX INTEGER {
+         ieee1588-a       (1), 
+         ieee1588-b       (2),
+         gnss-a           (3),  
+         gnss-b           (4), 
+         local            (5)
+      }
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+        " This object is used by the ntrPtpDefaultDataSetTable to config 
+          the default dataset.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..5
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+
+      ::= { ntrPtpDefaultDataSetEntry 1}
+
+
+   ntrPtpDefaultDataSetClkId        OBJECT-TYPE
+      SYNTAX ClockId
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies to default clockId of NT
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA             RANGE: NA
+             PERSIST: YES     DEFVALUE: NA            UNITS: NA"
+
+      ::= { ntrPtpDefaultDataSetEntry 2}
+
+      
+   ntrPtpDefaultDataSetPriority1        OBJECT-TYPE
+      SYNTAX  INTEGER (0..255) 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies the default priority1 value.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA            RANGE:0..255 
+             PERSIST: YES    DEFVALUE: 128           UNITS: NA"
+
+      ::= { ntrPtpDefaultDataSetEntry 3}
+      
+   ntrPtpDefaultDataSetPriority2        OBJECT-TYPE
+      SYNTAX  INTEGER (0..255)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies the default priority2 value.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE:0..255
+             PERSIST: YES    DEFVALUE: 128          UNITS: NA"
+
+      ::= { ntrPtpDefaultDataSetEntry 4}
+      
+   ntrPtpDefaultDataSetClockClass        OBJECT-TYPE
+      SYNTAX  INTEGER (0..255)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies the default clock class value.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE:0..255
+             PERSIST: NO     DEFVALUE: 248          UNITS: NA"
+
+      ::= { ntrPtpDefaultDataSetEntry 5}
+
+   ntrPtpDefaultDataSetClockAccuracy        OBJECT-TYPE
+      SYNTAX  INTEGER (0..255)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies to default clock accuracy value .
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE:0..255
+             PERSIST: NO     DEFVALUE: 255          UNITS: NA"
+
+      ::= { ntrPtpDefaultDataSetEntry 6}
+      
+   ntrPtpDefaultDataSetDomain        OBJECT-TYPE
+      SYNTAX  INTEGER (0..255)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies to default domain value .
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE:0..255
+             PERSIST: NO     DEFVALUE: 0            UNITS: NA"
+
+      ::= { ntrPtpDefaultDataSetEntry 7}
+      
+   ntrPtpDefaultDataSetSlaveOnly        OBJECT-TYPE
+      SYNTAX  INTEGER {
+          yes  (1),
+          no   (2)   -- Not supported in current release
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION     
+        " This object specifies if the OLT is an SOOC or not.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: NA           RANGE:1..2
+             PERSIST: YES    DEFVALUE: yes          UNITS: NA"
+
+      ::= { ntrPtpDefaultDataSetEntry 8}
+
+   -- This ID is defined for future use, not supported in current release
+   ntrPtpDynamicUpdateDefaultDataSet    OBJECT-TYPE
+      SYNTAX INTEGER {
+         enable         (1),
+         disable        (2)       
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies whether the parent's DS should be extracted
+          and translated to the downstream clock node if a ptp source has been
+          seleced as tod source.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 1..2
+             PERSIST: YES   DEFVALUE: disable     UNITS: NA"
+             
+      ::= { asamSystemClockSelect 47 }
+
+   ntrPtpMasterClkPortDataSetProfile OBJECT IDENTIFIER ::= { asamSystemClockSelect 48 } 
+
+   ntrPtpMasterClkPortDataSetProfileIndexNext OBJECT-TYPE
+      SYNTAX AsamNextProfileIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+          "This object contains an appropriate value to be used for
+           ntrPtpMasterClkPortDataSetProfileIndex
+           when creating entries in the associated profile table.
+           The value 0 indicates that no unassigned entries are
+           available. To obtain the profile index value for a new
+           entry, the manager issues a management protocol retrieval
+           operation to obtain the current value of this object.
+           After each retrieval, the agent should modify the value to
+           the next unassigned index.
+
+          ALCATEL NOTE: 
+               SUPPORT: YES   INSRVMOD: NA   RANGE: 0..64
+               PERSIST: NO    DEFVALUE: NA   UNITS: -"
+
+      ::= { ntrPtpMasterClkPortDataSetProfile 1 }
+
+   ntrPtpMasterClkPortDataSetProfileTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrPtpMasterClkPortDataSetProfileEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "This table contains the view of the configuration of the PTP master clock profile.
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             TABLESIZE: 64
+         "
+      ::= { ntrPtpMasterClkPortDataSetProfile 2 }
+
+   ntrPtpMasterClkPortDataSetProfileEntry OBJECT-TYPE
+      SYNTAX NtrPtpMasterClkPortDataSetProfileEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrPtpMasterClkPortDataSetProfileTable."
+      INDEX { ntrPtpMasterClkPortDataSetProfileIndex }
+      ::= { ntrPtpMasterClkPortDataSetProfileTable 1 }
+
+   NtrPtpMasterClkPortDataSetProfileEntry ::=
+      SEQUENCE {
+               ntrPtpMasterClkPortDataSetProfileIndex            AsamProfileIndex,
+               ntrPtpMasterClkPortDataSetProfileName             AsamProfileName,
+               ntrPtpMasterClkPortDataSetProfileUsedStatus       AsamProfileRefCount,
+               ntrPtpMasterClkPortDataSetProfileRowStatus        RowStatus,
+               ntrPtpMasterClkPortDataSetProfileDelayMech        INTEGER,
+               ntrPtpMasterClkPortDataSetProfileStepMode         INTEGER,
+               ntrPtpMasterClkPortDataSetProfileAnnouInterval    INTEGER,
+               ntrPtpMasterClkPortDataSetProfileSyncInterval     INTEGER,
+               ntrPtpMasterClkPortDataSetProfileDelayInterval    INTEGER,
+               ntrPtpMasterClkPortDataSetProfilePDelayInterval   INTEGER
+      }
+
+   ntrPtpMasterClkPortDataSetProfileIndex OBJECT-TYPE
+      SYNTAX AsamProfileIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The Ptp Master Profile Index.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 1..64             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpMasterClkPortDataSetProfileEntry 1 }
+
+   ntrPtpMasterClkPortDataSetProfileName OBJECT-TYPE
+      SYNTAX AsamProfileName
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "A textual name uniquely identifying this profile.                      
+          Maximum length is 32. 
+                     
+          ALCATEL NOTE:             
+             SUPPORT: YES   INSRVMOD: YES  RANGE: See above             
+             PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpMasterClkPortDataSetProfileEntry 2 }
+
+   ntrPtpMasterClkPortDataSetProfileUsedStatus OBJECT-TYPE
+      SYNTAX  AsamProfileRefCount
+      ACCESS read-only
+      STATUS  mandatory
+      DESCRIPTION
+         "Indicates the number of entities using this profile.  If the           
+          reference count is greater than 0, then this profile is 'in use',          
+          and may NOT be deleted.  If the value is 0, then this profile is          
+          'not in use', and can be deleted.      
+                
+          ALCATEL NOTE:             
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above             
+             PERSIST: NO   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpMasterClkPortDataSetProfileEntry 3 }
+
+   ntrPtpMasterClkPortDataSetProfileRowStatus OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Entries in the ntrPtpMasterClkPortDataSetProfileTable can only be
+          created at once,by specifying ntrPtpMasterClkPortDataSetProfileRowStatus=createAndGo(4).            
+          If all values are valid then the entry is made active(1).
+          If the object is set to destroy(6), the entry is deleted. 
+                    
+          ALCATEL NOTE:             
+             SUPPORT: YES  INSRVMOD: NA          RANGE: See above             
+             PERSIST: NO   DEFVALUE: active(1)   UNITS: -"
+      ::= { ntrPtpMasterClkPortDataSetProfileEntry 4 }
+
+   ntrPtpMasterClkPortDataSetProfileDelayMech OBJECT-TYPE
+      SYNTAX INTEGER {
+         e2e       (1),       
+         p2p       (2)   -- Not supported in current release
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies the mechanism used to calculate the Mean Path  Delay
+          as indicated in Table 9 of [IEEE 1588-2008].
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 1,2
+             PERSIST: YES   DEFVALUE: e2e (1)     UNITS: NA"
+      ::= { ntrPtpMasterClkPortDataSetProfileEntry 5 }
+      
+   ntrPtpMasterClkPortDataSetProfileStepMode OBJECT-TYPE
+      SYNTAX INTEGER {
+         onestep   (1),      
+         twostep   (2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies the working mode of PTP stack, defines the mechanism 
+          to send the timestamp.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 1..2
+             PERSIST: YES   DEFVALUE: onestep (1) UNITS: NA"
+      ::= { ntrPtpMasterClkPortDataSetProfileEntry 6 }
+      
+   ntrPtpMasterClkPortDataSetProfileAnnouInterval  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "This parameter specifies the mean time interval between successive messages shall be represented as the logarithm to the base 2 of this time interval measured in seconds on the local clock of the device sending the message. The values of these logarithmic attributes shall be selected from integers in the range -4 to 4. The default value is -3,
+         which indicates that the interval of message is 1/8 second.the frequency of a clock device which sending the announce message,the unit is packet per second.
+
+         ALCATEL NOTE: 
+               SUPPORT: YES   INSRVMOD: YES      RANGE: -4..4
+               PERSIST: YES   DEFVALUE: -3        UNITS: NA
+        "
+      ::= { ntrPtpMasterClkPortDataSetProfileEntry 7 }
+
+   ntrPtpMasterClkPortDataSetProfileSyncInterval  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter specifies the mean time interval between successive messages shall be represented as the logarithm to the base 2 of this time interval measured in seconds on the local clock of the device sending the message.The values of these logarithmic attributes shall be selected from integers in the range -8 to 4. The typical default value is -4, which indicates that the interval of message is 1/16 s.
+
+          ALCATEL NOTE: 
+             SUPPORT: YES     INSRVMOD: YES        RANGE: -8..4
+             PERSIST: YES     DEFVALUE: -4         UNITS: NA
+         "
+      ::= { ntrPtpMasterClkPortDataSetProfileEntry 8 }
+
+   ntrPtpMasterClkPortDataSetProfileDelayInterval  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "This parameter specifies the mean time interval between successive messages shall be represented as the logarithm to the base 2 of this time interval measured in seconds on the local clock of the device sending the message. The values of these logarithmic attributes shall be selected from integers in the range -7 to 4. The typical default value is 0,which indicates that the interval of message is 1 second.
+
+         ALCATEL NOTE: 
+               SUPPORT: YES   INSRVMOD: YES      RANGE: -7..4
+               PERSIST: YES   DEFVALUE: 0        UNITS: NA
+        "
+      ::= { ntrPtpMasterClkPortDataSetProfileEntry 9 }
+
+   -- This ID is defined for future use, not supported in current release
+   ntrPtpMasterClkPortDataSetProfilePDelayInterval  OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter specifies the mean time interval between successive messages shall be represented as the logarithm to the base 2 of this time interval measured in seconds on the local clock of the device sending the message. The values of these logarithmic attributes shall be selected from integers in the range -7 to 4. The typical default value is 0, which indicates that the interval of message is 1 
+          second.
+
+          ALCATEL NOTE: 
+             SUPPORT: YES     INSRVMOD: YES         RANGE: -7..4
+             PERSIST: YES     DEFVALUE: 0           UNITS: NA
+         "
+      ::= { ntrPtpMasterClkPortDataSetProfileEntry 10 }
+
+   ntrPtpMasterClkPortDataSetProfileMappingTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrPtpMasterClkPortDataSetProfileMappingEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "The table listing the profile name to profile Index Mapping.
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             TABLESIZE: 64
+         "
+      ::= { ntrPtpMasterClkPortDataSetProfile 3 }
+
+   ntrPtpMasterClkPortDataSetProfileMappingEntry OBJECT-TYPE
+      SYNTAX NtrPtpMasterClkPortDataSetProfileMappingEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+            "An entry representing the Ptp Master Profile Name to Index mapping.  The system automatically creates an entry in this table for each corresponding entry created in the ntrPtpMasterClkPortDataSetProfileTable. Similarly, when a profile is deleted, the corresponding entry in this table is also automatically deleted by the system."
+      INDEX { ntrPtpMasterClkPortDataSetProfileMappingName }
+      ::= { ntrPtpMasterClkPortDataSetProfileMappingTable 1 }
+
+   NtrPtpMasterClkPortDataSetProfileMappingEntry ::=
+      SEQUENCE {
+               ntrPtpMasterClkPortDataSetProfileMappingName     AsamProfileName,
+               ntrPtpMasterClkPortDataSetProfileMappingIndex     AsamProfileIndex
+      }
+
+   ntrPtpMasterClkPortDataSetProfileMappingName OBJECT-TYPE
+      SYNTAX AsamProfileName
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "A textual name uniquely identifying this profile.                      
+          Maximum length is 32.
+                    
+          ALCATEL NOTE:             
+             SUPPORT: YES   INSRVMOD: NA   RANGE: See above             
+             PERSIST: NO   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpMasterClkPortDataSetProfileMappingEntry 1 }
+      
+   ntrPtpMasterClkPortDataSetProfileMappingIndex OBJECT-TYPE
+      SYNTAX AsamProfileIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The Ptp Master Profile Index.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 1..64             
+            PERSIST: NO   DEFVALUE: NA    UNITS: -"
+      ::= { ntrPtpMasterClkPortDataSetProfileMappingEntry 2 }
+     
+   ntrPtpMasterClkPortConfigTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrPtpMasterClkPortConfigEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "This table contains the view of the configuration of the PTP master port on ONT.ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             TABLESIZE: 16384
+         "
+      ::= { asamSystemClockSelect 49 }
+
+   ntrPtpMasterClkPortConfigEntry OBJECT-TYPE
+      SYNTAX NtrPtpMasterClkPortConfigEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrPtpMasterClkPortConfigTable."
+      INDEX { ntrPtpMasterClkPortId }
+      ::= { ntrPtpMasterClkPortConfigTable 1 }
+
+   NtrPtpMasterClkPortConfigEntry ::=
+      SEQUENCE {
+               ntrPtpMasterClkPortId     InterfaceIndex,
+               ntrPtpMasterClkPortAdminStatus     INTEGER,
+               ntrPtpMasterClkPortConfigRowStatus     RowStatus,
+               ntrPtpMasterClkPortAssignedProfileId     AsamProfilePointer,
+               ntrPtpMasterClkPortVlanId     INTEGER,
+               ntrPtpMasterClkPortPbit      INTEGER,
+               ntrPtpMasterClkPortCompensation    INTEGER
+      }
+
+   ntrPtpMasterClkPortId OBJECT-TYPE
+      SYNTAX InterfaceIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The Ptp Master port Index.This parameter specifies the uni interface of the dedicated ONT. 
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+             SUPPORT: YES     INSRVMOD: NO          RANGE: NA
+             PERSIST: YES     DEFVALUE: NA          UNITS: NA
+         "
+      ::= { ntrPtpMasterClkPortConfigEntry 1 }
+
+   ntrPtpMasterClkPortAdminStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+         enable  (1),       
+         disable (2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter specifies to enable or disable the ptp service on one uni port.
+          Once it is disabled the ONT will not send out the ptp messages from this UNI port
+          and will not handle the ptp message which received from this uni port.
+
+          ALCATEL NOTE: 
+             SUPPORT: YES     INSRVMOD: YES          RANGE: 1..2
+             PERSIST: YES     DEFVALUE: disable (2)  UNITS: NA
+         "
+      ::= { ntrPtpMasterClkPortConfigEntry 2 }
+
+   ntrPtpMasterClkPortConfigRowStatus OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Entries in the ntrPtpMasterClkPortConfigTable can only be created at           
+          once, by specifying ntrPtpMasterClkPortConfigRowStatus=createAndGo(4).            
+          If all values are valid then the entry is made active(1). If the           
+          object is set to destroy(6), the entry is deleted.  
+                   
+          ALCATEL NOTE:             
+             SUPPORT: YES  INSRVMOD: NA          RANGE: See above             
+             PERSIST: NO   DEFVALUE: active(1)   UNITS: -"
+      ::= { ntrPtpMasterClkPortConfigEntry 3 }
+
+    
+   ntrPtpMasterClkPortAssignedProfileId OBJECT-TYPE
+      SYNTAX  AsamProfilePointer
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter associates the PTP Master Configure Data Profile ME to 
+          clarify the master PTP clock attributes on this PTP port. 
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+             SUPPORT: YES     INSRVMOD: YES          RANGE: 1..64
+             PERSIST: YES     DEFVALUE: NA           UNITS: NA
+         "
+      ::= { ntrPtpMasterClkPortConfigEntry 4 }
+
+   ntrPtpMasterClkPortVlanId OBJECT-TYPE
+      SYNTAX INTEGER (0..4097)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter specifies the vlan id which configured on this port. 
+          It is invisible to the vlan system.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+             SUPPORT: YES     INSRVMOD: YES             RANGE: 0..4095,4097
+             PERSIST: YES     DEFVALUE: 4097 (untagged) UNITS: NA
+         "
+      ::= { ntrPtpMasterClkPortConfigEntry 5 }
+
+   ntrPtpMasterClkPortPbit OBJECT-TYPE
+      SYNTAX INTEGER (0..7)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "This parameter specifies the priority bit which configured on this port. 
+         It is invisible to the vlan system.
+
+         ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+               SUPPORT: YES   INSRVMOD: YES      RANGE: 0..7
+               PERSIST: YES   DEFVALUE: NA       UNITS: NA
+        "
+      ::= { ntrPtpMasterClkPortConfigEntry 6 }
+
+   ntrPtpMasterClkPortCompensation OBJECT-TYPE
+         SYNTAX INTEGER (-50000..50000)
+         ACCESS read-write
+         STATUS mandatory
+         DESCRIPTION
+           "This parameter corresponds to the ptp packet transport delay compensation.
+            If the packet transport path is asymmetric, the delay value needs be measured and compensated, the unit is nanosecond. It can be positive or negative.
+
+            ALCATEL NOTE: 
+                  SUPPORT: YES     INSRVMOD: YES         RANGE: -50000..50000
+                  PERSIST: YES     DEFVALUE: 0           UNITS: nanosecond " 
+         ::= { ntrPtpMasterClkPortConfigEntry 7 }
+       
+   ntrPtpSlaveClkPortDataSetTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrPtpSlaveClkPortDataSetEntry 
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "This table contains the view of the configuration of the PTP slave clock port data.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+          TABLESIZE: 6
+         "
+      ::= { asamSystemClockSelect 50 }
+      
+   ntrPtpSlaveClkPortDataSetEntry OBJECT-TYPE
+      SYNTAX NtrPtpSlaveClkPortDataSetEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrPtpSlaveClkPortDataSetTable."
+      INDEX { ntrPtpSlaveClkPortDataSetIndex }
+      ::= { ntrPtpSlaveClkPortDataSetTable 1 }
+
+   NtrPtpSlaveClkPortDataSetEntry ::=
+      SEQUENCE {
+               ntrPtpSlaveClkPortDataSetIndex             NtrPtpPort,
+               ntrPtpSlaveClkPortDataSetPortIdentity      INTEGER,
+               ntrPtpSlaveClkPortDataSetDelayMech         INTEGER,
+               ntrPtpSlaveClkPortDataSetDelayInterval     INTEGER,
+               ntrPtpSlaveClkPortDataSetPDelayInterval    INTEGER,
+               ntrPtpSlaveClkPortDataSetCompensation      INTEGER,
+               ntrPtpSlaveClkPortDataSetAnnouInterval  	  INTEGER,
+               ntrPtpSlaveClkPortDataSetSyncInterval 	  INTEGER
+ 
+      }
+
+   ntrPtpSlaveClkPortDataSetIndex OBJECT-TYPE
+     SYNTAX  NtrPtpPort
+       ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The Ptp slave clock port data Index.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 1..6             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpSlaveClkPortDataSetEntry 1 }
+
+   ntrPtpSlaveClkPortDataSetPortIdentity OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter specifies the port identity when NT working under slave mode. 
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: NO    INSRVMOD: YES         RANGE: 0..1
+             PERSIST: YES   DEFVALUE: 0           UNITS: NA"
+      ::= { ntrPtpSlaveClkPortDataSetEntry 2 }
+      
+   ntrPtpSlaveClkPortDataSetDelayMech OBJECT-TYPE
+      SYNTAX INTEGER {
+         e2e       (1),       
+         p2p       (2)     -- Not supported in current release
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies the mechanism used to calculate the Mean Path Delay as indicated in Table 9 of [IEEE 1588-2008].
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES         RANGE: 1,2
+             PERSIST: YES   DEFVALUE: e2e (1)     UNITS: NA"
+      ::= { ntrPtpSlaveClkPortDataSetEntry 3 }
+
+   ntrPtpSlaveClkPortDataSetDelayInterval OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "This parameter specifies the mean time interval between successive messages
+         shall be represented as the logarithm to the base 2 of this time interval
+         measured in seconds on the local clock of the device sending the message.
+         The values of these logarithmic attributes shall be selected from integers
+         in the range -7 to 4. The typical default value is 0,
+         which indicates that the interval of message is 1 second.
+
+         ALCATEL NOTE: 
+               SUPPORT: YES   INSRVMOD: YES      RANGE: -7..4
+               PERSIST: YES   DEFVALUE: 0        UNITS: NA
+        "
+      ::= { ntrPtpSlaveClkPortDataSetEntry 4 }
+
+   -- This ID is defined for future use, not supported in current release
+   ntrPtpSlaveClkPortDataSetPDelayInterval OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter specifies the mean time interval between successive messages
+          shall be represented as the logarithm to the base 2 of this time interval
+          measured in seconds on the local clock of the device sending the message.
+          The values of these logarithmic attributes shall be selected from integers
+          in the range -7 to 4. The typical default value is 0,
+          which indicates that the interval of message is 1 second.
+
+          ALCATEL NOTE: 
+             SUPPORT: YES     INSRVMOD: YES         RANGE: -7..4
+             PERSIST: YES     DEFVALUE: 0           UNITS: NA
+         "
+      ::= { ntrPtpSlaveClkPortDataSetEntry 5 }
+
+   ntrPtpSlaveClkPortDataSetCompensation OBJECT-TYPE
+      SYNTAX INTEGER (-100000..100000)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter corresponds to the ptp packet transport delay compensation.
+ If the packet transport path is asymmetric, the delay value needs be measured and compensated, the unit is nanosecond. It can be positive or negative.
+
+          ALCATEL NOTE: 
+             SUPPORT: YES     INSRVMOD: YES         RANGE: -100000..100000
+             PERSIST: YES     DEFVALUE: 0           UNITS: nanosecond " 
+      ::= { ntrPtpSlaveClkPortDataSetEntry 6 }
+
+   ntrPtpSlaveClkPortDataSetAnnouInterval OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "This parameter specifies the mean time interval between successive messages shall be represented as the logarithm to the base 2 of this time interval measured in secondson the local clock of the device sending the message. The values of these logarithmicattributes shall be selected from integers in the range -4 to 4. The default value is -3,
+         which indicates that the interval of message is 1/8 second.
+
+         ALCATEL NOTE: 
+               SUPPORT: YES   INSRVMOD: YES      RANGE: -4..4
+               PERSIST: YES   DEFVALUE: -3        UNITS: NA
+        "
+      ::= { ntrPtpSlaveClkPortDataSetEntry 7 }
+
+   ntrPtpSlaveClkPortDataSetSyncInterval OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "This parameter specifies the mean time interval between successive messages shall be represented as the logarithm to the base 2 of this time interval measured in secondson the local clock of the device sending the message. The values of these logarithmicattributes shall be selected from integers in the range -8 to 4. The default value is -4,
+         which indicates that the interval of message is 1/16 second.
+
+         ALCATEL NOTE: 
+               SUPPORT: YES   INSRVMOD: YES      RANGE: -8..4
+               PERSIST: YES   DEFVALUE: -4        UNITS: NA
+        "
+      ::= { ntrPtpSlaveClkPortDataSetEntry 8 }
+
+
+   asamSysTodLeapSecond OBJECT-TYPE
+      SYNTAX INTEGER (0..255)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter indicates the offset of the UTC time and TAI time, TAI is atomic time, UTC is astronomy time, an one-second offset will occur between UTC and TAI in periodic time.
+
+ALCATEL NOTE:
+             SUPPORT: YES     INSRVMOD: YES         RANGE: 0..255
+             PERSIST: YES     DEFVALUE: 0           UNITS: second"
+         
+      ::= { asamSystemClockSelect 52 }
+
+   asamSysTodLeapSecondAdjustValue OBJECT-TYPE
+      SYNTAX INTEGER (-1..1) 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter indicates the leap second adjustment value which is released by BIPM. +1 means the leap second will increase 1, -1 means the leap second will decrease 1, 0 means there is no coming leap second adjust value.
+
+ALCATEL NOTE:
+             SUPPORT: YES     INSRVMOD: YES         RANGE: -1,0,1
+             PERSIST: YES     DEFVALUE: 0           UNITS: second"
+         
+      ::= { asamSystemClockSelect 53 }
+
+TimeOfLeapAdjust ::= OCTET STRING (SIZE (4))
+
+   asamSysTodLeapSecondAdjustDate OBJECT-TYPE
+      SYNTAX TimeOfLeapAdjust
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This parameter indicates the leap second adjustment date, The format of the date is yyyy-mm-dd (2015-06-30), the leap second will always be adjusted at the last second(2015-06-30-23-59-60) of that day in ISAM. The object data doesn't include the separator.
+               |yy | yy | mm | dd |
+               | 1 |  2 |  3 |  4 |
+
+ALCATEL NOTE:
+             SUPPORT: YES     INSRVMOD: YES         RANGE: NA
+             PERSIST: YES     DEFVALUE: 0           UNITS: NA"
+         
+      ::= { asamSystemClockSelect 54 }
+
+  -- enhanced clock mgmt
+   ntrRegion OBJECT-TYPE
+      SYNTAX INTEGER {
+         etsi (1),
+         ansi (2)
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Specifies the type of network :
+          ANSI
+          ETSI (DEFAULT VALUE)
+
+          ALCATEL NOTE: Applicable to NGVR NTs supporting clock management. It will indicate in which Region Mode to operate.
+            SUPPORT: YES   INSRVMOD: NA          RANGE: 1..2     
+             PERSIST: YES   DEFVALUE: ETSI  UNITS: NA"
+
+      ::= { asamSystemClockSelect 55 }
+
+    ntrPtpCurrentMasterInfomationTable  OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrPtpCurrentMasterInfomationEntry 
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "This table contains the dataset of the current PTP master clock.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             TABLESIZE: 6 "
+      ::= { asamSystemClockSelect 56 }
+      
+   ntrPtpCurrentMasterInfomationEntry OBJECT-TYPE
+      SYNTAX NtrPtpCurrentMasterInfomationEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrPtpCurrentMasterInfomationTable."
+      INDEX { ntrPtpCurrentMasterIndex  }
+      ::= { ntrPtpCurrentMasterInfomationTable 1 }
+
+   NtrPtpCurrentMasterInfomationEntry ::=
+      SEQUENCE {
+               ntrPtpCurrentMasterIndex             NtrPtpPort,
+               ntrPtpCurrentMasterClkId             ClockId,
+               ntrPtpCurrentMasterPriority1         INTEGER,
+               ntrPtpCurrentMasterPriority2         INTEGER,
+               ntrPtpCurrentMasterClockClass        INTEGER,
+               ntrPtpCurrentMasterClockAccuracy     INTEGER,
+               ntrPtpCurrentMasterPortNumber        INTEGER,
+               ntrPtpCurrentMasterStepRemoved       INTEGER,
+               ntrPtpCurrentMasterGrandMasterClkId  ClockId,
+               ntrPtpCurrentMasterDomain            INTEGER,
+               ntrPtpCurrentMasterIsReference       INTEGER
+      }
+
+   ntrPtpCurrentMasterIndex OBJECT-TYPE
+     SYNTAX  NtrPtpPort
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "The Ptp Port Index.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 1..6             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpCurrentMasterInfomationEntry 1 }
+
+   ntrPtpCurrentMasterClkId OBJECT-TYPE
+     SYNTAX ClockId 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object specifies clockId of current PTP master
+         clock dataset.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: NA             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpCurrentMasterInfomationEntry 2 }
+      
+   ntrPtpCurrentMasterPriority1 OBJECT-TYPE
+     SYNTAX INTEGER 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object specifies priority1 of current PTP master
+         clock dataset.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 0..255             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpCurrentMasterInfomationEntry 3 }      
+
+   ntrPtpCurrentMasterPriority2 OBJECT-TYPE
+     SYNTAX INTEGER 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object specifies priority2 of current PTP master
+          clock dataset.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 0..255             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpCurrentMasterInfomationEntry 4 } 
+      
+      
+   ntrPtpCurrentMasterClockClass OBJECT-TYPE
+     SYNTAX INTEGER 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object specifies clockclass of current PTP master
+          clock dataset.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 0..255             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpCurrentMasterInfomationEntry 5 } 
+
+   ntrPtpCurrentMasterClockAccuracy OBJECT-TYPE
+     SYNTAX INTEGER 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object specifies clockAccuracy of current PTP master
+          clock dataset.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 0..255             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpCurrentMasterInfomationEntry 6 } 
+
+
+   ntrPtpCurrentMasterPortNumber OBJECT-TYPE
+     SYNTAX INTEGER 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object specifies MasterPortNumber of current PTP master
+          clock dataset.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 0..65535             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpCurrentMasterInfomationEntry 7 } 
+      
+
+   ntrPtpCurrentMasterStepRemoved OBJECT-TYPE
+     SYNTAX INTEGER 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object specifies the steps removed of current PTP master
+          clock dataset.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 0..65535             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpCurrentMasterInfomationEntry 8 }
+      
+   ntrPtpCurrentMasterGrandMasterClkId OBJECT-TYPE
+     SYNTAX ClockId
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object specifies GrandMasterClkId of current PTP master
+          clock dataset.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: NA             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpCurrentMasterInfomationEntry 9 }
+      
+   ntrPtpCurrentMasterDomain OBJECT-TYPE
+     SYNTAX INTEGER 
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+         "This object specifies domain of current PTP master clock dataset.
+         
+          ALCATEL NOTE:             
+            SUPPORT: YES   INSRVMOD: NA   RANGE: 0..255             
+            PERSIST: YES   DEFVALUE: NA   UNITS: -"
+      ::= { ntrPtpCurrentMasterInfomationEntry 10 }            
+      
+   ntrPtpCurrentMasterIsReference OBJECT-TYPE
+      SYNTAX INTEGER{
+        false  (0),
+        true   (1)
+      }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+        "This parameter indicated which ptp port is selected to output the clock and phase in each ieee1588 chip.
+         It is intended to be only read by the System Operator.
+
+         ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgnt
+               SUPPORT: YES   INSRVMOD: YES      RANGE: 0..1
+               PERSIST: NO    DEFVALUE: 0        UNITS: NA
+        "
+      ::= { ntrPtpCurrentMasterInfomationEntry 11 }        
+
+      
+   ntrPtpTCMode  OBJECT-TYPE
+      SYNTAX INTEGER {
+        tcModeDisable    (0),   -- disable TC mode
+        oneStepTCEnable  (1),   -- enable one-step TC
+        twoStepTCEnable  (2)    -- enable two-step TC
+      }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "This variable specifies to disable TC mode or to select one-step TC or two-step TC. 
+          The default is <TCModeDisable> and corresponds to disable TC mode.
+
+          ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES   INSRVMOD: YES                  RANGE: 0..2
+             PERSIST: YES   DEFVALUE: TCModeDisable (0)    UNITS: NA"
+      ::= { asamSystemClockSelect 57 }     
+                
+   ntrPtpLinkPortConfigTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF NtrPtpLinkPortConfigEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION     
+         "This table contains the view of the compensation of the PTP link port.
+         ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt.
+                  In R5.6, 120 entries are reserved. (network-ports , nt + ntio)
+      TABLESIZE: 120
+         "
+     ::=  { asamSystemClockSelect 58 }
+
+   ntrPtpLinkPortConfigEntry OBJECT-TYPE
+      SYNTAX NtrPtpLinkPortConfigEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "An entry in the ntrPtpLinkPortConfigTable."
+      INDEX { ntrPtpLinkPortSlot, ntrPtpLinkPortType, ntrPtpLinkPortNumber }
+     ::= { ntrPtpLinkPortConfigTable 1}
+
+   NtrPtpLinkPortConfigEntry ::=
+      SEQUENCE {
+               ntrPtpLinkPortSlot           EqptSlotIndex,
+               ntrPtpLinkPortType           INTEGER,
+               ntrPtpLinkPortNumber         INTEGER,
+               ntrPtpLinkPortCompensation   INTEGER
+               }
+
+   ntrPtpLinkPortSlot          OBJECT-TYPE
+      SYNTAX EqptSlotIndex
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the logical slot ID of the equipment 
+          (as defined in the Equipment MIB) which hold the PTP link port.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 0..65535
+             PERSIST: YES    DEFVALUE: NA           UNITS: NA"
+
+      ::= { ntrPtpLinkPortConfigEntry 1}
+
+   ntrPtpLinkPortType          OBJECT-TYPE
+      SYNTAX INTEGER {
+         none (1),        -- no entry for this index
+         sfp  (2),        -- SFP port type
+         xfp  (3)         -- XFP or SFP+ port type
+                     }
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the port type of the PTP link port to 
+          configure. 
+          The value <none:(1)> indicates that no selection is made for this 
+          entry.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 1..3
+             PERSIST: YES    DEFVALUE: none(1)      UNITS: NA"
+
+      ::= { ntrPtpLinkPortConfigEntry 2}
+
+   ntrPtpLinkPortNumber          OBJECT-TYPE
+      SYNTAX INTEGER (0..511)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to the faceplate port number of the 
+          PTP link port port to configure. The number of the faceplate port of the 
+          board combined with the port type and slot ID uniquely identify the port.
+          The value <511> indicates that no selection is made for this entry.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: 0..511
+             PERSIST: YES    DEFVALUE: 511          UNITS: NA"
+
+      ::= { ntrPtpLinkPortConfigEntry 3}
+      
+    ntrPtpLinkPortCompensation          OBJECT-TYPE
+      SYNTAX INTEGER (-100000..100000)
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " This object corresponds to configure the Compensation of the PTP link port.
+
+      ALCATEL NOTE: Applicable to NTs supporting the Enhanced clock mgmt
+             SUPPORT: YES    INSRVMOD: YES          RANGE: -100000..100000
+             PERSIST: YES    DEFVALUE: 0            UNITS: NA"
+
+      ::= { ntrPtpLinkPortConfigEntry 4}
+      
+END

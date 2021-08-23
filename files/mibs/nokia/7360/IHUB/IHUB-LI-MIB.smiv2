@@ -1,0 +1,2271 @@
+-- IHUB LI MIB
+--------------------------------------------------------------------------- 
+-- This specification is published by Alcatel-Lucent under Non-Disclosure 
+-- Agreement(s) (NDA) with specific parties and has to be considered as 
+-- Confidential Information as defined in such NDA. 
+-- Alcatel-Lucent reserves the right to revise this document for any reason, 
+-- including but not limited to conformity with standards promulgated by 
+-- various agencies, utilisation of advances in the state of the technical 
+-- areas, or the reflection of changes in the design of any equipment, 
+-- techniques, or procedures described or referred to herein. 
+-- The product specifications and other technical or performance information 
+-- contained herein are subject to change without notice. 
+-- Updates of this document will be issued under the above NDA's. 
+-- Alcatel-Lucent makes no representation or warranty, expressed or implied, 
+-- with respect to the sufficiency, accuracy, or utility of any information 
+-- or opinion contained herein. Alcatel-Lucent expressly advises that any use
+-- of for any purpose or reliance upon this technical reference is at the 
+-- risk of the user and that Alcatel-Lucent shall not be liable for any 
+-- damage or injury incurred by any person arising out of the sufficiency, 
+-- accuracy, or utility of any information or opinion contained herein. 
+-- This document is not to be construed as a suggestion to any manufacturer 
+-- to modify or change any of its products, nor does this document represent 
+-- any commitment by Alcatel-Lucent to sell or purchase any product. 
+-- Nothing contained herein shall be construed as conferring by implication, 
+-- estoppel, or otherwise any license or right under any patent, whether or 
+-- not the use of any information herein necessarily employs an invention of 
+-- any existing or later issued patent. 
+-- Alcatel-Lucent reserves the right not to offer any or all of these products 
+-- and to withdraw any or all of them at any future time. 
+-- Copyright (C) 2009, Alcatel-Lucent. All Rights Reserved. 
+---------------------------------------------------------------------------
+
+
+IHUB-LI-MIB DEFINITIONS ::= BEGIN
+
+-- Import list need to delete the unused ones!
+
+IMPORTS
+           Counter32,
+           Integer32,
+           MODULE-IDENTITY,
+           OBJECT-TYPE,  
+           enterprises,
+           IpAddress,
+           Unsigned32,
+	   Counter64
+                   FROM SNMPv2-SMI
+	
+	   OBJECT-GROUP,
+	   MODULE-COMPLIANCE
+	   	   FROM SNMPv2-CONF
+   
+           InetAddress,
+           InetAddressType,
+           InetAddressPrefixLength, 
+           InetAddressIPv6
+                   FROM INET-ADDRESS-MIB
+  
+           DateAndTime,
+           RowStatus,
+           TruthValue,
+           DisplayString,
+           TEXTUAL-CONVENTION
+                   FROM SNMPv2-TC;
+   
+           
+
+ihubLiMIB   
+        MODULE-IDENTITY
+        LAST-UPDATED    "201002200000Z"
+        ORGANIZATION    "Alcatel"
+        CONTACT-INFO
+            "Tom Batsele
+             Email:  asam.mibsupport@alcatel-lucent.com
+            " 
+        DESCRIPTION
+            "This document is the SNMP MIB module to manage and provision
+             Lawfull intercept targets on Alcatel-Lucent IHUB for
+             the 7302 ISAM, 7330 ISAM FTTN, and 7342 ISAM FTTU systems.
+            "
+
+--
+--  Revision History
+--
+
+
+        REVISION        "201002200000Z"
+        DESCRIPTION     "Rev 0.1                    20 Feb 2010 00:00
+                         Initial version of the IHUB-LI-MIB."
+
+
+::= { enterprises alcatel(637) asd(61) asam(1) 88}  
+
+  
+
+
+ihubLiSession          OBJECT IDENTIFIER ::= { ihubLiMIB 1 }
+ihubLiConfig           OBJECT IDENTIFIER ::= { ihubLiMIB 2 }
+ihubLiConformance      OBJECT IDENTIFIER ::= { ihubLiMIB 3 }
+
+-- ----------------------------
+-- Textual Conventions
+-- -------------------------
+
+     
+IhubLiItemDescription ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "80a"
+    STATUS       current
+    DESCRIPTION
+        "Description for an item.  Note, use only NVT ASCII displayable characters
+        here, no control characters, no UTF-8, etc."
+     SYNTAX OCTET STRING (SIZE(0..80))
+     
+IhubLiIPFilterID ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "identification number of a IP filter"
+    SYNTAX Unsigned32  (0..32)
+   
+IhubLiRouterServiceID ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        " The Service Id which uniquely identifies a router instance. 
+         value= 0 : base router 
+         value > 0: VPRN service id 
+         value= -1: not applicable.
+	"
+    SYNTAX Integer32(-1|0..2147483647)    
+
+IhubLiTcpUdpPort ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "The number of a TCP or UDP port.
+         Well known port numbers include
+         ftp-data(20), ftp(21), telnet(23), smtp(25), http(80),
+         pop3(110), nntp(119), snmp(161), snmptrap(162), etc."
+    REFERENCE "http://www.iana.org/assignments/port-numbers"
+    SYNTAX Integer32 (0 | 1..65535)
+    
+    
+IhubLiTcpUdpPortOperator ::= TEXTUAL-CONVENTION
+    STATUS       current
+    DESCRIPTION
+       "The operator specifies the manner in which a couple of other
+        MIB objects in the table are supposed to be used.
+
+        Operator        Value1               Value2
+        ----------------------------------------------------
+        none(0)         Any(0)               Any(0)
+        eq(1)           Specified Value      Any(0)
+        range(2)        Starting Value       Ending Value
+        lt(3)           Specified Value      Any(0)
+        gt(4)           Specified Value      Any(0)
+
+        'Any(0)' specifies that, this object can accept any values
+         but would default to 0. "
+    SYNTAX       INTEGER {
+                    none(0),
+                    eq(1),
+                    range(2),
+                    lt(3),
+                    gt(4)
+                 }
+                 
+IhubLiIpAddressPrefixLength ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS       current
+    DESCRIPTION
+        "The number of bits to match in an IP address mask."
+    SYNTAX Integer32 (0..32)
+
+IhubLiDSCPValueOrAny ::= TEXTUAL-CONVENTION
+    DISPLAY-HINT "d"
+    STATUS   current
+    DESCRIPTION
+       "The IP header Differentiated Services Code-Point that may be
+       used for discriminating among traffic streams. The value -1 is
+       used to indicate a wild card i.e. any value."
+    REFERENCE
+        "RFC 2474, RFC 2780"
+    SYNTAX   Integer32 (-1 | 0..63)
+                 
+
+-- ----------------------------
+-- MIB Objects begin here
+-- ----------------------------
+
+--
+-- This MIB defines the session attributes 
+-- 
+
+ihubLiSessionAdminStatus   OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    enabled (0),
+                    disabled (1)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of ihubLiSessionAdminStatus indicates whether Lawful Intercept (LI)
+         is globally enabled
+         "
+         ::= { ihubLiSession 1 }
+
+ihubLiSessionOperStatus   OBJECT-TYPE
+    SYNTAX      INTEGER {
+                        up (0),
+                        down (1)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of ihubLiSessionOperStatus indicates whether Lawful Intercept (LI)
+         is operational up
+         "
+         ::= { ihubLiSession 2 }
+
+         
+ihubLiMediation        OBJECT IDENTIFIER ::= { ihubLiSession 3 }
+ihubLiTarget             OBJECT IDENTIFIER ::= { ihubLiSession 4 }
+ihubLiFilter                OBJECT IDENTIFIER ::= { ihubLiSession 5 }
+
+ihubLiSessionRetentionValue  OBJECT-TYPE
+    SYNTAX     Integer32 (0.. 2147483647)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+
+    " Indicates in minutes how long session data  ( e.g mediation entries, filter entries ) is retained 
+      when no targets are existing anymore. This retention timer cleans up not needed resources.
+      When 0 is specified, the data will be kept until explicitly deleted.
+      By default the data is kept for 1 day;
+               "
+    DEFVAL { 1440 }      
+         ::= { ihubLiSession 6}
+  
+
+--
+-- This MIB defines the addressing of the mediation functions 
+-- 
+
+ihubLiMediationTable OBJECT-TYPE
+     SYNTAX     SEQUENCE OF IhubLiMediationEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+     
+        "The Call Content Mediation Function Table lists the mediation functions 
+         to which intercepted traffic should be sent.
+         The intercepted traffic is sent over IP, and one can specify: 
+          the IP address of the device ( IPv4 address, )
+          the IP DSCP settings to be used
+          the Ethernet Pbit settings to be used
+          the IP protocol and encapsulation to be used ( e.g gre, udp, tcp, sctp,...
+         Entries are added to this table via ihubLiMediationStatus in 
+         accordance with the RowStatus convention 
+         
+          ALCATEL NOTE :
+	               TABLESIZE : 4
+         
+        "
+     ::= { ihubLiMediation 1 }
+
+
+ihubLiMediationEntry OBJECT-TYPE
+     SYNTAX     IhubLiMediationEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+        "The entry describes a single session maintained with an
+	 application on a Mediation Device (i.e a mediation function ) 
+	"
+     INDEX      { ihubLiMediationIndex }
+     ::= { ihubLiMediationTable 1 }
+     
+
+IhubLiMediationEntry ::= SEQUENCE {
+        ihubLiMediationIndex              Integer32,
+        ihubLiMediationRowStatus          RowStatus,
+        ihubLiMediationDescription          IhubLiItemDescription,
+        ihubLiMediationAddressType        InetAddressType,
+        ihubLiMediationDestAddress        InetAddress,
+        ihubLiMediationSrcAddress         InetAddress,
+        ihubLiMediationDscp                    Integer32,
+        ihubLiMediationPbit                        Integer32,
+        ihubLiMediationTransportMethod    INTEGER,
+        ihubLiMediationAdminStatus        INTEGER,         
+        ihubLiMediationOperStatus         INTEGER,
+        ihubLiMediationRouterServiceId  IhubLiRouterServiceID
+        }
+
+
+ihubLiMediationIndex OBJECT-TYPE
+     SYNTAX     Integer32 (1..4)
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+        "Uniquely identifies a mediation function on this system. 
+        "
+     ::= { ihubLiMediationEntry 1 }
+
+ihubLiMediationRowStatus OBJECT-TYPE
+     SYNTAX     RowStatus
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+       "The status of this conceptual row. This object is used to
+        manage creation and deletion of rows in this table.
+         
+        The values supported during a set operation are 'createAndGo' 
+         'destroy' .
+        
+        An entry can only be destroyed when not referred to by 
+        ihubLiTargetMediationIndex and adminStatus being in state 'disabled'        .
+       "
+     ::= { ihubLiMediationEntry 2 }
+
+
+ihubLiMediationDescription  OBJECT-TYPE
+    SYNTAX       IhubLiItemDescription
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "User-provided description for this mediation function."
+    DEFVAL { ''H }
+    ::= { ihubLiMediationEntry 3 }
+
+
+ihubLiMediationAddressType OBJECT-TYPE
+     SYNTAX     InetAddressType
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The type of ihubLiMediationDestAddress.
+        Restriction: only ipv4 supported 
+        "
+     DEFVAL { ipv4 }
+     ::= { ihubLiMediationEntry 4 }
+
+ihubLiMediationDestAddress OBJECT-TYPE
+     SYNTAX     InetAddress
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The IP Address of the Mediation function's network interface
+         to which to direct intercepted traffic. 
+         This parameter must be provided when creating a row.
+         The value should be different then: loopback address,  class D address, local interface address 
+          to be accepted
+        "
+     ::= { ihubLiMediationEntry 5 }
+
+ihubLiMediationSrcAddress OBJECT-TYPE
+     SYNTAX     InetAddress
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The IP adress used as source IP for encapsulating
+         When 0.0.0.0 is specified then system IP address will be used:
+         When a value is specified it should be an address matching a subnet of an interface of
+         the specified router, otherwise the request is rejected. 
+        "
+     DEFVAL       { '00000000'H } -- 0.0.0.0
+     ::= { ihubLiMediationEntry 6 }
+
+ihubLiMediationDscp OBJECT-TYPE
+     SYNTAX     Integer32 (0..63)
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The Differentiated Services Code Point the intercepting
+         device applies to the IP packets encapsulating the
+         intercepted traffic.
+        "
+     DEFVAL { 34 }        -- by default, AF41, code 100010
+     ::= { ihubLiMediationEntry 7 }
+
+
+ihubLiMediationPbit OBJECT-TYPE
+     SYNTAX     Integer32 (0..7)
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The P-bit setting the intercepting device applies to the IP packets 
+        encapsulating the intercepted traffic.
+        "
+     DEFVAL { 3 }        
+     ::= { ihubLiMediationEntry 8 }
+
+
+ihubLiMediationTransportMethod OBJECT-TYPE
+     SYNTAX     INTEGER { 
+			   gre (1)
+			 }
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The IP protocol used for transferring intercept data to the mediation
+         function.
+        "
+     DEFVAL { 1 }   
+     ::= { ihubLiMediationEntry 9 }
+
+ihubLiMediationAdminStatus OBJECT-TYPE
+     SYNTAX      INTEGER {
+                    enabled (0),
+                    disabled (1)
+                }
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+         "
+           Admin state; allows to enable/disable interception to this device
+          A Mediation entry can only be modified when being in state 'disabled' except for the description 
+          field
+        "
+        DEFVAL {disabled}
+     ::= { ihubLiMediationEntry 10 }
+
+ihubLiMediationOperStatus OBJECT-TYPE
+     SYNTAX     INTEGER { 
+			   up(1),
+                           downAdmin(2),
+                           downGlobal(3),
+                           downRouter(4),
+                           downSrcIP(5),
+                           downOther(6)
+                           }
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+         "
+           The operational state will indicate down ( in order of priority)  when
+-	ihubLiMediationAdminStatus is disabled ( downAdmin )
+-	ihubLiSessionOperStatus is down ( downGlobal)
+-	ihubLiSessionIntercept is disabled ( downGlobal )
+-	router instance referred by ihubLiMediationRouterServiceId  is operational down (  downRouter ) 
+-	In case a ihubLiMediationSrcAddress has been specified but the matching subnet interface is operational down ( downSrcIP )
+-	In case ihubLiMediationSrcAddress is specified as 0.0.0;0, and all IP interface of the router are operational down ( downSrcIP )
+             
+         "
+     ::= { ihubLiMediationEntry 11 }
+
+ihubLiMediationRouterServiceId OBJECT-TYPE
+      SYNTAX     IhubLiRouterServiceID
+      MAX-ACCESS read-create
+      STATUS     current
+      
+      DESCRIPTION
+         "The router id is the Service Id of the VPRN or 0 for base router.
+          note: value -1 is not allowed
+          When a not existing value is specified the operational state wil be down.
+          R4.2 restriction: only base router supported.
+         "
+        DEFVAL {0}
+      ::= { ihubLiMediationEntry 12  }  
+ 
+--
+-- Mediation free index
+--
+
+ ihubLiMediationGetNextFreeIndex  OBJECT-TYPE
+    SYNTAX  Integer32(0..4)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The next Free Index value that can be used for creating
+	 a new entry in the Mediation Table.
+         This object contains an appropriate value to be used for 
+         ihubLiMediationIndex  when creating entries in the ihubLiMediationTable. 
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the ihubLiMediationIndex  value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current-value of this object. After each retrieval, the agent should
+         modify the value to the next unassigned index.
+       "
+    ::= { ihubLiMediation 2 }
+
+
+--
+-- This MIB defines the target(s) that have to be placed under intercept 
+-- 
+
+ihubLiTargetTable OBJECT-TYPE
+     SYNTAX       SEQUENCE OF IhubLiTargetEntry
+     MAX-ACCESS not-accessible
+     STATUS       current
+     DESCRIPTION
+        "The Intercept Target Table lists the targets to be 
+         intercepted. 
+        
+         Targets should be non overlapping; as packets from 
+         a target can only once be duplicated with a specific
+         Lawful Intercept IDentifier (LIID)
+
+         Entries are added to this table via ihubLiTargetRowStatus in
+         accordance with the RowStatus convention.
+         
+         Up to 16 targets can be created, but only for 8 the rowStatus can be active
+         
+         ALCATEL NOTE :
+	               TABLESIZE : 16
+         "
+     ::= { ihubLiTarget 1  }
+
+
+ihubLiTargetEntry OBJECT-TYPE
+     SYNTAX     IhubLiTargetEntry
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+        "A target entry indicates a single target to be
+         intercepted to a Mediation Device. 
+        "
+     INDEX { ihubLiTargetIndex}
+     ::= { ihubLiTargetTable 1 } 
+
+
+IhubLiTargetEntry ::= SEQUENCE {
+        ihubLiTargetIndex                  Integer32,
+        ihubLiTargetRowStatus              RowStatus,
+        ihubLiTargetDescription            IhubLiItemDescription,
+        ihubLiTargetEgressLIID             Integer32,
+        ihubLiTargetIngressLIID            Integer32,
+        ihubLiTargetMediationIndex         Integer32,
+        ihubLiTargetEgressIPFilterIndex    IhubLiIPFilterID, 
+        ihubLiTargetEgressIPv6FilterIndex  IhubLiIPFilterID, 
+        ihubLiTargetIngressIPFilterIndex   IhubLiIPFilterID, 
+        ihubLiTargetIngressIPv6FilterIndex IhubLiIPFilterID, 
+        ihubLiTargetTimeout                DateAndTime,
+        ihubLiTargetAdminStatus            INTEGER,
+        ihubLiTargetOperStatus             INTEGER,
+        ihubLiTargetEnableStats	           TruthValue
+}
+
+ihubLiTargetIndex OBJECT-TYPE
+     SYNTAX     Integer32 (1..16)
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+        "The unique identification of the target in this system.
+        "
+     ::= { ihubLiTargetEntry 1 }
+
+ihubLiTargetRowStatus OBJECT-TYPE
+     SYNTAX     RowStatus
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The status of this conceptual row. This object manages
+        creation and deletion of rows in this table.
+        
+        The values supported during a set operation are 'createAndGo' 
+	 and   'destroy' 
+	        
+	The adminStatus needs first to be set to 'disabled' before destroy is allowed, 
+	destroyal will lead also to destroyal of coresponding row details:
+	ihubLiTargetStaticIPTable, ihubLiTargetCircuitTable, ihubLiTargetRemoteTable
+	
+        "
+     ::= { ihubLiTargetEntry 2 }
+     
+ihubLiTargetDescription  OBJECT-TYPE
+    SYNTAX       IhubLiItemDescription
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "User-provided description for this target."
+    DEFVAL { ''H }
+    ::= { ihubLiTargetEntry 3 }
+
+ihubLiTargetEgressLIID OBJECT-TYPE
+     SYNTAX     Integer32 (0..2147483647)
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "This object contains a value called the Lawful Intercept IDentifier (LIID) 
+        that should be passed for this target together with the egress intercepted data to the
+        mediation function specified by ihubLiTargetMediationIndex
+        A value of 0 means not applicable.
+        Depending on the value of ihubLiMediationProtEncapsMethod the LLID can be constrained
+        -gre1: value must fit in 12bit vlan-id, allowed values are 1..4095
+       This parameter must be provided when creating a row and cannot be modified.
+        "
+     ::= { ihubLiTargetEntry 4 }
+
+ihubLiTargetIngressLIID OBJECT-TYPE
+     SYNTAX     Integer32 (0..2147483647)
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "This object contains a value called the Lawful Intercept IDentifier (LIID) 
+        that should be passed for this target together with the ingress intercepted data to the
+        mediation function specified by ihubLiTargetMediationIndex
+        A value of 0 means not applicable.
+        Depending on the value of ihubLiMediationProtEncapsMethod the LLID can be constrained
+        -gre1: value must fit in 12bit vlan-id, allowed values are 1..4095
+       This parameter must be provided when creating a row and cannot be modified.
+        "
+     ::= { ihubLiTargetEntry 5 }
+
+
+ihubLiTargetMediationIndex OBJECT-TYPE
+     SYNTAX     Integer32 (1..4)
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "Indicates to which mediation function that data should be sent
+         When invalid mediation index, set operation is rejected
+          This parameter must be provided when creating a row and cannot be modified.
+         "
+     ::= { ihubLiTargetEntry 6 } 
+	
+ihubLiTargetEgressIPFilterIndex OBJECT-TYPE
+     SYNTAX     IhubLiIPFilterID
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "A index used to identify a lawful intercept target filter in the system ihubLiIPFilterTable
+         This field is optional, 0 is used to indicate this
+         Note that IP addresses specified in the filter are only taken into account when
+         they match a target IP address.
+        "
+      DEFVAL { 0 }
+     ::= { ihubLiTargetEntry 7  }  
+     
+ihubLiTargetEgressIPv6FilterIndex OBJECT-TYPE
+  SYNTAX     IhubLiIPFilterID
+  MAX-ACCESS read-create
+  STATUS     current
+  DESCRIPTION
+     "A index used to identify a lawful intercept target IPv6 filter in the system ihubLiIPv6FilterTable
+      This field is optional, 0 is used to indicate this
+      Note that IP addresses specified in the filter are only taken into account when
+      they match a target IP address.
+     "
+   DEFVAL { 0 }
+::= { ihubLiTargetEntry 8  }  
+
+ihubLiTargetIngressIPFilterIndex OBJECT-TYPE
+  SYNTAX     IhubLiIPFilterID
+  MAX-ACCESS read-create
+  STATUS     current
+  DESCRIPTION
+     "A index used to identify a lawful intercept target filter in the system ihubLiIPFilterTable
+      This field is optional, 0 is used to indicate this
+      Note that IP addresses specified in the filter are only taken into account when
+      they match a target IP address.
+     "
+   DEFVAL { 0 }
+::= { ihubLiTargetEntry 9  }  
+
+ihubLiTargetIngressIPv6FilterIndex OBJECT-TYPE
+  SYNTAX     IhubLiIPFilterID
+  MAX-ACCESS read-create
+  STATUS     current
+  DESCRIPTION
+     "A index used to identify a lawful intercept target IPv6 filter in the system ihubLiIPv6FilterTable
+      This field is optional, 0 is used to indicate this
+      Note that IP addresses specified in the filter are only taken into account when
+      they match a target IP address.
+     "
+   DEFVAL { 0 }
+::= { ihubLiTargetEntry 10  }  
+
+ihubLiTargetTimeout OBJECT-TYPE
+     SYNTAX     DateAndTime
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The time at which this row and all related targetrows ( circuit, remote, static) 
+         should be automatically removed,and the intercept function cease. 
+         Since the initiating network manager may 
+         be the only device able to manage a specific intercept or know of its
+         existence, this acts as a fail-safe for the failure or removal
+         of the network manager. 
+         
+         Minimum value : none, as long as the time is > to current time 
+  Maximum value : current time + 20 days. 
+	 
+	"
+    
+     ::= { ihubLiTargetEntry 11 }
+
+
+
+ihubLiTargetAdminStatus OBJECT-TYPE
+     SYNTAX      INTEGER {
+                    enabled (0),
+                    disabled (1)
+                }
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+         "
+          Admin state; allows to enable/disable interception for this target
+          Modification of next fields ihubLiTargetIngress/EgresIP(v6)FilterIndex,ihubLiTargetTimeout, 
+          ihubLiTargetDescription is allowed in enabled state. For modification of other fields the admin 
+          state should  be set to disabled.
+         "
+        DEFVAL {disabled}
+     ::= { ihubLiTargetEntry 12 }
+     
+ihubLiTargetOperStatus OBJECT-TYPE
+    SYNTAX     INTEGER { 
+			   up(1),
+                           downAdmin(2),
+                           downMediation(3),
+                           downDetailsNotSpecified(4),
+                           downOther(5)
+                            }
+     MAX-ACCESS read-only
+     STATUS     current
+     DESCRIPTION
+         "'up': interception of traffic to this target is enabled 
+ The operational state will indicate down ( in order of priority) :
+          'downAdmin': ihubLiTargetAdminStatus is disabled
+          'downMediation': ihubLiTargetMediationIndex point to a mediation device which is not oper up      
+          'downDetailsNotSpecified': ihubLiTargetStaticIPTable, ihubLiTargetTable, 
+           ihubLiTargetRemoteTable not created
+          'downOther': Other reasons
+            "
+     ::= { ihubLiTargetEntry 13 }
+ 
+ihubLiTargetEnableStats OBJECT-TYPE
+    SYNTAX          TruthValue
+    MAX-ACCESS      read-create
+    STATUS          current
+    DESCRIPTION     "The value of the object ihubLiTargetEnableStats specifies
+                     whether the agent collects accounting statistics for this
+                     target. When the value is 'true' the agent
+                     collects statistics on this target.
+                     "
+    DEFVAL          { false }
+    ::= { ihubLiTargetEntry 14 }
+
+--
+-- The target static IP table
+--
+
+ihubLiTargetStaticIPTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubLiTargetStaticIPEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The Intercept Target IP Filter Table allows to specify for a target 
+         that does not support DHCP a list of static IP address ranges
+         for which IP packets should be sent to the mediation function.
+         Up to 8 static IP address ranges can be specified per targetIndex
+        "
+    ::= { ihubLiTarget 2 }
+
+
+ihubLiTargetStaticIPEntry OBJECT-TYPE
+    SYNTAX       IhubLiTargetStaticIPEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about static IP address ranges 
+        "
+    INDEX { ihubLiTargetIndex, ihubLiTargetStaticIPIndex }
+    ::= { ihubLiTargetStaticIPTable 1 }
+
+
+IhubLiTargetStaticIPEntry ::= SEQUENCE
+    {
+        ihubLiTargetStaticIPIndex               Unsigned32,
+        ihubLiTargetStaticRowStatus             RowStatus,
+        ihubLiTargetStaticAddressType           InetAddressType,
+        ihubLiTargetStaticAddress               InetAddress,
+        ihubLiTargetStaticAddressLength         InetAddressPrefixLength,
+        ihubLiTargetStaticRouterServiceId            	IhubLiRouterServiceID
+    }
+
+ihubLiTargetStaticIPIndex OBJECT-TYPE
+     SYNTAX     Unsigned32  (1..8)
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+        "The unique identification of one of the assigned static IP address ranges
+        "
+     ::= { ihubLiTargetStaticIPEntry 1 }
+     
+ihubLiTargetStaticRowStatus OBJECT-TYPE
+      SYNTAX     RowStatus
+      MAX-ACCESS read-create
+      STATUS     current
+      DESCRIPTION
+         "
+         The status of this conceptual row. This object manages
+	 creation and deletion of rows in this table.
+	         
+	 The values supported during a set operation are 'createAndGo' and'destroy' 
+	 	        
+	 The target under intercept represented by the ihubLiTargetIndex must exist
+	 as an entry within the ihubLiTargetTable or row creation will fail.
+         When the corresponding entry in the ihubLiTargetTable is deleted this row entry will
+         also be deleted.
+         "
+     ::= { ihubLiTargetStaticIPEntry 2 }
+     
+ihubLiTargetStaticAddressType OBJECT-TYPE
+     SYNTAX     InetAddressType
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The type of address. IPv4 or IPv6
+         This parameter must be provided when creating a row.
+        "
+     ::= { ihubLiTargetStaticIPEntry 3 }
+
+ihubLiTargetStaticAddress OBJECT-TYPE
+     SYNTAX     InetAddress
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The IP Address from which to intercept traffic.
+         This parameter must be provided when creating a row.
+        "
+     ::= { ihubLiTargetStaticIPEntry 4 }
+ 
+ ihubLiTargetStaticAddressLength OBJECT-TYPE
+      SYNTAX     InetAddressPrefixLength
+      MAX-ACCESS read-create
+      STATUS     current
+      DESCRIPTION
+         "The IP Address prefix.
+          This parameter must be provided when creating a row.
+         "
+     ::= { ihubLiTargetStaticIPEntry 5 }
+     
+ ihubLiTargetStaticRouterServiceId OBJECT-TYPE
+      SYNTAX     IhubLiRouterServiceID
+      MAX-ACCESS read-create
+      STATUS     current
+      
+      DESCRIPTION
+         "The router id is the Service Id of the VPRN or 0 for base router.
+          note: value -1 is not allowed
+          "
+        DEFVAL {0}
+      ::= { ihubLiTargetStaticIPEntry 6  }  
+ 
+
+ 
+ 
+--
+-- The target circuit table
+--
+
+ihubLiTargetCircuitTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubLiTargetCircuitEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+	"describes the circuit-id's that should be intercepted. 
+	"
+    ::= { ihubLiTarget 3 }
+
+ihubLiTargetCircuitEntry OBJECT-TYPE
+    SYNTAX       IhubLiTargetCircuitEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+	"Information about target circuit-id'. 
+	 "
+    INDEX { ihubLiTargetIndex }
+    ::= { ihubLiTargetCircuitTable 1 }
+
+IhubLiTargetCircuitEntry::= 
+    SEQUENCE { 
+	ihubLiTargetCircuitId             DisplayString,
+	ihubLiTargetCircuitRowStatus      RowStatus,
+	ihubLiTargetCircuitRouterServiceId     IhubLiRouterServiceID,
+	ihubLiTargetCircuitMatch          INTEGER     
+    }
+
+ihubLiTargetCircuitId OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE(0..127))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+	"The value of the object ihubLiTargetCircuitId specifies
+	 the circuit Id to match against.
+	This parameter must be provided when creating a row."
+    ::= { ihubLiTargetCircuitEntry 1 }
+
+ihubLiTargetCircuitRowStatus OBJECT-TYPE
+      SYNTAX     RowStatus
+      MAX-ACCESS read-create
+      STATUS     current
+      DESCRIPTION
+	 "The status of this conceptual row. This object manages
+	 creation and deletion of rows in this table.
+	         
+	 The values supported during a set operation are 'createAndGo' and'destroy' 
+	 	        
+	 The target under intercept represented by the ihubLiTargetIndex must exist as an entry within the ihubLiTargetTable or row creation will fail.
+         When the corresponding entry in the ihubLiTargetTable is deleted this row entry will
+         also be deleted.
+	 "
+     ::= { ihubLiTargetCircuitEntry 2 }
+
+ihubLiTargetCircuitRouterServiceId OBJECT-TYPE
+     SYNTAX     IhubLiRouterServiceID
+     MAX-ACCESS read-create
+     STATUS     current
+
+     DESCRIPTION
+	"The router id is the Service Id of the VPRN or 0 for base router.
+	 note: value -1 indicates not used as extra selector
+	"
+       DEFVAL {-1}
+     ::= { ihubLiTargetCircuitEntry 3  }  
+
+ihubLiTargetCircuitMatch OBJECT-TYPE
+     SYNTAX     INTEGER { 
+                           exact(1),
+                           prefix(2)
+                           }
+     MAX-ACCESS read-create
+     STATUS     current
+
+     DESCRIPTION
+	"
+	  exact:  select the DHCP IP address(es) coressponding exactly with this circuit-id
+	  prefix: select the DHCP IP address(es) corresponding to a prefix match with this circuit-id 
+	"
+       DEFVAL {1}
+     ::= { ihubLiTargetCircuitEntry 4  }  
+
+--
+-- The target remote table
+--
+ 
+ ihubLiTargetRemoteTable OBJECT-TYPE
+	    SYNTAX       SEQUENCE OF IhubLiTargetRemoteEntry
+	    MAX-ACCESS   not-accessible
+	    STATUS       current
+	    DESCRIPTION
+		"describes the remote-id's that should be intercepted. . 
+		"
+	    ::= { ihubLiTarget 4 }
+
+	ihubLiTargetRemoteEntry OBJECT-TYPE
+	    SYNTAX       IhubLiTargetRemoteEntry
+	    MAX-ACCESS   not-accessible
+	    STATUS       current
+	    DESCRIPTION
+		"Information about remote-id "
+	    INDEX { ihubLiTargetIndex }
+	    ::= { ihubLiTargetRemoteTable 1 }
+
+IhubLiTargetRemoteEntry::= 
+    SEQUENCE { 
+	ihubLiTargetRemoteId            DisplayString,
+	ihubLiTargetRemoteRowStatus     RowStatus,
+	ihubLiTargetRemoteRouterServiceId      IhubLiRouterServiceID
+    }
+    
+ihubLiTargetRemoteId OBJECT-TYPE
+	SYNTAX      DisplayString (SIZE(0..127))
+    	MAX-ACCESS  read-create
+    	STATUS      current
+    	DESCRIPTION
+    	"The value of the object ihubLiTargetRemoteId specifies
+	the remote Id to match against.
+       This parameter must be provided when creating a row.
+	"    	
+    ::= { ihubLiTargetRemoteEntry 1 }
+
+ihubLiTargetRemoteRowStatus OBJECT-TYPE
+	      SYNTAX     RowStatus
+	      MAX-ACCESS read-create
+	      STATUS     current
+	      DESCRIPTION
+		 "he status of this conceptual row. This object manages
+	 	  creation and deletion of rows in this table.
+	         
+	          The values supported during a set operation are 'createAndGo' and'destroy' 
+	 	        
+	          The target under intercept represented by the ihubLiTargetIndex must exist
+ 	          as an entry within the ihubLiTargetTable or row creation will fail.
+                  When the corresponding entry in the ihubLiTargetTable is deleted this row entry will
+                  also be deleted.
+		 "
+	     ::= { ihubLiTargetRemoteEntry 2 }
+
+ihubLiTargetRemoteRouterServiceId OBJECT-TYPE
+     SYNTAX     IhubLiRouterServiceID
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+	"The router id is the Service Id of the VPRN or 0 for base router.
+	 note: value -1 indicates not used as extra selector
+	"
+       DEFVAL {-1}
+     ::= { ihubLiTargetRemoteEntry 3  }  
+
+   
+--
+-- The target statistics table, allows to verify whether packets are sent out
+--
+
+ihubLiTargetStatsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF IhubLiTargetStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "The Intercept Target statistics Table lists statistics for each target 
+         defined in ihubLiTargetTable. Statistices are only collected when ihubLiTargetEnableStats
+         is set to true. When set to false 0 is returned.
+        "
+::= { ihubLiTarget 5 }
+
+
+ihubLiTargetStatsEntry OBJECT-TYPE
+    SYNTAX      IhubLiTargetStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A target stats entry contains statistics data of a single target. 
+        "
+    AUGMENTS { ihubLiTargetEntry }
+::= { ihubLiTargetStatsTable 1 }
+
+
+IhubLiTargetStatsEntry ::= SEQUENCE {
+    ihubLiTargetToPackets            Counter64,
+    ihubLiTargetFromPackets          Counter64,
+    ihubLiTargetIPsOperational       Integer32,
+    ihubLiTargetIPsIntercepted       Integer32
+    }
+ 
+
+ihubLiTargetToPackets OBJECT-TYPE
+      SYNTAX     Counter64
+      MAX-ACCESS read-only
+      STATUS     current
+      DESCRIPTION
+         "The number of packets sent to the target that have been intercepted
+          Allows to verify that interception of traffic is happening
+         "
+      ::= { ihubLiTargetStatsEntry 1 }
+ 
+      
+ihubLiTargetFromPackets OBJECT-TYPE
+      SYNTAX     Counter64
+      MAX-ACCESS read-only
+      STATUS     current
+      DESCRIPTION
+         "The number of packets from the target that have been intercepted 
+          Allows to verify that interception of traffic is happening
+         "
+     ::= { ihubLiTargetStatsEntry 2 }    
+   
+ihubLiTargetIPsOperational       OBJECT-TYPE
+      SYNTAX     Integer32(0..64)
+      MAX-ACCESS read-only
+      STATUS     current
+      DESCRIPTION
+         "
+          when target is operational down: 0
+          when target is operational up: 
+-	Number of DHCP sessions (=IP's) associated with given circuit-id or
+-	Number of DHCP sessions (=IP's) associated with given remote-id or
+-	Number of static address ranges configured  "
+      ::= { ihubLiTargetStatsEntry 3 }
+
+ihubLiTargetIPsIntercepted       OBJECT-TYPE
+      SYNTAX     Integer32(0..64)
+      MAX-ACCESS read-only
+      STATUS     current
+      DESCRIPTION
+         " when target is operational down: 0
+          when target is operational up: 
+-	Number of DHCP sessions (=IP's) associated with given circuit-id being intercepted or
+-	Number of DHCP sessions (=IP's) associated with given remote-id being intercepted or
+-	Number of static address ranges being intercepted
+          When IhubLiTargetIPsIntercepted < ihubLiTargetIPsOperational it means that the system is out
+          of resources and does not intercept some IP addresses of the target.        
+         "
+      ::= { ihubLiTargetStatsEntry 4 }
+
+--
+-- Target free indexes
+--
+
+ihubLiTargetGetNextFreeIndex  OBJECT-TYPE
+    SYNTAX  Integer32(0..16)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The next Free Index value that can be used for creating
+	 a new entry in the Target Table.
+         This object contains an appropriate value to be used for 
+         ihubLiTargetIndex  when creating entries in the ihubLiTargetTable. 
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the ihubLiTargetIndex  value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current-value of this object. After each retrieval, the agent should
+         modify the value to the next unassigned index.
+       "
+    ::= { ihubLiTarget 6 }
+
+
+ihubLiTargetStaticGetNextFreeIndexTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubLiTargetStaticGetNextFreeIndexEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "
+          Contains free index for a particular static entry
+        "
+    ::= { ihubLiTarget 7 }
+	
+
+ihubLiTargetStaticGetNextFreeIndexEntry OBJECT-TYPE
+    SYNTAX       IhubLiTargetStaticGetNextFreeIndexEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about static IP address ranges 
+        "
+    INDEX { ihubLiTargetIndex}
+    ::= { ihubLiTargetStaticGetNextFreeIndexTable 1 }
+
+
+IhubLiTargetStaticGetNextFreeIndexEntry::= SEQUENCE
+    {
+        ihubLiTargetStaticGetNextFreeIndex  Integer32
+    }
+
+
+ihubLiTargetStaticGetNextFreeIndex  OBJECT-TYPE
+    SYNTAX  Integer32(0..8)
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The next Free Index value that can be used for creating
+	 a new entry in the Target static IP Table.
+         This object contains an appropriate value to be used for 
+         ihubLiTargetStaticIPIndex when adding entries in the ihubLiTargetStaticIPTable
+         for a particular ihubLiTargetIndex
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the ihubLiTargetStaticIPIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current-value of this object. After each retrieval, the agent should
+         modify the value to the next unassigned index.
+       "
+    ::= { ihubLiTargetStaticGetNextFreeIndexEntry 1 }
+
+ihubLiTargetPending   OBJECT-TYPE
+    SYNTAX      Integer32(0..64)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "
+          Set to 0 when the system is able to intercept all configured targets
+          Set to any other value when some target IP's cannot be installed in HW and are pending
+         "
+         ::= { ihubLiTarget 8 }
+
+--
+-- Target lawful Intercept IP Filter Table
+--
+
+ihubLiIPFilterTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubLiIPFilterEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The Intercept Target IP Filter Table allows to specify based on IP header content
+         which IP packets from a particular target should be sent to the mediation function. 
+        "
+    ::= { ihubLiFilter 1 }
+
+
+ihubLiIPFilterEntry OBJECT-TYPE
+    SYNTAX       IhubLiIPFilterEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular IP Filter entry. Entries are
+         created/deleted  by user.
+         Entries can be created before targets are created.
+         Entries have to be explicitly linked to the target table.
+         "
+    INDEX { ihubLiIPFilterIndex }
+    ::= { ihubLiIPFilterTable 1 }
+
+
+IhubLiIPFilterEntry ::= SEQUENCE
+    {
+        ihubLiIPFilterIndex            IhubLiIPFilterID,
+        ihubLiIPFilterRowStatus        RowStatus,
+        ihubLiIPFilterDescription      IhubLiItemDescription,
+        ihubLiIPFilterDefaultAction    INTEGER
+    }
+
+ihubLiIPFilterIndex  OBJECT-TYPE
+    SYNTAX       IhubLiIPFilterID(1..32)
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Uniquely identifies a lawfull intercept target ip filter on this system."
+    ::= { ihubLiIPFilterEntry 1 }
+
+ihubLiIPFilterRowStatus  OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object allows entries to be created and deleted in the
+         ihubLiIPFilterTable."
+    ::= { ihubLiIPFilterEntry 2 }
+
+ihubLiIPFilterDescription  OBJECT-TYPE
+    SYNTAX       IhubLiItemDescription
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "User-provided description for this filter."
+    DEFVAL { ''H }
+    ::= { ihubLiIPFilterEntry 3 }
+
+ihubLiIPFilterDefaultAction OBJECT-TYPE
+     SYNTAX     INTEGER {
+                drop(1),
+                forward(2)
+     }
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+             "The action to take for packets that do not match any filter entries."
+     DEFVAL { drop }
+        ::= {ihubLiIPFilterEntry 4 } 
+
+--
+-- Target Lawfull Intercept IP Filter Entry parameters
+--
+
+ihubLiIPFilterParamsTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubLiIPFilterParamsEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION  "A table of all IP filter match entries for all lawfull intercept IP filters."
+    ::= { ihubLiFilter 2 }
+
+ihubLiIPFilterParamsEntry OBJECT-TYPE
+    SYNTAX       IhubLiIPFilterParamsEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular IP Filter entry.
+         Every lawful intercept IP Filter can have zero or more match entries.
+        Entries are created/deleted by user.
+        "
+    INDEX { ihubLiIPFilterIndex, ihubLiIPFilterParamsIndex }
+    ::= { ihubLiIPFilterParamsTable 1 }
+
+
+IhubLiIPFilterParamsEntry ::= SEQUENCE
+    {
+        ihubLiIPFilterParamsIndex                 Integer32,
+        ihubLiIPFilterParamsRowStatus             RowStatus,
+        ihubLiIPFilterParamsDescription           IhubLiItemDescription,
+        ihubLiIPFilterParamsAction                INTEGER,
+        ihubLiIPFilterParamsProtocol              Integer32,
+        ihubLiIPFilterParamsSourceIpAddr          IpAddress,
+        ihubLiIPFilterParamsSourceIpMask          IhubLiIpAddressPrefixLength,
+        ihubLiIPFilterParamsSourcePortValue1      IhubLiTcpUdpPort,
+        ihubLiIPFilterParamsSourcePortValue2      IhubLiTcpUdpPort,
+        ihubLiIPFilterParamsSourcePortOperator    IhubLiTcpUdpPortOperator,
+        ihubLiIPFilterParamsDestIpAddr            IpAddress,
+        ihubLiIPFilterParamsDestIpMask            IhubLiIpAddressPrefixLength,
+        ihubLiIPFilterParamsDestPortValue1        IhubLiTcpUdpPort,
+        ihubLiIPFilterParamsDestPortValue2        IhubLiTcpUdpPort,
+        ihubLiIPFilterParamsDestPortOperator      IhubLiTcpUdpPortOperator,
+        ihubLiIPFilterParamsDscpValue             IhubLiDSCPValueOrAny,
+        ihubLiIPFilterParamsRouterServiceId       IhubLiRouterServiceID,
+        ihubLiIPFilterParamsIngressHitCount       Counter64,
+        ihubLiIPFilterParamsEgressHitCount        Counter64
+    }
+   
+  
+            
+ihubLiIPFilterParamsIndex OBJECT-TYPE
+     SYNTAX     Integer32 (1..65535)
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+        "uniquely identifies an entry in a policy or filter table.
+	        to facilitate insertion of entries in the tables, we recommend
+	        assigning entry IDs by 10s:  10, 20, 30, etc.
+        "
+     ::= { ihubLiIPFilterParamsEntry 1 }
+            
+ihubLiIPFilterParamsRowStatus  OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object allows entries to be created and deleted in the
+         ihubLiIPFilterParamsTable.
+         "
+    ::= { ihubLiIPFilterParamsEntry 2 }
+
+ihubLiIPFilterParamsDescription  OBJECT-TYPE
+    SYNTAX       IhubLiItemDescription
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "User-provided description for this filter entry.
+        "
+    DEFVAL { ''H }
+    ::= { ihubLiIPFilterParamsEntry 3 }
+    
+
+ihubLiIPFilterParamsAction OBJECT-TYPE
+     SYNTAX     INTEGER {
+                drop(1),
+                forward(2),
+                default(3)
+     }
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The action to take for packets that match this filter entry. The value
+         default(3) specifies this entry to inherit the behavior defined as the
+         default for the filter."
+     DEFVAL { drop }     
+        ::= {ihubLiIPFilterParamsEntry 4 } 
+
+ihubLiIPFilterParamsProtocol OBJECT-TYPE
+     SYNTAX     Integer32 (-1 | 0..255)
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "IP protocol to match.  set to -1 to disable matching IP protocol. If
+         the protocol is changed the protocol specific parameters are reset.
+        "
+     DEFVAL { -1 } 
+     ::= { ihubLiIPFilterParamsEntry 5 }
+
+ihubLiIPFilterParamsSourceIpAddr OBJECT-TYPE
+     SYNTAX     IpAddress
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "IP address to match the source-ip of the packet."
+     DEFVAL       { '00000000'H } -- 0.0.0.0
+     ::= { ihubLiIPFilterParamsEntry 6 }
+     
+ihubLiIPFilterParamsSourceIpMask  OBJECT-TYPE
+    SYNTAX       IhubLiIpAddressPrefixLength
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "If different from 0, the object ihubLiIPFilterParamsSourceIpMask
+         specifies the IP Mask value for this policy IP Filter entry.
+         The mask is ANDed with the received source IP address to match
+         the ihubLiIPFilterParamsSourceIpAddr.
+         "
+    DEFVAL { 0 }
+    ::= { ihubLiIPFilterParamsEntry 7 }
+    
+
+ihubLiIPFilterParamsSourcePortValue1 OBJECT-TYPE
+     SYNTAX     IhubLiTcpUdpPort
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "TCP/UDP port value1. The value of this object is used as per the
+         description for ihubLiIPFilterParamsSourcePortOperator.
+        "
+     DEFVAL { 0 } -- by default, any transport layer port number
+     ::= { ihubLiIPFilterParamsEntry 8 }
+
+ihubLiIPFilterParamsSourcePortValue2 OBJECT-TYPE
+     SYNTAX     IhubLiTcpUdpPort
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "TCP/UDP port value2. The value of this object is used as per the
+         description for ihubLiIPFilterParamsSourcePortOperator.
+        "
+     DEFVAL { 0 } -- by default, any transport layer port number
+     ::= { ihubLiIPFilterParamsEntry 9 }
+
+ihubLiIPFilterParamsSourcePortOperator OBJECT-TYPE
+    SYNTAX       IhubLiTcpUdpPortOperator
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The operator specifies the manner in which
+         ihubLiIPFilterParamsSourcePortValue1 and ihubLiIPFilterParamsSourcePortValue2
+         are to be used. The value of these latter 2 objects and
+         ihubLiIPFilterParamsSourcePortOperator is used as described in
+         IhubLiTcpUdpPortOperator."
+    DEFVAL { none }
+    ::= { ihubLiIPFilterParamsEntry 10 }
+
+ihubLiIPFilterParamsDestIpAddr OBJECT-TYPE
+     SYNTAX     IpAddress
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "IP address to match the dest-ip of the packet."
+     DEFVAL       { '00000000'H } -- 0.0.0.0
+     ::= { ihubLiIPFilterParamsEntry 11 }
+     
+ihubLiIPFilterParamsDestIpMask  OBJECT-TYPE
+    SYNTAX       IhubLiIpAddressPrefixLength
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "If different from 0, the object ihubLiIPFilterParamsDestIpMask
+         specifies the IP Mask value for this policy IP Filter entry.
+         The mask is ANDed with the received destination IP address to match
+         the ihubLiIPFilterParamsDestIpAddr.
+         "
+    DEFVAL { 0 }
+    ::= { ihubLiIPFilterParamsEntry 12 }
+
+ihubLiIPFilterParamsDestPortValue1 OBJECT-TYPE
+     SYNTAX     IhubLiTcpUdpPort
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "TCP/UDP port value1. The value of this object is used as per the
+         description for ihubLiIPFilterParamsDestPortOperator.
+        "
+     DEFVAL { 0 } -- by default, any transport layer port number
+     ::= { ihubLiIPFilterParamsEntry 13 }
+
+ihubLiIPFilterParamsDestPortValue2 OBJECT-TYPE
+     SYNTAX     IhubLiTcpUdpPort
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "TCP/UDP port value2. The value of this object is used as per the
+         description for ihubLiIPFilterParamsDestPortOperator.
+        "
+     DEFVAL { 0 } -- by default, any transport layer port number
+     ::= { ihubLiIPFilterParamsEntry 14 }
+
+ihubLiIPFilterParamsDestPortOperator OBJECT-TYPE
+    SYNTAX       IhubLiTcpUdpPortOperator
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The operator specifies the manner in which
+         ihubLiIPFilterParamsDestPortValue1 and ihubLiIPFilterParamsDestPortValue2
+         are to be used. The value of these latter 2 objects and
+         ihubLiIPFilterParamsDestPortOperator is used as described in
+         IhubLiTcpUdpPortOperator."
+    DEFVAL { none }
+    ::= { ihubLiIPFilterParamsEntry 15 }
+
+ihubLiIPFilterParamsDscpValue                OBJECT-TYPE
+     SYNTAX     IhubLiDSCPValueOrAny
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "
+           -1 means not applicable as qualifier
+        "
+        DEFVAL {-1}
+     ::= { ihubLiIPFilterParamsEntry 16  }  
+
+ihubLiIPFilterParamsRouterServiceId OBJECT-TYPE
+     SYNTAX     IhubLiRouterServiceID
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The router-id is the Service Id of the VPRN or 0 for base router.
+          Index -1 means not applicable.
+          Needed when IP addresses of different routers overlap
+        "
+        DEFVAL {-1}
+     ::= { ihubLiIPFilterParamsEntry 17  }   
+
+ihubLiIPFilterParamsIngressHitCount OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "This object indicates the number of times an ingress packet
+         matched this entry."
+    ::= { ihubLiIPFilterParamsEntry 18 }
+
+ihubLiIPFilterParamsEgressHitCount OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "This object indicates the number of times an egress packet
+         matched this entry."
+    ::= { ihubLiIPFilterParamsEntry 19 }
+
+--
+-- Target lawful Intercept IPv6 Filter Table
+--
+
+
+
+ihubLiIPv6FilterTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubLiIPv6FilterEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "The Intercept Target IPv6 Filter Table allows to specify based on IP header content
+         which IP packets from a particular target should be sent to the mediation function. 
+        "
+    ::= { ihubLiFilter 3 }
+
+
+ihubLiIPv6FilterEntry OBJECT-TYPE
+    SYNTAX       IhubLiIPv6FilterEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular IPv6 Filter entry. Entries are
+         created/deleted  by user.
+         Entries can be created before targets are created.
+         Entries have to be explicitly linked to the target table.
+         "
+    INDEX { ihubLiIPv6FilterIndex }
+    ::= { ihubLiIPv6FilterTable 1 }
+
+
+IhubLiIPv6FilterEntry ::= SEQUENCE
+    {
+        ihubLiIPv6FilterIndex            IhubLiIPFilterID,
+        ihubLiIPv6FilterRowStatus        RowStatus,
+        ihubLiIPv6FilterDescription      IhubLiItemDescription,
+        ihubLiIPv6FilterDefaultAction    INTEGER
+    }
+
+ihubLiIPv6FilterIndex  OBJECT-TYPE
+    SYNTAX       IhubLiIPFilterID
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Uniquely identifies a lawfull intercept target IPv6 filter on this system."
+    ::= { ihubLiIPv6FilterEntry 1 }
+
+ihubLiIPv6FilterRowStatus  OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object allows entries to be created and deleted in the
+         ihubLiIPv6FilterTable."
+    ::= { ihubLiIPv6FilterEntry 2 }
+
+ihubLiIPv6FilterDescription  OBJECT-TYPE
+    SYNTAX       IhubLiItemDescription
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "User-provided description for this filter."
+    DEFVAL { ''H }
+    ::= { ihubLiIPv6FilterEntry 3 }
+
+ihubLiIPv6FilterDefaultAction OBJECT-TYPE
+     SYNTAX     INTEGER {
+                drop(1),
+                forward(2)
+     }
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+             "The action to take for packets that do not match any filter entries."
+     DEFVAL { drop }
+        ::= {ihubLiIPv6FilterEntry 4 } 
+
+
+--
+-- Target Lawfull Intercept IPv6 Filter Entry parameters
+--
+
+ihubLiIPv6FilterParamsTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF IhubLiIPv6FilterParamsEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION  "A table of all IPv6 filter match entries for all lawfull intercept IPv6filters."
+    ::= { ihubLiFilter 4 }
+
+ihubLiIPv6FilterParamsEntry OBJECT-TYPE
+    SYNTAX       IhubLiIPv6FilterParamsEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+        "Information about a particular IPv6 Filter entry.
+         Every lawful intercept IP Filter can have zero or more match entries.
+        Entries are created/deleted by user.
+        "
+    INDEX { ihubLiIPv6FilterIndex, ihubLiIPv6FilterParamsIndex }
+    ::= { ihubLiIPv6FilterParamsTable 1 }
+
+
+IhubLiIPv6FilterParamsEntry ::= SEQUENCE
+    {
+        ihubLiIPv6FilterParamsIndex                 Integer32,
+        ihubLiIPv6FilterParamsRowStatus             RowStatus,
+        ihubLiIPv6FilterParamsDescription           IhubLiItemDescription,
+        ihubLiIPv6FilterParamsAction                INTEGER,
+        ihubLiIPv6FilterParamsNextHeader            Integer32,
+        ihubLiIPv6FilterParamsSourceIpAddr          InetAddressIPv6,
+        ihubLiIPv6FilterParamsSourceIpMask          InetAddressPrefixLength,
+        ihubLiIPv6FilterParamsSourcePortValue1      IhubLiTcpUdpPort,
+        ihubLiIPv6FilterParamsSourcePortValue2      IhubLiTcpUdpPort,
+        ihubLiIPv6FilterParamsSourcePortOperator    IhubLiTcpUdpPortOperator,
+        ihubLiIPv6FilterParamsDestIpAddr            InetAddressIPv6,
+        ihubLiIPv6FilterParamsDestIpMask            InetAddressPrefixLength,
+        ihubLiIPv6FilterParamsDestPortValue1        IhubLiTcpUdpPort,
+        ihubLiIPv6FilterParamsDestPortValue2        IhubLiTcpUdpPort,
+        ihubLiIPv6FilterParamsDestPortOperator      IhubLiTcpUdpPortOperator,
+        ihubLiIPv6FilterParamsDscpValue             IhubLiDSCPValueOrAny,
+        ihubLiIPv6FilterParamsRouterServiceId       IhubLiRouterServiceID,
+        ihubLiIPv6FilterParamsIngressHitCount       Counter64,
+        ihubLiIPv6FilterParamsEgressHitCount        Counter64
+    }
+   
+  
+            
+ihubLiIPv6FilterParamsIndex OBJECT-TYPE
+     SYNTAX     Integer32 (1..65535)
+     MAX-ACCESS not-accessible
+     STATUS     current
+     DESCRIPTION
+        "uniquely identifies an entry in a policy or filter table.
+	        to facilitate insertion of entries in the tables, we recommend
+	        assigning entry IDs by 10s:  10, 20, 30, etc.
+        "
+     ::= { ihubLiIPv6FilterParamsEntry 1 }
+            
+ihubLiIPv6FilterParamsRowStatus  OBJECT-TYPE
+    SYNTAX       RowStatus
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "This object allows entries to be created and deleted in the
+         ihubLiIPv6FilterParamsTable.
+         "
+    ::= { ihubLiIPv6FilterParamsEntry 2 }
+
+ihubLiIPv6FilterParamsDescription  OBJECT-TYPE
+    SYNTAX       IhubLiItemDescription
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "User-provided description for this filter entry.
+        "
+    DEFVAL { ''H }
+    ::= { ihubLiIPv6FilterParamsEntry 3 }
+    
+
+ihubLiIPv6FilterParamsAction OBJECT-TYPE
+     SYNTAX     INTEGER {
+                drop(1),
+                forward(2),
+                default(3)
+     }
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The action to take for packets that match this filter entry. The value
+         default(3) specifies this entry to inherit the behavior defined as the
+         default for the filter."
+     DEFVAL { drop }     
+        ::= {ihubLiIPv6FilterParamsEntry 4 } 
+
+ihubLiIPv6FilterParamsNextHeader OBJECT-TYPE
+     SYNTAX     Integer32 (-1 | 0..255)
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "Pv6 next header to match.  set to -1 to disable matching IPv6 next
+         header. If the next header is changed the next header specific parameters
+         are reset.
+         "
+     DEFVAL { -1 } 
+     ::= { ihubLiIPv6FilterParamsEntry 5 }
+
+ihubLiIPv6FilterParamsSourceIpAddr OBJECT-TYPE
+     SYNTAX     InetAddressIPv6
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "IP address to match the source-ip of the packet."
+     DEFVAL { '00000000000000000000000000000000'H }
+     ::= { ihubLiIPv6FilterParamsEntry 6 }
+     
+ihubLiIPv6FilterParamsSourceIpMask  OBJECT-TYPE
+    SYNTAX        InetAddressPrefixLength (0..128)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The IPv6 Mask value for this policy IPv6 Filter entry. The mask is
+         ANDed with the IPv6 to match the ihubLiIPv6FilterParamsSourceIpAddr."
+    DEFVAL { 0 }
+    ::= { ihubLiIPv6FilterParamsEntry 7 }
+
+ihubLiIPv6FilterParamsSourcePortValue1 OBJECT-TYPE
+     SYNTAX     IhubLiTcpUdpPort
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "TCP/UDP port value1. The value of this object is used as per the
+         description for ihubLiIPv6FilterParamsSourcePortOperator.
+        "
+     DEFVAL { 0 } -- by default, any transport layer port number
+     ::= { ihubLiIPv6FilterParamsEntry 8 }
+
+ihubLiIPv6FilterParamsSourcePortValue2 OBJECT-TYPE
+     SYNTAX     IhubLiTcpUdpPort
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "TCP/UDP port value2. The value of this object is used as per the
+         description for ihubLiIPv6FilterParamsSourcePortOperator.
+        "
+     DEFVAL { 0 } -- by default, any transport layer port number
+     ::= { ihubLiIPv6FilterParamsEntry 9 }
+
+ihubLiIPv6FilterParamsSourcePortOperator OBJECT-TYPE
+    SYNTAX       IhubLiTcpUdpPortOperator
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The operator specifies the manner in which
+         ihubLiIPv6FilterParamsSourcePortValue1 and ihubLiIPv6FilterParamsSourcePortValue2
+         are to be used. The value of these latter 2 objects and
+         ihubLiIPv6FilterParamsSourcePortOperator is used as described in
+         IhubLiTcpUdpPortOperator."
+    DEFVAL { none }
+    ::= { ihubLiIPv6FilterParamsEntry 10 }
+
+ihubLiIPv6FilterParamsDestIpAddr OBJECT-TYPE
+     SYNTAX     InetAddressIPv6
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "IPv6 address to match the destination-ip of the packet."
+    DEFVAL { '00000000000000000000000000000000'H }
+     ::= { ihubLiIPv6FilterParamsEntry 11 }
+
+ihubLiIPv6FilterParamsDestIpMask  OBJECT-TYPE
+    SYNTAX        InetAddressPrefixLength (0..128)
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The IPv6 Mask value for this policy IPv6 Filter entry. The mask is
+         ANDed with the IPv6 to match the ihubLiIPv6FilterParamsDestIpAddr."
+    DEFVAL { 0 }
+    ::= { ihubLiIPv6FilterParamsEntry 12 }
+
+ihubLiIPv6FilterParamsDestPortValue1 OBJECT-TYPE
+     SYNTAX     IhubLiTcpUdpPort
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "TCP/UDP port value1. The value of this object is used as per the
+         description for ihubLiIPv6FilterParamsDestPortOperator.
+        "
+     DEFVAL { 0 } -- by default, any transport layer port number
+     ::= { ihubLiIPv6FilterParamsEntry 13 }
+
+ihubLiIPv6FilterParamsDestPortValue2 OBJECT-TYPE
+     SYNTAX     IhubLiTcpUdpPort
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "TCP/UDP port value2. The value of this object is used as per the
+         description for ihubLiIPv6FilterParamsDestPortOperator.
+        "
+     DEFVAL { 0 } -- by default, any transport layer port number
+     ::= { ihubLiIPv6FilterParamsEntry 14 }
+
+ihubLiIPv6FilterParamsDestPortOperator OBJECT-TYPE
+    SYNTAX       IhubLiTcpUdpPortOperator
+    MAX-ACCESS   read-create
+    STATUS       current
+    DESCRIPTION
+        "The operator specifies the manner in which
+         ihubLiIPv6FilterParamsDestPortValue1 and ihubLiIPv6FilterParamsDestPortValue2
+         are to be used. The value of these latter 2 objects and
+         ihubLiIPv6FilterParamsDestPortOperator is used as described in
+         IhubLiTcpUdpPortOperator."
+    DEFVAL { none }
+    ::= { ihubLiIPv6FilterParamsEntry 15 }
+
+ihubLiIPv6FilterParamsDscpValue                OBJECT-TYPE
+     SYNTAX     IhubLiDSCPValueOrAny
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "
+           -1 means not applicable as qualifier
+        "
+        DEFVAL {-1}
+     ::= { ihubLiIPv6FilterParamsEntry 16  }  
+ihubLiIPv6FilterParamsRouterServiceId OBJECT-TYPE
+     SYNTAX     IhubLiRouterServiceID
+     MAX-ACCESS read-create
+     STATUS     current
+     DESCRIPTION
+        "The router-id is the Service Id of the VPRN or 0 for base router.
+         Index -1 means not applicable. 
+         Needed when IP addresses of different routers overlap
+        "
+        DEFVAL {-1}
+     ::= { ihubLiIPv6FilterParamsEntry 17  }  
+     
+ihubLiIPv6FilterParamsIngressHitCount OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "This object indicates the number of times an ingress packet
+         matched this entry."
+    ::= { ihubLiIPv6FilterParamsEntry 18 }
+
+ihubLiIPv6FilterParamsEgressHitCount OBJECT-TYPE
+    SYNTAX       Counter64
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+        "This object indicates the number of times an egress packet
+         matched this entry."
+    ::= { ihubLiIPv6FilterParamsEntry 19 }
+
+  --
+-- Target lawful Intercept IP,IPv6 Filter Table free indexes
+--
+
+ihubLiFilterIPGetNextFreeIndex  OBJECT-TYPE
+    SYNTAX  IhubLiIPFilterID
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The next Free Index value that can be used for creating
+	 a new entry in the Filter Table.
+         This object contains an appropriate value to be used for 
+         ihubLiIPFilterIndex when creating entries in the ihubLiIPFilterTable            . 
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the ihubLiIPFilterIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current-value of this object. After each retrieval, the agent should
+         modify the value to the next unassigned index.
+       "
+    ::= { ihubLiFilter 5 }
+
+ihubLiFilterIPv6GetNextFreeIndex  OBJECT-TYPE
+    SYNTAX  IhubLiIPFilterID
+    MAX-ACCESS  read-only
+    STATUS  current
+    DESCRIPTION
+         "The next Free Index value that can be used for creating
+	 a new entry in the Filter Table.
+         This object contains an appropriate value to be used for 
+         ihubLiIPv6FilterIndex when creating entries in the ihubLiIPv6FilterTable            . 
+         The value 0 indicates that no unassigned entries are available. To 
+         obtain the ihubLiIPv6FilterIndex value for a new entry, the
+         manager issues a management protocol retrieval operation to obtain the
+         current-value of this object. After each retrieval, the agent should
+         modify the value to the next unassigned index.
+       "
+    ::= { ihubLiFilter 6 }
+
+  
+     
+     
+--
+--  System Lawful Intercept Information
+--
+
+
+ihubLiConfigStatus   OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    notRun (0),
+                    success (1),
+                    fail    (2)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of ihubLiConfigStatus indicates the results of restoring
+         the Lawful Intercept (LI) configuration at boot-up time."
+    ::= { ihubLiConfig 1 }
+
+ihubLiConfigSave   OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    doAction (1),
+                    notApplicable (2)
+                }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The value of ihubLiConfigSave indicates a desired action.  Setting 
+         this action variable to 'doAction' causes the current Lawful 
+         Intercept (LI) running configuration information, to be saved to 
+         a file called liDslam.cfg.
+         If the liDslam.cfg file already exists, it will be renamed and a
+         new file is created with the current running configuration.
+
+         An attempt to set this object to 'doAction' when li-volatile 
+         is 'true' will result in an 'inconsistentValue'
+         error.
+
+         Default configuration values will be included in the saved 
+         configuration information."
+    DEFVAL { notApplicable }
+    ::= { ihubLiConfig 2 }
+    
+
+ihubLiConfigSaveResult OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    none (1),
+                    inProgress (2),
+                    success (3),
+                    failed (4)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of ihubLiConfigSaveResult represents the result of the
+         last ihubLiConfigSave action.
+          ihubLiConfigSaveResult is only updated following
+          a LI config save from SNMP by setting ihubLiConfigSave.  It is
+          not updated as a result of a save from CLI. 
+         inProgress(2)      The action is still in progress
+         success(3)         The action completed successfully
+         failed(4)          The action failed"
+    ::= {ihubLiConfig 3 }
+
+ihubLiConfigLastModified  OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of ihubLiConfigLastModified indicates the date and time 
+         the Lawful Intercept (LI) running configuration was last modified.
+         If ihubLiConfigLastModified is more recent than ihubLiConfigLastBootTime, the current  
+         configuration may be different
+        "
+    ::= { ihubLiConfig 4 }
+
+ihubLiConfigLastSaved OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of ihubLiConfigLastSaved indicates the date and 
+         time the current Lawful Intercept (LI) configuration was 
+         last saved.  If ihubLiConfigLastSaved is more recent than the 
+         value of ihubLiConfigLastBootTime , the 
+         initial configuration is likely to be different the next 
+         time the system is rebooted."
+    ::= { ihubLiConfig 5 }
+    
+ihubLiConfigCurrentTime  OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The value of ihubLiConfigCurrentTime  indicates the current date and time 
+         of the system. This allows the mediation device to specify an absolute time value in
+         ihubLiTargetTimeout                
+        "
+    ::= { ihubLiConfig 6 }
+
+ihubLiConfigLastBootTime  OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        " The date and time the software running on this system was last rebooted.                 
+        "
+    ::= { ihubLiConfig 7 }
+
+
+    
+    
+---------------------------------------------------------------------------------------------------
+-- MIB Conformance Information
+---------------------------------------------------------------------------------------------------
+
+
+ihubLiMIBCompliances OBJECT IDENTIFIER ::= { ihubLiConformance 1 }
+ihubLiMIBGroups      OBJECT IDENTIFIER ::= { ihubLiConformance 2 }
+
+ihubLiMIBV1v0Compliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+       "The core compliance statement all LI implementations."
+    MODULE -- Compliance to the LI MIB module
+    MANDATORY-GROUPS  {
+        ihubLiSessionGroup,
+        ihubLiMediationEntryGroup,
+        ihubLiTargetEntryGroup,
+	ihubLiNextFreeIndexGroup
+    }
+    GROUP ihubLiTargetStaticIPEntryGroup
+        DESCRIPTION
+                      "This groups is optional, only needed when target based on list of static provioned ip
+                       needs to be intercepted"
+                   
+    GROUP ihubLiTargetCircuitEntryGroup
+    DESCRIPTION
+                  "This groups is optional, only needed when target based on circuit-id
+                       needs to be intercepted "
+    
+    GROUP ihubLiTargetRemoteEntryGroup
+        DESCRIPTION
+                  "This groups is optional, only needed when target based on remote-id
+                       needs to be intercepted "
+    
+    GROUP ihubLiTargetStatsEntryGroup
+         DESCRIPTION
+                          "This group is optional, it provides statistics"
+                          
+    GROUP ihubLiIPFilterEntryGroup
+        DESCRIPTION
+                      "This groups is optional and  only for those
+                   targets for which granular filtering is required."
+                   
+    GROUP ihubLiIPFilterParamsEntryGroup
+        DESCRIPTION
+                      "This group is optional and  only for those
+                       targets for which granular filtering is required."
+                       
+    GROUP ihubLiIPv6FilterEntryGroup
+	DESCRIPTION
+                      "This groups is optional and  only for those
+                   targets for which granular filtering is required."
+    
+    GROUP ihubLiIPv6FilterParamsEntryGroup
+        DESCRIPTION
+                      "This group is optional and  only for those
+                       targets for which granular filtering is required."
+
+    GROUP ihubLiConfigEntryGroup               
+        DESCRIPTION
+                      "This group is optional and  only when LI data
+                       is saved in a non volatile way (i.e. file)."
+    
+    ::= { ihubLiMIBCompliances 1 }
+
+ihubLiSessionGroup OBJECT-GROUP
+    OBJECTS   {  
+        ihubLiSessionAdminStatus,                        	
+	ihubLiSessionOperStatus  ,
+        ihubLiSessionRetentionValue  
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing Meditation Device details."
+    ::= { ihubLiMIBGroups 1 }
+    
+    
+ihubLiMediationEntryGroup OBJECT-GROUP
+    OBJECTS   {  
+        ihubLiMediationRowStatus          ,
+        ihubLiMediationDescription        ,
+        ihubLiMediationAddressType    ,
+        ihubLiMediationDestAddress        ,
+        ihubLiMediationSrcAddress       ,
+        ihubLiMediationDscp               ,
+        ihubLiMediationPbit               ,
+        ihubLiMediationTransportMethod   ,
+        ihubLiMediationAdminStatus ,
+        ihubLiMediationOperStatus        ,
+        ihubLiMediationRouterServiceId                             
+                       	
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing Meditation Device details."
+    ::= { ihubLiMIBGroups 2 }    
+    
+ihubLiTargetEntryGroup OBJECT-GROUP
+    OBJECTS   {         
+        ihubLiTargetRowStatus             ,
+        ihubLiTargetDescription           ,
+        ihubLiTargetEgressLIID                  ,
+        ihubLiTargetIngressLIID                  ,
+        ihubLiTargetMediationIndex        ,
+        ihubLiTargetEgressIPFilterIndex   , 
+	ihubLiTargetEgressIPv6FilterIndex , 
+	ihubLiTargetIngressIPFilterIndex   , 
+        ihubLiTargetIngressIPv6FilterIndex , 
+        ihubLiTargetTimeout               ,
+        ihubLiTargetAdminStatus      ,
+        ihubLiTargetOperStatus            ,
+        ihubLiTargetEnableStats	        ,
+	ihubLiTargetPending  	 	
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing Target Entry details"
+    ::= { ihubLiMIBGroups 3 }    
+
+ihubLiTargetStaticIPEntryGroup OBJECT-GROUP
+    OBJECTS   {         
+        ihubLiTargetStaticRowStatus             ,
+        ihubLiTargetStaticAddressType           ,
+        ihubLiTargetStaticAddress               ,
+        ihubLiTargetStaticAddressLength         ,
+        ihubLiTargetStaticRouterServiceId                      	
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing Target Entry details for static ip range list"
+    ::= { ihubLiMIBGroups 4 }    
+
+ihubLiTargetCircuitEntryGroup OBJECT-GROUP
+    OBJECTS   {   
+        ihubLiTargetCircuitId             ,
+    	ihubLiTargetCircuitRowStatus      ,
+    	ihubLiTargetCircuitRouterServiceId,	     	 	
+	ihubLiTargetCircuitMatch	
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing Target Entry details for circuit-id"
+    ::= { ihubLiMIBGroups 5 }    
+
+ihubLiTargetRemoteEntryGroup OBJECT-GROUP
+    OBJECTS   {         
+    	ihubLiTargetRemoteId            ,
+	ihubLiTargetRemoteRowStatus     ,
+	ihubLiTargetRemoteRouterServiceId                         	
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing Target Entry details for remote-id"
+    ::= { ihubLiMIBGroups 6 }    
+
+
+ihubLiTargetStatsEntryGroup OBJECT-GROUP
+    OBJECTS   { 
+		ihubLiTargetToPackets      ,
+                ihubLiTargetFromPackets    ,
+                ihubLiTargetIPsOperational  ,
+                ihubLiTargetIPsIntercepted 
+
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing target statistics."
+    ::= { ihubLiMIBGroups 7 }     
+    
+ihubLiIPFilterEntryGroup OBJECT-GROUP
+    OBJECTS   { 
+            ihubLiIPFilterRowStatus        ,
+            ihubLiIPFilterDescription  ,
+            ihubLiIPFilterDefaultAction
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing IP Filter Entry index details.This Group can be Optional if we dont
+               wish to filter target traffic."
+    ::= { ihubLiMIBGroups 8 }    
+
+ihubLiIPFilterParamsEntryGroup OBJECT-GROUP
+    OBJECTS   { 
+        ihubLiIPFilterParamsRowStatus             ,
+        ihubLiIPFilterParamsDescription           ,
+        ihubLiIPFilterParamsAction                ,
+        ihubLiIPFilterParamsProtocol              ,
+        ihubLiIPFilterParamsSourceIpAddr          ,
+        ihubLiIPFilterParamsSourceIpMask          ,
+        ihubLiIPFilterParamsSourcePortValue1      ,
+        ihubLiIPFilterParamsSourcePortValue2      ,
+        ihubLiIPFilterParamsSourcePortOperator    ,
+        ihubLiIPFilterParamsDestIpAddr            ,
+        ihubLiIPFilterParamsDestIpMask            ,
+        ihubLiIPFilterParamsDestPortValue1        ,
+        ihubLiIPFilterParamsDestPortValue2        ,
+        ihubLiIPFilterParamsDestPortOperator      ,
+        ihubLiIPFilterParamsDscpValue             ,
+        ihubLiIPFilterParamsRouterServiceId       ,
+        ihubLiIPFilterParamsIngressHitCount       ,
+        ihubLiIPFilterParamsEgressHitCount
+        }
+    
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing IP Filter parameter details.This Group can be Optional if we dont
+               wish to filter target traffic."
+    ::= { ihubLiMIBGroups 9 }    
+
+ihubLiIPv6FilterEntryGroup OBJECT-GROUP
+    OBJECTS   { 
+            ihubLiIPv6FilterRowStatus        ,
+            ihubLiIPv6FilterDescription  ,
+            ihubLiIPv6FilterDefaultAction
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing IPv6 Filter Entry index details.This Group can be Optional if we dont
+               wish to filter target traffic."
+    ::= { ihubLiMIBGroups 10 }    
+
+ihubLiIPv6FilterParamsEntryGroup OBJECT-GROUP
+    OBJECTS   { 
+        ihubLiIPv6FilterParamsRowStatus             ,
+        ihubLiIPv6FilterParamsDescription           ,
+        ihubLiIPv6FilterParamsAction                ,
+        ihubLiIPv6FilterParamsNextHeader            ,
+        ihubLiIPv6FilterParamsSourceIpAddr          ,
+        ihubLiIPv6FilterParamsSourceIpMask          ,
+        ihubLiIPv6FilterParamsSourcePortValue1      ,
+        ihubLiIPv6FilterParamsSourcePortValue2      ,
+        ihubLiIPv6FilterParamsSourcePortOperator    ,
+        ihubLiIPv6FilterParamsDestIpAddr            ,
+        ihubLiIPv6FilterParamsDestIpMask            ,
+        ihubLiIPv6FilterParamsDestPortValue1        ,
+        ihubLiIPv6FilterParamsDestPortValue2        ,
+        ihubLiIPv6FilterParamsDestPortOperator      ,
+        ihubLiIPv6FilterParamsDscpValue             ,
+        ihubLiIPv6FilterParamsRouterServiceId       ,
+        ihubLiIPv6FilterParamsIngressHitCount       ,
+        ihubLiIPv6FilterParamsEgressHitCount
+        }
+    
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing IPv6 Filter parameter details.This Group can be Optional if we dont
+               wish to filter target traffic."
+    ::= { ihubLiMIBGroups 11 }    
+    
+ihubLiConfigEntryGroup OBJECT-GROUP
+    OBJECTS   { 
+    ihubLiConfigStatus,
+    ihubLiConfigSave,
+    ihubLiConfigSaveResult,
+    ihubLiConfigLastModified,
+    ihubLiConfigLastSaved,
+    ihubLiConfigCurrentTime ,
+    ihubLiConfigLastBootTime  
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The config LI group, describing actions related to saving/modifying configuration"
+    ::= { ihubLiMIBGroups 12 }  
+ 
+ihubLiNextFreeIndexGroup OBJECT-GROUP
+    OBJECTS   { 
+		ihubLiTargetStaticGetNextFreeIndex,
+		ihubLiMediationGetNextFreeIndex,
+		ihubLiTargetGetNextFreeIndex,
+		ihubLiFilterIPGetNextFreeIndex,
+		ihubLiFilterIPv6GetNextFreeIndex                 
+        	}
+    STATUS     current
+        DESCRIPTION
+               "The LI group objects providing target statistics."
+    ::= { ihubLiMIBGroups 13 }      
+
+ 
+
+         
+END

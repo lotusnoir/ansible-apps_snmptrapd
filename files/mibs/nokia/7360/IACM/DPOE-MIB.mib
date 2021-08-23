@@ -1,0 +1,104 @@
+DPOE-MIB DEFINITIONS ::= BEGIN
+
+-- ===========================================================================
+--  This specification is published by Alcatel under Non-Disclosure
+--  Agreement(s) (NDA) with specific parties and has to be considered as
+--  Confidential Information as defined in such NDA.
+--  Alcatel reserves the right to revise this document for any reason,
+--  including but not limited to conformity with standards promulgated by
+--  various agencies, utilisation of advances in the state of the technical
+--  areas, or the reflection of changes in the design of any equipment,
+--  techniques, or procedures described or referred to herein.
+--  The product specifications and other technical or performance information
+--  contained herein are subject to change without notice.
+--  Updates of this document will be issued under the above NDA's.
+--  Alcatel makes no representation or warranty, expressed or implied, with
+--  respect to the sufficiency, accuracy, or utility of any information or
+--  opinion contained herein. Alcatel expressly advises that any use of for 
+--  any purpose or reliance upon this technical reference is at the risk of
+--  the user and that Alcatel shall not be liable for any damage or injury
+--  incurred by any person arising out of the sufficiency, accuracy, or
+--  utility of any information or opinion contained herein.
+--  This document is not to be construed as a suggestion to any manufacturer
+--  to modify or change any of its products, nor does this document represent
+--  any commitment by Alcatel to sell or purchase any product.
+--  Nothing contained herein shall be construed as conferring by implication,
+--  estoppel, or otherwise any license or right under any patent, whether or
+--  not the use of any information herein necessarily employs an invention of
+--  any existing or later issued patent.
+--  Alcatel reserves the right not to offer any or all of these products and
+--  to withdraw any or all of them at any future time.
+--  Copyright (C) 2006, Alcatel. All Rights Reserved.
+-- ===========================================================================
+
+--  MODULE-IDENTITY
+--  LAST-UPDATED "201303021200Z"
+--  ORGANIZATION "Alcatel"
+--  CONTACT-INFO "email: asam.mibsupport@alcatel.be"
+--  DESCRIPTION
+--     "The ASAM File Transfer MIB is a vendor-specific MIB that is
+--      used to manage the file transfer channel of the ASAM subsystem in the ESAM.
+--
+-- ===========================================================================
+--  REVISION "201303021200Z"
+--  DESCRIPTION
+--     "Version: 3FE62716AAAA_V4.6.0.0
+--      Editor: Wu Qiong
+--      Changes: creation of new DPOE MIB for ISAM R4.6."
+--
+-- =============================================================================
+
+   IMPORTS OBJECT-TYPE		  FROM RFC-1212
+           DisplayString, RowStatus,
+           TruthValue               FROM SNMPv2-TC
+           asam                     FROM SYSTEM-MIB
+           AsamAlarmSeverityType    FROM ASAM-ALARM-MIB
+           AsamNextProfileIndex,
+           AsamProfileRefCount,
+           AsamProfilePointer,
+           AsamProfileIndex,
+           AsamProfileName          FROM ASAM-TC-MIB ;
+           
+dpoeMIB OBJECT IDENTIFIER ::= { asam 104 }
+
+dpoeMgnt OBJECT IDENTIFIER ::= {dpoeMIB 1}
+
+	
+   -- dpoeAdminStatus       OBJECT IDENTIFIER ::= { dpoeMgnt 1 }
+   -- dpoeOperStatus        OBJECT IDENTIFIER ::= { dpoeMgnt 2 }
+
+
+dpoeAdminStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+         unlocked(1),              
+         locked(2)         
+      }
+    ACCESS      read-write
+    STATUS      mandatory
+    DESCRIPTION 
+        "This object is used to unlock or lock DPOE application on core2/3 of FX-7360 NT.
+         - Unlocking will result in attempting to bootstrap DPOE image on core2/3
+         - Locking will result in stopping DPOE image running on core2/3  
+         ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..2
+             PERSIST: YES   DEFVALUE: 2    UNITS: -"
+::= { dpoeMgnt 1 }
+
+dpoeOperStatus OBJECT-TYPE
+      SYNTAX INTEGER {
+         enabled(1),              
+         disabled(2)         
+      }
+    ACCESS      read-only
+    STATUS      mandatory
+    DESCRIPTION 
+        " This object identifies whether or not the DPOE on core2/3 is
+          capable of performing its normal functions. 
+ 
+          ALCATEL NOTE:
+             SUPPORT: YES   INSRVMOD: NA   RANGE: 1..2
+             PERSIST: NO    DEFVALUE: 2    UNITS: -"
+    ::= { dpoeMgnt 2 }
+
+END
+

@@ -1,0 +1,927 @@
+-- ============================================================================
+-- Copyright (C) 2003 by  HUAWEI TECHNOLOGIES. All rights reserved.
+--
+-- Description:  
+-- Reference:  
+-- Version: V3.05
+-- History:
+-- liu chenglong 2003-04-28 Added IPR Decriptions and updated all MIB version to V3.00
+-- zhuweihui(z60000325) 2006-02-08 Added selt parameters and updated this MIB version to V3.03
+-- lvjie(38752) 2006-11-13 add hwBTSSSeltAuxPortCfgTable and updated this MIB version to V3.04
+-- yan hongchao(55612) 2006-12-15 add hwBTSSAdslSeltTestParamLoopAttenAtFreq in hwBTSSAdslSeltTestTable
+-- and updated this MIB version to V3.05
+-- ============================================================================
+	HUAWEI-BTEST-MIB DEFINITIONS ::= BEGIN
+ 
+		IMPORTS
+			huaweiUtility			
+				FROM HUAWEI-MIB		
+		        HWPortType			
+				FROM HUAWEI-TC-MIB				
+			ifIndex			
+				FROM IF-MIB			
+			OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE			
+				FROM SNMPv2-SMI			
+			TEXTUAL-CONVENTION			
+				FROM SNMPv2-TC
+		        SnmpAdminString
+		                FROM SNMP-FRAMEWORK-MIB
+     		        RowStatus
+                                FROM SNMPv2-TC
+                        hwTestGroupNo
+                                FROM HUAWEI-COMMTEST-MIB;
+	
+	
+		hwBTest MODULE-IDENTITY 
+			LAST-UPDATED "0611130900Z"
+			ORGANIZATION "Fix-Net Dep, Huawei Technologies Co.,Ltd."
+			CONTACT-INFO 
+				"Floot 5 ,Block 4, R&D Building,
+				Huawei Longgang Production Base,
+				Shenzhen,   P.R.C.
+				http://www.huawei.com
+				Zip:518129
+				"
+			DESCRIPTION 
+				"huawei Broad test  mib.
+				"
+			::= { hwTest 3 }
+		
+	    HWBTSSxDslLineOverLap ::= TEXTUAL-CONVENTION
+	        STATUS  current
+            DESCRIPTION
+              "  "
+            SYNTAX   INTEGER 
+                {
+				overLap(1),
+				direct(2),
+				unknown(3)
+				}
+                    
+		CqtQualitativeResultString ::= TEXTUAL-CONVENTION
+			STATUS current
+			DESCRIPTION 
+				" This string to contain qualitative result "
+			SYNTAX OCTET STRING (SIZE (0..255))
+			
+
+		hwTest OBJECT IDENTIFIER ::= { huaweiUtility 21 }
+		
+		hwBTestMib OBJECT IDENTIFIER ::= { hwBTest 1 }
+		
+		hwBTestMIBObjects OBJECT IDENTIFIER ::= { hwBTestMib 1 }
+		
+		hwBTSSxDslLineCfgTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBTSSxDslLineCfgEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"This table describes xDSL line configuration used for bandwidth test."
+			::= { hwBTestMIBObjects 1 }
+		
+		hwBTSSxDslLineCfgEntry OBJECT-TYPE
+			SYNTAX HwBTSSxDslLineCfgEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"An entry in hwBTSSxDslLineCfgTable."
+			INDEX { ifIndex }
+			::= { hwBTSSxDslLineCfgTable 1 }
+		
+		HwBTSSxDslLineCfgEntry ::=
+			SEQUENCE { 
+				hwBTSSxDslLineOverlapType
+					HWBTSSxDslLineOverLap
+			 }
+
+		hwBTSSxDslLineOverlapType OBJECT-TYPE
+			SYNTAX HWBTSSxDslLineOverLap
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Overlap mode of xDSL with PSTN line.
+				1 - overlap         xDSL overlap with POTS line;
+				2 - direct          there is no pots line, no spltter, no phone;
+				3 - unknown 
+				"
+			DEFVAL { 3 }
+			::= { hwBTSSxDslLineCfgEntry 1 }
+		
+		hwBTSSCoTestTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBTSSCoTestEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				" xDSL central office emulational measurement table."
+			::= { hwBTestMIBObjects 2 }
+		
+		hwBTSSCoTestEntry OBJECT-TYPE
+			SYNTAX HwBTSSCoTestEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 " "
+			INDEX { ifIndex }
+			::= { hwBTSSCoTestTable 1 }
+		
+		HwBTSSCoTestEntry ::=
+			SEQUENCE { 
+				hwBTSSCoOperType
+					INTEGER,
+				hwBTSSCoTestResult
+					INTEGER,
+				hwBTSSCoTestBusyFlag
+					INTEGER
+			 }
+
+		hwBTSSCoOperType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				stop(1),
+				start(2)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"  Operation type "
+			::= { hwBTSSCoTestEntry 1 }
+		
+		hwBTSSCoTestResult OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				normal(1),
+				testfail(2)
+				}
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"  Test result"
+			::= { hwBTSSCoTestEntry 2 }
+
+		hwBTSSCoTestBusyFlag OBJECT-TYPE
+			SYNTAX INTEGER	{ busyNoTest(1),	busyTest(2),busystrenTest(3) }
+			MAX-ACCESS  read-write
+			STATUS current
+			DESCRIPTION
+				"CO  force test flag( 1: no test on busy 2: test on busy 3: forced test on busy )"
+			::= { hwBTSSCoTestEntry 3 }
+	
+		
+        hwBTSSAuxPortCfgTable   OBJECT-TYPE
+            SYNTAX          SEQUENCE OF HwBTSSAuxPortCfgEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+                "This table describes aux port used for BTSS ."
+            ::= { hwBTestMIBObjects 17 }
+  
+        hwBTSSAuxPortCfgEntry   OBJECT-TYPE
+            SYNTAX          HwBTSSAuxPortCfgEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION     "An entry in hwBTSSAuxPortCfgTable."
+            INDEX           { 
+       		        			hwTestGroupNo,
+       				        	hwBTSSAuxPortType
+       				        }
+            ::= { hwBTSSAuxPortCfgTable 1 }
+  
+        HwBTSSAuxPortCfgEntry ::=
+             SEQUENCE {
+             hwBTSSAuxPortType       INTEGER,
+             hwBTSSAuxPortIfIndex    INTEGER,
+             hwBTSSAuxPortRowStatus  RowStatus
+            }
+  
+        hwBTSSAuxPortType OBJECT-TYPE
+             SYNTAX      INTEGER{adsl(1),vdsl(2),gshdsl(3)}
+             MAX-ACCESS  not-accessible
+             STATUS      current
+             DESCRIPTION
+                 "Assistance port type"
+             ::= { hwBTSSAuxPortCfgEntry 1 }
+        
+        hwBTSSAuxPortIfIndex OBJECT-TYPE
+            SYNTAX      INTEGER
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Assistance port ifIndex"
+            ::= { hwBTSSAuxPortCfgEntry 2 }
+             
+        hwBTSSAuxPortRowStatus OBJECT-TYPE
+            SYNTAX      RowStatus
+            MAX-ACCESS  read-create
+            STATUS      current
+            DESCRIPTION
+                "Row status(add(4),delete(6))"
+            ::= { hwBTSSAuxPortCfgEntry 3 }
+            
+        hwBTSSTestedPortOperTable   OBJECT-TYPE
+             SYNTAX          SEQUENCE OF HwBTSSTestedPortOperEntry
+             MAX-ACCESS      not-accessible
+             STATUS          current
+             DESCRIPTION
+                 "This table describes operation for tested port."
+             ::= { hwBTestMIBObjects 18 }
+        
+        hwBTSSTestedPortOperEntry   OBJECT-TYPE
+             SYNTAX          HwBTSSTestedPortOperEntry
+             MAX-ACCESS      not-accessible
+             STATUS          current
+             DESCRIPTION     "An entry in hwBTSSTestedPortOperTable."
+             INDEX           { 
+             					ifIndex
+       				         }
+            ::= { hwBTSSTestedPortOperTable 1 }
+  
+        HwBTSSTestedPortOperEntry ::=
+             SEQUENCE {
+             hwBTSSTestedPortOperType       INTEGER,
+             hwBTSSTestedPortOperMode       INTEGER,
+             hwBTSSTestedPortOperResult     INTEGER,
+             hwBTSSTestedPortTestBusyFlag   INTEGER,
+             hwBTSSTestedPortTestPOTSFlag   INTEGER
+                }
+        
+        hwBTSSTestedPortOperType OBJECT-TYPE
+            SYNTAX      INTEGER{capture(1),release(2),startmonitor(3),stopmonitor(4)}
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  Operation type : capture(1),release(2),startmonitor(3),stopmonitor(4)"
+            ::= { hwBTSSTestedPortOperEntry 1 }
+            
+        hwBTSSTestedPortOperMode OBJECT-TYPE
+            SYNTAX      INTEGER{inline(1),outline(2),monitor(3)}
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  Test items (enumeration: 1: in test 2: out test 3:monitor)"
+            DEFVAL      { 2 }
+            ::= { hwBTSSTestedPortOperEntry 2 }
+            
+        hwBTSSTestedPortOperResult OBJECT-TYPE
+            SYNTAX      INTEGER{normal(1),fail(2),timerout(4)}
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Test result  "
+            ::= { hwBTSSTestedPortOperEntry 3 }
+
+        hwBTSSTestedPortTestBusyFlag OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+            busyNoTest(1),
+            busyTest(2),
+            busystrenTest(3)
+            }
+            MAX-ACCESS  read-write
+            STATUS current
+            DESCRIPTION
+            "Tested port force test( 1: no test on busy 2: test on busy 3: forced test on busy )"
+            ::= { hwBTSSTestedPortOperEntry 4 }
+
+        hwBTSSTestedPortTestPOTSFlag OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+            noCutPOTS(1),
+            busyNoTest(2),
+            busyTest(3),
+            busystrenTest(4)
+            }
+            MAX-ACCESS  read-write
+            STATUS current
+            DESCRIPTION
+            "Tested port POTS service flag( 1: no cut off POTS 2: no test on POTS busy (Cut off POTS)
+             3: test on POTS busy (Cut off POTS) 4: forced test on POTS busy (Cut off POTS) )"
+            ::= { hwBTSSTestedPortOperEntry 5 }
+
+        hwBTSSCqtTransTestTable   OBJECT-TYPE
+            SYNTAX          SEQUENCE OF HwBTSSCqtTransTestEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION
+                "This table describes CQT test by transparent command."
+            ::= { hwBTestMIBObjects 19 }
+        
+        hwBTSSCqtTransTestEntry   OBJECT-TYPE
+            SYNTAX          HwBTSSCqtTransTestEntry
+            MAX-ACCESS      not-accessible
+            STATUS          current
+            DESCRIPTION     "An entry in hwBTSSCqtTransTestTable."
+            INDEX           { ifIndex }
+            ::= { hwBTSSCqtTransTestTable 1 }
+        
+        HwBTSSCqtTransTestEntry ::=
+            SEQUENCE {      
+            hwBTSSCqtTransTestOperType       INTEGER,
+            hwBTSSCqtTransTestCRCMode        INTEGER,
+            hwBTSSCqtTransTestOperResult     INTEGER,
+            hwBTSSCqtTransTestTxCmd          OCTET STRING,       
+            hwBTSSCqtTransTestResultNo       INTEGER,
+            hwBTSSCqtTransTestResultLastFlag INTEGER,
+            hwBTSSCqtTransTestResult         OCTET STRING     
+             }
+        
+        hwBTSSCqtTransTestOperType OBJECT-TYPE
+            SYNTAX      INTEGER{stop(1),start(2)}
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  Operation type"
+            ::= { hwBTSSCqtTransTestEntry 1 }
+  
+        hwBTSSCqtTransTestCRCMode OBJECT-TYPE
+            SYNTAX      INTEGER{disable(1),enable(2)}
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  CRC Operation type"
+            DEFVAL      { 1 }
+            ::= { hwBTSSCqtTransTestEntry 2 }
+            
+        hwBTSSCqtTransTestOperResult OBJECT-TYPE
+            SYNTAX      INTEGER{normal(1),fail(2),abort(3),powerfeed(4)}
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Operation result "
+            ::= { hwBTSSCqtTransTestEntry 3 }
+            
+        hwBTSSCqtTransTestTxCmd OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..251))
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  Command string in TL1 format  "
+            ::= { hwBTSSCqtTransTestEntry 4 }
+            
+        hwBTSSCqtTransTestResultNo OBJECT-TYPE
+            SYNTAX      INTEGER(1..255)
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Test result No.  "
+            ::= { hwBTSSCqtTransTestEntry 5 }
+            
+        hwBTSSCqtTransTestResultLastFlag OBJECT-TYPE
+            SYNTAX      INTEGER{false(0), true(1)}
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Last package flag for test result."
+            ::= { hwBTSSCqtTransTestEntry 6 }
+            
+        hwBTSSCqtTransTestResult OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..231))
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Test result  "
+            ::= { hwBTSSCqtTransTestEntry 7 }
+            
+        
+        hwBTSSMultiFrameMiscOperTable   OBJECT-TYPE
+             SYNTAX          SEQUENCE OF HwBTSSMultiFrameMiscOperEntry
+             MAX-ACCESS      not-accessible
+             STATUS          current
+             DESCRIPTION
+                 "This table describes test relatived operation for multi-frame."
+             ::= { hwBTestMIBObjects 20 }
+        
+        hwBTSSMultiFrameMiscOperEntry   OBJECT-TYPE
+             SYNTAX          HwBTSSMultiFrameMiscOperEntry
+             MAX-ACCESS      not-accessible
+             STATUS          current
+             DESCRIPTION     "An entry in hwBTSSMultiFrameMiscOperTable."
+             INDEX           { 
+             					ifIndex
+       				         }
+            ::= { hwBTSSMultiFrameMiscOperTable 1 }
+  
+        HwBTSSMultiFrameMiscOperEntry ::=
+             SEQUENCE {
+             hwBTSSMultiFrameMiscCleanTest            INTEGER,
+             hwBTSSMultiFrameMiscTestedFrame          INTEGER,
+             hwBTSSMultiFrameMiscTestedPortType       HWPortType,
+             hwBTSSMultiFrameMiscTestedLineType       HWBTSSxDslLineOverLap             
+                }
+        
+        hwBTSSMultiFrameMiscCleanTest OBJECT-TYPE
+            SYNTAX      INTEGER{start(1)}
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  Clean current test on specified frame "
+            ::= { hwBTSSMultiFrameMiscOperEntry 1 }
+        
+        hwBTSSMultiFrameMiscTestedFrame OBJECT-TYPE
+            SYNTAX      INTEGER
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  Tested frame"
+            DEFVAL      { 0 }
+            ::= { hwBTSSMultiFrameMiscOperEntry 2 }
+                
+        hwBTSSMultiFrameMiscTestedPortType OBJECT-TYPE
+            SYNTAX      HWPortType
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  Tested port type"            
+            ::= { hwBTSSMultiFrameMiscOperEntry 3 }
+            
+        hwBTSSMultiFrameMiscTestedLineType OBJECT-TYPE
+            SYNTAX      HWBTSSxDslLineOverLap
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  Tested line type"
+            ::= { hwBTSSMultiFrameMiscOperEntry 4 }
+                    
+        hwBTSSAdslSeltTestTable   OBJECT-TYPE
+             SYNTAX          SEQUENCE OF HWBTSSAdslSeltTestEntry
+             MAX-ACCESS      not-accessible
+             STATUS          current
+             DESCRIPTION
+                 "This table describes selt test for adsl2+."
+             ::= { hwBTestMIBObjects 21 }       
+        hwBTSSAdslSeltTestEntry   OBJECT-TYPE
+             SYNTAX          HWBTSSAdslSeltTestEntry
+             MAX-ACCESS      not-accessible
+             STATUS          current
+             DESCRIPTION     "An entry in hwBTSSAdslSeltTestTable."
+             INDEX           { 
+             					ifIndex
+       				         }
+            ::= { hwBTSSAdslSeltTestTable 1 }
+  
+        HWBTSSAdslSeltTestEntry ::=
+             SEQUENCE {
+             hwBTSSAdslSeltTestOperType       INTEGER  ,
+             hwBTSSAdslSeltTestOperResult     INTEGER ,
+             hwBTSSAdslSeltTestResultNo       INTEGER  ,
+             hwBTSSAdslSeltTestResultLastFlag INTEGER ,
+             hwBTSSAdslSeltTestResult         OCTET STRING ,
+             hwBTSSAdslSeltTestParamLoopLength INTEGER ,
+             hwBTSSAdslSeltTestParamLoopTermin INTEGER ,
+             hwBTSSAdslSeltTestParamLoopGauge  INTEGER ,
+             hwBTSSAdslSeltTestParamUpShnCap   INTEGER ,
+             hwBTSSAdslSeltTestParamDwnShnCap  INTEGER ,
+             hwBTSSAdslSeltTestParamInbandNois OCTET STRING ,
+             hwBTSSAdslSeltTestParamTerminResp OCTET STRING ,
+             hwBTSSAdslSeltTestParamUpMgnAtRate   OCTET STRING ,
+             hwBTSSAdslSeltTestParamDwnMgnAtRate  OCTET STRING ,
+             hwBTSSAdslSeltTestParamUpRateAtMgn   OCTET STRING ,  
+             hwBTSSAdslSeltTestParamDwnRateAtMgn  OCTET STRING ,
+             hwBTSSAdslSeltTestParamLoopAttenAtFreq  OCTET STRING
+                       }
+        
+        hwBTSSAdslSeltTestOperType OBJECT-TYPE
+            SYNTAX      INTEGER{stop(1),start(2)}
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  Selt test operation type"         
+            ::= { hwBTSSAdslSeltTestEntry 1 }    
+        hwBTSSAdslSeltTestOperResult OBJECT-TYPE
+            SYNTAX      INTEGER{normal(1),fail(2),abort(3)}
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Selt test operation result"
+            ::= { hwBTSSAdslSeltTestEntry 2 }
+        hwBTSSAdslSeltTestResultNo OBJECT-TYPE
+            SYNTAX      INTEGER(1..255)
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Selt test result serial number"
+            ::= { hwBTSSAdslSeltTestEntry 3 }
+        hwBTSSAdslSeltTestResultLastFlag OBJECT-TYPE
+            SYNTAX      INTEGER{false(0), true(1)}
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Last package flag for test result"
+            ::= { hwBTSSAdslSeltTestEntry 4 }
+        hwBTSSAdslSeltTestResult OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..1500))
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Selt test result data "
+            ::= { hwBTSSAdslSeltTestEntry 5 }  
+        hwBTSSAdslSeltTestParamLoopLength OBJECT-TYPE
+            SYNTAX      INTEGER
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Loop Length"
+            ::= { hwBTSSAdslSeltTestEntry 6 }
+        hwBTSSAdslSeltTestParamLoopTermin OBJECT-TYPE
+            SYNTAX      INTEGER{open(0),short(1),unknow(2),terminated(3)}
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Loop Termination"
+            ::= { hwBTSSAdslSeltTestEntry 7 }
+        hwBTSSAdslSeltTestParamLoopGauge OBJECT-TYPE
+            SYNTAX      INTEGER{greater_26_awg(1),equal_26_awg(2),equal_24_awg(3),less_24_awg(4),unknow_awg(5)}
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Loop Gauge"
+            ::= { hwBTSSAdslSeltTestEntry 8 }
+        hwBTSSAdslSeltTestParamUpShnCap OBJECT-TYPE
+            SYNTAX      INTEGER
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Upstream Shannon Capacity"
+            ::= { hwBTSSAdslSeltTestEntry 9 }
+        hwBTSSAdslSeltTestParamDwnShnCap OBJECT-TYPE
+            SYNTAX      INTEGER
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Downstream Shannon Capacity"
+            ::= { hwBTSSAdslSeltTestEntry 10 }
+        hwBTSSAdslSeltTestParamInbandNois OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..1500))
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Inband Noise
+                
+                 512 values that indicate inband noise in DB/Hz, 
+                 covering ADSL, ADSL2, and ADSL2+ bands, from 0 to 2.2 MHz."
+            ::= { hwBTSSAdslSeltTestEntry 11 }
+        hwBTSSAdslSeltTestParamTerminResp OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..1500))
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Termination Response
+                
+                 180 values that indicate termination response magnitude from 0 to 18 kft."
+            ::= { hwBTSSAdslSeltTestEntry 12 }
+        hwBTSSAdslSeltTestParamUpMgnAtRate OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..1500))
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Upstream Rate vs. Margin
+                
+                 This value is a measure of the quality of your upstream data 
+                 signal relative to the noise on the line. Hundreds of values that 
+                 indicate SNR margin in DB/Hz at a particular bit rate are provided, 
+                 at a certain increments, up to 30 Mbps. This information may be plotted 
+                 with the bit rate on the X-axis and the SNR margin on the Y-axis."
+            ::= { hwBTSSAdslSeltTestEntry 13 }
+        hwBTSSAdslSeltTestParamDwnMgnAtRate OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..1500))
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Downstream Rate vs. Margin
+                
+                 This value is a measure of the quality of your downstream data 
+                 signal relative to the noise on the line. Hundreds of values that 
+                 indicate SNR margin in DB/Hz at a particular bit rate are provided, 
+                 at a certain increments, up to 30 Mbps. This information may be plotted 
+                 with the bit rate on the X-axis and the SNR margin on the Y-axis."
+            ::= { hwBTSSAdslSeltTestEntry 14 }
+        hwBTSSAdslSeltTestParamUpRateAtMgn OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..1500))
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Upstream Margin vs. Rate"
+            ::= { hwBTSSAdslSeltTestEntry 15 }
+        hwBTSSAdslSeltTestParamDwnRateAtMgn OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..1500))
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Selt test parameter Downstream Margin vs. Rate"
+            ::= { hwBTSSAdslSeltTestEntry 16 }
+           
+        hwBTSSAdslSeltTestParamLoopAttenAtFreq OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..2048))
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "
+                 Selt test parameter loop attenuation versus frequency.
+                 Every four bytes constitute the result of a tone.
+                 This information may be plotted with the bit frequency
+                 on the X-axis and the loop attenuation on the Y-axis.
+                "
+            ::= { hwBTSSAdslSeltTestEntry 17 }
+            
+        hwBTSSAdslDeltTestTable   OBJECT-TYPE
+             SYNTAX          SEQUENCE OF HWBTSSAdslDeltTestEntry
+             MAX-ACCESS      not-accessible
+             STATUS          current
+             DESCRIPTION
+                 "This table describes Delt test for adsl2+."
+             ::= { hwBTestMIBObjects 22 }       
+        hwBTSSAdslDeltTestEntry   OBJECT-TYPE
+             SYNTAX          HWBTSSAdslDeltTestEntry
+             MAX-ACCESS      not-accessible
+             STATUS          current
+             DESCRIPTION     "An entry in hwBTSSAdslDeltTestTable."
+             INDEX           { 
+             					ifIndex
+       				         }
+            ::= { hwBTSSAdslDeltTestTable 1 }
+  
+        HWBTSSAdslDeltTestEntry ::=
+             SEQUENCE {
+             hwBTSSAdslDeltTestOperType       INTEGER  ,
+             hwBTSSAdslDeltTestOperResult     INTEGER ,
+             hwBTSSAdslDeltTestResultNo       INTEGER  ,
+             hwBTSSAdslDeltTestResultLastFlag INTEGER ,
+             hwBTSSAdslDeltTestResult         OCTET STRING 
+                       }
+        
+        hwBTSSAdslDeltTestOperType OBJECT-TYPE
+            SYNTAX      INTEGER{stop(1),start(2)}
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "  Delt test operation type"         
+            ::= { hwBTSSAdslDeltTestEntry 1 }    
+        hwBTSSAdslDeltTestOperResult OBJECT-TYPE
+            SYNTAX      INTEGER{normal(1),fail(2),abort(3)}
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Delt test operation result"
+            ::= { hwBTSSAdslDeltTestEntry 2 }
+        hwBTSSAdslDeltTestResultNo OBJECT-TYPE
+            SYNTAX      INTEGER(1..255)
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Delt test result serial number"
+            ::= { hwBTSSAdslDeltTestEntry 3 }
+        hwBTSSAdslDeltTestResultLastFlag OBJECT-TYPE
+            SYNTAX      INTEGER{false(0), true(1)}
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "Last package flag for test result"
+            ::= { hwBTSSAdslDeltTestEntry 4 }
+        hwBTSSAdslDeltTestResult OBJECT-TYPE
+            SYNTAX      OCTET STRING(SIZE(0..1500))
+            MAX-ACCESS  accessible-for-notify
+            STATUS      current
+            DESCRIPTION
+                "  Delt test result data"
+            ::= { hwBTSSAdslDeltTestEntry 5 }
+          
+
+		---------------------------------------- Loop line tone Begin
+		hwBTSSLoopLineToneOprTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF HwBTSSLoopLineToneOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 
+			"Loop Line Tone"
+			::= { hwBTestMIBObjects 23 }
+		
+		
+				
+		hwBTSSLoopLineToneOprEntry OBJECT-TYPE
+			SYNTAX HwBTSSLoopLineToneOprEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 
+			" "
+		        INDEX    {  
+		                  ifIndex
+		                 }
+			::= { hwBTSSLoopLineToneOprTable 1 }
+			
+		HwBTSSLoopLineToneOprEntry ::=
+			SEQUENCE { 
+				hwBTSSLoopLineToneOprType
+					INTEGER,
+				hwBTSSLoopLineToneIntensity
+					INTEGER,
+				hwBTSSLoopLineToneBusyFlag
+					INTEGER,
+				hwBTSSLoopLineToneResult
+					INTEGER
+			 }
+		
+		hwBTSSLoopLineToneOprType OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				check(1),
+				send(2),
+				stopsend(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Operation type(enumeration: 1: check 2:send 3:stopsend )"
+			::= { hwBTSSLoopLineToneOprEntry 1 }
+				
+		hwBTSSLoopLineToneIntensity OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				five_dB(1),
+				ten_dB(2),
+				fifteen_dB(3)
+				}
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"tone intensity (enumeration: 1: 5dB 2: 10dB 3: 15dB)"
+			::= { hwBTSSLoopLineToneOprEntry 2 }
+			
+		hwBTSSLoopLineToneBusyFlag	OBJECT-TYPE
+            SYNTAX INTEGER
+            {
+            busyNoTest(1),
+            busyTest(2),
+            busystrenTest(3)
+            }
+            MAX-ACCESS  read-write
+            STATUS current
+            DESCRIPTION
+            "Tested port force test( 1: no test on busy 2: test on busy 3: forced test on busy )"
+		    ::= { hwBTSSLoopLineToneOprEntry 3 }
+		
+		hwBTSSLoopLineToneResult	OBJECT-TYPE
+		    SYNTAX INTEGER
+		    	{
+		    	succeed(1),
+		    	failed(2)
+		    	}
+		    MAX-ACCESS read-only
+		    STATUS current
+		    DESCRIPTION
+		    	"operate result (enumeration: 1:succeed 2:failed)"
+		    ::= { hwBTSSLoopLineToneOprEntry 4 }
+		    
+		---------------------------------------- loop line tone End
+
+
+		hwBTSSSeltAuxPortCfgTable OBJECT-TYPE
+			SYNTAX SEQUENCE OF hwBTSSSeltAuxPortCfgEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 
+			"This table set assistance port for SELT."
+			::= { hwBTestMIBObjects 24 }
+				
+		hwBTSSSeltAuxPortCfgEntry OBJECT-TYPE
+			SYNTAX hwBTSSSeltAuxPortCfgEntry
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION			 
+			" "
+		        INDEX    {  
+		                  hwBTSSSeltAuxedPortIfIndex
+		                 }
+			::= { hwBTSSSeltAuxPortCfgTable 1 }
+			
+		hwBTSSSeltAuxPortCfgEntry ::=
+			SEQUENCE { 
+				hwBTSSSeltAuxedPortIfIndex
+					INTEGER,
+				hwBTSSSeltAuxPortIfIndex
+					INTEGER,
+				hwBTSSSeltAuxPortRowStatus
+					RowStatus
+			 }
+		
+		hwBTSSSeltAuxedPortIfIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS not-accessible
+			STATUS current
+			DESCRIPTION
+				"The ifindex of the Auxed port. If there is only one global Auxed port, the value is 65535."
+			::= { hwBTSSSeltAuxPortCfgEntry 1 }
+				
+		hwBTSSSeltAuxPortIfIndex OBJECT-TYPE
+			SYNTAX INTEGER
+			MAX-ACCESS read-write
+			STATUS current
+			DESCRIPTION
+				"Assistance port ifIndex"
+			::= { hwBTSSSeltAuxPortCfgEntry 2 }
+			
+		hwBTSSSeltAuxPortRowStatus	OBJECT-TYPE
+                        SYNTAX RowStatus
+                        MAX-ACCESS  read-create
+                        STATUS current
+                        DESCRIPTION
+                        "Row status(add(4),delete(6))"
+		        ::= { hwBTSSSeltAuxPortCfgEntry 3 }
+		
+
+
+  
+		hwBTestTraps OBJECT IDENTIFIER ::= { hwBTest 2 }
+		
+		hwBTestTrapVbOids OBJECT IDENTIFIER ::= { hwBTestTraps 1 }
+		
+		hwBTestVbOidsReason OBJECT IDENTIFIER ::= { hwBTestTrapVbOids 2 }
+		
+		hwBTSSCqtOfflineReason OBJECT-TYPE
+			SYNTAX INTEGER
+				{
+				commFail(1),
+				userReset(2)
+				}
+			MAX-ACCESS accessible-for-notify
+			STATUS current
+			DESCRIPTION
+				"   Cqt module offline reason:
+				enumFirst:  
+				explain£º CQT module communication fail
+				 resolving method:Check CQT module running normal
+				enumSecond:  
+				 explain£º User reset command 
+				 resolving method:NA 
+				"
+			::= { hwBTestVbOidsReason 1 }
+		
+		hwBTestAlarmTraps OBJECT IDENTIFIER ::= { hwBTestTraps 2 }
+		
+		hwBTestAlarmTrapsOIDs OBJECT IDENTIFIER ::= { hwBTestAlarmTraps 0 }
+		
+		hwBTSSCqtOnlineTrap NOTIFICATION-TYPE
+			OBJECTS { ifIndex }
+			STATUS current
+			DESCRIPTION 
+				"     CQT unit online status trap 
+				enumFirst:  
+				explain£º CQT module communication OK
+				resolving method:NA
+				"
+			::= { hwBTestAlarmTrapsOIDs 1 }
+		
+		hwBTSSCqtOfflineTrap NOTIFICATION-TYPE
+			OBJECTS { ifIndex, hwBTSSCqtOfflineReason }
+			STATUS current
+			DESCRIPTION 
+				" CQT unit offline status trap"
+			::= { hwBTestAlarmTrapsOIDs 2 }
+		
+		hwBTestGeneralTraps OBJECT IDENTIFIER ::= { hwBTestTraps 3 }
+		
+		hwBTestGeneralTrapsOIDs OBJECT IDENTIFIER ::= { hwBTestGeneralTraps 0 }
+		
+		hwBTSSCoStartTrap NOTIFICATION-TYPE
+			OBJECTS { ifIndex, hwBTSSCoOperType, hwBTSSCoTestResult }
+			STATUS current
+			DESCRIPTION 
+				" Start Co test trap"
+			::= { hwBTestGeneralTrapsOIDs 1 }
+		
+		hwBTSSCoStopTrap NOTIFICATION-TYPE
+			OBJECTS { ifIndex, hwBTSSCoOperType, hwBTSSCoTestResult }
+			STATUS current
+			DESCRIPTION 
+				" Stop Co test trap"
+			::= { hwBTestGeneralTrapsOIDs 2 }
+		
+
+		
+	    hwBTSSTestedPortOperTrap NOTIFICATION-TYPE
+            OBJECTS { ifIndex,hwBTSSTestedPortOperType,hwBTSSTestedPortOperMode,hwBTSSTestedPortOperResult } 
+            STATUS current
+            DESCRIPTION
+                " Tested port operation trap"
+            ::= { hwBTestGeneralTrapsOIDs 3 }
+        
+        hwBTSSCqtTransTestOperResultTrap NOTIFICATION-TYPE
+            OBJECTS { ifIndex,hwBTSSCqtTransTestOperType,hwBTSSCqtTransTestOperResult }
+            STATUS current
+            DESCRIPTION
+                " Cqt transparent test trap"
+            ::= { hwBTestGeneralTrapsOIDs 4 }
+        
+        hwBTSSCqtTransTestResultTrap NOTIFICATION-TYPE
+            OBJECTS { ifIndex,hwBTSSCqtTransTestResultLastFlag,hwBTSSCqtTransTestResultNo,hwBTSSCqtTransTestResult }
+            STATUS current
+            DESCRIPTION
+                " Cqt transparent test trap "
+            ::= { hwBTestGeneralTrapsOIDs 5 }
+		
+		hwBTSSLoopLineToneOperTrap NOTIFICATION-TYPE
+			OBJECTS { hwBTSSLoopLineToneResult }
+			STATUS current
+			DESCRIPTION 
+				"loop line tone test result trap: 1:hwBTSSLoopLineToneResult"
+			::= { hwBTestGeneralTrapsOIDs 6 }
+	    
+	END
+
