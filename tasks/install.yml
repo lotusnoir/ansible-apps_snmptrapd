@@ -26,8 +26,12 @@
         state: started
         enabled: true
 
+#- name: Synchronise mibs
+#  synchronize:
+#    src: mibs
+#    dest: /var/lib/
 - name: Synchronise mibs
-  synchronize:
+  copy:
     src: mibs
     dest: /var/lib/
 

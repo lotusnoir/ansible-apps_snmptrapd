@@ -1,38 +1,36 @@
-Role Name
-=========
+# ansible-apps_snmptrapd
 
-A brief description of the role goes here.
+## Description
 
-Requirements
-------------
+[![Galaxy Role](https://img.shields.io/badge/galaxy-apps_snmptrapd-purple?style=flat)](https://galaxy.ansible.com/lotusnoir/apps_snmptrapd)
+[![Version](https://img.shields.io/github/release/lotusnoir/ansible-apps_snmptrapd.svg)](https://github.com/lotusnoir/ansible-apps_snmptrapd/releases/latest)
+![GitHub repo size](https://img.shields.io/github/repo-size/lotusnoir/ansible-apps_snmptrapd?color=orange&style=flat)
+[![downloads](https://img.shields.io/ansible/role/d/56102)](https://galaxy.ansible.com/lotusnoir/apps_snmptrapd)
+![Ansible Quality Score](https://img.shields.io/ansible/quality/56102)
+[![License](https://img.shields.io/badge/license-Apache--2.0-brightgreen?style=flat)](https://opensource.org/licenses/Apache-2.0)
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Install and configure snmptrapd to receive and store traps snmp cfrom network equipments.
 
-Role Variables
---------------
+## Requirements
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+none
 
-Dependencies
-------------
+## Role variables
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+See [variables](/defaults/main.yml) for more details.
 
-Example Playbook
-----------------
+## Examples
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+        ---
+        - hosts: apps_snmptrapd
+          become: true
+          become_method: sudo
+          gather_facts: true
+          roles:
+            - role: ansible-apps_snmptrapd
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
 
-License
--------
+## License
 
-BSD
+This project is licensed under Apache License. See [LICENSE](/LICENSE) for more details.
 
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
