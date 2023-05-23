@@ -1,18 +1,19 @@
 ---
 - name: Check if executable exist
-  stat:
+  ansible.builtin.stat:
     path: "/usr/sbin/snmptrapd"
   register: snmptrapd_binary
 
-- when: not snmptrapd_binary.stat.exists
+- name: "Install tasks"
+  when: not snmptrapd_binary.stat.exists
   block:
     - name: Install required packages
-      package:
+      ansible.builtin.package:
         name: [snmptrapd, rsync]
         state: present
 
     - name: Create required folders
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: directory
         mode: '0755'
@@ -21,7 +22,7 @@
         - "{{ snmptrapd_logdir }}"
 
     - name: Start and enable snmptrapd service
-      service:
+      ansible.builtin.service:
         name: snmptrapd
         state: started
         enabled: true
@@ -31,12 +32,13 @@
 #    src: mibs
 #    dest: /var/lib/
 - name: Synchronise mibs
-  copy:
+  ansible.builtin.copy:
     src: mibs
     dest: /var/lib/
+    mode: '0640'
 
 - name: Create systemd override
-  template:
+  ansible.builtin.template:
     src: snmptrapd_override.conf
     dest: "/etc/systemd/system/snmptrapd.service.d/override.conf"
     mode: 0644
@@ -45,7 +47,7 @@
     - restart snmptrapd
 
 - name: Create config file
-  template:
+  ansible.builtin.template:
     src: snmptrapd.conf
     dest: "/etc/snmp/snmptrapd.conf"
     mode: 0644
