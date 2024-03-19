@@ -1,9 +1,6 @@
 ---
-- name: restart snmptrapd
+- name: Restart snmptrapd
   ansible.builtin.service:
     name: snmptrapd
-    state: restarted
-
-- name: reload daemon
-  ansible.builtin.service:
     daemon_reload: true
+    state: restarted

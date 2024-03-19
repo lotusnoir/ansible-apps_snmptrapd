@@ -27,10 +27,6 @@
         state: started
         enabled: true
 
-#- name: Synchronise mibs
-#  synchronize:
-#    src: mibs
-#    dest: /var/lib/
 - name: Synchronise mibs
   ansible.builtin.copy:
     src: mibs
@@ -43,8 +39,7 @@
     dest: "/etc/systemd/system/snmptrapd.service.d/override.conf"
     mode: 0644
   notify:
-    - reload daemon
-    - restart snmptrapd
+    - Restart snmptrapd
 
 - name: Create config file
   ansible.builtin.template:
@@ -52,4 +47,4 @@
     dest: "/etc/snmp/snmptrapd.conf"
     mode: 0644
   notify:
-    - restart snmptrapd
+    - Restart snmptrapd
